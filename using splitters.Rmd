@@ -39,23 +39,20 @@ source('splitters.R')
 # General information
 splitters is a set of functions for easily splitting dataframes or vectors into multiple windows / subsets.  
 
-There are two groups of functions: greedy splitters and n (number of windows) splitters.  
+There are two groups of split functions: greedy split and n (number of windows) split.  
 
-Each group contains 4 functions:  
+Each group contains 2 functions:  
 
 *grouping_factor* functions return a factor with window numbers.   
 This can be used to subset, aggregate, group_by, etc.  
 
-*split* functions are wrapper functions for the *dsplit* and *vsplit* functions (see below). It checks if the given data is a vector or a dataframe and calls the appropriate function. If you know the *split* functions you usually don't need to know the *dsplit* and *vsplit* functions, though they are included for special cases.
+*split* functions split the given data (dataframe or vector) into the specified windows and return them in a list.
 
-*dsplit* functions are used with dataframes. The dataframe is splitted and the new dataframes are returned in a list.  
-
-*vsplit* functions are used with vectors. The vector is splitted and the new vectors are returned in a list.  
  
-## Greedy splitters
-Greedy splitters uses window **size** for splitting the data.  
+## Greedy split
+Greedy split uses window **size** for splitting the data.  
 Greedy means that each window grabs as many elements as possible (up to size),
-meaning that there might be less elements available to the last window  
+meaning that there might be less elements available to the last window.  
 
 
 &nbsp;  
@@ -64,7 +61,7 @@ meaning that there might be less elements available to the last window
 
 > We have a vector with 57 values. We want to have window sizes of 10.  
 >  
-> The greedy splitters will return windows with this many values in them:  
+> The greedy splitter will return windows with this many values in them:  
 > 10, 10, 10, 10, 10, 7  
 
 &nbsp;  
@@ -78,7 +75,7 @@ values than the other windows.
 
 > We have a vector with 57 values. We want to have window sizes of 10.  
 >  
-> The greedy splitters with force_equal set to TRUE 
+> The greedy splitter with force_equal set to TRUE 
 > will return windows with this many values in them:  
 > 10, 10, 10, 10, 10  
 >  
@@ -87,10 +84,10 @@ values than the other windows.
 &nbsp;  
  
 
-## n splitters
-n splitters use number of windows (n_windows) for splitting the data.  
+## n split
+n split use number of windows (n_windows) for splitting the data.  
 
-With *default settings*, they try to make the windows as equal as possible, 
+With *default settings*, it tries to make the windows as equal as possible, 
 but notice that the last window might contain fewer or more elements,
 if the length of the data is not divisible with the number of windows.  
 
@@ -101,20 +98,20 @@ if the length of the data is not divisible with the number of windows.
 
 > We have a vector with 57 values. We want to get back 5 windows.  
 >   
-> n splitters with default settings would return windows with this many values in them:  
+> n splitter with default settings would return windows with this many values in them:  
 >   
 > 11, 11, 11, 11, 13   
  
 &nbsp;  
 
-By setting **force_equal** to TRUE, n splitters will create the largest possible, 
+By setting **force_equal** to TRUE, n splitter will create the largest possible, 
 equally sized windows by discarding excess data elements.  
 
 &nbsp;  
 
 **Example**    
 
-> n splitters with **force_equal** set to TRUE would return windows with this many values in them:  
+> n splitter with **force_equal** set to TRUE would return windows with this many values in them:  
 >   
 > 11, 11, 11, 11, 11  
 >  
@@ -122,7 +119,7 @@ equally sized windows by discarding excess data elements.
 
 &nbsp;  
 
-Notice that n splitters will always return the given number of windows. They will never return a 
+Notice that the n splitter will always return the given number of windows. It will never return a 
 window with zero elements. For some situations that means that the last window will 
 contain a lot of elements. Asked to split a vector with 57 elements into 20 windows, 
 the first 19 windows will contain 2 elements, while the last window will itself contain 19 elements. 
@@ -137,23 +134,22 @@ in all windows.
 
 The data to process.   
 
-**data**: dataframe or vector (function dependent)  
-Used in *split* functions where it can be either a dataframe or a vector.  
-Used in *dsplit* functions where it can **only** be a dataframe.  
+**data**: dataframe or vector  
+Used in *split* functions  
 
 **v**: vector   
-Used in *grouping_factor* and *vsplit* functions  
+Used in *grouping_factor*  
 
 &nbsp;  
 
 ### size or n_windows
 
-**size**: whole number or percentage (Used by greedy splitters)
+**size**: whole number or percentage (Used by greedy splitter)
 
 > Whole number: 1 or above. A size of 10 means that each window will contain 10 elements (possibly not the last window).  
 > Percentage: Numeric between 0-1. E.g. 0.1 is 10 percent. If your vector has a length of 100 and size is set to 0.2, each window will contain 20 elements.
 
-**n_windows**: whole number or percentage (Used by n splitters)
+**n_windows**: whole number or percentage (Used by n splitter)
 
 > Whole number: 1 or above. A size of 10 means that the splitter will create exactly 10 windows / subsets / data splits.   
 > Percentage: Numeric between 0-1. E.g. 0.1 is 10 percent. If your vector has a length of 100 and n_windows is set to 0.2, the splitter will create exactly 20 windows / subsets / data splits.  
@@ -162,7 +158,7 @@ Used in *grouping_factor* and *vsplit* functions
 
 ### force_equal
 If you need windows with the exact same size, set force_equal to TRUE.  
-Implementation is different in the two groups of splitters. Read more in their sections above.  
+Implementation is different in the two kinds of splitters. Read more in their sections above.  
 Be aware that this setting discards excess datapoints.  
 
 &nbsp;  
@@ -176,10 +172,9 @@ the function) you will get the following output:
 *grouping_factor* functions return the factor with NAs instead of numbers. It will be
 the same length as expected.  
 
-*dsplit* functions return the given dataset in the same list format as if it had been split.  
+*split* functions will return the given data (dataframe or vector) in the same list format as if it had been split.
 
-*vsplit* functions return the given vector in the same list format as if it had been split. 
-
+&nbsp;  
 
 # Functions
 
@@ -259,9 +254,9 @@ df
 
 &nbsp;  
  
-## gdsplit
+## gsplit
 
-Greedy dataframe split  
+Greedy splitter for both vectors and dataframes  
 
 1. We create a dataframe  
 
@@ -273,11 +268,11 @@ df = data.frame("x"=c(1:12),
 
 ```
 
-2. Using gdsplit()   
+2. Using gsplit() for dataframes   
 
 ```{r}
 
-df_list = gdsplit(df, 5)
+df_list = gsplit(df, 5)
 
 df_list
 
@@ -289,7 +284,7 @@ df_list
 df_list[[2]]
 ```
 
-3. We could get the mean of age for that particular dataframe  
+4. We could get the mean of age for that particular dataframe  
 
 ```{r}
 
@@ -297,11 +292,29 @@ mean(df_list[[2]]$age)
 
 ```
 
+5. Using gsplit() for vectors  
+
+```{r}
+
+# Note that I only pass it one column!
+vec_list = gsplit(df[,1], 5)
+
+vec_list
+
+```
+
+3. We can get a specific vector  
+
+```{r}
+vec_list[[2]]
+```
+
+
 ### force_equal
 
-Getting an equal number of elements per window with gdsplit.  
+Getting an equal number of elements per window with gsplit.  
 
-Notice that we discard the last dataframe that would have contained fewer rows than the others.
+Notice that we discard the last dataframe/vector that would have contained fewer rows/elements than the others.
 
 1. We create a dataframe  
 
@@ -313,80 +326,28 @@ df = data.frame("x"=c(1:12),
 
 ```
 
-2. Using gdsplit() with force_equal   
+2. Using gsplit() with force_equal on a dataframe  
 
 ```{r}
 
-df_list = gdsplit(df, 5, force_equal = TRUE)
+df_list = gsplit(df, 5, force_equal = TRUE)
 
 df_list
 
 ```
 
-&nbsp;  
- 
-## gvsplit
-
-Greedy vector split  
-
-1. We create a vector  
+3. Using gsplit() with force_equal on a vector  
 
 ```{r}
 
-vec = c(1:12)
-
-```
-
-2. Using gvsplit()   
-
-```{r}
-
-vec_list = gvsplit(vec, 5)
+# Note that I only pass it one column!
+vec_list = gsplit(df[,1], 5, force_equal = TRUE)
 
 vec_list
 
 ```
 
-3. We can get a specific vector  
 
-```{r}
-
-vec_list[[2]]
-
-```
-
-4. We could get the mean of that particular vector  
-
-```{r}
-
-mean(vec_list[[2]])
-
-```
-
-
-### force_equal
-
-Getting an equal number of elements per window with gvsplit.  
-
-Notice that we discard the last vector that would have contained fewer elements than the others.  
-
-1. We create a vector  
-
-```{r}
-
-vec = c(1:12)
-
-```
-
-2. Using nvsplit() with force_equal   
-
-```{r}
-
-vec_list = gvsplit(vec, 5, force_equal = TRUE)
-
-vec_list
-
-```
 
 &nbsp;  
  
@@ -466,10 +427,10 @@ df
 ```
 
 &nbsp;  
- 
-## ndsplit
 
-Number of windows dataframe split  
+## nsplit
+
+Number of windows splitter for both vectors and dataframes.  
 
 1. We create a dataframe  
 
@@ -481,11 +442,11 @@ df = data.frame("x"=c(1:12),
 
 ```
 
-2. Using ndsplit()   
+2. Using nsplit() for dataframes   
 
 ```{r}
 
-df_list = ndsplit(df, 5)
+df_list = nsplit(df, 5)
 
 df_list
 
@@ -494,12 +455,10 @@ df_list
 3. We can get a specific dataframe   
 
 ```{r}
-
 df_list[[2]]
-
 ```
 
-3. We could get the mean of age for that particular dataframe  
+4. We could get the mean of age for that particular dataframe  
 
 ```{r}
 
@@ -507,11 +466,29 @@ mean(df_list[[2]]$age)
 
 ```
 
+5. Using nsplit() for vectors  
+
+```{r}
+
+# Note that I only pass it one column!
+vec_list = nsplit(df[,1], 5)
+
+vec_list
+
+```
+
+3. We can get a specific vector  
+
+```{r}
+vec_list[[2]]
+```
+
+
 ### force_equal
 
-Getting an equal number of elements per window with ndsplit.  
+Getting an equal number of elements per window with nsplit.  
 
-Notice that the last dataframe now contains the same number of rows as the others.  
+Notice that the last dataframe/vector now contains the same number of rows/elements as the others.  
 
 1. We create a dataframe  
 
@@ -523,77 +500,27 @@ df = data.frame("x"=c(1:12),
 
 ```
 
-2. Using ndsplit() with force_equal   
+2. Using nsplit() with force_equal on a dataframe  
 
 ```{r}
 
-df_list = ndsplit(df, 5, force_equal = TRUE)
+df_list = nsplit(df, 5, force_equal = TRUE)
 
 df_list
 
 ```
 
+3. Using nsplit() with force_equal on a vector  
+
+```{r}
+
+# Note that I only pass it one column!
+vec_list = nsplit(df[,1], 5, force_equal = TRUE)
+
+vec_list
+
+```
+
+
 &nbsp;  
  
-## nvsplit
-
-Number of windows vector split  
-
-1. We create a vector  
-
-```{r}
-
-vec = c(1:12)
-
-```
-
-2. Using nvsplit()   
-
-```{r}
-
-vec_list = nvsplit(vec, 5)
-
-vec_list
-
-```
-
-3. We can get a specific vector  
-
-```{r}
-
-vec_list[[2]]
-
-```
-
-4. We could get the mean of that particular vector  
-
-```{r}
-
-mean(vec_list[[2]])
-
-```
-
-
-### force_equal
-
-Getting an equal number of elements per window with nvsplit.  
-
-Notice that the last vector now contains the same number of elements as the others.  
-
-1. We create a vector  
-
-```{r}
-
-vec = c(1:12)
-
-```
-
-2. Using nvsplit() with force_equal   
-
-```{r}
-
-vec_list = nvsplit(vec, 5, force_equal = TRUE)
-
-vec_list
-
-```

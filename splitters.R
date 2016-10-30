@@ -328,11 +328,11 @@ gsplit = function(data, size, force_equal = FALSE, allow_zero = FALSE){
   
   #
   # Wrapper function for gdsplt and gvsplit
+  # 
   # Checks if data is a dataframe
   # .. if yes, it calls gdsplit
   # .. if no, it calls gvsplit
-  #
-  
+  # 
   
   if (is.data.frame(data)){
     
@@ -343,6 +343,7 @@ gsplit = function(data, size, force_equal = FALSE, allow_zero = FALSE){
     return(gvsplit(data, size, force_equal, allow_zero))
     
   }
+  
   
 }
 
