@@ -96,11 +96,8 @@ is_optimal_ = function(grouping_factor, n_windows) {
   # smaller if we removed 1 element from all windows except 
   # the last window and added those elements to the last window
   
-  # Convert the grouping factor to numeric
-  num_g_f = as.numeric(grouping_factor)
-  
   # Count the values of all the windows
-  count_values = count(num_g_f)
+  count_values = count(as.numeric(grouping_factor))
   
   # Get the count of values in the first window
   first_count_value = count_values[1,]$freq
