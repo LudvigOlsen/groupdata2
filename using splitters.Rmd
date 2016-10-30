@@ -41,10 +41,12 @@ splitters is a set of functions for easily splitting dataframes or vectors into 
 
 There are two groups of functions: greedy splitters and n (number of windows) splitters.  
 
-Each group contains 3 functions:  
+Each group contains 4 functions:  
 
 *grouping_factor* functions return a factor with window numbers.   
 This can be used to subset, aggregate, group_by, etc.  
+
+*split* functions are wrapper functions for the *dsplit* and *vsplit* functions (see below). It checks if the given data is a vector or a dataframe and calls the appropriate function. If you know the *split* functions you usually don't need to know the *dsplit* and *vsplit* functions, though they are included for special cases.
 
 *dsplit* functions are used with dataframes. The dataframe is splitted and the new dataframes are returned in a list.  
 
@@ -129,8 +131,36 @@ in all windows.
 
 &nbsp;  
 
+## Arguments
 
-## force_equal
+### data or v
+
+The data to process.   
+
+**data**: dataframe or vector (function dependent)  
+Used in *split* functions where it can be either a dataframe or a vector.  
+Used in *dsplit* functions where it can **only** be a dataframe.  
+
+**v**: vector   
+Used in *grouping_factor* and *vsplit* functions  
+
+&nbsp;  
+
+### size or n_windows
+
+**size**: whole number or percentage (Used by greedy splitters)
+
+> Whole number: 1 or above. A size of 10 means that each window will contain 10 elements (possibly not the last window).  
+> Percentage: Numeric between 0-1. E.g. 0.1 is 10 percent. If your vector has a length of 100 and size is set to 0.2, each window will contain 20 elements.
+
+**n_windows**: whole number or percentage (Used by n splitters)
+
+> Whole number: 1 or above. A size of 10 means that the splitter will create exactly 10 windows / subsets / data splits.   
+> Percentage: Numeric between 0-1. E.g. 0.1 is 10 percent. If your vector has a length of 100 and n_windows is set to 0.2, the splitter will create exactly 20 windows / subsets / data splits.  
+
+&nbsp;  
+
+### force_equal
 If you need windows with the exact same size, set force_equal to TRUE.  
 Implementation is different in the two groups of splitters. Read more in their sections above.  
 Be aware that this setting discards excess datapoints.  
@@ -138,7 +168,7 @@ Be aware that this setting discards excess datapoints.
 &nbsp;  
 
 
-## allow_zero
+### allow_zero
 If you input 0 as size or n_windows (depending on the function), you get an error.  
 If you don't want this behavior, you can set allow_zero to TRUE, and (depending on
 the function) you will get the following output:  
