@@ -7,13 +7,17 @@
 #
 ##############################################
 
-# Main functions are:
-# gsplit_grouping_factor
-# gdsplit
-# gvsplit
-# nsplit_grouping_factor
-# ndsplit
-# nvsplit
+# Main functions:
+# .. gsplit_grouping_factor
+# .. gsplit
+# .... (wrapper for automatically choosing between gdsplit and gvsplit)
+# .. gdsplit
+# .. gvsplit
+# .. nsplit_grouping_factor
+# .. nsplit
+# .... (wrapper for automatically choosing between ndsplit and nvsplit)
+# .. ndsplit
+# .. nvsplit
 
 
 # Naming convention: underscore_seperated
