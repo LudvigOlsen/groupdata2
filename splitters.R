@@ -324,6 +324,28 @@ gsplit_grouping_factor = function(v, size, force_equal=FALSE, allow_zero = FALSE
   
 }
 
+gsplit = function(data, size, force_equal = FALSE, allow_zero = FALSE){
+  
+  #
+  # Wrapper function for gdsplt and gvsplit
+  # Checks if data is a dataframe
+  # .. if yes, it calls gdsplit
+  # .. if no, it calls gvsplit
+  #
+  
+  
+  if (is.data.frame(data)){
+    
+    return(gdsplit(data, size, force_equal, allow_zero))
+    
+  } else {
+    
+    return(gvsplit(data, size, force_equal, allow_zero))
+    
+  }
+  
+}
+
 gdsplit = function(data, size, force_equal = FALSE, allow_zero = FALSE){
   
   #
@@ -586,6 +608,29 @@ nsplit_grouping_factor = function(v, n_windows, force_equal = FALSE, allow_zero 
   
 }
   
+nsplit = function(data, size, force_equal = FALSE, allow_zero = FALSE){
+  
+  #
+  # Wrapper function for ndsplt and nvsplit
+  # Checks if data is a dataframe
+  # .. if yes, it calls ndsplit
+  # .. if no, it calls nvsplit
+  #
+  
+  
+  if (is.data.frame(data)){
+    
+    return(ndsplit(data, size, force_equal, allow_zero))
+    
+  } else {
+    
+    return(nvsplit(data, size, force_equal, allow_zero))
+    
+  }
+  
+  
+}
+
 ndsplit = function(data, n_windows, force_equal = FALSE, allow_zero = FALSE){
   
   #
