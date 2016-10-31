@@ -230,10 +230,116 @@ n_check_arguments_ = function(data, n_windows, force_equal){
 
 # Main functions
 
+group = function(data, n, method = 'n_windows', force_equal = FALSE, allow_zero = FALSE, return_factor = FALSE){
+  
+  #
+  # Takes dataframe or vector
+  # Creates a grouping factor
+  #
+  # If data is a vector
+  # .. Return dataframe with vector grouped by grouping factor 
+  # If data is a dataframe:
+  # .. Return dataframe grouped by grouping factor 
+  #
+  
+  grouping_factor = group_factor(data, n, method, force_equal, allow_zero)
+  
+  if (isTRUE(return_factor)){
+    
+    print('return_factor')
+    
+    return(grouping_factor)
+    
+  }
+  
+  
+  if(is.data.frame(data)){
+    
+    if(isTRUE(force_equal)){
+      
+      data = head(data, length(grouping_factor))
+      
+    }
+    
+    data$.groups = grouping_factor
+    
+    return(dplyr::group_by(data, .groups))
+    
+  } else {
+      
+    if(isTRUE(force_equal)){
+        
+        data = head(data, length(grouping_factor))
+        
+    }
+    
+    data = data.frame(data, ".groups" = grouping_factor)
+    
+    return(dplyr::group_by(data, .groups))
+      
+  }
+  
+}
+  
+group_factor = function(data, n, method = 'n_windows', force_equal = FALSE, allow_zero = FALSE){
+  
+  #
+  # Takes dataframe or vector
+  # Returns a grouping factor
+  #
+  
+  if(is.data.frame(data)){
+    
+    if(method == 'greedy'){
+      
+      return(gsplit_grouping_factor(data[,1], n, force_equal, allow_zero))
+      
+    } else if (method == 'n_windows'){
+      
+      return(nsplit_grouping_factor(data[,1], n, force_equal, allow_zero))
+      
+    }
+    
+  } else {
+    
+    if(method == 'greedy'){
+      
+      return(gsplit_grouping_factor(data, n, force_equal, allow_zero))
+      
+    } else if (method == 'n_windows'){
+      
+      return(nsplit_grouping_factor(data, n, force_equal, allow_zero))
+      
+    }
+    
+  }
+ 
+}
+
+splt = function(data, n, method = 'n_windows', force_equal = FALSE, allow_zero = FALSE){
+  
+  #
+  # Takes dataframe or vector
+  # Splits into the specified windows
+  # Returns list with the windows (dataframes or vectors)
+  #
+  
+  if(method == 'greedy'){
+    
+    return(gsplit(data, n, force_equal, allow_zero))
+    
+  } else if (method == 'n_windows'){
+    
+    return(nsplit(data, n, force_equal, allow_zero))
+    
+  }
+  
+}
+
 
 ## Greedy functions
 
-gsplit_grouping_factor = function(v, size, force_equal=FALSE, allow_zero = FALSE){
+gsplit_grouping_factor = function(v, size, force_equal = FALSE, allow_zero = FALSE){
   
   #
   # Takes a vector and the size of the wanted windows
@@ -430,7 +536,7 @@ gdsplit = function(data, size, force_equal = FALSE, allow_zero = FALSE){
   
 }
 
-gvsplit = function(v, size, force_equal= FALSE, allow_zero = FALSE){
+gvsplit = function(v, size, force_equal = FALSE, allow_zero = FALSE){
   
   #
   # Takes a vector and greedily splits it
@@ -788,7 +894,5 @@ nvsplit = function(v, n_windows, force_equal = FALSE, allow_zero = FALSE){
   return(split(v , f = split_grouping_factor))
   
 }
-
-
 
 
