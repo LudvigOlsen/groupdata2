@@ -8,16 +8,10 @@
 ##############################################
 
 # Main functions:
-# .. gsplit_grouping_factor
-# .. gsplit
-# .... (wrapper for automatically choosing between gdsplit and gvsplit)
-# .. gdsplit
-# .. gvsplit
-# .. nsplit_grouping_factor
-# .. nsplit
-# .... (wrapper for automatically choosing between ndsplit and nvsplit)
-# .. ndsplit
-# .. nvsplit
+# .. group
+# .. group_factor
+# .. splt
+
 
 
 # Naming convention: underscore_seperated
@@ -209,7 +203,9 @@ check_arguments_ = function(data, n, method, force_equal, allow_zero){
 
 # Main functions
 
-group = function(data, n, method = 'n_windows', force_equal = FALSE, allow_zero = FALSE, return_factor = FALSE){
+group = function(data, n, method = 'n_windows', force_equal = FALSE, 
+                 allow_zero = FALSE, return_factor = FALSE, 
+                 descending = FALSE){
   
   #
   # Takes dataframe or vector
@@ -221,11 +217,12 @@ group = function(data, n, method = 'n_windows', force_equal = FALSE, allow_zero 
   # .. Return dataframe grouped by grouping factor 
   #
   
-  grouping_factor = group_factor(data, n, method, force_equal, allow_zero)
+  grouping_factor = group_factor(data, n, method, force_equal = force_equal, 
+                                 allow_zero = allow_zero, descending = descending)
+  
+  print(grouping_factor)
   
   if (isTRUE(return_factor)){
-    
-    print('return_factor')
     
     return(grouping_factor)
     
@@ -260,12 +257,14 @@ group = function(data, n, method = 'n_windows', force_equal = FALSE, allow_zero 
   
 }
   
-group_factor = function(data, n, method = 'n_windows', force_equal = FALSE, allow_zero = FALSE){
+group_factor = function(data, n, method = 'n_windows', force_equal = FALSE, allow_zero = FALSE, descending = FALSE){
   
   #
   # Takes dataframe or vector
   # Returns a grouping factor
   #
+  
+  print(descending)
   
   if(is.data.frame(data)){
     
@@ -276,6 +275,10 @@ group_factor = function(data, n, method = 'n_windows', force_equal = FALSE, allo
     } else if (method == 'n_windows'){
       
       return(nsplit_grouping_factor(data[,1], n, force_equal, allow_zero))
+      
+    } else if (method == 'n_fill'){
+      
+      return(n_fill_split_grouping_factor(data[,1], n, force_equal, allow_zero, descending))
       
     }
     
@@ -289,13 +292,17 @@ group_factor = function(data, n, method = 'n_windows', force_equal = FALSE, allo
       
       return(nsplit_grouping_factor(data, n, force_equal, allow_zero))
       
+    } else if (method == 'n_fill'){
+      
+      return(n_fill_split_grouping_factor(data, n, force_equal, allow_zero, descending))
+      
     }
     
   }
  
 }
 
-splt = function(data, n, method = 'n_windows', force_equal = FALSE, allow_zero = FALSE){
+splt = function(data, n, method = 'n_windows', force_equal = FALSE, allow_zero = FALSE, descending = FALSE){
   
   #
   # Takes dataframe or vector
@@ -384,6 +391,10 @@ splt = function(data, n, method = 'n_windows', force_equal = FALSE, allow_zero =
   } else if (method == 'n_windows'){
     
     return(nsplit(data, n, force_equal, allow_zero))
+    
+  } else if (method == 'n_fill'){
+    
+    return(n_fill_split(data, n, force_equal, allow_zero, descending))
     
   }
   
@@ -696,13 +707,8 @@ ndsplit = function(data, n_windows, force_equal = FALSE, allow_zero = FALSE){
   # Returns a list of dataframes
   #
   
-  ### Creating grouping factor ###
-  
   # Create grouping_factor for splitting data
   group = nsplit_grouping_factor(data[,1], n_windows)
-  
-  
-  ### Split data ###
   
   # Split dataframe into a list of dataframes
   data_splitted = split(data , f = group)
@@ -718,14 +724,11 @@ nvsplit = function(v, n_windows, force_equal = FALSE, allow_zero = FALSE){
   # Returns a list of vectors
   #
   
-  
-  ### Creating grouping factor ###
-  
   # Use nsplit_grouping_factor() to get a grouping_factor to split by
   split_grouping_factor = nsplit_grouping_factor(v, n_windows)
   
   
-  ### Split data ###
+  # Split data
   
   return(split(v , f = split_grouping_factor))
   
@@ -736,8 +739,7 @@ nvsplit = function(v, n_windows, force_equal = FALSE, allow_zero = FALSE){
 # The point is that first all windows are equally big, and then 
 # excess datapoints are distributed one at a time ascending/descending
 
-
-nfill_split_grouping_factor = function(v, n_windows, force_equal = FALSE, allow_zero = FALSE, descending = FALSE){
+n_fill_split_grouping_factor = function(v, n_windows, force_equal = FALSE, allow_zero = FALSE, descending = FALSE){
   
   # Check inputs, allow_zero, etc. 
   # Could these be done in the main function instead?
@@ -773,3 +775,65 @@ nfill_split_grouping_factor = function(v, n_windows, force_equal = FALSE, allow_
   return(grouping_factor)
   
 }
+
+n_fill_split = function(data, size, force_equal = FALSE, allow_zero = FALSE, descending = FALSE){
+  
+  #
+  # Wrapper function for nd_fill_split and nv_fill_split
+  # Checks if data is a dataframe
+  # .. if yes, it calls nd_fill_split
+  # .. if no, it calls nv_fill_split
+  #
+  
+  
+  if (is.data.frame(data)){
+    
+    return(nd_fill_split(data, size, force_equal, allow_zero, descending))
+    
+  } else {
+    
+    return(nv_fill_split(data, size, force_equal, allow_zero, descending))
+    
+  }
+  
+  
+}
+
+nd_fill_split = function(data, n_windows, force_equal = FALSE, allow_zero = FALSE, descending = FALSE){
+  
+  #
+  # Takes a dataframe
+  # Splits the dataframe into n_windows
+  # Returns a list of dataframes
+  #
+  
+  # Create grouping_factor for splitting data
+  group = n_fill_split_grouping_factor(data[,1], n_windows, descending = descending)
+  
+  
+  # Split dataframe into a list of dataframes
+  data_splitted = split(data , f = group)
+  
+  return(data_splitted)
+  
+}
+
+nv_fill_split = function(v, n_windows, force_equal = FALSE, allow_zero = FALSE, descending = FALSE){
+  
+  #
+  # Takes a vector and splits in into n_windows
+  # Returns a list of vectors
+  #
+  
+  # Use nsplit_grouping_factor() to get a grouping_factor to split by
+  split_grouping_factor = n_fill_split_grouping_factor(v, n_windows, descending = descending)
+  
+  
+  # Split data
+  
+  return(split(v , f = split_grouping_factor))
+  
+}
+
+
+
