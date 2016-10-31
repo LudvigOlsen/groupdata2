@@ -143,7 +143,7 @@ is_optimal_ = function(grouping_factor, n_windows) {
   
 }
 
-convert_percentage_ = function(per, v) {
+convert_percentage_ = function(per, data) {
   
   # Converts a percentage of vector elements 
   # into a count of elements
@@ -153,7 +153,17 @@ convert_percentage_ = function(per, v) {
   # A percentage given as 0.1 (so 10 percent)
   # Returns 10 
   
-  return(floor(length(v)*per))
+  if(is.data.frame(data)){
+    
+    return(floor(nrow(data)*per))
+    
+  } else {
+    
+    return(floor(length(data)*per))
+    
+  }
+  
+  
   
 }
 
@@ -164,7 +174,7 @@ is_between_ <- function(x, a, b) {
   x > a && x < b
 }
 
-g_check_arguments_ = function(data, size, force_equal){
+check_arguments_ = function(data, n, method, force_equal, allow_zero){
   
   # Checks if the given arguments live up to certain rules,
   # which allow them to be used in the function
@@ -172,15 +182,17 @@ g_check_arguments_ = function(data, size, force_equal){
   # "data" can be both a dataframe or a vector
   
   # Stop execution if input variables aren't what we expect / can handle
-  stopifnot((!is.null(size)),
-            arg_is_number_(size),
-            size > 0,
-            is.logical(force_equal))
+  stopifnot((!is.null(n)),
+            arg_is_number_(n),
+            n > 0,
+            is.logical(force_equal),
+            is.logical(allow_zero),
+            method %in% c('greedy', 'n_windows', 'n_fill'))
   
   if (is.data.frame(data)){
     
     # Stop execution if input variables aren't what we expect / can handle
-    stopifnot(length(data[,1]) > 0)
+    stopifnot(nrow(data) > 0)
     
   } else {
     
@@ -193,39 +205,6 @@ g_check_arguments_ = function(data, size, force_equal){
   
   
 }
-
-n_check_arguments_ = function(data, n_windows, force_equal){
-  
-  # Checks if the given arguments live up to certain rules,
-  # which allow them to be used in the function
-  
-  # "data" can be both a dataframe or a vector
-  
-  # Stop execution if input variables aren't what we expect / can handle
-  stopifnot((!is.null(n_windows)),
-            arg_is_number_(n_windows),
-            n_windows > 0,
-            is.logical(force_equal))
-  
-  if (is.data.frame(data)){
-    
-    # Stop execution if input variables aren't what we expect / can handle
-    stopifnot(length(data[,1]) > 0,
-              length(data[,1]) >= n_windows)
-    
-  } else {
-    
-    # Stop execution if input variables aren't what we expect / can handle
-    stopifnot((!is.null(data)),
-              is.vector(data),
-              length(data) > 0,
-              length(data) >= n_windows)
-    
-  }
-  
-  
-}
-
 
 
 # Main functions
@@ -323,6 +302,80 @@ splt = function(data, n, method = 'n_windows', force_equal = FALSE, allow_zero =
   # Splits into the specified windows
   # Returns list with the windows (dataframes or vectors)
   #
+  
+  
+  ### Allow zero
+  
+  # If allow_zero is TRUE, and n is 0 
+  # return the given data in a list 
+  # instead of giving an error
+  if (isTRUE(allow_zero) && n == 0){
+    
+    return(split(data, factor(1)))
+    
+  }
+
+
+  ### Check arguments
+  
+  # Check if given arguments are allowed
+  # If not -> stop execution
+  check_arguments_(data, n, method, force_equal, allow_zero)
+  
+  
+  ### Convert from percentage
+  
+  # We check if n is given as percentage
+  # This would be done by giving a number between 
+  # 0 and 1
+  # If it is, we convert it to the actual number 
+  # of windows 
+  
+  if (is_between_(n, 0,1)){
+    
+    n = convert_percentage_(n, data)
+    
+  }
+
+  
+  ### Check arguments 2 :)
+  
+  # Check if 
+  # .. n is a whole number
+  # .. Length of the data is larger or
+  # .. equal to n
+  # If not -> stop execution
+  
+  if(is.data.frame(data)){
+    
+    stopifnot(arg_is_wholenumber_(n),
+              nrow(data) >= n)
+    
+  } else {
+    
+    stopifnot(arg_is_wholenumber_(n),
+              length(data) >= n)
+  }
+  
+  
+  ### Force equal ###
+  
+  # If force_equal is set to TRUE,
+  # and we don't already have equally sized windows,
+  # remove elements/rows from data, until we get
+  # largest possible equally sized windows
+  
+  if ( isTRUE(force_equal) && !(is_wholenumber_(nrow(data)/n)) ){
+    
+    # Multiply window size and number of windows to find
+    # how much data to keep
+    to_keep = floor(nrow(data)/n)*n
+    
+    # Keep the first to_keep elements/rows
+    data = head(data, to_keep)
+    
+  }
+  
   
   if(method == 'greedy'){
     
@@ -466,60 +519,6 @@ gdsplit = function(data, size, force_equal = FALSE, allow_zero = FALSE){
   #
   
   
-  ### Allow zero ###
-  
-  # If allow_zero is TRUE, and size is 0 
-  # return the given dataframe in a list 
-  # instead of giving an error
-  if (isTRUE(allow_zero) && size == 0){
-    
-    return(split(data, factor(1)))
-    
-  }
-  
-  
-  ### Check arguments ### Convert from percentage ###
-  
-  # Check if given arguments are allowed
-  # If not -> stop execution
-  g_check_arguments_(data, size, force_equal)
-  
-  # We check if size is given as percentage
-  # This would be done by giving a number between 
-  # 0 and 1
-  # If it is, we convert it to the actual size 
-  
-  if (is_between_(size, 0,1)){
-    
-    size = convert_percentage_(size, data[,1])
-    
-  }
-  
-  # Check if 
-  # .. size is a whole number
-  # .. Length of the dataframe is larger or
-  # .. equal to size
-  # If not -> stop execution
-  stopifnot(arg_is_wholenumber_(size),
-            length(data[,1]) >= size)
-  
-  
-  ### Force equal ###
-  
-  # If force_equal is set to TRUE,
-  # and we don't already have equally sized windows,
-  # remove rows from data, until we get
-  # largest possible equally sized windows
-  
-  if ( isTRUE(force_equal) && !(is_wholenumber_(length(data[,1])/size)) ){
-    
-    n_windows = floor(length(data[,1])/size)
-    
-    data = head(data,(n_windows*size))
-    
-  }
-  
-  
   ### Creating grouping factor ###
   
   # Create grouping factor
@@ -543,59 +542,6 @@ gvsplit = function(v, size, force_equal = FALSE, allow_zero = FALSE){
   # based on size
   # Returns a list of vectors
   #
-  
-  
-  ### Allow zero ###
-  
-  # If allow_zero is TRUE, and size is 0 
-  # return the given vector in a list 
-  # instead of giving an error
-  if (isTRUE(allow_zero) && size == 0){
-    
-    return(split(v, factor(1)))
-    
-  }
-  
-  
-  ### Check arguments ### Convert from percentage ###
-  
-  # Check if given arguments are allowed
-  # If not -> stop execution
-  g_check_arguments_(v, size, force_equal)
-  
-  # We check if size is given as percentage
-  # This would be done by giving a number between 
-  # 0 and 1
-  # If it is, we convert it to the actual size 
-  
-  if (is_between_(size, 0,1)){
-    
-    size = convert_percentage_(size, v)
-    
-  }
-  
-  # Check if 
-  # .. size is a whole number
-  # .. Length of the vector is larger or
-  # .. equal to size
-  # If not -> stop execution
-  stopifnot(arg_is_wholenumber_(size),
-            length(v) >= size)
-  
-  
-  ### Force equal ###
-  
-  # If force_equal is set to TRUE,
-  # and we don't already have equally sized windows,
-  # remove values from v, until we get
-  # largest possible equally sized windows
-  
-  if ( isTRUE(force_equal) && !(is_wholenumber_(length(v)/size)) ){
-    
-    n_windows = floor(length(v)/size)
-    v = v[1:(n_windows*size)]
-    
-  }
   
   
   ### Split data ###
@@ -750,62 +696,6 @@ ndsplit = function(data, n_windows, force_equal = FALSE, allow_zero = FALSE){
   # Returns a list of dataframes
   #
   
-  
-  ### Allow zero ###
-  
-  # If allow_zero is TRUE, and n_windows is 0 
-  # return the given dataframe in a list 
-  # instead of giving an error
-  if (isTRUE(allow_zero) && n_windows == 0){
-    
-    return(split(data, factor(1)))
-    
-  }
-  
-  
-  ### Check arguments ### Convert from percentage ###
-  
-  # Check if given arguments are allowed
-  # If not -> stop execution
-  n_check_arguments_(data, n_windows, force_equal)
-  
-  # We check if n_windows is given as percentage
-  # This would be done by giving a number between 
-  # 0 and 1
-  # If it is, we convert it to the actual number 
-  # of windows 
-  
-  if (is_between_(n_windows, 0,1)){
-    
-    n_windows = convert_percentage_(n_windows, data[,1])
-    
-  }
-  
-  # Check if 
-  # .. n_windows is a whole number
-  # .. Length of the dataframe is larger or
-  # .. equal to n_windows
-  # If not -> stop execution
-  stopifnot(arg_is_wholenumber_(n_windows),
-            length(data[,1]) >= n_windows)
-  
-  
-  ### Force equal ###
-  
-  # If force_equal is set to TRUE,
-  # and we don't already have equally sized windows,
-  # remove rows from data, until we get
-  # largest possible equally sized windows
-  
-  if ( isTRUE(force_equal) && !(is_wholenumber_(length(data[,1])/n_windows)) ){
-    
-    window_size = floor(length(data[,1])/n_windows)
-    
-    data = head(data,(n_windows*window_size))
-    
-  }
-  
-  
   ### Creating grouping factor ###
   
   # Create grouping_factor for splitting data
@@ -829,60 +719,6 @@ nvsplit = function(v, n_windows, force_equal = FALSE, allow_zero = FALSE){
   #
   
   
-  ### Allow zero ###
-  
-  # If allow_zero is TRUE, and n_windows is 0 
-  # return the given vector in a list 
-  # instead of giving an error
-  if (isTRUE(allow_zero) && n_windows == 0){
-    
-    return(split(v, factor(1)))
-    
-  }
-  
-  
-  ### Check arguments ### Convert from percentage ###
-  
-  # Check if given arguments are allowed
-  # If not -> stop execution
-  n_check_arguments_(v, n_windows, force_equal)
-  
-  # We check if n_windows is given as percentage
-  # This would be done by giving a number between 
-  # 0 and 1
-  # If it is, we convert it to the actual number 
-  # of windows 
-  
-  if (is_between_(n_windows, 0,1)){
-    
-    n_windows = convert_percentage_(n_windows, v)
-    
-  }
-  
-  # Check if 
-  # .. n_windows is a whole number
-  # .. Length of the vector is larger or
-  # .. equal to n_windows
-  # If not -> stop execution
-  stopifnot(arg_is_wholenumber_(n_windows),
-            length(v) >= n_windows)
-  
-  
-  ### Force equal ###
-  
-  # If force_equal is set to TRUE,
-  # and we don't already have equally sized windows,
-  # remove values from v, until we get
-  # largest possible equally sized windows
-  
-  if ( isTRUE(force_equal) && !(is_wholenumber_(length(v)/n_windows)) ){
-    
-    window_size = floor(length(v)/n_windows)
-    v = v[1:(n_windows*window_size)]
-      
-  }
-    
-  
   ### Creating grouping factor ###
   
   # Use nsplit_grouping_factor() to get a grouping_factor to split by
@@ -896,3 +732,44 @@ nvsplit = function(v, n_windows, force_equal = FALSE, allow_zero = FALSE){
 }
 
 
+# Number of windows - equal windows - Fill up (find better name)
+# The point is that first all windows are equally big, and then 
+# excess datapoints are distributed one at a time ascending/descending
+
+
+nfill_split_grouping_factor = function(v, n_windows, force_equal = FALSE, allow_zero = FALSE, descending = FALSE){
+  
+  # Check inputs, allow_zero, etc. 
+  # Could these be done in the main function instead?
+  
+  # Create a grouping factor with the biggest possible equal windows 
+  equal_groups = nsplit_grouping_factor(v, n_windows, force_equal=TRUE)
+  
+  
+  
+  excess_data_points = length(v)-length(equal_groups)
+  
+  if (excess_data_points == 0 || isTRUE(force_equal)){
+    
+    return(equal_groups)
+    
+  } 
+  
+  
+  if (isTRUE(descending)){
+    
+    start_rep = (n_windows-excess_data_points)+1
+    
+    values_to_add = rep(c(start_rep:n_windows))
+    
+  } else {
+  
+    values_to_add = rep(c(1:excess_data_points))
+    
+  }
+  
+  grouping_factor = factor(sort(c(as.numeric(equal_groups),values_to_add)))
+  
+  return(grouping_factor)
+  
+}
