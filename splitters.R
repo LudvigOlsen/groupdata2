@@ -168,7 +168,7 @@ is_between_ <- function(x, a, b) {
   x > a && x < b
 }
 
-check_arguments_ = function(data, n, method, force_equal, allow_zero){
+check_arguments_ = function(data, n, method, force_equal, allow_zero, descending){
   
   # Checks if the given arguments live up to certain rules,
   # which allow them to be used in the function
@@ -181,7 +181,8 @@ check_arguments_ = function(data, n, method, force_equal, allow_zero){
             n > 0,
             is.logical(force_equal),
             is.logical(allow_zero),
-            method %in% c('greedy', 'n_windows', 'n_fill'))
+            is.logical(descending),
+            method %in% c('greedy', 'n_windows', 'n_fill', 'n_rand','staircase'))
   
   if (is.data.frame(data)){
     
@@ -197,6 +198,62 @@ check_arguments_ = function(data, n, method, force_equal, allow_zero){
     
   }
   
+  
+}
+
+check_convert_check_ = function(data, n, method, force_equal, allow_zero, descending){
+  
+  # Checks arguments 
+  # Converts n if given as percentage
+  # Checks more arguments
+  # Returns the converted/non-converted n
+  
+  # Notice: This is used in more than one of the main functions
+  # so I put it in a function to make those functions more readable
+  
+  ### Check arguments
+  
+  # Check if given arguments are allowed
+  # If not -> stop execution
+  check_arguments_(data, n, method, force_equal, allow_zero, descending)
+  
+  
+  ### Convert from percentage
+  
+  # We check if n is given as percentage
+  # This would be done by giving a number between 
+  # 0 and 1
+  # If it is, we convert it to the actual number 
+  # of windows 
+  
+  if (is_between_(n, 0,1)){
+    
+    n = convert_percentage_(n, data)
+    
+  }
+  
+  
+  ### Check arguments 2 
+  
+  # Check if 
+  # .. n is a whole number
+  # .. Length of the data is larger or
+  # .. equal to n
+  # If not -> stop execution
+  
+  if(is.data.frame(data)){
+    
+    stopifnot(arg_is_wholenumber_(n),
+              nrow(data) >= n)
+    
+  } else {
+    
+    stopifnot(arg_is_wholenumber_(n),
+              length(data) >= n)
+  }
+  
+  
+  return(n)
   
 }
 
@@ -220,8 +277,7 @@ group = function(data, n, method = 'n_windows', force_equal = FALSE,
   grouping_factor = group_factor(data, n, method, force_equal = force_equal, 
                                  allow_zero = allow_zero, descending = descending)
   
-  print(grouping_factor)
-  
+
   if (isTRUE(return_factor)){
     
     return(grouping_factor)
@@ -265,24 +321,54 @@ group_factor = function(data, n, method = 'n_windows', force_equal = FALSE, allo
   #
   
   
+  ### Allow zero ###
+  
+  # If allow_zero is TRUE and n is 0 
+  # return NAs instead of giving an error
+  if (isTRUE(allow_zero) && n == 0){
+    
+    if(is.data.frame(data)){
+      
+      return(rep(NA, each = nrow(data)))
+      
+    } else {
+     
+      return(rep(NA, each = length(data)))
+      
+    }
+    
+    
+  }
+  
+  # Check arguments
+  # Convert n if given as percentage
+  # Check more arguments
+  n = check_convert_check_(data, n, method, force_equal, allow_zero, descending)
+  
+  
+  # Create grouping factors
+  
   if(is.data.frame(data)){
     
     if(method == 'greedy'){
       
-      return(gsplit_grouping_factor_(data[,1], n, force_equal, allow_zero))
+      return(gsplit_grouping_factor_(data[,1], n, force_equal, allow_zero, descending))
       
     } else if (method == 'n_windows'){
       
-      return(nsplit_grouping_factor_(data[,1], n, force_equal, allow_zero))
+      return(nsplit_grouping_factor_(data[,1], n, force_equal, allow_zero, descending))
       
     } else if (method == 'n_fill'){
       
       return(n_fill_split_grouping_factor_(data[,1], n, force_equal, allow_zero, descending))
       
+    } else if (method == 'n_rand'){
+      
+      return(n_random_split_grouping_factor_(data[,1], n, force_equal, allow_zero, descending))
+      
     } else if (method == 'staircase'){
       
       return(stair_split_grouping_factor_(data[,1], n, force_equal, allow_zero, descending))
-      
       
     }
     
@@ -290,15 +376,19 @@ group_factor = function(data, n, method = 'n_windows', force_equal = FALSE, allo
     
     if(method == 'greedy'){
       
-      return(gsplit_grouping_factor_(data, n, force_equal, allow_zero))
+      return(gsplit_grouping_factor_(data, n, force_equal, allow_zero, descending))
       
     } else if (method == 'n_windows'){
       
-      return(nsplit_grouping_factor_(data, n, force_equal, allow_zero))
+      return(nsplit_grouping_factor_(data, n, force_equal, allow_zero, descending))
       
     } else if (method == 'n_fill'){
       
       return(n_fill_split_grouping_factor_(data, n, force_equal, allow_zero, descending))
+      
+    } else if (method == 'n_rand'){
+      
+      return(n_random_split_grouping_factor_(data, n, force_equal, allow_zero, descending))
       
     } else if (method == 'staircase'){
       
@@ -318,100 +408,162 @@ splt = function(data, n, method = 'n_windows', force_equal = FALSE, allow_zero =
   # Returns list with the windows (dataframes or vectors)
   #
   
-  
-  ### Allow zero
-  
   # If allow_zero is TRUE, and n is 0 
-  # return the given data in a list 
-  # instead of giving an error
+  # .. Return the given data in a list 
+  # .. instead of giving an error
   if (isTRUE(allow_zero) && n == 0){
     
     return(split(data, factor(1)))
     
   }
 
-
-  ### Check arguments
-  
-  # Check if given arguments are allowed
-  # If not -> stop execution
-  check_arguments_(data, n, method, force_equal, allow_zero)
+  # Check arguments
+  # Convert n if given as percentage
+  # Check more arguments
+  n = check_convert_check_(data, n, method, force_equal, allow_zero, descending)
   
   
-  ### Convert from percentage
+  # Force equal
+  # .. Some methods have a different way of calculating 
+  # .. "equality". They will do this themselves,
+  # .. the others can be forced equal here.
   
-  # We check if n is given as percentage
-  # This would be done by giving a number between 
-  # 0 and 1
-  # If it is, we convert it to the actual number 
-  # of windows 
-  
-  if (is_between_(n, 0,1)){
+  if(isTRUE(force_equal)){
     
-    n = convert_percentage_(n, data)
-    
+    if(!(method %in% c('staircase'))){
+      
+      # If force_equal is set to TRUE,
+      # and we don't already have equally sized windows,
+      # remove elements/rows from data, until we get
+      # largest possible equally sized windows
+      if(is.data.frame(data)){
+        
+        if (!(is_wholenumber_(nrow(data)/n))){
+          
+          # Multiply window size and number of windows to find
+          # how much data to keep
+          to_keep = floor(nrow(data)/n)*n
+          
+          # Keep the first to_keep elements/rows
+          data = head(data, to_keep)
+          
+        }
+        
+      } else {
+        
+        if (!(is_wholenumber_(length(data)/n))){
+          
+          # Multiply window size and number of windows to find
+          # how much data to keep
+          to_keep = floor(length(data)/n)*n
+          
+          # Keep the first to_keep elements/rows
+          data = head(data, to_keep)
+          
+        }
+        
+      }
+      
+      
+    }
   }
-
   
-  ### Check arguments 2 :)
   
-  # Check if 
-  # .. n is a whole number
-  # .. Length of the data is larger or
-  # .. equal to n
-  # If not -> stop execution
+  # Split the data 
+  # .. Checks if data is dataframe or vector
+  # .. Calls the right splitter
   
-  if(is.data.frame(data)){
+  if (is.data.frame(data)){
     
-    stopifnot(arg_is_wholenumber_(n),
-              nrow(data) >= n)
+    return(dsplit_(data, n, method, force_equal, allow_zero, descending))
     
   } else {
     
-    stopifnot(arg_is_wholenumber_(n),
-              length(data) >= n)
-  }
-  
-  
-  ### Force equal ###
-  
-  # If force_equal is set to TRUE,
-  # and we don't already have equally sized windows,
-  # remove elements/rows from data, until we get
-  # largest possible equally sized windows
-  
-  if ( isTRUE(force_equal) && !(is_wholenumber_(nrow(data)/n)) ){
-    
-    # Multiply window size and number of windows to find
-    # how much data to keep
-    to_keep = floor(nrow(data)/n)*n
-    
-    # Keep the first to_keep elements/rows
-    data = head(data, to_keep)
-    
-  }
-  
-  
-  if(method == 'greedy'){
-    
-    return(gsplit_(data, n, force_equal, allow_zero))
-    
-  } else if (method == 'n_windows'){
-    
-    return(nsplit_(data, n, force_equal, allow_zero))
-    
-  } else if (method == 'n_fill'){
-    
-    return(n_fill_split_(data, n, force_equal, allow_zero, descending))
+    return(vsplit_(data, n, method, force_equal, allow_zero, descending))
     
   }
   
 }
 
 
+
+## Dataframe and vector splitters
+
+dsplit_ = function(data, n, method, force_equal = FALSE, allow_zero = FALSE, descending = FALSE){
+  
+  #
+  # Takes a dataframe
+  # Creates grouping factor based on method
+  # Splits the dataframe 
+  # Returns a list of dataframes
+  #
+  
+  if (method == 'staircase') {
+    
+    # Create grouping factor
+    group = group_factor(data[,1], n, method = method, force_equal = force_equal, descending = descending)
+    
+    if (isTRUE(force_equal)){
+      
+      data = head(data, length(group))
+      
+    }
+    
+  } else {
+    
+    # Create grouping factor
+    group = group_factor(data[,1], n, method = method, descending = descending)
+    
+  }
+  # Split dataframe into a list of dataframes
+  data_splitted = split(data , f = group)
+  
+  return(data_splitted)
+  
+}
+
+vsplit_ = function(v, n, method, force_equal = FALSE, allow_zero = FALSE, descending = FALSE){
+  
+  #
+  # Takes a vector
+  # Creates grouping factor based on method
+  # Splits the vector
+  # Returns a list of vectors
+  #
+  
+  
+  if(method == 'greedy'){
+    
+    # Return list of greedily splitted vectors
+    return(split(v, ceiling(seq_along(v)/n)))
+    
+  } else if (method == 'staircase') {
+    
+    # Create grouping factor
+    group = group_factor(v, n, method = method, force_equal = force_equal, descending = descending)
+    
+    v = head(v, length(group))
+    
+  } else {
+    
+    # Create grouping factor
+    group = group_factor(v, n, method = method, descending = descending)
+    
+  }
+  
+  
+  # Split vector into a list of vectors
+  data_splitted = split(v , f = group)
+  
+  return(data_splitted)
+  
+}
+
+
+
 ## Greedy functions
 
-gsplit_grouping_factor_ = function(v, size, force_equal = FALSE, allow_zero = FALSE){
+gsplit_grouping_factor_ = function(v, size, force_equal = FALSE, allow_zero = FALSE, descending = FALSE){
   
   #
   # Takes a vector and the size of the wanted windows
@@ -422,44 +574,7 @@ gsplit_grouping_factor_ = function(v, size, force_equal = FALSE, allow_zero = FA
   # if length of the vector isn't divisible with size
   #
   
-  
-  ### Allow zero ###
-  
-  # If allow_zero is TRUE and size is 0 
-  # return NAs instead of giving an error
-  if (isTRUE(allow_zero) && size == 0){
-    
-    return(rep(NA, each = length(v)))
-    
-  }
-  
-  
-  ### Check arguments ### Convert from percentage ###
-  
-  # Check if given arguments are allowed
-  # If not -> stop execution
-  g_check_arguments_(v, size, force_equal)
-  
-  # We check if size is given as percentage
-  # This would be done by giving a number between 
-  # 0 and 1
-  # If it is, we convert it to the actual size 
-  
-  if (is_between_(size, 0,1)){
-    
-    size = convert_percentage_(size, v)
-    
-  }
-  
-  # Check if 
-  # .. size is a whole number
-  # .. Length of the vector is larger or
-  # .. equal to size
-  # If not -> stop execution
-  stopifnot(arg_is_wholenumber_(size),
-            length(v) >= size)
-   
-  
+
   ### Force equal ### Set n_windows ###
   
   # If force_equal is set to TRUE,
@@ -506,74 +621,10 @@ gsplit_grouping_factor_ = function(v, size, force_equal = FALSE, allow_zero = FA
   
 }
 
-gsplit_ = function(data, size, force_equal = FALSE, allow_zero = FALSE){
-  
-  #
-  # Wrapper function for gdsplt and gvsplit_
-  # 
-  # Checks if data is a dataframe
-  # .. if yes, it calls gdsplit_
-  # .. if no, it calls gvsplit_
-  # 
-  
-  if (is.data.frame(data)){
-    
-    return(gdsplit_(data, size, force_equal, allow_zero))
-    
-  } else {
-    
-    return(gvsplit_(data, size, force_equal, allow_zero))
-    
-  }
-  
-  
-}
-
-gdsplit_ = function(data, size, force_equal = FALSE, allow_zero = FALSE){
-  
-  #
-  # Takes a dataframe
-  # Splits the dataframe greedily based on size
-  # Returns a list of dataframes
-  #
-  
-  
-  ### Creating grouping factor ###
-  
-  # Create grouping factor
-  group = gsplit_grouping_factor_(data[,1], size)
-  
-  
-  ### Split data ###
-  
-  # Split dataframe into a list of dataframes
-  data_splitted = split(data, group)
-  
-  return(data_splitted)
-
-  
-}
-
-gvsplit_ = function(v, size, force_equal = FALSE, allow_zero = FALSE){
-  
-  #
-  # Takes a vector and greedily splits it
-  # based on size
-  # Returns a list of vectors
-  #
-  
-  
-  ### Split data ###
-  
-  return(split(v, ceiling(seq_along(v)/size)))
-  
-  
-}
-
 
 ## Number of windows functions
 
-nsplit_grouping_factor_ = function(v, n_windows, force_equal = FALSE, allow_zero = FALSE){
+nsplit_grouping_factor_ = function(v, n_windows, force_equal = FALSE, allow_zero = FALSE, descending = FALSE){
   
   #
   # Takes a vector and the number of wanted splits
@@ -583,44 +634,6 @@ nsplit_grouping_factor_ = function(v, n_windows, force_equal = FALSE, allow_zero
   # Notice: The last window will contain fewer OR more elements 
   # if length of the vector isn't divisible with n_windows
   #
-  
-  
-  ### Allow zero ###
-  
-  # If allow_zero is TRUE and n_windows is 0
-  # return NAs instead of giving an error
-  if (isTRUE(allow_zero) && n_windows == 0){
-    
-    return(rep(NA, each = length(v)))
-    
-  }
-  
-  
-  ### Check arguments ### Convert from percentage ###
-  
-  # Check if given arguments are allowed
-  # If not -> stop execution
-  n_check_arguments_(v, n_windows, force_equal)
-  
-  # We check if n_windows is given as percentage
-  # This would be done by giving a number between 
-  # 0 and 1
-  # If it is, we convert it to the actual number 
-  # of windows 
-  
-  if (is_between_(n_windows, 0,1)){
-    
-    n_windows = convert_percentage_(n_windows, v)
-    
-  }
-  
-  # Check if 
-  # .. n_windows is a whole number
-  # .. Length of the vector is larger or
-  # .. equal to n_windows
-  # If not -> stop execution
-  stopifnot(arg_is_wholenumber_(n_windows),
-            length(v) >= n_windows)
   
   
   ### Force equal ### Set window_size ###
@@ -684,64 +697,6 @@ nsplit_grouping_factor_ = function(v, n_windows, force_equal = FALSE, allow_zero
   
 }
   
-nsplit_ = function(data, size, force_equal = FALSE, allow_zero = FALSE){
-  
-  #
-  # Wrapper function for ndsplt and nvsplit_
-  # Checks if data is a dataframe
-  # .. if yes, it calls ndsplit_
-  # .. if no, it calls nvsplit_
-  #
-  
-  
-  if (is.data.frame(data)){
-    
-    return(ndsplit_(data, size, force_equal, allow_zero))
-    
-  } else {
-    
-    return(nvsplit_(data, size, force_equal, allow_zero))
-    
-  }
-  
-  
-}
-
-ndsplit_ = function(data, n_windows, force_equal = FALSE, allow_zero = FALSE){
-  
-  #
-  # Takes a dataframe
-  # Splits the dataframe into n_windows
-  # Returns a list of dataframes
-  #
-  
-  # Create grouping_factor for splitting data
-  group = nsplit_grouping_factor_(data[,1], n_windows)
-  
-  # Split dataframe into a list of dataframes
-  data_splitted = split(data , f = group)
-  
-  return(data_splitted)
-  
-}
-  
-nvsplit_ = function(v, n_windows, force_equal = FALSE, allow_zero = FALSE){
-  
-  #
-  # Takes a vector and splits in into n_windows
-  # Returns a list of vectors
-  #
-  
-  # Use nsplit_grouping_factor_() to get a grouping_factor to split by
-  split_grouping_factor = nsplit_grouping_factor_(v, n_windows)
-  
-  
-  # Split data
-  
-  return(split(v , f = split_grouping_factor))
-  
-}
-
 
 # Number of windows - equal windows - Fill up (find better name)
 # The point is that first all windows are equally big, and then 
@@ -749,122 +704,132 @@ nvsplit_ = function(v, n_windows, force_equal = FALSE, allow_zero = FALSE){
 
 n_fill_split_grouping_factor_ = function(v, n_windows, force_equal = FALSE, allow_zero = FALSE, descending = FALSE){
   
-  # Check inputs, allow_zero, etc. 
-  # Could these be done in the main function instead?
+  # 
+  # Takes a vector and a number of windows to create
+  # First creates equal groups
+  # then fills the excess values into the windows 
+  # either from the first window up or last window down
+  # .. So. 111 222 33 44 or 11 22 333 444
+  # Returns grouping factor
+  #
   
   # Create a grouping factor with the biggest possible equal windows 
   equal_groups = nsplit_grouping_factor_(v, n_windows, force_equal=TRUE)
   
-  
-  
+  # Find how many excess datapoints there are 
   excess_data_points = length(v)-length(equal_groups)
   
+  
+  # If there are no excess_data_points or force_equal
+  # is set to TRUE, we simply return the equal groups
   if (excess_data_points == 0 || isTRUE(force_equal)){
     
     return(equal_groups)
     
   } 
   
+  # We create a vector the size of excess_data_points 
+  # If descending is set to TRUE the values will
+  # correspond to the last windows, if set to FALSE
+  # the values will correspond to the first windows
   
   if (isTRUE(descending)){
     
+    # Find where to start the values from
     start_rep = (n_windows-excess_data_points)+1
     
-    values_to_add = rep(c(start_rep:n_windows))
+    # Create vector of values to add
+    values_to_add = c(start_rep:n_windows)
     
   } else {
   
-    values_to_add = rep(c(1:excess_data_points))
+    # Create vector of values to add
+    values_to_add = c(1:excess_data_points)
     
   }
   
+  # Create grouping factor
+  # .. Converts the equal groups factor to a numeric vector
+  # .. Adds the values to the equal groups vector
+  # .. Sorts the vector so 1s are together, 2s are together, etc.
+  # .. Converts the vector to a factor
+  
   grouping_factor = factor(sort(c(as.numeric(equal_groups),values_to_add)))
   
+  # Return grouping factor
   return(grouping_factor)
   
 }
 
-n_fill_split_ = function(data, size, force_equal = FALSE, allow_zero = FALSE, descending = FALSE){
-  
-  #
-  # Wrapper function for nd_fill_split_ and nv_fill_split_
-  # Checks if data is a dataframe
-  # .. if yes, it calls nd_fill_split_
-  # .. if no, it calls nv_fill_split_
-  #
-  
-  
-  if (is.data.frame(data)){
-    
-    return(nd_fill_split_(data, size, force_equal, allow_zero, descending))
-    
-  } else {
-    
-    return(nv_fill_split_(data, size, force_equal, allow_zero, descending))
-    
-  }
-  
-  
-}
 
-nd_fill_split_ = function(data, n_windows, force_equal = FALSE, allow_zero = FALSE, descending = FALSE){
-  
-  #
-  # Takes a dataframe
-  # Splits the dataframe into n_windows
-  # Returns a list of dataframes
-  #
-  
-  # Create grouping_factor for splitting data
-  group = n_fill_split_grouping_factor_(data[,1], n_windows, descending = descending)
-  
-  
-  # Split dataframe into a list of dataframes
-  data_splitted = split(data , f = group)
-  
-  return(data_splitted)
-  
-}
+# number of windows random assign of excess values
 
-nv_fill_split_ = function(v, n_windows, force_equal = FALSE, allow_zero = FALSE, descending = FALSE){
+n_random_split_grouping_factor_ = function(v, n_windows, force_equal = FALSE, allow_zero = FALSE, descending = FALSE){
   
+  # 
+  # Takes a vector and a number of windows to create
+  # First creates equal groups
+  # then fills the excess values into randomly chosen windows 
+  # .. E.g. 111 22 33 444, 11 222 333 44, etc.
+  # .. Only adds one per window though!
+  # Returns grouping factor
   #
-  # Takes a vector and splits in into n_windows
-  # Returns a list of vectors
-  #
   
-  # Use nsplit_grouping_factor_() to get a grouping_factor to split by
-  split_grouping_factor = n_fill_split_grouping_factor_(v, n_windows, descending = descending)
+  # Create a grouping factor with the biggest possible equal windows 
+  equal_groups = nsplit_grouping_factor_(v, n_windows, force_equal=TRUE)
   
+  # Find how many excess datapoints there are 
+  excess_data_points = length(v)-length(equal_groups)
   
-  # Split data
+  # If there are no excess_data_points or force_equal
+  # is set to TRUE, we simply return the equal groups
+  if (excess_data_points == 0 || isTRUE(force_equal)){
+    
+    # Return equal groups grouping factor
+    return(equal_groups)
+    
+  } 
   
-  return(split(v , f = split_grouping_factor))
+  # Get values to add
+  # .. Creates a vector with values from 1 to the number
+  # .. of windows
+  # .. Randomly picks a value for each excess data point
+  values_to_add = sample(c(1:n_windows), excess_data_points)
+  
+  # Create grouping factor
+  # .. Converts the equal groups factor to a numeric vector
+  # .. Adds the values to the equal groups vector
+  # .. Sorts the vector so 1s are together, 2s are together, etc.
+  # .. Converts the vector to a factor
+  grouping_factor = factor(sort(c(as.numeric(equal_groups),values_to_add)))
+  
+  # Return grouping factor
+  return(grouping_factor)
   
 }
 
 
 # Staircasing 
 
-stair_split_grouping_factor_ = function(v, size, force_equal = FALSE, allow_zero = FALSE, descending = FALSE){
+stair_split_grouping_factor_ = function(v, step_size, force_equal = FALSE, allow_zero = FALSE, descending = FALSE){
   
   # 
-  # Takes a vector and the size of the first window
+  # Takes a vector and the step size
   # Returns a staircased grouping factor
   # .. 1223334444 etc.
   #
   
   # Get the number of groups with no staircasing
-  n_groups = ceiling(length(v)/size)
+  n_groups = ceiling(length(v)/step_size)
   
   # Create a dataframe with 1 column containing a group index 
   group_data = data.frame('groups' = c(1:n_groups))
   
   
-  # Create a column with number of elements (group number times size)
+  # Create a column with number of elements (group number times step size)
   # Create a column with cumulative sum of the number of elements
   group_data = group_data %>%
-    mutate(n_elements = groups*size,
+    mutate(n_elements = groups*step_size,
            cumsum = cumsum(n_elements))
   
   # Get the first row where cumsum is larger or equal to the vector
@@ -933,9 +898,6 @@ stair_split_grouping_factor_ = function(v, size, force_equal = FALSE, allow_zero
 
   
 }
-
-
-
 
 
 
