@@ -25,11 +25,20 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
+```{r include=FALSE, message=FALSE, warning=FALSE}
+
+library(pacman)
+p_load(dplyr, tidyr, ggplot2)
+
+```
+
+
 \newpage
 
 # Including splitters.R in your session
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 
 source('splitters.R')
 
@@ -37,23 +46,31 @@ source('splitters.R')
 
 
 # General information
-splitters is a set of functions for easily splitting dataframes or vectors into multiple windows / subsets.  
+splitters is a set of functions for easy grouping or splitting of dataframes or vectors. They work by dividing the data up into windows, e.g. 111222333, using different choosable methods.   
 
-There are two groups of split functions: greedy split and n (number of windows) split.  
+There are 3 main functions:  
 
-Each group contains 2 functions:  
+group_factor()  
+This function returns a factor with window numbers.   
+This can be used to subset, aggregate, group_by, etc.   
 
-*grouping_factor* functions return a factor with window numbers.   
-This can be used to subset, aggregate, group_by, etc.  
+group()  
+This function returns the given data as a dataframe with the mentioned grouping factor. The dataframe is grouped by the grouping factor for easy use with dplyr's pipelines.  
 
-*split* functions split the given data (dataframe or vector) into the specified windows and return them in a list.
+splt()  
+This function splits the given data (dataframe or vector) into the specified windows and returns them in a list.  
 
- 
-## Greedy split
-Greedy split uses window **size** for splitting the data.  
+There are currently 6 methods for windowing the data.  
+
+# Methods
+
+It is possible to create windows based on window size, step size or number of windows. These can be given as whole number or percentage. Here we will take a look at the different methods. 
+
+## Method: 'greedy'
+'greedy' uses window **size** for splitting the data.  
 Greedy means that each window grabs as many elements as possible (up to size),
-meaning that there might be less elements available to the last window.  
-
+meaning that there might be less elements available to the last window, but 
+that all other windows than the last are guaranteed to have the size specified.  
 
 &nbsp;  
  
@@ -82,14 +99,80 @@ values than the other windows.
 > meaning that 7 values have been discarded.  
 
 &nbsp;  
+
+## Method: 'n_dist' (Default)
+'n_dist' uses a specified number of windows to split the data.  
+First it creates equal groups as large as possible. Then, if there
+are any excess data points, it distributes them across the windows.
  
+&nbsp;  
 
-## n split
-n split use number of windows (n_windows) for splitting the data.  
+**Example**    
 
-With *default settings*, it tries to make the windows as equal as possible, 
+> We have a vector with 57 values. We want to get back 5 windows.  
+>   
+> 'n_dist' with default settings would return windows with this many values in them:  
+>   
+> 11, 11, 12, 11, 12   
+ 
+&nbsp;  
+
+By setting **force_equal** to TRUE, 'n_dist' will create the largest possible, 
+equally sized windows by discarding excess data elements.  
+
+&nbsp;  
+
+**Example**    
+
+> 'n_dist' with **force_equal** set to TRUE would return windows with this many values in them:  
+>   
+> 11, 11, 11, 11, 11  
+>  
+> meaning that 2 values have been discarded.  
+
+&nbsp;  
+
+## Method: 'n_fill'
+'n_fill' uses a specified number of windows to split the data.  
+First it creates equal groups as large as possible. Then, if there
+are any excess data points, it places them in the first windows.  
+By setting **descending** to TRUE, it would be the last windows though.
+ 
+&nbsp;  
+
+**Example**    
+
+> We have a vector with 57 values. We want to get back 5 windows.  
+>   
+> 'n_fill' with default settings would return windows with this many values in them:  
+>   
+> 12, 12, 11, 11, 11   
+ 
+&nbsp;  
+
+By setting **force_equal** to TRUE, 'n_fill' will create the largest possible, 
+equally sized windows by discarding excess data elements.  
+
+&nbsp;  
+
+**Example**    
+
+> 'n_fill' with **force_equal** set to TRUE would return windows with this many values in them:  
+>   
+> 11, 11, 11, 11, 11  
+>  
+> meaning that 2 values have been discarded.  
+
+&nbsp;  
+
+
+## Method: 'n_last'
+'n_last' uses a specified number of windows to split the data.   
+
+With *default settings*, it tries to make the windows as equal as possible,
 but notice that the last window might contain fewer or more elements,
-if the length of the data is not divisible with the number of windows.  
+if the length of the data is not divisible with the number of windows. 
+All, but the last, windows are guaranteed to contain the same number of elements.
 
 
 &nbsp;  
@@ -98,20 +181,20 @@ if the length of the data is not divisible with the number of windows.
 
 > We have a vector with 57 values. We want to get back 5 windows.  
 >   
-> n splitter with default settings would return windows with this many values in them:  
+> 'n_last' with default settings would return windows with this many values in them:  
 >   
 > 11, 11, 11, 11, 13   
  
 &nbsp;  
 
-By setting **force_equal** to TRUE, n splitter will create the largest possible, 
+By setting **force_equal** to TRUE, 'n_last' will create the largest possible, 
 equally sized windows by discarding excess data elements.  
 
 &nbsp;  
 
 **Example**    
 
-> n splitter with **force_equal** set to TRUE would return windows with this many values in them:  
+> 'n_last' with **force_equal** set to TRUE would return windows with this many values in them:  
 >   
 > 11, 11, 11, 11, 11  
 >  
@@ -119,7 +202,7 @@ equally sized windows by discarding excess data elements.
 
 &nbsp;  
 
-Notice that the n splitter will always return the given number of windows. It will never return a 
+Notice that 'n_last' will always return the given number of windows. It will never return a 
 window with zero elements. For some situations that means that the last window will 
 contain a lot of elements. Asked to split a vector with 57 elements into 20 windows, 
 the first 19 windows will contain 2 elements, while the last window will itself contain 19 elements. 
@@ -128,59 +211,148 @@ in all windows.
 
 &nbsp;  
 
-## Arguments
+## Method: 'n_rand'
+'n_fill' uses a specified number of windows to split the data.  
+First it creates equal groups as large as possible. Then, if there
+are any excess data points, it places them randomly in the windows.  
+N.B.: It only places one extra element per window.
+ 
+&nbsp;  
 
-### data or v
+**Example**    
 
-The data to process.   
+> We have a vector with 57 values. We want to get back 5 windows.  
+>   
+> 'n_rand' with default settings **could** return windows with this many values in them:  
+>   
+> 12, 11, 11, 11, 12   
+ 
+&nbsp;  
 
-**data**: dataframe or vector  
-Used in *split* functions  
-
-**v**: vector   
-Used in *grouping_factor*  
+By setting **force_equal** to TRUE, 'n_rand' will create the largest possible, 
+equally sized windows by discarding excess data elements.  
 
 &nbsp;  
 
-### size or n_windows
+**Example**    
 
-**size**: whole number or percentage (Used by greedy splitter)
-
-> Whole number: 1 or above. A size of 10 means that each window will contain 10 elements (possibly not the last window).  
-> Percentage: Numeric between 0-1. E.g. 0.1 is 10 percent. If your vector has a length of 100 and size is set to 0.2, each window will contain 20 elements.
-
-**n_windows**: whole number or percentage (Used by n splitter)
-
-> Whole number: 1 or above. A size of 10 means that the splitter will create exactly 10 windows / subsets / data splits.   
-> Percentage: Numeric between 0-1. E.g. 0.1 is 10 percent. If your vector has a length of 100 and n_windows is set to 0.2, the splitter will create exactly 20 windows / subsets / data splits.  
+> 'n_rand' with **force_equal** set to TRUE would return windows with this many values in them:  
+>   
+> 11, 11, 11, 11, 11  
+>  
+> meaning that 2 values have been discarded.  
 
 &nbsp;  
 
-### force_equal
+## Method: 'staircase'  
+'staircase' uses step_size to split the data.  
+For each window, the window size will be step size multiplied with
+the window index.  
+
+ 
+&nbsp;  
+
+**Example**    
+
+> We have a vector with 57 values. We specify a step size of 5.  
+>   
+> 'staircase' with default settings would return windows with this many values in them:  
+>   
+> 5, 10, 15, 20, 7   
+ 
+&nbsp;  
+
+By setting **force_equal** to TRUE, 'staircase' will discard the last group if it does
+not contain the expected values (step size multiplied by window index).  
+
+&nbsp;  
+
+**Example**    
+
+> 'staircase' with **force_equal** set to TRUE would return windows with this many values in them:  
+>   
+> 5, 10, 15, 20   
+>  
+> meaning that 7 values have been discarded.  
+
+&nbsp;  
+
+# Arguments
+
+## data
+
+Type: dataframe or vector  
+
+The data to process.  
+
+
+&nbsp;  
+
+## n
+
+Type: integer or numeric  
+
+n represents either window size, step size or number of windows, depending on which method is specified.  
+n can be given as a **whole number** (n > 1) or as **percentage** (0 < n < 1)  
+
+
+&nbsp;  
+
+## force_equal  
+
+Type: logical (TRUE or FALSE)  
+
 If you need windows with the exact same size, set force_equal to TRUE.  
-Implementation is different in the two kinds of splitters. Read more in their sections above.  
-Be aware that this setting discards excess datapoints.  
+Implementation is different in the different methods. Read more in their sections above.  
+**Be aware** that this setting discards excess datapoints!  
 
 &nbsp;  
 
 
-### allow_zero
-If you input 0 as size or n_windows (depending on the function), you get an error.  
+## allow_zero  
+
+Type: logical (TRUE or FALSE)  
+
+If you set n to 0, you get an error.  
 If you don't want this behavior, you can set allow_zero to TRUE, and (depending on
 the function) you will get the following output:  
 
-*grouping_factor* functions return the factor with NAs instead of numbers. It will be
+*group_factor()* will return the factor with NAs instead of numbers. It will be
 the same length as expected.  
 
-*split* functions will return the given data (dataframe or vector) in the same list format as if it had been split.
+*group()* will return the expected dataframe with NAs instead of a grouping factor.  
+
+*splt()* functions will return the given data (dataframe or vector) in the same list format as if it had been split.  
 
 &nbsp;  
 
-# Functions
+## descending
 
-## gsplit_grouping_factor
+Type: logical (TRUE or FALSE)
 
-Greedy split grouping factor  
+In methods like 'n_fill' where it makes sense to change the direction of the method, you can use this argument.  
+In 'n_fill' it fills up the excess data points starting from the last window instead of the first.  
+NB. Only some of the methods can use this argument.  
+
+
+&nbsp; 
+
+## randomize
+
+Type: logical (TRUE or FALSE)
+
+After creating the the grouping factor using the chosen method, it is possible to randomly reorganize it before returning it. Notice that this **applies to all the functions**, as group() and splt() uses the grouping factor!  
+
+
+
+&nbsp;  
+
+# Using Functions
+
+We will be using 'n_dist' on a dataframe to showcase the functions. Afterwards we will show and compare the methods.  
+Notice that you can also use vectors with all the functions.  
+
+## group_factor()  
 
 1. We create a dataframe  
 
@@ -192,12 +364,12 @@ df = data.frame("x"=c(1:12),
 
 ```
 
-2. Using gsplit_grouping_factor()  
-Notice that I only pass it 1 column from the dataframe  
+2. Using group_factor()  
+
 
 ```{r}
 
-df$group = gsplit_grouping_factor(df[,1], 5)
+df$groups = group_factor(df, 5, method = 'n_dist')
 
 df
 
@@ -207,16 +379,16 @@ df
 
 ```{r}
 
-aggregate(df[, 3], list(df$group), mean)
+aggregate(df[, 3], list(df$groups), mean)
 
 ```
 
 ### force_equal
 
-Getting an equal number of elements per window with gsplit_grouping_factor.  
+Getting an equal number of elements per window with group_factor().  
 
-Notice that we discard the last window that would have contained less elements than the other groups.  
-Since the grouping factor is shorter than the dataframe, we can't combine them as they are. A way to do so would be to shorten the dataframe to be the same length as the grouping_factor. 
+Notice that we discard the excess values so all groups contain the same amount of elements.
+Since the grouping factor is shorter than the dataframe, we can't combine them as they are. A way to do so would be to shorten the dataframe to be the same length as the grouping factor. 
 
 1. We create a dataframe  
 
@@ -228,13 +400,15 @@ df = data.frame("x"=c(1:12),
 
 ```
 
-2. Using gsplit_grouping_factor() with force_equal   
+2. Using group_factor() with force_equal   
 
 ```{r}
 
-group = gsplit_grouping_factor(df[,1], 5, force_equal = TRUE)
+groups = group_factor(df, 5, method = 'n_dist', force_equal = TRUE)
 
-group
+groups
+
+count(groups)
 
 ```
 
@@ -244,9 +418,9 @@ First we make the dataframe the same size as the grouping factor. Then we add th
 
 ```{r}
 
-df = head(df, length(group))
+df = head(df, length(groups))
 
-df$group = group
+df$group = groups
 
 df
 
@@ -254,9 +428,8 @@ df
 
 &nbsp;  
  
-## gsplit
-
-Greedy splitter for both vectors and dataframes  
+ 
+## group()  
 
 1. We create a dataframe  
 
@@ -268,53 +441,36 @@ df = data.frame("x"=c(1:12),
 
 ```
 
-2. Using gsplit() for dataframes   
+2. Using group()  
 
 ```{r}
 
-df_list = gsplit(df, 5)
+df_grouped = group(df, 5, method = 'n_dist')
 
-df_list
+df_grouped
 
 ```
 
-3. We can get a specific dataframe   
-
-```{r}
-df_list[[2]]
-```
-
-4. We could get the mean of age for that particular dataframe  
+2.2 Using group() with dplyr pipeline to get mean age
 
 ```{r}
 
-mean(df_list[[2]]$age)
+df_means = df %>%
+  group(5, method = 'n_dist') %>%
+  dplyr::summarise(mean_age = mean(age))
+
+df_means
 
 ```
 
-5. Using gsplit() for vectors  
-
-```{r}
-
-# Note that I only pass it one column!
-vec_list = gsplit(df[,1], 5)
-
-vec_list
-
-```
-
-3. We can get a specific vector  
-
-```{r}
-vec_list[[2]]
-```
 
 
 ### force_equal
 
-Getting an equal number of elements per window with gsplit.  
+Getting an equal number of elements per window with group().  
 
-Notice that we discard the last dataframe/vector that would have contained fewer rows/elements than the others.
+Notice that we discard the excess rows/elements so all groups contain the same amount of elements.
+
 
 1. We create a dataframe  
 
@@ -326,71 +482,22 @@ df = data.frame("x"=c(1:12),
 
 ```
 
-2. Using gsplit() with force_equal on a dataframe  
+2. Using group() with force_equal   
 
 ```{r}
 
-df_list = gsplit(df, 5, force_equal = TRUE)
+df_grouped = df %>%
+  group(5, method = 'n_dist', force_equal = TRUE)
 
-df_list
-
-```
-
-3. Using gsplit() with force_equal on a vector  
-
-```{r}
-
-# Note that I only pass it one column!
-vec_list = gsplit(df[,1], 5, force_equal = TRUE)
-
-vec_list
+df_grouped
 
 ```
-
 
 
 &nbsp;  
  
-## nsplit_grouping_factor
 
-Number of windows split grouping factor  
-
-1. We create a dataframe  
-
-```{r}
-
-df = data.frame("x"=c(1:12), 
-                "species" = rep(c('cat','pig', 'human'), 4), 
-                "age" = sample(c(1:100), 12))
-
-```
-
-2. Using nsplit_grouping_factor()  
-Notice that I only pass it 1 column from the dataframe  
-
-```{r}
-
-df$group = nsplit_grouping_factor(df[,1], 5)
-
-df
-
-```
-
-3. We could get the mean age of each group  
-
-```{r}
-
-aggregate(df[, 3], list(df$group), mean)
-
-```
-
-
-### force_equal
-
-Getting an equal number of elements per window with nsplit_grouping_factor.  
-
-Notice that the last group in the factor now contains the same number of elements as other groups.  
-Since the grouping factor is shorter than the dataframe, we can't combine them as they are. We could though shorten the dataframe to be the same length as the grouping_factor. 
+## splt()  
 
 1. We create a dataframe  
 
@@ -402,93 +509,24 @@ df = data.frame("x"=c(1:12),
 
 ```
 
-2. Using nsplit_grouping_factor() with force_equal   
+2. Using splt()  
 
 ```{r}
 
-group = nsplit_grouping_factor(df[,1], 5, force_equal = TRUE)
-
-group
-
-```
-
-3. Combining dataframe and grouping factor  
-
-First we make the dataframe the same size as the grouping factor. Then we add the grouping factor to the dataframe.  
-
-```{r}
-
-df = head(df, length(group))
-
-df$group = group
-
-df
-
-```
-
-&nbsp;  
-
-## nsplit
-
-Number of windows splitter for both vectors and dataframes.  
-
-1. We create a dataframe  
-
-```{r}
-
-df = data.frame("x"=c(1:12), 
-                "species" = rep(c('cat','pig', 'human'), 4), 
-                "age" = sample(c(1:100), 12))
-
-```
-
-2. Using nsplit() for dataframes   
-
-```{r}
-
-df_list = nsplit(df, 5)
+df_list = splt(df, 5, method = 'n_dist')
 
 df_list
 
 ```
 
-3. We can get a specific dataframe   
-
-```{r}
-df_list[[2]]
-```
-
-4. We could get the mean of age for that particular dataframe  
-
-```{r}
-
-mean(df_list[[2]]$age)
-
-```
-
-5. Using nsplit() for vectors  
-
-```{r}
-
-# Note that I only pass it one column!
-vec_list = nsplit(df[,1], 5)
-
-vec_list
-
-```
-
-3. We can get a specific vector  
-
-```{r}
-vec_list[[2]]
-```
 
 
 ### force_equal
 
-Getting an equal number of elements per window with nsplit.  
+Getting an equal number of elements per window with splt().  
 
-Notice that the last dataframe/vector now contains the same number of rows/elements as the others.  
+Notice that we discard the excess rows/elements so all groups contain the same amount of elements.
+
 
 1. We create a dataframe  
 
@@ -500,27 +538,391 @@ df = data.frame("x"=c(1:12),
 
 ```
 
-2. Using nsplit() with force_equal on a dataframe  
+2. Using splt() with force_equal   
 
 ```{r}
 
-df_list = nsplit(df, 5, force_equal = TRUE)
+df_list = splt(df, 5, method = 'n_dist', force_equal = TRUE)
 
 df_list
 
 ```
 
-3. Using nsplit() with force_equal on a vector  
+
+&nbsp;  
+ 
+## Extra arguments showcase
+
+### randomize
+
+1. We create a dataframe  
 
 ```{r}
 
-# Note that I only pass it one column!
-vec_list = nsplit(df[,1], 5, force_equal = TRUE)
+df = data.frame("x"=c(1:12), 
+                "species" = rep(c('cat','pig', 'human'), 4), 
+                "age" = sample(c(1:100), 12))
 
-vec_list
+```
+
+2. We use group_factor() with randomize set to TRUE
+
+```{r}
+
+groups = group_factor(df, 5, method = 'n_dist', randomize = TRUE)
+
+groups
+
+```
+
+3. We use splt() with randomize set to TRUE  
+Notice that the index has been shuffled but the window sizes are the same as before!
+ 
+```{r}
+
+df_list = splt(df, 5, method = 'n_dist', randomize = TRUE)
+
+df_list
+
+```
+ 
+ 
+# Examples of method differences
+
+In this section we will take a look at the outputs we get from the different methods.
+
+
+## n_ methods
+
+
+### Vector with 57 elements split in 6 windows
+
+Below you'll see a dataframe with counts of window elements when splitting the same data with the different n_ methods. 
+The forced_equal column is simply with the force_equal set to TRUE.   
+
+forced_equal: Since this is a setting to make sure that all windows are of the same size, it makes sense that all the windows have the same size.  
+
+n_dist: compared to forced_equal we see the 3 datapoints that forced_equal had discarded. These are distributed across the windows (in this example window 2,4 and 6)  
+
+n_fill: The 3 extra datapoints are located at the first 3 windows. Had we set descending to TRUE, it would have been the last 3 windows instead.   
+
+n_last: We see that n_last creates equal window sizes in all but the last window. This means that the last window can sometimes have a window size, which is very large or small compared to the other windows. Here it is a third larger than the other windows.  
+
+n_rand: The extra datapoints are placed randomly and so we would see the extra datapoints located at different windows if we ran the script again. *Unless we use set.seed() before running the function.*  
+
+\newpage
+
+```{r echo=FALSE}
+
+# 
+# Examples to show difference between methods
+# This could be made interactive! This way you could test what happens in different situations by 
+# by simply moving a slider!
+#
+
+vec = c(1:57)
+
+n = 6
+
+if (exists ('n_meth_v57n6')){
+  rm(n_meth_v57n6)
+  }
+
+for (meth in c('n_dist', 'n_fill' ,'n_last','n_rand')){
+  
+  data_temp = data.frame(plyr::count(group_factor(vec, n, method = meth)))
+  
+  names(data_temp)[names(data_temp)=="freq"] = meth
+  
+  if (exists ('n_meth_v57n6')) {
+    
+    n_meth_v57n6 = cbind(n_meth_v57n6, data_temp)
+    
+  } else {
+    
+    n_meth_v57n6 = data_temp
+    
+  }
+  
+}
+
+forced_equal = plyr::count(group_factor(vec, n, method = 'n_last', force_equal = TRUE))
+
+n_meth_v57n6$forced_equal = forced_equal$freq
+
+n_meth_v57n6 = n_meth_v57n6[ , !duplicated(colnames(n_meth_v57n6))]
+
+
+# gather() dataframe for plotting
+
+data_plot = n_meth_v57n6 %>%
+  gather(method, window_size,-1)
+
+
+upper_limit = max(data_plot$window_size)+1
+lower_limit = min(data_plot$window_size)-1
+
+
+v57n6_plot = ggplot(data_plot, aes(x, window_size))
+
+
+## Output
+
+# Dataframe
+n_meth_v57n6
+
+# Plot
+v57n6_plot +
+  geom_point() +
+  scale_y_continuous(limit = c(lower_limit, upper_limit),
+                     breaks = round(seq(lower_limit, upper_limit, by = 2),1)) + 
+  #scale_y_continuous(limit = c(lower_limit, upper_limit))+
+  facet_wrap('method', ncol=1) +
+  labs(x = 'Window',
+       y = 'Window Size',
+       title = 'Distribution of Elements in Windows')+
+  theme_bw()+
+  theme(axis.text.y = element_text(size=9),
+        axis.text.x = element_text(size=9))
+        
+
+
+
+
+```
+
+&nbsp; 
+
+### Vector with 117 elements split in 11 windows
+
+Here is another example.   
+
+```{r echo=FALSE}
+
+
+
+vec = c(1:117)
+
+n = 11
+
+if (exists ('n_meth_v117n11')){
+  rm(n_meth_v117n11)
+  }
+
+for (meth in c('n_dist', 'n_fill' ,'n_last','n_rand')){
+  
+  data_temp = data.frame(plyr::count(group_factor(vec, n, method = meth)))
+  
+  names(data_temp)[names(data_temp)=="freq"] = meth
+  
+  if (exists ('n_meth_v117n11')) {
+    
+    n_meth_v117n11 = cbind(n_meth_v117n11, data_temp)
+    
+  } else {
+    
+    n_meth_v117n11 = data_temp
+    
+  }
+  
+}
+
+forced_equal = plyr::count(group_factor(vec, n, method = 'n_last', force_equal = TRUE))
+
+n_meth_v117n11$forced_equal = forced_equal$freq
+
+n_meth_v117n11 = n_meth_v117n11[ , !duplicated(colnames(n_meth_v117n11))]
+
+
+
+
+# gather() dataframe for plotting
+
+data_plot = n_meth_v117n11 %>%
+  gather(method, window_size,-1)
+
+v117n11_plot = ggplot(data_plot, aes(x, window_size))
+
+
+upper_limit = max(data_plot$window_size)+1
+lower_limit = min(data_plot$window_size)-1
+
+
+## Output
+
+# Dataframe
+n_meth_v117n11
+
+# Plot
+v117n11_plot + 
+  geom_point() + 
+  scale_y_continuous(limit = c(lower_limit, upper_limit),
+                     breaks = round(seq(lower_limit, upper_limit, by = 2),1)) + 
+  facet_wrap('method', ncol=1) + 
+  labs(x = 'Window',
+       y = 'Window Size',
+       title = 'Distribution of Elements in Windows')+
+  theme_bw()+
+  theme(axis.text.y = element_text(size=9),
+        axis.text.x = element_text(size=9))
+
+
+  
+
+```
+
+&nbsp; 
+
+
+
+## Greedy
+
+### Vector with 100 elements with sizes of 8, 15, 20
+
+Below you will see window sizes when using the method 'greedy' and asking for window sizes of 8, 15, 20. What should become clear is that only the last window can have a different window size than what we asked for. This is important if, say, you want to split a time series into windows of 100 elements, but the time series is not divisible with 100. Then you could use force_equal to remove the excess elements, if you need equal windows.
+
+With a size of 8, we get 13 windows. The last window (13) only contains 4 elements, but all the other windows contain 8 elements as specified.
+
+With a size of 15, we get 7 windows. The last window (7) contains only 10 elements, but all the other windows contain 15 elements as specified.
+
+With a size of 20, we get 5 windows. As 20 is divisible with the 100 elements that the splitted vector contained, the last window also contains 20 elements, and so we have equal groups.
+
+```{r echo=FALSE}
+
+
+vec = c(1:100)
+
+if (exists ('greedy_data')){
+  rm(greedy_data)
+  }
+
+for (n in c(8,15,20)){
+
+  window_sizes = plyr::count(group_factor(vec, n, method='greedy'))
+
+  data_temp = data.frame(window_sizes, 'Size' = factor(n))
+
+  
+  if (exists ('greedy_data')) {
+    
+    greedy_data = rbind(greedy_data, data_temp)
+    
+  } else {
+    
+    greedy_data = data_temp
+    
+  }
+  
+}
+
+
+greedy_plot = ggplot(greedy_data, aes(x, freq, color=Size))
+
+greedy_plot + 
+  geom_point() +
+  labs(x = 'Window',
+       y = 'Window Size',
+       title = 'Greedy Distribution of Elements in Windows',
+       color = 'Size') +
+  theme_bw()+
+  theme(plot.margin = unit(c(1,1,1,1), "cm"))+
+  theme(axis.text.y = element_text(size=9),
+        axis.text.x = element_text(size=9))
+
 
 ```
 
 
-&nbsp;  
+&nbsp; 
+
+
+## Staircasing
+
+### Vector with 1000 elements with step sizes of 2, 5, 11
+
+Below you'll see a plot with the window sizes at each window when using step sizes 2, 5, and 11.
+
+At a step size of 2 elements it simply increases 2 for each window, until the last window (32) where it runs out of elements. Had we set force_equal to TRUE, this last window would have been discarded, because of the lack of elements.
+
+At a step size of 5 elements it increases with 5 every time. Because of this it runs out of elements faster. Again we see that the last window (20) has fewer elements.
+
+At a step size of 11 elements it increases with 11 every time. It seems that the last window is not too small, but it can be hard to see on this scale. Actually, the last window misses 1 element to be complete and so would have been discarded if force_equal was set to TRUE.  
+
+&nbsp; 
+
+
+```{r echo=FALSE}
+
+
+vec = c(1:1000)
+
+if (exists ('staircase_data')){
+  rm(staircase_data)
+  }
+
+for (n in c(2, 5, 11)){
+
+  window_sizes = plyr::count(group_factor(vec, n, method='staircase'))
+
+  data_temp = data.frame(window_sizes, 'step_size' = factor(n))
+
+  
+  if (exists ('staircase_data')) {
+    
+    staircase_data = rbind(staircase_data, data_temp)
+    
+  } else {
+    
+    staircase_data = data_temp
+    
+  }
+  
+}
+
+staircase_plot = ggplot(staircase_data, aes(x, freq, color=step_size))
+
+staircase_plot + 
+  geom_point() +
+  #scale_x_continuous(breaks = round(seq(1, max(data_temp$x), by = 2),1))+
+  labs(x = 'Window',
+       y = 'Window Size',
+       title = 'Staircasing Distribution of Elements in Windows',
+       color = 'Step Size') +
+  theme_bw()+
+  theme(axis.text.y = element_text(size=9),
+        axis.text.x = element_text(size=7))
+
+
+
+```
+
+
+&nbsp; 
+
+
+Below we will take a short look at the cumulative sum of window elements to get an idea of what is going on under the hood.  
+Remember that the splitted vector had 1000 elements? That is why they all stop at 1000 on the y-axis. There are simply no more elements left!  
+
+
+```{r echo=FALSE}
+
+staircase_data = staircase_data %>%
+  group_by(step_size) %>%
+  dplyr::mutate(cumsum = cumsum(freq))
+
+staircase_cumulative_plot = ggplot(staircase_data, aes(x, cumsum, color=step_size))
+
+staircase_cumulative_plot + 
+  geom_point() +
+  labs(x = 'Window',
+       y = 'Cumulative sum of window sizes',
+       title = 'Staircasing Cumulative Sum of Window Sizes',
+       color = 'Step Size') +
+  theme_bw()+
+  theme(axis.text.y = element_text(size=9),
+        axis.text.x = element_text(size=7))
+
+```
+
+
  
