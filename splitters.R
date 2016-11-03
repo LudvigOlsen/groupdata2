@@ -929,7 +929,7 @@ stair_split_grouping_factor_ = function(v, step_size, force_equal = FALSE, desce
   # Create a column with number of elements (group number times step size)
   # Create a column with cumulative sum of the number of elements
   group_data = group_data %>%
-    mutate(n_elements = groups*step_size,
+    dplyr::mutate(n_elements = groups*step_size,
            cumsum = cumsum(n_elements))
   
   # Get the first row where cumsum is larger or equal to the vector
