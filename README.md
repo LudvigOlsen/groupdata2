@@ -14,3 +14,4 @@ Main functions:
   
 Please read using_splitters.pdf for further information on how to use the functions.  
 
+This will be hopefully be available as a package as well before too long! Stay tuned!
