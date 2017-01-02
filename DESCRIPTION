@@ -1,0 +1,15 @@
+Package: splitters
+Title: Grouping And Splitting Of Data
+Version: 0.0.0.9000
+Authors@R: person("Ludvig Renbo", "Olsen", email = "mail@ludvigolsen.dk", role = c("aut", "cre"))
+Description: Create groups / windows from data with a range of methods.
+    Split data to a list or create balanced folds for cross-validation.
+Depends:
+    R (>= 3.3.1)
+License: Will choose later
+Encoding: UTF-8
+LazyData: true
+Imports:
+    dplyr,
+    plyr
+RoxygenNote: 5.0.1
