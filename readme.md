@@ -6,7 +6,7 @@ Create groups / windows from data with a range of methods.
 Split data to a list or create balanced folds for cross-validation.  
 
 
-By Ludvig R. Olsen
+By Ludvig R. Olsen  
 Cognitive Science, Aarhus University  
 Started in Oct. 2016  
 
