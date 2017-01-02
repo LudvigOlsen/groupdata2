@@ -273,6 +273,18 @@ n_dist_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending =
     # Create grouping factor with distributed excess elements
     grouping_factor <- factor(ceiling(seq_along(v)/(length(v)/n_windows)))
 
+    # Sometimes a value of e.g. 7.0000.. is rounded up to 8
+    # in the above ceiling(). This means that we get 8 groups
+    # instead of the specified 7. In this case we replace
+    # the extra "8" with 7.
+    # --> This should be tested! <--
+    if(max_num_factor(grouping_factor) > n_windows){
+
+      max_value = max_num_factor(grouping_factor)
+      levels(grouping_factor)[match(max_value,levels(grouping_factor))] <- max_value-1
+
+    }
+
     return(grouping_factor)
   }
 
