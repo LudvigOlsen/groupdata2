@@ -1,6 +1,9 @@
 # R-splitters
 
-A package for grouping and splitting dataframes and vectors in R.  
+R package  
+
+Create groups / windows from data with a range of methods.  
+Split data to a list or create balanced folds for cross-validation.  
 
 By Ludvig R. Olsen
 Cognitive Science, Aarhus University  
