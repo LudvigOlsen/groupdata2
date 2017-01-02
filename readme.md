@@ -5,8 +5,6 @@ R package
 Create groups / windows from data with a range of methods.  
 Split data to a list or create balanced folds for cross-validation.  
 
-## Installation  
-devtools::install_github("LudvigOlsen/R-splitters")  
 
 By Ludvig R. Olsen
 Cognitive Science, Aarhus University  
@@ -18,7 +16,10 @@ Main functions:
 * splt  
 * fold  
   
-Please read using_splitters.pdf for further information on how to use the functions.  
+
+## Installation  
+install.packages("devtools")
+devtools::install_github("LudvigOlsen/R-splitters")  
 
 ## To do  
 * Find package name reflecting the focus on grouping  
