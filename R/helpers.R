@@ -240,6 +240,21 @@ check_convert_check_ <- function(data, n, method, force_equal,
 
 }
 
+#' @importFrom dplyr %>%
+max_num_factor <- function(factor){
+
+  #
+  # Convert factor to numeric
+  # Return maximum value
+  #
+
+  factor %>%
+    as.numeric() %>%
+    max() %>%
+    return()
+
+}
+
 group_uniques_ <- function(data, n, id_col, method){
 
   #
