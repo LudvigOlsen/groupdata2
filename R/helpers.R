@@ -255,6 +255,19 @@ max_num_factor <- function(factor){
 
 }
 
+replace_level <- function(factor, match, replace){
+
+  #
+  # Replace the value (match) of a factor level
+  # with another value (replace)
+  #
+
+  levels(factor)[match(match,levels(factor))] <- replace
+
+  return(factor)
+
+}
+
 group_uniques_ <- function(data, n, id_col, method){
 
   #

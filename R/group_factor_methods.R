@@ -292,8 +292,10 @@ n_dist_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending =
 
         # Replace the level of the factor with the max_value
         # with the value of the second last group instead (max_value - 1)
-        levels(grouping_factor)[match(max_value,levels(grouping_factor))] <- max_value-1
-
+        #levels(grouping_factor)[match(max_value,levels(grouping_factor))] <- max_value-1
+        grouping_factor = replace_level(grouping_factor,
+                                        max_value,
+                                        max_value-1)
 
 
       # Else, stop the script as something has gone wrong
