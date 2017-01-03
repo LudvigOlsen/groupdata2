@@ -42,6 +42,28 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL, method = 'n_dist'){
   # .. dataframe with grouping factor (folds)
   #
 
+  # Convert k to wholenumber if given as percentage
+  if(!arg_is_wholenumber_(k) && is_between_(k,0,1)){
+
+    k = convert_percentage_(k, data)
+    print(k)
+
+  }
+
+  # Stop if k is not a wholenumber
+  stopifnot(arg_is_wholenumber_(k))
+
+  # If method is either greedy or staircase and cat_col is not NULL
+  # we don't want k elements per level in cat_col
+  # so we divide k by the number of levels in cat_col
+  if(method %in% c('greedy', 'staircase') && !is.null(cat_col)){
+
+    n_levels_cat_col = length(unique(data[[cat_col]]))
+    k = ceiling(k/n_levels_cat_col)
+
+  }
+
+
   # If cat_col is not NULL
   if (!is.null(cat_col)){
 

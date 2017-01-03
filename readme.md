@@ -1,6 +1,7 @@
 # R-splitters
 
 R package  
+In development; subject to change.  
 
 Create groups / windows from data with a range of methods.  
 Split data to a list or create balanced folds for cross-validation.  
@@ -25,4 +26,5 @@ devtools::install_github("LudvigOlsen/R-splitters")
 * Find package name reflecting the focus on grouping  
 * Update old tutorial and include as vignette  
 * Setup testing  
-* Change/add aliases for functions
+* Change/add aliases for functions  
+* fold() - implement force_equal (n.b. should be special for greedy and staircasing)  

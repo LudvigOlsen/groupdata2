@@ -278,22 +278,23 @@ n_dist_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending =
     # instead of the specified 7. In this case we replace
     # the extra "8" with 7.
     # --> This should be tested! <--
+
+    # If there are too many groups
     if (max_num_factor(grouping_factor) > n_windows){
 
       # Get the largest number in grouping factor
-      max_value = max_num_factor(grouping_factor)
+      max_value <- max_num_factor(grouping_factor)
 
       # Get the size of the last group
-      last_group_size = length(grouping_factor[grouping_factor == max_value])
+      last_group_size <- length(grouping_factor[grouping_factor == max_value])
 
       # If there is only one group too much and it only contains one element
       # put this element in the second last group instead
       if (max_value-1 == n_windows && last_group_size == 1){
 
-        # Replace the level of the factor with the max_value
+        # Replace the level of the factor containing the max_value
         # with the value of the second last group instead (max_value - 1)
-        #levels(grouping_factor)[match(max_value,levels(grouping_factor))] <- max_value-1
-        grouping_factor = replace_level(grouping_factor,
+        grouping_factor <- replace_level(grouping_factor,
                                         max_value,
                                         max_value-1)
 
