@@ -26,6 +26,6 @@ devtools::install_github("LudvigOlsen/R-splitters")
 * Find package name reflecting the focus on grouping  
 * Refine vignette  
 * Find out how to build vignette so people can use it
-* Setup testing  
+* Set up testing  
 * Change/add aliases for functions  
 * fold() - implement force_equal (n.b. should be special for greedy and staircasing)  

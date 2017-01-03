@@ -46,7 +46,6 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL, method = 'n_dist'){
   if(!arg_is_wholenumber_(k) && is_between_(k,0,1)){
 
     k = convert_percentage_(k, data)
-    print(k)
 
   }
 
@@ -67,14 +66,8 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL, method = 'n_dist'){
   # If cat_col is not NULL
   if (!is.null(cat_col)){
 
-    print('cat_col not null')
-
     # If id_col is not NULL
     if (!is.null(id_col)){
-
-      print('id_col not null')
-
-      print(cat_col)
 
       # Group by cat_col
       # For each group:
@@ -91,8 +84,6 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL, method = 'n_dist'){
       # If id_col is NULL
     } else {
 
-      print('id_col null')
-
       # Group by cat_col
       # Create groups from data
       # .. and add grouping factor to data
@@ -108,12 +99,8 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL, method = 'n_dist'){
     # If cat_col is NULL
   } else {
 
-    print('cat_col null')
-
     # If id_col is not NULL
     if (!is.null(id_col)){
-
-      print('id_col not null')
 
       # Create groups of unique IDs
       # .. and add grouping factor to data
@@ -124,8 +111,6 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL, method = 'n_dist'){
 
       # If id_col is NULL
     } else {
-
-      print('id_col null')
 
       # Create groups from all the data points
       # .. and add grouping factor to data
