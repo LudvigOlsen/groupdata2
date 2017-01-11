@@ -13,8 +13,8 @@ Imports:
     dplyr,
     plyr
 RoxygenNote: 5.0.1
-Suggests: knitr,
+Suggests: ggplot2,
+    knitr,
     rmarkdown,
-    tidyr,
-    ggplot2
+    tidyr
 VignetteBuilder: knitr
