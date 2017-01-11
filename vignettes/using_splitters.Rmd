@@ -307,6 +307,27 @@ not contain the expected values (step size multiplied by group index).
 
 &nbsp;  
 
+### Find remainder - %staircase%
+When using the staircase method the last group might not have the size of the second last group + step size. 
+Use %staircase% to find the remainder.  
+
+If the last group has the size of the second last group + step size, %staircase% will return 0.
+
+&nbsp;  
+
+**Example**  
+
+> %staircase% on a vector with size 57 and step size of 5 would look like so:
+>
+> 57 %staircase% 5
+> 
+> and return:
+>
+> 7
+>
+> meaning that the last group would contain 7 values 
+
+
 # Arguments
 
 ## data
@@ -377,7 +398,7 @@ Used in: group_factor(), group(), splt()
 
 ## descending
 
-Type: logical (TRUE or FALSE)
+Type: logical (TRUE or FALSE)  
 
 In methods like 'n_fill' where it makes sense to change the direction of the method, you can use this argument.  
 In 'n_fill' it fills up the excess data points starting from the last group instead of the first.  
@@ -389,7 +410,7 @@ Used in: group_factor(), group(), splt()
 
 ## randomize
 
-Type: logical (TRUE or FALSE)
+Type: logical (TRUE or FALSE)  
 
 After creating the the grouping factor using the chosen method, it is possible to randomly reorganize it before returning it. Notice that this **applies to all the functions**, as group() and splt() uses the grouping factor!  
 
@@ -398,6 +419,16 @@ After creating the the grouping factor using the chosen method, it is possible t
 Used in: group_factor(), group(), splt()  
 
 N.B. fold() always uses some randomization.  
+
+## col_name
+
+Type: character  
+
+Name of added grouping factor column. Allows multiple grouping factors in a dataframe.  
+
+&nbsp;  
+
+Used in: group()  
 
 ## k
 
@@ -677,7 +708,7 @@ kable(df, align = 'c')
 ```{r}
 df_folded <- fold(df, 3, method = 'n_dist')
 
-df_folded <- df_folded[order(df_folded$.groups),]
+df_folded <- df_folded[order(df_folded$.folds),]
 
 kable(df_folded, align = 'c')
 
@@ -688,7 +719,7 @@ kable(df_folded, align = 'c')
 
 ```{r}
 df_folded <- fold(df, 3, cat_col = 'diagnosis', method = 'n_dist')
-df_folded <- df_folded[order(df_folded$.groups),] 
+df_folded <- df_folded[order(df_folded$.folds),] 
 
 kable(df_folded, align = 'c')
 
@@ -698,7 +729,7 @@ Let's count how many of each diagnoses are in each group.
 
 ```{r}
 
-df_folded %>% group_by(.groups) %>% count(diagnosis) %>% kable(align='c')
+df_folded %>% group_by(.folds) %>% count(diagnosis) %>% kable(align='c')
 
 ```
 
@@ -706,7 +737,7 @@ df_folded %>% group_by(.groups) %>% count(diagnosis) %>% kable(align='c')
 
 ```{r}
 df_folded <- fold(df, 3, id_col = 'participant', method = 'n_dist')
-df_folded <- df_folded[order(df_folded$.groups),] 
+df_folded <- df_folded[order(df_folded$.folds),] 
 
 # Remove index
 rownames(df_folded) <- NULL
@@ -719,7 +750,7 @@ Let's see how participants were distributed in the groups.
 
 ```{r}
 
-df_folded %>% group_by(.groups) %>% count(participant) %>% kable(align='c')
+df_folded %>% group_by(.folds) %>% count(participant) %>% kable(align='c')
 
 ```
 
@@ -729,7 +760,7 @@ fold() first divides up the dataframe by cat_col and then create n folds for bot
 
 ```{r}
 df_folded <- fold(df, 3, cat_col = 'diagnosis', id_col = 'participant', method = 'n_dist')
-df_folded <- df_folded[order(df_folded$.groups),] 
+df_folded <- df_folded[order(df_folded$.folds),] 
 
 kable(df_folded, align = 'c')
 
@@ -739,7 +770,7 @@ Let's count how many of each diagnoses are in each group and find which particip
 
 ```{r}
 
-df_folded %>% group_by(.groups) %>% count(diagnosis, participant) %>% kable(align='c')
+df_folded %>% group_by(.folds) %>% count(diagnosis, participant) %>% kable(align='c')
 
 ```
 

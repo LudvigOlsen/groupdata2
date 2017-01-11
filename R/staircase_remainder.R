@@ -33,7 +33,7 @@
   # plus step size, the remainder will be 0.
   #
   # This allows the user to find the right step size,
-  # possibly by looping through step sizes to find a
+  # e.g. by looping through step sizes to find a
   # remainder of 0
   #
 
@@ -56,11 +56,32 @@
   # This can be used to calculate excess elements
   cumsum_last_group <- last_group_row[1,3]
 
+  # Get the cumulative sum for that group
+  # This can be used to calculate excess elements
+  n_elements_last_group <- last_group_row[1,2]
+
   # Get how many excess elements there are
   excess_elements <- cumsum_last_group-size
 
+  # If there are no excess elements
+  # it means that the last group has the size of the
+  # second last group + step size
+  # and the remainder is 0
+  if (excess_elements == 0){
+
+    remainder = 0
+
+  } else {
+
+    # Get remainder by subtracting the number of excess elements
+    # from the number of elements in the last group
+    remainder <- n_elements_last_group - excess_elements
+  }
+
+
+
   # Return remainder (size of last group)
-  return(excess_elements)
+  return(remainder)
 
 
 }
