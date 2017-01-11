@@ -65,7 +65,7 @@ Divides up data into groups by a range of methods.
 # Coming soon
 }
 \seealso{
-Other grouping.functions: \code{\link{group_factor}},
+Other grouping functions: \code{\link{group_factor}},
   \code{\link{group}}, \code{\link{splt}}
 }
 

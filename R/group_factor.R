@@ -46,6 +46,7 @@
 #' @param randomize Randomize the grouping factor (Logical)
 #' @return Grouping factor with 1s for group 1, 2s for group 2, etc.
 #' @family grouping functions
+#' @family staircase tools
 #' @examples
 #' # Coming soon
 group_factor <- function(data, n, method = 'n_dist', force_equal = FALSE,

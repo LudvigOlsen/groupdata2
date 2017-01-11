@@ -399,7 +399,9 @@ stair_split_group_factor_ <- function(v, step_size, force_equal = FALSE, descend
 
   # Create grouping factor
   # .. using 'rep(groups, n_elements)'
-  grouping_factor <- factor(head(rep(group_data[[1]], group_data[[2]]), length(v)))
+  grouping_factor <- factor(head(rep(group_data[[1]],
+                                     group_data[[2]]),
+                                     length(v)))
 
   # Return grouping factor
   return(grouping_factor)

@@ -8,7 +8,8 @@
 \title{Create groups / windows from your data.}
 \usage{
 group(data, n, method = "n_dist", force_equal = FALSE, allow_zero = FALSE,
-  return_factor = FALSE, descending = FALSE, randomize = FALSE)
+  return_factor = FALSE, descending = FALSE, randomize = FALSE,
+  col_name = ".groups")
 }
 \arguments{
 \item{data}{Dataframe or Vector}
@@ -55,6 +56,8 @@ Implementation varies between methods. (Logical)}
 (Logical)}
 
 \item{randomize}{Randomize the grouping factor (Logical)}
+
+\item{col_name}{Name of added grouping factor}
 }
 \value{
 Dataframe grouped by new grouping factor
@@ -68,7 +71,7 @@ Divides up data into groups / windows by a range of methods.
 # Coming soon
 }
 \seealso{
-Other grouping.functions: \code{\link{fold}},
+Other grouping functions: \code{\link{fold}},
   \code{\link{group_factor}}, \code{\link{splt}}
 }
 

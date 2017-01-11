@@ -63,7 +63,9 @@ Divides up data into groups / windows by a range of methods.
 # Coming soon
 }
 \seealso{
-Other grouping.functions: \code{\link{fold}},
+Other grouping functions: \code{\link{fold}},
   \code{\link{group}}, \code{\link{splt}}
+
+Other staircase tools: \code{\link{\%staircase\%}}
 }
 

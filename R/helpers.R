@@ -288,3 +288,27 @@ group_uniques_ <- function(data, n, id_col, method){
   return(data)
 
 }
+
+replace_col_name <- function(data, old_name, new_name){
+
+  #
+  # Replaces name of column in dataframe
+  #
+  colnames(data)[names(data) == old_name] <- new_name
+  return(data)
+
+}
+
+get_column_index <- function(data, col){
+
+  #
+  # Finds column index in dataframe given column name
+  # Currently not in use
+  #
+
+  return(which( colnames(data)==col ))
+
+}
+
+
+

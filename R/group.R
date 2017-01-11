@@ -9,6 +9,7 @@
 #' @export
 #' @inheritParams group_factor
 #' @param return_factor Return only grouping factor (Logical)
+#' @param col_name Name of added grouping factor
 #' @return Dataframe grouped by new grouping factor
 #' @family grouping functions
 #' @aliases window split group_by
@@ -16,7 +17,8 @@
 #' # Coming soon
 group <- function(data, n, method = 'n_dist', force_equal = FALSE,
                   allow_zero = FALSE, return_factor = FALSE,
-                  descending = FALSE, randomize = FALSE){
+                  descending = FALSE, randomize = FALSE,
+                  col_name = '.groups'){
 
   #
   # Takes dataframe or vector
@@ -68,10 +70,15 @@ group <- function(data, n, method = 'n_dist', force_equal = FALSE,
     }
 
     # Add the grouping factor to data
-    data$.groups <- grouping_factor
+    #data$.groups <- grouping_factor
+    data$.TempGroupsName <- grouping_factor
+
+    # Replace temporary column name with passed column name
+    # e.g. '.groups'
+    data <- replace_col_name(data, '.TempGroupsName', col_name)
 
     # Return data grouped by the grouping factor
-    return(dplyr::group_by(data, .groups))
+    return(dplyr::group_by_(data, col_name))
 
   } else { # If data is vector
 
@@ -84,10 +91,14 @@ group <- function(data, n, method = 'n_dist', force_equal = FALSE,
     }
 
     # Create dataframe with data and the grouping factor
-    data <- data.frame(data, ".groups" = grouping_factor)
+    data <- data.frame(data, ".TempGroupsName" = grouping_factor)
+
+    # Replace temporary column name with passed column name
+    # e.g. '.groups'
+    data <- replace_col_name(data, '.TempGroupsName', col_name)
 
     # Return data grouped by the grouping factor
-    return(dplyr::group_by(data, .groups))
+    return(dplyr::group_by_(data, col_name))
 
   }
 
