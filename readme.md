@@ -18,7 +18,7 @@ Main functions:
 * fold  
   
 Other tools:  
-* \%staircase\%  
+* %staircase%  
 
 ## Installation  
 install.packages("devtools")  
