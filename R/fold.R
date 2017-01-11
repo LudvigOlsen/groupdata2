@@ -73,12 +73,13 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL, method = 'n_dist'){
       # For each group:
       # .. create groups of the unique IDs (e.g. subjects)
       # .. add grouping factor to data
-      # Group by new grouping factor '.groups'
+      # Group by new grouping factor '.folds'
 
       data <- data %>%
         group_by_(cat_col) %>%
-        do(group_uniques_(., k, id_col, method)) %>%
-        group_by_('.groups')
+        do(group_uniques_(., k, id_col, method,
+                          col_name = '.folds')) %>%
+        group_by_('.folds')
 
 
       # If id_col is NULL
@@ -90,7 +91,9 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL, method = 'n_dist'){
 
       data <- data %>%
         group_by_(cat_col) %>%
-        do(group(., k, method = method, randomize = TRUE))
+        do(group(., k, method = method,
+                 randomize = TRUE,
+                 col_name = '.folds'))
 
 
     }
@@ -106,7 +109,8 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL, method = 'n_dist'){
       # .. and add grouping factor to data
 
       data <- data %>%
-        group_uniques_(k, id_col, method)
+        group_uniques_(k, id_col, method,
+                       col_name = '.folds')
 
 
       # If id_col is NULL
@@ -115,7 +119,10 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL, method = 'n_dist'){
       # Create groups from all the data points
       # .. and add grouping factor to data
 
-      data <- group(data, k, method = method, randomize = TRUE)
+      data <- group(data, k,
+                    method = method,
+                    randomize = TRUE,
+                    col_name = '.folds')
 
     }
 
