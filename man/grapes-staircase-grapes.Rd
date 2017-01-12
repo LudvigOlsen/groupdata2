@@ -16,7 +16,7 @@ Remainder (Integer). Returns 0 if the last group
 has the size of the second last group + step size.
 }
 \description{
-When using the staircase method
+When using the staircase method,
 the last group might not have the size of the second last
 group + step size. Use \%staircase\% to find this remainder.
 }
