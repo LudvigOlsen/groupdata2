@@ -1,7 +1,7 @@
 
 ## %staircase%
 #' @title Find remainder from staircase method
-#' @description When using the staircase method
+#' @description When using the staircase method,
 #' the last group might not have the size of the second last
 #' group + step size. Use \%staircase\% to find this remainder.
 #' @details
