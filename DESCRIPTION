@@ -1,9 +1,9 @@
-Package: splitters
+Package: groupdata2
 Title: Grouping And Splitting Of Data
 Version: 0.0.0.9000
 Authors@R: person("Ludvig Renbo", "Olsen", email = "mail@ludvigolsen.dk", role = c("aut", "cre"))
-Description: Create groups / windows from data with a range of methods.
-    Split data to a list or create balanced folds for cross-validation.
+Description: Subsetting Methods for Balanced Cross-Validation, Timeseries Windowing,
+    and General Grouping and Splitting of Data.
 Depends:
     R (>= 3.3.1)
 License: Will choose later

@@ -4,8 +4,8 @@ author:
   - "Ludvig Renbo Olsen"
 date: "`r Sys.Date()`"
 abstract: |
-  splitters is a set of functions for easy grouping / windowing, folding or splitting of data.
-  In this vignette, we will show how to use splitters to group timeseries.
+  groupdata2 is a set of subsetting methods for easy grouping, windowing, folding and splitting of data.
+  In this vignette, we will use groupdata2 to group / window timeseries.
   &nbsp;  
   &nbsp;  
   Contact author at mail@ludvigolsen.dk
@@ -46,8 +46,8 @@ when window size is 100 and step size 10. Better 10 and 1 ;)
 
 ```{r error=FALSE, message=FALSE}
 
-# Attaching splitters
-library(splitters)
+# Attaching groupdata2
+library(groupdata2)
 
 # Attaching other packages used in this vignette
 library(dplyr)

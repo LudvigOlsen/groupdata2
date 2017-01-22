@@ -1,11 +1,7 @@
-# R-splitters
+# groupdata2
 
-R package  
-In development; subject to change.  
-
-Create groups / windows from data with a range of methods.  
-Split data to a list or create balanced folds for cross-validation.  
-
+R package: Subsetting Methods for Balanced Cross-Validation, 
+Timeseries Windowing, and General Grouping and Splitting of Data.  
 
 By Ludvig R. Olsen  
 Cognitive Science, Aarhus University  
@@ -25,9 +21,7 @@ install.packages("devtools")
 devtools::install_github("LudvigOlsen/R-splitters")  
 
 ## To do  
-* Find package name reflecting the focus on grouping  
 * Refine vignette  
-* Find out how to build vignette so people can use it
 * Set up testing  
 * Change/add aliases for functions  
 * fold() - implement force_equal (n.b. should be special for greedy and staircasing)  

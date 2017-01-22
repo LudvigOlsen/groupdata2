@@ -1,10 +1,13 @@
 ---
-title: "Using splitters"
+title: "Description of groupdata2"
 author: 
   - "Ludvig Renbo Olsen"
 date: "`r Sys.Date()`"
 abstract: |
-  splitters is a set of functions for easy grouping / windowing, folding or splitting of data.
+  groupdata2 is a set of subsetting methods for easy grouping, windowing, folding and splitting of data.
+  Create balanced folds for cross-validation or divide a timeseries into windows.  
+  This vignette contains descriptions of functions and methods, along with simple examples of usage. 
+  For a more gentle introduction to groupdata2, please see [Introduction to groupdata2](introduction_to_groupdata2.html)
   &nbsp;  
   &nbsp;  
   Contact author at mail@ludvigolsen.dk
@@ -27,7 +30,7 @@ output:
     toc: yes
     toc_depth: 4
 vignette: >
-  %\VignetteIndexEntry{Using splitters}
+  %\VignetteIndexEntry{Description of groupdata2}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -40,28 +43,47 @@ options(tibble.print_min = 4L, tibble.print_max = 4L)
 ```
 
 
-## Installing splitters
+## Installing groupdata2  
+You can either install the CRAN version or the GitHub development version.  
+
+### CRAN version
+
 ```{r eval=FALSE}
-install.packages("devtools")  
-devtools::install_github("LudvigOlsen/R-splitters")
+# Uncomment:
+# install.packages("groupdata2")  
+```
+
+### GitHub development version
+```{r eval=FALSE}
+# Uncomment:
+# install.packages("devtools")  
+# devtools::install_github("LudvigOlsen/groupdata2")
 ```
 
 ## Attach packages
-```{r error=FALSE, message=FALSE}
 
-# Attaching splitters
-library(splitters)
+```{r error=FALSE, message=FALSE, warning=FALSE}
+
+# Attaching groupdata2
+library(groupdata2)
 
 # Attaching other packages used in this vignette
 library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(knitr)
+
+# We will also be using plyr a few times, but we don't attach this 
+# because of possible conflicts with dplyr. Instead we use its functions
+# like so: plyr::count()
+
 ```
 
 
 # General information
-splitters is a set of functions for easy grouping / windowing, folding or splitting of data.  
+groupdata2 is a set of functions and methods for easy grouping, windowing, folding and splitting of data.  
+
+&nbsp;  
 
 There are 4 main functions:  
 &nbsp;  
@@ -77,17 +99,17 @@ Returns the given data as a dataframe with the mentioned grouping factor. The da
 Splits the given data into the specified groups and returns them in a list.  
 
 ### fold()  
-Creates (optionally) balanced folds for use in cross-validation.
+Creates (optionally) balanced folds for use in cross-validation.  
 
-## Groups, windows or folds?
+## Groups, windows or folds?  
 When working with timeseries we would often refer to the kind of groups made by group_factor(), group() and splt() as **windows**. 
-In this vignette, these will be referred to as groups.
+In this vignette, these will be referred to as groups.  
 
 fold() creates balanced groups for cross-validation by using group(). These are referred to as **folds**.  
 
 ## Use of kable()
 
-In the examples we will be using knitr::kable() to visualize some of the data such as dataframes. You do not need to use kable() in any way when using the splitter functions.  
+In the examples we will be using knitr::kable() to visualize some of the data such as dataframes. You do not need to use kable() in any way when using the functions.  
 
 # Methods
 There are currently 6 methods for grouping the data.  
@@ -97,7 +119,7 @@ It is possible to create groups based on group size, step size or number of grou
 Here we will take a look at the different methods. 
 
 ## Method: 'greedy'
-'greedy' uses group **size** for splitting the data.  
+'greedy' uses group **size** for dividing up the data.  
 Greedy means that each group grabs as many elements as possible (up to size),
 meaning that there might be less elements available to the last group, but 
 that all other groups than the last are guaranteed to have the size specified.  
@@ -131,7 +153,7 @@ values than the other groups.
 &nbsp;  
 
 ## Method: 'n_dist' (Default)
-'n_dist' uses a specified number of groups to split the data.  
+'n_dist' uses a specified number of groups to divide up the data.  
 First it creates equal groups as large as possible. Then, if there
 are any excess data points, it distributes them across the groups.
  
@@ -163,7 +185,7 @@ equally sized groups by discarding excess data elements.
 &nbsp;  
 
 ## Method: 'n_fill'
-'n_fill' uses a specified number of groups to split the data.  
+'n_fill' uses a specified number of groups to divide up the data.  
 First it creates equal groups as large as possible. Then, if there
 are any excess data points, it places them in the first groups.  
 By setting **descending** to TRUE, it would be the last groups though.
@@ -197,9 +219,9 @@ equally sized groups by discarding excess data elements.
 
 
 ## Method: 'n_last'
-'n_last' uses a specified number of groups to split the data.   
+'n_last' uses a specified number of groups to divide up the data.   
 
-With *default settings*, it tries to make the groups as equal as possible,
+With *default settings*, it tries to make the groups as equally sized as possible,
 but notice that the last group might contain fewer or more elements,
 if the length of the data is not divisible with the number of groups. 
 All, but the last, groups are guaranteed to contain the same number of elements.
@@ -234,15 +256,15 @@ equally sized groups by discarding excess data elements.
 
 Notice that 'n_last' will always return the given number of groups. It will never return a 
 group with zero elements. For some situations that means that the last group will 
-contain a lot of elements. Asked to split a vector with 57 elements into 20 groups, 
+contain a lot of elements. Asked to divide a vector with 57 elements into 20 groups, 
 the first 19 groups will contain 2 elements, while the last group will itself contain 19 elements. 
-Had we instead asked it to split the vector into 19 groups, we would have had 3 elements 
+Had we instead asked it to divide the vector into 19 groups, we would have had 3 elements 
 in all groups.
 
 &nbsp;  
 
 ## Method: 'n_rand'
-'n_fill' uses a specified number of groups to split the data.  
+'n_fill' uses a specified number of groups to divide up the data.  
 First it creates equal groups as large as possible. Then, if there
 are any excess data points, it places them randomly in the groups.  
 N.B.: It only places one extra element per group.
@@ -275,11 +297,10 @@ equally sized groups by discarding excess data elements.
 &nbsp;  
 
 ## Method: 'staircase'  
-'staircase' uses step_size to split the data.  
+'staircase' uses step_size to divide up the data.  
 For each group, the group size will be step size multiplied with
 the group index.  
 
- 
 &nbsp;  
 
 **Example**    
@@ -308,16 +329,16 @@ not contain the expected values (step size multiplied by group index).
 &nbsp;  
 
 ### Find remainder - %staircase%
-When using the staircase method the last group might not have the size of the second last group + step size. 
+When using the staircase method the last group might not have the size of the second last group + step size.  
 Use %staircase% to find the remainder.  
 
-If the last group has the size of the second last group + step size, %staircase% will return 0.
+If the last group has the size of the second last group + step size, %staircase% will return 0.  
 
 &nbsp;  
 
 **Example**  
 
-> %staircase% on a vector with size 57 and step size of 5 would look like so:
+> %staircase% on a vector with size 57 and step size of 5 would look like this:
 >
 > 57 %staircase% 5
 > 
@@ -452,7 +473,8 @@ E.g. when predicting a binary variable (a or b), it is necessary to have both re
 &nbsp;
 
 **N.B.** If also passing id_col, cat_col should be a constant within IDs.  
-E.g. the participant must always have the same diagnosis (a or b) throughout the dataset. Else, the participant might be placed in multiple folds.  
+E.g. a participant must always have the same diagnosis (a or b) throughout the dataset. 
+Else, the participant might be placed in multiple folds.  
 
 &nbsp;
 
@@ -490,7 +512,6 @@ df <- data.frame("x"=c(1:12),
 ```
 
 2. Using group_factor()  
-
 
 ```{r}
 groups <- group_factor(df, 5, method = 'n_dist')
@@ -708,6 +729,7 @@ kable(df, align = 'c')
 ```{r}
 df_folded <- fold(df, 3, method = 'n_dist')
 
+# Order by folds
 df_folded <- df_folded[order(df_folded$.folds),]
 
 kable(df_folded, align = 'c')
@@ -719,16 +741,17 @@ kable(df_folded, align = 'c')
 
 ```{r}
 df_folded <- fold(df, 3, cat_col = 'diagnosis', method = 'n_dist')
+
+# Order by folds
 df_folded <- df_folded[order(df_folded$.folds),] 
 
 kable(df_folded, align = 'c')
 
 ```
 
-Let's count how many of each diagnoses are in each group.  
+Let's count how many of each diagnosis there are in each group.  
 
 ```{r}
-
 df_folded %>% group_by(.folds) %>% count(diagnosis) %>% kable(align='c')
 
 ```
@@ -737,9 +760,11 @@ df_folded %>% group_by(.folds) %>% count(diagnosis) %>% kable(align='c')
 
 ```{r}
 df_folded <- fold(df, 3, id_col = 'participant', method = 'n_dist')
+
+# Order by folds
 df_folded <- df_folded[order(df_folded$.folds),] 
 
-# Remove index
+# Remove index (Looks prettier in the table!)
 rownames(df_folded) <- NULL
 
 kable(df_folded, align = 'c')
@@ -749,7 +774,6 @@ kable(df_folded, align = 'c')
 Let's see how participants were distributed in the groups.  
 
 ```{r}
-
 df_folded %>% group_by(.folds) %>% count(participant) %>% kable(align='c')
 
 ```
@@ -760,16 +784,17 @@ fold() first divides up the dataframe by cat_col and then create n folds for bot
 
 ```{r}
 df_folded <- fold(df, 3, cat_col = 'diagnosis', id_col = 'participant', method = 'n_dist')
+
+# Order by folds
 df_folded <- df_folded[order(df_folded$.folds),] 
 
 kable(df_folded, align = 'c')
 
 ```
 
-Let's count how many of each diagnoses are in each group and find which participants are in which groups.
+Let's count how many of each diagnosis there are in each group and find which participants are in which groups.
 
 ```{r}
-
 df_folded %>% group_by(.folds) %>% count(diagnosis, participant) %>% kable(align='c')
 
 ```
@@ -793,7 +818,6 @@ df <- data.frame("x"=c(1:12),
 2. We use group_factor() with randomize set to TRUE
 
 ```{r}
-
 groups <- group_factor(df, 5, method = 'n_dist', randomize = TRUE)
 
 groups
@@ -804,7 +828,6 @@ groups
 Notice that the index has been shuffled but the group sizes are the same as before!
  
 ```{r}
-
 df_list <- splt(df, 5, method = 'n_dist', randomize = TRUE)
 
 df_list %>% kable(align = 'c')
@@ -820,16 +843,18 @@ In this section we will take a look at the outputs we get from the different met
 ## n_ methods
 
 
-### Vector with 57 elements split in 6 groups
+### Vector with 57 elements divided into 6 groups
 
-Below you'll see a dataframe with counts of group elements when splitting the same data with the different n_ methods. 
+Below you'll see a dataframe with counts of group elements when dividing up the same data with the different n_ methods. 
 The forced_equal column is simply with the force_equal set to TRUE.   
 
-forced_equal: Since this is a setting to make sure that all groups are of the same size, it makes sense that all the groups have the same size.  
+forced_equal: Since this is a setting to make sure that all groups are of the same size, 
+it makes sense that all the groups have the same size.  
 
 n_dist: compared to forced_equal we see the 3 datapoints that forced_equal had discarded. These are distributed across the groups (in this example group 2,4 and 6)  
 
-n_fill: The 3 extra datapoints are located at the first 3 groups. Had we set descending to TRUE, it would have been the last 3 groups instead.   
+n_fill: The 3 extra datapoints are located at the first 3 groups. Had we set descending to TRUE, 
+it would have been the last 3 groups instead.   
 
 n_last: We see that n_last creates equal group sizes in all but the last group. This means that the last group can sometimes have a group size, which is very large or small compared to the other groups. Here it is a third larger than the other groups.  
 
@@ -917,7 +942,7 @@ v57n6_plot +
 
 &nbsp; 
 
-### Vector with 117 elements split in 11 groups
+### Vector with 117 elements divided into 11 groups
 
 Here is another example.   
 
@@ -1124,7 +1149,7 @@ staircase_plot +
 &nbsp; 
 
 
-Below we will take a short look at the cumulative sum of group elements to get an idea of what is going on under the hood.  
+Below we will take a quick look at the cumulative sum of group elements to get an idea of what is going on under the hood.  
 Remember that the splitted vector had 1000 elements? That is why they all stop at 1000 on the y-axis. There are simply no more elements left!  
 
 
