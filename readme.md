@@ -18,7 +18,7 @@ Other tools:
 
 ## Installation  
 install.packages("devtools")  
-devtools::install_github("LudvigOlsen/R-splitters")  
+devtools::install_github("LudvigOlsen/groupdata2")  
 
 ## To do  
 * Refine vignette  
