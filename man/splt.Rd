@@ -19,20 +19,20 @@ Given as whole numbers or percentage (\code{0} < n < \code{1}).}
  \code{greedy} divides up the data greedily given a specified group size
  \eqn{(e.g. 10, 10, 10, 10, 10, 7)}
 
- \code{n_dist} divides up the data into a specified number of groups and
+ \code{n_dist} divides the data into a specified number of groups and
  distributes excess data points across groups
  \eqn{(e.g. 11, 11, 12, 11, 12)}
 
- \code{n_fill} divides up the data into a specified number of groups and
+ \code{n_fill} divides the data into a specified number of groups and
  fills up groups with excess data points from the beginning
  \eqn{(e.g. 12, 12, 11, 11, 11)}
 
- \code{n_last} divides up the data into a specified number of groups.
+ \code{n_last} divides the data into a specified number of groups.
  The algorithm finds the most equal group sizes possible,
  using all data points. Only the last group is able to differ in size
  \eqn{(e.g. 11, 11, 11, 11, 13)}
 
- \code{n_rand} divides up the data into a specified number of groups.
+ \code{n_rand} divides the data into a specified number of groups.
  Excess data points are placed randomly in groups (only 1 per group)
  \eqn{(e.g. 12, 11, 11, 11, 12)}
 
@@ -55,14 +55,21 @@ Implementation varies between methods. (Logical)}
 List of splitted data
 }
 \description{
-Divides up data into groups / windows by a range of methods.
+Divides data into groups by a range of methods.
  Splits data by these groups.
 }
 \examples{
-# Coming soon
+# Create dataframe
+df <- data.frame("x"=c(1:12),
+ "species" = rep(c('cat','pig', 'human'), 4),
+ "age" = sample(c(1:100), 12))
+
+# Using splt()
+df_list <- splt(df, 5, method = 'n_dist')
+
 }
 \seealso{
-Other grouping functions: \code{\link{fold}},
-  \code{\link{group_factor}}, \code{\link{group}}
+Other grouping functions: \code{\link{group_factor}},
+  \code{\link{group}}
 }
 
