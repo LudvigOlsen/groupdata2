@@ -1,6 +1,6 @@
 
 ## splt
-#' @title Split data using various methods.
+#' @title Split data by a range of methods.
 #' @description Divides data into groups by a range of methods.
 #'  Splits data by these groups.
 #' @details
@@ -9,6 +9,7 @@
 #' @inheritParams group_factor
 #' @return List of splitted data
 #' @family grouping functions
+#' @aliases split
 #' @examples
 #' # Create dataframe
 #' df <- data.frame("x"=c(1:12),
