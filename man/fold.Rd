@@ -16,7 +16,7 @@ fold(data, k = 5, cat_col = NULL, id_col = NULL, method = "n_dist")
  E.g. when predicting a binary variable (a or b), it is necessary to have
  both represented in every fold
 
- N.B. If also passing an id_col, cat_col must be a constant for that ID.}
+ N.B. If also passing an id_col, cat_col should be a constant for that ID.}
 
 \item{id_col}{Factor with IDs.
  This will be used to keep all rows with an ID in the same fold
@@ -31,20 +31,20 @@ fold(data, k = 5, cat_col = NULL, id_col = NULL, method = "n_dist")
  \code{greedy} divides up the data greedily given a specified group size
  \eqn{(e.g. 10, 10, 10, 10, 10, 7)}
 
- \code{n_dist} divides up the data into a specified number of groups and
+ \code{n_dist} divides the data into a specified number of groups and
  distributes excess data points across groups
  \eqn{(e.g. 11, 11, 12, 11, 12)}
 
- \code{n_fill} divides up the data into a specified number of groups and
+ \code{n_fill} divides the data into a specified number of groups and
  fills up groups with excess data points from the beginning
  \eqn{(e.g. 12, 12, 11, 11, 11)}
 
- \code{n_last} divides up the data into a specified number of groups.
+ \code{n_last} divides the data into a specified number of groups.
  The algorithm finds the most equal group sizes possible,
  using all data points. Only the last group is able to differ in size
  \eqn{(e.g. 11, 11, 11, 11, 13)}
 
- \code{n_rand} divides up the data into a specified number of groups.
+ \code{n_rand} divides the data into a specified number of groups.
  Excess data points are placed randomly in groups (only 1 per group)
  \eqn{(e.g. 12, 11, 11, 11, 12)}
 
@@ -57,15 +57,38 @@ fold(data, k = 5, cat_col = NULL, id_col = NULL, method = "n_dist")
 Dataframe with grouping factor for subsetting in cross-validation.
 }
 \description{
-Divides up data into groups by a range of methods.
+Divides data into groups by a range of methods.
  Balances a given categorical variable between folds and keeps (if possible)
  all data points with the same ID (e.g. participant_id) in the same fold.
 }
 \examples{
-# Coming soon
-}
-\seealso{
-Other grouping functions: \code{\link{group_factor}},
-  \code{\link{group}}, \code{\link{splt}}
+# Create dataframe
+df <- data.frame(
+ "participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
+ "age" = rep(sample(c(1:100), 6), 3),
+ "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
+ "score" = sample(c(1:100), 3*6))
+df <- df[order(df$participant),]
+df$session <- rep(c('1','2', '3'), 6)
+
+# Using fold()
+# Without cat_col and id_col
+df_folded <- fold(df, 3, method = 'n_dist')
+
+# With cat_col
+df_folded <- fold(df, 3, cat_col = 'diagnosis',
+ method = 'n_dist')
+
+# With id_col
+df_folded <- fold(df, 3, id_col = 'participant',
+ method = 'n_dist')
+
+# With cat_col and id_col
+df_folded <- fold(df, 3, cat_col = 'diagnosis',
+ id_col = 'participant', method = 'n_dist')
+
+# Order by folds
+df_folded <- df_folded[order(df_folded$.folds),]
+
 }
 

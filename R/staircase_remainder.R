@@ -1,6 +1,6 @@
 
 ## %staircase%
-#' @title Find remainder from staircase method
+#' @title Find remainder from staircase method.
 #' @description When using the staircase method,
 #' the last group might not have the size of the second last
 #' group + step size. Use \%staircase\% to find this remainder.
@@ -9,13 +9,15 @@
 #' @export
 #' @param size Size to staircase (Integer)
 #' @param step_size Step size (Integer)
-#' @return Remainder (Integer). Returns 0 if the last group
+#' @return Remainder (Integer).
+#' Returns 0 if the last group
 #' has the size of the second last group + step size.
 #' @family staircase tools
+#' @aliases staircase remainder
 #' @examples
 #' 100 %staircase% 2
 #'
-#' # Finding remainder of 0
+#' # Finding remainder with value 0
 #' size = 150
 #' for (step_size in c(1:30)){
 #'  if(size %staircase% step_size == 0){

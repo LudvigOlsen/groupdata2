@@ -2,7 +2,9 @@
 % Please edit documentation in R/staircase_remainder.R
 \name{\%staircase\%}
 \alias{\%staircase\%}
-\title{Find remainder from staircase method}
+\alias{remainder}
+\alias{staircase}
+\title{Find remainder from staircase method.}
 \usage{
 size \%staircase\% step_size
 }
@@ -12,7 +14,8 @@ size \%staircase\% step_size
 \item{step_size}{Step size (Integer)}
 }
 \value{
-Remainder (Integer). Returns 0 if the last group
+Remainder (Integer).
+Returns 0 if the last group
 has the size of the second last group + step size.
 }
 \description{
@@ -23,7 +26,7 @@ group + step size. Use \%staircase\% to find this remainder.
 \examples{
 100 \%staircase\% 2
 
-# Finding remainder of 0
+# Finding remainder with value 0
 size = 150
 for (step_size in c(1:30)){
  if(size \%staircase\% step_size == 0){

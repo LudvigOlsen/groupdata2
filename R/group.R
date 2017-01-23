@@ -1,9 +1,9 @@
 
 ## group
-#' @title Create groups / windows from your data.
-#' @description Divides up data into groups / windows by a range of methods.
+#' @title Create groups from your data.
+#' @description Divides data into groups by a range of methods.
 #'  Creates a grouping factor with 1s for group 1, 2s for group 2, etc.
-#'  Groups data by the grouping factor for easy use in dplyr pipelines.
+#'  Returns a dataframe grouped by the grouping factor for easy use in dplyr pipelines.
 #' @details
 #' @author Ludvig Renbo Olsen \{mail@@ludvigolsen.dk}
 #' @export
@@ -12,9 +12,21 @@
 #' @param col_name Name of added grouping factor
 #' @return Dataframe grouped by new grouping factor
 #' @family grouping functions
-#' @aliases window split group_by
+#' @aliases window binning split
 #' @examples
-#' # Coming soon
+#' # Create dataframe
+#' df <- data.frame("x"=c(1:12),
+#'  "species" = rep(c('cat','pig', 'human'), 4),
+#'  "age" = sample(c(1:100), 12))
+#'
+#' # Using group()
+#' df_grouped <- group(df, 5, method = 'n_dist')
+#'
+#' # Using group() with dplyr pipeline to get mean age
+#' df_means <- df %>%
+#'  group(5, method = 'n_dist') %>%
+#'  dplyr::summarise(mean_age = mean(age))
+#'
 group <- function(data, n, method = 'n_dist', force_equal = FALSE,
                   allow_zero = FALSE, return_factor = FALSE,
                   descending = FALSE, randomize = FALSE,

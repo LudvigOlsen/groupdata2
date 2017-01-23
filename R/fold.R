@@ -1,6 +1,6 @@
 ## fold
 #' @title Create balanced folds for cross-validation.
-#' @description Divides up data into groups by a range of methods.
+#' @description Divides data into groups by a range of methods.
 #'  Balances a given categorical variable between folds and keeps (if possible)
 #'  all data points with the same ID (e.g. participant_id) in the same fold.
 #' @details
@@ -12,7 +12,7 @@
 #'  E.g. when predicting a binary variable (a or b), it is necessary to have
 #'  both represented in every fold
 #'
-#'  N.B. If also passing an id_col, cat_col must be a constant for that ID.
+#'  N.B. If also passing an id_col, cat_col should be a constant for that ID.
 #' @param id_col Factor with IDs.
 #'  This will be used to keep all rows with an ID in the same fold
 #'  (if possible).
@@ -22,9 +22,35 @@
 #'  the same fold.
 #' @inheritParams group_factor
 #' @return Dataframe with grouping factor for subsetting in cross-validation.
-#' @family grouping functions
 #' @examples
-#' # Coming soon
+#' # Create dataframe
+#' df <- data.frame(
+#'  "participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
+#'  "age" = rep(sample(c(1:100), 6), 3),
+#'  "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
+#'  "score" = sample(c(1:100), 3*6))
+#' df <- df[order(df$participant),]
+#' df$session <- rep(c('1','2', '3'), 6)
+#'
+#' # Using fold()
+#' # Without cat_col and id_col
+#' df_folded <- fold(df, 3, method = 'n_dist')
+#'
+#' # With cat_col
+#' df_folded <- fold(df, 3, cat_col = 'diagnosis',
+#'  method = 'n_dist')
+#'
+#' # With id_col
+#' df_folded <- fold(df, 3, id_col = 'participant',
+#'  method = 'n_dist')
+#'
+#' # With cat_col and id_col
+#' df_folded <- fold(df, 3, cat_col = 'diagnosis',
+#'  id_col = 'participant', method = 'n_dist')
+#'
+#' # Order by folds
+#' df_folded <- df_folded[order(df_folded$.folds),]
+#'
 #' @importFrom dplyr group_by_ do %>%
 fold <- function(data, k=5, cat_col = NULL, id_col = NULL, method = 'n_dist'){
 

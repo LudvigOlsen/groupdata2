@@ -1,7 +1,7 @@
 
 ## splt
 #' @title Split data using various methods.
-#' @description Divides up data into groups / windows by a range of methods.
+#' @description Divides data into groups by a range of methods.
 #'  Splits data by these groups.
 #' @details
 #' @author Ludvig Renbo Olsen \{mail@@ludvigolsen.dk}
@@ -10,7 +10,14 @@
 #' @return List of splitted data
 #' @family grouping functions
 #' @examples
-#' # Coming soon
+#' # Create dataframe
+#' df <- data.frame("x"=c(1:12),
+#'  "species" = rep(c('cat','pig', 'human'), 4),
+#'  "age" = sample(c(1:100), 12))
+#'
+#' # Using splt()
+#' df_list <- splt(df, 5, method = 'n_dist')
+#'
 splt <- function(data, n, method = 'n_dist', force_equal = FALSE,
                  allow_zero = FALSE, descending = FALSE, randomize = FALSE){
 
