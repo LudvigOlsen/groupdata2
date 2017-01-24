@@ -1,9 +1,9 @@
-#' splitters: A package for creating groups from data
+#' groupdata2: A package for creating groups from data
 #'
-#' Create groups / windows from data with a range of methods.
-#' Split data to a list or create balanced folds for cross-validation.
+#' Subsetting Methods for Balanced Cross-Validation, Timeseries Windowing,
+#' and General Grouping and Splitting of Data.
 #'
-#' The splitters package provides four functions:
+#' The groupdata2 package provides four main functions:
 #' \code{group}, \code{group_factor}, \code{splt}, and \code{fold}
 #'
 #' @section group:
@@ -24,5 +24,5 @@
 #'
 #' @author Ludvig Renbo Olsen, \email{mail@@ludvigolsen.dk}
 #' @docType package
-#' @name splitters
+#' @name groupdata2
 NULL
