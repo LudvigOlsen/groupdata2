@@ -70,6 +70,9 @@ groups <- group_factor(df, 5, method = 'n_dist')
 df$groups <- groups
 
 }
+\author{
+Ludvig Renbo Olsen, \email{mail@ludvigolsen.dk}
+}
 \seealso{
 Other grouping functions: \code{\link{group}},
   \code{\link{splt}}

@@ -36,4 +36,7 @@ Go to \code{\link{splt}}
 
 Go to \code{\link{fold}}
 }
+\author{
+Ludvig Renbo Olsen, \email{mail@ludvigolsen.dk}
+}
 

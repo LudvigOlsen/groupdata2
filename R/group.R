@@ -4,8 +4,7 @@
 #' @description Divides data into groups by a range of methods.
 #'  Creates a grouping factor with 1s for group 1, 2s for group 2, etc.
 #'  Returns a dataframe grouped by the grouping factor for easy use in dplyr pipelines.
-#' @details
-#' @author Ludvig Renbo Olsen \{mail@@ludvigolsen.dk}
+#' @author Ludvig Renbo Olsen, \email{mail@@ludvigolsen.dk}
 #' @export
 #' @inheritParams group_factor
 #' @param return_factor Return only grouping factor (Logical)

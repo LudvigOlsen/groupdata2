@@ -22,7 +22,7 @@
 #'
 #' Go to \code{\link{fold}}
 #'
-#' @author Ludvig Renbo Olsen \{mail@@ludvigolsen.dk}
+#' @author Ludvig Renbo Olsen, \email{mail@@ludvigolsen.dk}
 #' @docType package
 #' @name splitters
 NULL

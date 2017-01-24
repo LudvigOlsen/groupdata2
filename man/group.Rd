@@ -82,6 +82,9 @@ df_means <- df \%>\%
  dplyr::summarise(mean_age = mean(age))
 
 }
+\author{
+Ludvig Renbo Olsen, \email{mail@ludvigolsen.dk}
+}
 \seealso{
 Other grouping functions: \code{\link{group_factor}},
   \code{\link{splt}}

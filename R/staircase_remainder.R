@@ -4,8 +4,7 @@
 #' @description When using the staircase method,
 #' the last group might not have the size of the second last
 #' group + step size. Use \%staircase\% to find this remainder.
-#' @details
-#' @author Ludvig Renbo Olsen \{mail@@ludvigolsen.dk}
+#' @author Ludvig Renbo Olsen, \email{mail@@ludvigolsen.dk}
 #' @export
 #' @param size Size to staircase (Integer)
 #' @param step_size Step size (Integer)
@@ -38,6 +37,9 @@
   # e.g. by looping through step sizes to find a
   # remainder of 0
   #
+
+  stopifnot(step_size > 0)
+
 
   # Get the number of groups with no staircasing
   n_groups <- ceiling(size/step_size)

@@ -213,6 +213,10 @@ check_convert_check_ <- function(data, n, method, force_equal,
 
     n <- convert_percentage_(n, data)
 
+    # If the percentage given returns 0
+    # throw an error
+    stopifnot(n > 0)
+
   }
 
 

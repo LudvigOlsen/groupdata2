@@ -34,6 +34,9 @@ for (step_size in c(1:30)){
  }}
 
 }
+\author{
+Ludvig Renbo Olsen, \email{mail@ludvigolsen.dk}
+}
 \seealso{
 Other staircase tools: \code{\link{group_factor}}
 }

@@ -4,9 +4,16 @@
 #'  Balances a given categorical variable between folds and keeps (if possible)
 #'  all data points with the same ID (e.g. participant_id) in the same fold.
 #' @details
-#' @author Ludvig Renbo Olsen \{mail@@ludvigolsen.dk}
+#'  cat_col: data is first subset by cat_col.
+#'  Subsets are folded/grouped and merged. ||
+#'  id_col: folds are created from unique IDs. ||
+#'  cat_col AND id_col: data is subset by cat_col
+#'  and folds are created from unique IDs in each subset.
+#'  Subsets are merged.
+#' @author Ludvig Renbo Olsen, \email{mail@@ludvigolsen.dk}
 #' @export
-#' @param k Number of folds
+#' @param k Number of folds, fold size, or step size (depending on chosen method)
+#'  Given as whole numbers or percentage (0 < n < 1).
 #' @param cat_col Categorical variable to balance between folds.
 #'
 #'  E.g. when predicting a binary variable (a or b), it is necessary to have

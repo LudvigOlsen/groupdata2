@@ -9,7 +9,8 @@ fold(data, k = 5, cat_col = NULL, id_col = NULL, method = "n_dist")
 \arguments{
 \item{data}{Dataframe or Vector}
 
-\item{k}{Number of folds}
+\item{k}{Number of folds, fold size, or step size (depending on chosen method)
+Given as whole numbers or percentage (0 < n < 1).}
 
 \item{cat_col}{Categorical variable to balance between folds.
 
@@ -61,6 +62,14 @@ Divides data into groups by a range of methods.
  Balances a given categorical variable between folds and keeps (if possible)
  all data points with the same ID (e.g. participant_id) in the same fold.
 }
+\details{
+cat_col: data is first subset by cat_col.
+ Subsets are folded/grouped and merged. ||
+ id_col: folds are created from unique IDs. ||
+ cat_col AND id_col: data is subset by cat_col
+ and folds are created from unique IDs in each subset.
+ Subsets are merged.
+}
 \examples{
 # Create dataframe
 df <- data.frame(
@@ -90,5 +99,8 @@ df_folded <- fold(df, 3, cat_col = 'diagnosis',
 # Order by folds
 df_folded <- df_folded[order(df_folded$.folds),]
 
+}
+\author{
+Ludvig Renbo Olsen, \email{mail@ludvigolsen.dk}
 }
 

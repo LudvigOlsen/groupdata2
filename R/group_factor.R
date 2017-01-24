@@ -4,8 +4,7 @@
 #' @description Divides data into groups by a range of methods.
 #'  Creates and returns a grouping factor
 #'  with 1s for group 1, 2s for group 2, etc.
-#' @details
-#' @author Ludvig Renbo Olsen \{mail@@ludvigolsen.dk}
+#' @author Ludvig Renbo Olsen, \email{mail@@ludvigolsen.dk}
 #' @export
 #' @param data Dataframe or Vector
 #' @param n Number of groups, group size, or step size
