@@ -22,6 +22,4 @@ devtools::install_github("LudvigOlsen/groupdata2")
 
 ## To do  
 * Refine vignette  
-* Set up testing  
-* Change/add aliases for functions  
 * fold() - implement force_equal (n.b. should be special for greedy and staircasing)  
