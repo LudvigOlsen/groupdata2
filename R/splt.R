@@ -8,7 +8,6 @@
 #' @inheritParams group_factor
 #' @return List of splitted data
 #' @family grouping functions
-#' @aliases split
 #' @examples
 #' # Create dataframe
 #' df <- data.frame("x"=c(1:12),
