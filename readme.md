@@ -24,6 +24,9 @@ install.packages("devtools")
 devtools::install_github("LudvigOlsen/groupdata2")  
 
 ## To do  
-* Refine vignette  
+* Refine vignettes 
 * fold() - implement force_equal (n.b. should be special for greedy and staircasing)  
 * datatables 
+* Find suitable license
+* Change version number
+* Send to CRAN
