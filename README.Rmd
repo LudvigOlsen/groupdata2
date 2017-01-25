@@ -36,7 +36,9 @@ Other tools:
 
 ## Installation  
 Development version:  
+
 install.packages("devtools")  
+
 devtools::install_github("LudvigOlsen/groupdata2")  
 
 ## To do  
@@ -47,56 +49,65 @@ devtools::install_github("LudvigOlsen/groupdata2")
 
 ## Functions  
 ### group_factor()  
-Returns a factor with group numbers, e.g. 111222333.  
+Returns a factor with group numbers, e.g. (1,1,1,2,2,2,3,3,3).  
+
 This can be used to subset, aggregate, group_by, etc.   
 
 Create equally sized groups by setting force_equal = TRUE  
+
 Randomize grouping factor by setting randomize = TRUE  
 
 ### group()  
 Returns the given data as a dataframe with added grouping factor made with group_factor(). The dataframe is grouped by the grouping factor for easy use with dplyr pipelines.  
 
 ### splt()  
-Splits the given data into the specified groups made with group_factor() and returns them in a list.  
+Creates the specified groups with group_factor() and splits the given data by the grouping factor with base::split. Returns the splits in a list.  
 
 ### fold()  
 Creates (optionally) balanced folds for use in cross-validation. Balance folds on one categorical variable and/or make sure that all datapoints sharing an ID is in the same fold.  
  
 ## Methods
 There are currently 6 methods available. They can be divided into 3 categories.  
+
 Examples of group sizes are based on a vector with 57 elements.  
 
 ### Specify group size
 ##### Method: greedy
 Divides up the data greedily given a specified group size.  
+
 E.g. group sizes: 10, 10, 10, 10, 10, 7   
 
 ### Specify number of groups
 ##### Method: n_dist (Default)
 Divides the data into a specified number of groups and 
 distributes excess data points across groups.  
+
 E.g. group sizes: 11, 11, 12, 11, 12  
 
 ##### Method: n_fill
 Divides the data into a specified number of groups and 
-fills up groups with excess data points from the beginning.  
+fills up groups with excess data points from the beginning.   
+
 E.g. group sizes: 12, 12, 11, 11, 11  
 
 ##### Method: n_last
 Divides the data into a specified number of groups. 
 The algorithm finds the most equal group sizes possible, 
 using all data points. Only the last group is able to differ in size.  
+
 E.g. group sizes: 11, 11, 11, 11, 13  
 
 ##### Method: n_rand
 Divides the data into a specified number of groups. 
 Excess data points are placed randomly in groups (only 1 per group).  
+
 E.g. group sizes: 12, 11, 11, 11, 12  
 
 ### Specify step size
 ##### Method: staircase
 Uses step_size to divide up the data. 
 Group size increases with 1 step for every group, until there is no more data.  
+
 E.g. group sizes: 5, 10, 15, 20, 7
 
 
@@ -169,4 +180,11 @@ df_folded %>%
   kable()
 
 ```
+
+**Notice** that the we now have the opportunity to include the *session* variable and/or use *participant* as a random effect in our model when doing cross-validation, as any participant will only appear in one fold.  
+
+We also have a balance in the representation of each diagnosis, which could give us better, more consistent results.  
+
+
+
 

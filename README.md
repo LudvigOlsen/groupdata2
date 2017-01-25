@@ -25,7 +25,9 @@ Installation
 ------------
 
 Development version:
+
 install.packages("devtools")
+
 devtools::install\_github("LudvigOlsen/groupdata2")
 
 To do
@@ -41,10 +43,12 @@ Functions
 
 ### group\_factor()
 
-Returns a factor with group numbers, e.g. 111222333.
+Returns a factor with group numbers, e.g. (1,1,1,2,2,2,3,3,3).
+
 This can be used to subset, aggregate, group\_by, etc.
 
 Create equally sized groups by setting force\_equal = TRUE
+
 Randomize grouping factor by setting randomize = TRUE
 
 ### group()
@@ -53,7 +57,7 @@ Returns the given data as a dataframe with added grouping factor made with group
 
 ### splt()
 
-Splits the given data into the specified groups made with group\_factor() and returns them in a list.
+Creates the specified groups with group\_factor() and splits the given data by the grouping factor with base::split. Returns the splits in a list.
 
 ### fold()
 
@@ -63,6 +67,7 @@ Methods
 -------
 
 There are currently 6 methods available. They can be divided into 3 categories.
+
 Examples of group sizes are based on a vector with 57 elements.
 
 ### Specify group size
@@ -70,6 +75,7 @@ Examples of group sizes are based on a vector with 57 elements.
 ##### Method: greedy
 
 Divides up the data greedily given a specified group size.
+
 E.g. group sizes: 10, 10, 10, 10, 10, 7
 
 ### Specify number of groups
@@ -77,21 +83,25 @@ E.g. group sizes: 10, 10, 10, 10, 10, 7
 ##### Method: n\_dist (Default)
 
 Divides the data into a specified number of groups and distributes excess data points across groups.
+
 E.g. group sizes: 11, 11, 12, 11, 12
 
 ##### Method: n\_fill
 
 Divides the data into a specified number of groups and fills up groups with excess data points from the beginning.
+
 E.g. group sizes: 12, 12, 11, 11, 11
 
 ##### Method: n\_last
 
 Divides the data into a specified number of groups. The algorithm finds the most equal group sizes possible, using all data points. Only the last group is able to differ in size.
+
 E.g. group sizes: 11, 11, 11, 11, 13
 
 ##### Method: n\_rand
 
 Divides the data into a specified number of groups. Excess data points are placed randomly in groups (only 1 per group).
+
 E.g. group sizes: 12, 11, 11, 11, 12
 
 ### Specify step size
@@ -99,6 +109,7 @@ E.g. group sizes: 12, 11, 11, 11, 12
 ##### Method: staircase
 
 Uses step\_size to divide up the data. Group size increases with 1 step for every group, until there is no more data.
+
 E.g. group sizes: 5, 10, 15, 20, 7
 
 Examples
@@ -128,18 +139,18 @@ group(df, 5, method = 'n_dist') %>%
 
 |    x| species |  age| .groups |
 |----:|:--------|----:|:--------|
-|    1| cat     |   90| 1       |
-|    2| pig     |   50| 1       |
-|    3| human   |   10| 2       |
-|    4| cat     |   88| 2       |
-|    5| pig     |   37| 3       |
-|    6| human   |   61| 3       |
-|    7| cat     |   53| 3       |
-|    8| pig     |   96| 4       |
-|    9| human   |   69| 4       |
-|   10| cat     |   92| 5       |
-|   11| pig     |   66| 5       |
-|   12| human   |   59| 5       |
+|    1| cat     |   24| 1       |
+|    2| pig     |   53| 1       |
+|    3| human   |   61| 2       |
+|    4| cat     |    9| 2       |
+|    5| pig     |   85| 3       |
+|    6| human   |   52| 3       |
+|    7| cat     |   99| 3       |
+|    8| pig     |   87| 4       |
+|    9| human   |   83| 4       |
+|   10| cat     |   41| 5       |
+|   11| pig     |    6| 5       |
+|   12| human   |   69| 5       |
 
 ``` r
 
@@ -152,11 +163,11 @@ df %>%
 
 | .groups |  mean\_age|
 |:--------|----------:|
-| 1       |   70.00000|
-| 2       |   49.00000|
-| 3       |   50.33333|
-| 4       |   82.50000|
-| 5       |   72.33333|
+| 1       |   38.50000|
+| 2       |   35.00000|
+| 3       |   78.66667|
+| 4       |   85.00000|
+| 5       |   38.66667|
 
 ### fold()
 
@@ -224,3 +235,7 @@ df_folded %>%
 | 2      | b         | 5           |    3|
 | 3      | a         | 3           |    3|
 | 3      | b         | 2           |    3|
+
+**Notice** that the we now have the opportunity to include the *session* variable and/or use *participant* as a random effect in our model when doing cross-validation, as any participant will only appear in one fold.
+
+We also have a balance in the representation of each diagnosis, which could give us better, more consistent results.
