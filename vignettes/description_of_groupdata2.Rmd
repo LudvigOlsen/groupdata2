@@ -93,13 +93,13 @@ Returns a factor with group numbers, e.g. 111222333.
 This can be used to subset, aggregate, group_by, etc.   
 
 ### group()  
-Returns the given data as a dataframe with the mentioned grouping factor. The dataframe is grouped by the grouping factor for easy use with dplyr pipelines.  
+Returns the given data as a dataframe with added grouping factor made with group_factor(). The dataframe is grouped by the grouping factor for easy use with dplyr pipelines.  
 
 ### splt()  
-Splits the given data into the specified groups and returns them in a list.  
+Splits the given data into the specified groups made with group_factor() and returns them in a list.  
 
 ### fold()  
-Creates (optionally) balanced folds for use in cross-validation.  
+Creates (optionally) balanced folds for use in cross-validation. Balance folds on one categorical variable and/or make sure that all datapoints sharing an ID is in the same fold.  
 
 ## Groups, windows or folds?  
 When working with time series we would often refer to the kind of groups made by group_factor(), group() and splt() as **windows**. 
