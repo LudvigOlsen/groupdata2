@@ -43,6 +43,8 @@ options(tibble.print_min = 4L, tibble.print_max = 4L)
 
 ```
 
+# Introduction
+
 When working with data you might want to divide it into groups and subgroups for processing or descriptive statistics. It can help reduce the amount of information and make it easier to compare groups of data.  
 groupdata2 is a set of tools for creating groups from your data. It consists of four, easy to use, main functions, namely **group_factor**(), **group**(), **splt**(), and **fold**().  
 
@@ -137,7 +139,7 @@ kable(df_folded, align='c')
 
 ```
 
-We can count how many of each diagnosis are in each fold like this:  
+We can count how many of each diagnosis there are in each fold like this:  
 
 ```{r}
 df_folded %>% 
@@ -400,7 +402,6 @@ Sure enough, the last greedy group is smaller. This means that there are only 2 
 We could also get the means of each subgroup. To do this we first group by .groups and then .subgroups. Then we take the mean of all subgroups. If we had just grouped by .subgroups, we would have taken the mean of all the datapoints in each subgroup level. This would have left us with (in this case) 3 means, instead of 1 per subgroup level per main group level.  
 
 ```{r}
-
 ts_means <- ts %>%
   
   # Convert .subgroups to an integer and then to a factor
@@ -436,7 +437,9 @@ ggplot(ts_means, aes(seq_along(mean), mean)) +
 # Outro
 
 Well done, you made it to the end of this introduction to groupdata2! If you want to know more about the various methods and arguments, you can read the [Description of groupdata2](description_of_groupdata2.html)  
-If you have any questions or comments to this vignette (tutorial) or groupdata2, please send them to me at r-pkgs@ludvigolsen.dk so I can make improvements.  
+If you have any questions or comments to this vignette (tutorial) or groupdata2, please send them to me at  
+r-pkgs@ludvigolsen.dk   
+so I can make improvements.  
 
 &nbsp; 
 &nbsp; 
