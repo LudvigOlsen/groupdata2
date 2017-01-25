@@ -1,3 +1,6 @@
+# R CMD check NOTE handling
+if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
+
 ## fold
 #' @title Create balanced folds for cross-validation.
 #' @description Divides data into groups by a range of methods.
@@ -30,6 +33,10 @@
 #' @inheritParams group_factor
 #' @return Dataframe with grouping factor for subsetting in cross-validation.
 #' @examples
+#' # Attach packages
+#' library(groupdata2)
+#' library(dplyr)
+#'
 #' # Create dataframe
 #' df <- data.frame(
 #'  "participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),

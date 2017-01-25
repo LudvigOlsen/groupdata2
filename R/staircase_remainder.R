@@ -1,3 +1,6 @@
+# R CMD check NOTE handling
+if(getRversion() >= "2.15.1")  utils::globalVariables(c("groups", "n_elements"))
+
 
 ## %staircase%
 #' @title Find remainder from staircase method.
@@ -14,6 +17,9 @@
 #' @family staircase tools
 #' @aliases staircase remainder
 #' @examples
+#' # Attach packages
+#' library(groupdata2)
+#'
 #' 100 %staircase% 2
 #'
 #' # Finding remainder with value 0
@@ -38,6 +44,12 @@
   # remainder of 0
   #
 
+  ###
+  # Handling R CMD check NOTEs
+  #groups <- NULL
+  #n_elements <- NULL
+  ###
+
   stopifnot(step_size > 0)
 
 
@@ -50,7 +62,7 @@
   # Create a column with number of elements (group number times step size)
   # Create a column with cumulative sum of the number of elements
   group_data <- group_data %>%
-    dplyr::mutate(n_elements = groups*step_size,
+    dplyr::mutate(n_elements = groups * step_size,
                   cumsum = cumsum(n_elements))
 
   # Get the first row where cumsum is larger or equal to 'size'
