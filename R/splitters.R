@@ -1,5 +1,6 @@
 ## Dataframe and vector splitters
 
+#' @importFrom utils head tail
 dsplit_ <- function(data, n, method, force_equal = FALSE, allow_zero = FALSE,
                    descending = FALSE, randomize = FALSE){
 
