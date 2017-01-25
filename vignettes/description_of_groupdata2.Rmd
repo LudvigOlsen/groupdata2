@@ -10,7 +10,7 @@ abstract: |
   For a more gentle introduction to groupdata2, please see [Introduction to groupdata2](introduction_to_groupdata2.html)
   &nbsp;  
   &nbsp;  
-  Contact author at mail@ludvigolsen.dk
+  Contact author at r-pkgs@ludvigolsen.dk
   &nbsp; 
   &nbsp;  
   
