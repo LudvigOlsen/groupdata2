@@ -12,10 +12,11 @@ Started in Oct. 2016
 Contact at: <r-pkgs@ludvigolsen.dk>
 
 Main functions:
-\* group\_factor
-\* group
-\* splt
-\* fold
+
+-   group\_factor
+-   group
+-   splt
+-   fold
 
 Other tools:
 \* %staircase%
@@ -127,18 +128,18 @@ group(df, 5, method = 'n_dist') %>%
 
 |    x| species |  age| .groups |
 |----:|:--------|----:|:--------|
-|    1| cat     |   75| 1       |
-|    2| pig     |   76| 1       |
-|    3| human   |   63| 2       |
-|    4| cat     |   27| 2       |
-|    5| pig     |   41| 3       |
-|    6| human   |   77| 3       |
-|    7| cat     |   84| 3       |
-|    8| pig     |   19| 4       |
-|    9| human   |    2| 4       |
-|   10| cat     |   44| 5       |
-|   11| pig     |   51| 5       |
-|   12| human   |   92| 5       |
+|    1| cat     |   90| 1       |
+|    2| pig     |   50| 1       |
+|    3| human   |   10| 2       |
+|    4| cat     |   88| 2       |
+|    5| pig     |   37| 3       |
+|    6| human   |   61| 3       |
+|    7| cat     |   53| 3       |
+|    8| pig     |   96| 4       |
+|    9| human   |   69| 4       |
+|   10| cat     |   92| 5       |
+|   11| pig     |   66| 5       |
+|   12| human   |   59| 5       |
 
 ``` r
 
@@ -151,11 +152,11 @@ df %>%
 
 | .groups |  mean\_age|
 |:--------|----------:|
-| 1       |   75.50000|
-| 2       |   45.00000|
-| 3       |   67.33333|
-| 4       |   10.50000|
-| 5       |   62.33333|
+| 1       |   70.00000|
+| 2       |   49.00000|
+| 3       |   50.33333|
+| 4       |   82.50000|
+| 5       |   72.33333|
 
 ### fold()
 
