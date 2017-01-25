@@ -1,7 +1,7 @@
 Package: groupdata2
 Title: Grouping And Splitting Of Data
 Version: 0.0.0.9000
-Authors@R: person("Ludvig Renbo", "Olsen", email = "mail@ludvigolsen.dk", role = c("aut", "cre"))
+Authors@R: person("Ludvig Renbo", "Olsen", email = "r-pkgs@ludvigolsen.dk", role = c("aut", "cre"))
 Description: Subsetting Methods for Balanced Cross-Validation, Timeseries Windowing,
     and General Grouping and Splitting of Data.
 Depends:
@@ -17,5 +17,7 @@ Suggests: ggplot2,
     knitr,
     rmarkdown,
     tidyr,
-    testthat
+    testthat,
+    lmerTest,
+    hydroGOF
 VignetteBuilder: knitr

@@ -71,7 +71,7 @@ df$groups <- groups
 
 }
 \author{
-Ludvig Renbo Olsen, \email{mail@ludvigolsen.dk}
+Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 }
 \seealso{
 Other grouping functions: \code{\link{group}},

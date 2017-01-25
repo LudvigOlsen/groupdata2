@@ -69,7 +69,7 @@ df_list <- splt(df, 5, method = 'n_dist')
 
 }
 \author{
-Ludvig Renbo Olsen, \email{mail@ludvigolsen.dk}
+Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 }
 \seealso{
 Other grouping functions: \code{\link{group_factor}},

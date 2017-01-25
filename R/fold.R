@@ -10,7 +10,7 @@
 #'  cat_col AND id_col: data is subset by cat_col
 #'  and folds are created from unique IDs in each subset.
 #'  Subsets are merged.
-#' @author Ludvig Renbo Olsen, \email{mail@@ludvigolsen.dk}
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 #' @export
 #' @param k Number of folds, fold size, or step size (depending on chosen method)
 #'  Given as whole numbers or percentage (0 < n < 1).
