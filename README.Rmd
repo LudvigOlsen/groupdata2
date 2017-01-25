@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 # groupdata2
 
 R package: Subsetting Methods for Balanced Cross-Validation, 
-Timeseries Windowing, and General Grouping and Splitting of Data.  
+Time Series Windowing, and General Grouping and Splitting of Data.  
 
 By Ludvig R. Olsen  
 Cognitive Science, Aarhus University  

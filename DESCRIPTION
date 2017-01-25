@@ -3,7 +3,7 @@ Title: Grouping And Splitting Of Data
 Version: 0.0.0.9000
 Date: 2017-01-25
 Authors@R: person("Ludvig Renbo", "Olsen", email = "r-pkgs@ludvigolsen.dk", role = c("aut", "cre"))
-Description: Subsetting Methods for Balanced Cross-Validation, Timeseries Windowing,
+Description: Subsetting Methods for Balanced Cross-Validation, Time Series Windowing,
     and General Grouping and Splitting of Data.
 Depends:
     R (>= 3.3.1)

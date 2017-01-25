@@ -6,7 +6,7 @@
 \alias{groupdata2-package}
 \title{groupdata2: A package for creating groups from data}
 \description{
-Subsetting Methods for Balanced Cross-Validation, Timeseries Windowing,
+Subsetting Methods for Balanced Cross-Validation, Time Series Windowing,
 and General Grouping and Splitting of Data.
 }
 \details{

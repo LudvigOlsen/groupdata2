@@ -1,6 +1,6 @@
 #' groupdata2: A package for creating groups from data
 #'
-#' Subsetting Methods for Balanced Cross-Validation, Timeseries Windowing,
+#' Subsetting Methods for Balanced Cross-Validation, Time Series Windowing,
 #' and General Grouping and Splitting of Data.
 #'
 #' The groupdata2 package provides four main functions:

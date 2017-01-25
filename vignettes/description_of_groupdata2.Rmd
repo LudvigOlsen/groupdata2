@@ -5,7 +5,7 @@ author:
 date: "`r Sys.Date()`"
 abstract: |
   groupdata2 is a set of subsetting methods for easy grouping, windowing, folding and splitting of data.
-  Create balanced folds for cross-validation or divide a timeseries into windows.  
+  Create balanced folds for cross-validation or divide a time series into windows.  
   This vignette contains descriptions of functions and methods, along with simple examples of usage. 
   For a more gentle introduction to groupdata2, please see [Introduction to groupdata2](introduction_to_groupdata2.html)
   &nbsp;  
@@ -102,7 +102,7 @@ Splits the given data into the specified groups and returns them in a list.
 Creates (optionally) balanced folds for use in cross-validation.  
 
 ## Groups, windows or folds?  
-When working with timeseries we would often refer to the kind of groups made by group_factor(), group() and splt() as **windows**. 
+When working with time series we would often refer to the kind of groups made by group_factor(), group() and splt() as **windows**. 
 In this vignette, these will be referred to as groups.  
 
 fold() creates balanced groups for cross-validation by using group(). These are referred to as **folds**.  
