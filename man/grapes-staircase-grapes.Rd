@@ -24,6 +24,9 @@ the last group might not have the size of the second last
 group + step size. Use \%staircase\% to find this remainder.
 }
 \examples{
+# Attach packages
+library(groupdata2)
+
 100 \%staircase\% 2
 
 # Finding remainder with value 0

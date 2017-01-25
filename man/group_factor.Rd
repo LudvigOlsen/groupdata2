@@ -60,6 +60,10 @@ Divides data into groups by a range of methods.
  with 1s for group 1, 2s for group 2, etc.
 }
 \examples{
+# Attach packages
+library(groupdata2)
+library(dplyr)
+
 # Create a dataframe
 df <- data.frame("x"=c(1:12),
  "species" = rep(c('cat','pig', 'human'), 4),

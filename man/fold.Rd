@@ -71,6 +71,10 @@ cat_col: data is first subset by cat_col.
  Subsets are merged.
 }
 \examples{
+# Attach packages
+library(groupdata2)
+library(dplyr)
+
 # Create dataframe
 df <- data.frame(
  "participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),

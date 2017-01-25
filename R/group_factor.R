@@ -47,6 +47,10 @@
 #' @family grouping functions
 #' @family staircase tools
 #' @examples
+#' # Attach packages
+#' library(groupdata2)
+#' library(dplyr)
+#'
 #' # Create a dataframe
 #' df <- data.frame("x"=c(1:12),
 #'  "species" = rep(c('cat','pig', 'human'), 4),
