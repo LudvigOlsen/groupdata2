@@ -1,11 +1,13 @@
 ## Test environments
-* local OS X install, R 3.3.1
+* local OS X install, R 3.3.1  
+* win-builder
 
-## R CMD check results
+## R CMD check results  
+There were no ERRORs, WARNINGs or NOTEs.  
 
 ## Downstream dependencies
-I used devtools::use_revdep() to check dependencies and it returned:
-  No ERRORs or WARNINGs found :)
+I used devtools::revdep_check() to run R CMD check on all downstream dependencies and it returned:  
+  No ERRORs or WARNINGs found  
 
 
-This is my first submission.
+This is my first submission.  
