@@ -24,7 +24,7 @@ Started in Oct. 2016
 Contact at:
 r-pkgs@ludvigolsen.dk
 
-Main functions:  
+Main functions:   
 * group_factor  
 * group  
 * splt  
