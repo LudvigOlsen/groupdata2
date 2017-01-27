@@ -55,7 +55,7 @@ If, for instance, you have a column in a dataframe with quarterly measurements, 
 
 **splt**() takes in either a dataframe or vector, creates a grouping factor, and splits the given data by this factor using base::split. Often it will be faster to use **group**() instead of **splt**(). I also find it easier to work with the output of **group**() .
 
-**fold**() is possibly the function I find the most exciting. It creates (optionally) balanced folds for cross-validation. It can balance folds on one categorical variable (e.g. diagnosis) and/or is able to keep all datapoints with the same ID (e.g. participant) in the same fold, allowing us include f.i. how a participant changed over time, or similar variables, in our model.  
+**fold**() is possibly the function I find the most exciting. It creates (optionally) balanced folds for cross-validation. It can balance folds on one categorical variable (e.g. diagnosis) and/or is able to keep all datapoints with the same ID (e.g. participant) in the same fold.
 
 Cross-validation is used for model selection by testing how a model performs on data that it wasn't trained on - i.e. estimating out-of-sample error. It is done by first dividing the data into groups called *folds*. Say we choose to divide the data into **5** folds. Then we *train* a model on the first four folds and *test* it on the fifth fold. We then train on folds 2,3,4,5 and test on the first fold. We continue changing which fold is the test fold until all folds have been test folds (i.e. we train and test 5 times in total). In the end we get the average performance of the models and compare these to other cross-validated models. This is a great tool, and **fold**()  makes it even more powerful. To explain this further, let's look at some data and do some grouping and cross-validation!
 
@@ -107,15 +107,16 @@ lm(score~diagnosis, df) %>%
 The linear model supports the hypothesis, as scores of participants with diagnosis 'b' are significantly larger than those of participants with diagnosis 'a'.
 
 To improve on our model we might also want to use the information we have about age and session. Perhaps the older participants do better than the younger? And maybe participants with the diagnosis 'b' are better at learning over time (session) than those with diagnosis 'a'? By including such information in our model we might explain more than if we are just looking at the diagnosis. We could also use participant as random effect, to factor out the personal differences.  
-Let's list a bunch of possible models that we will then compare later with cross-validation! In a moment we will be making a simple cross-validation function that needs the model passed in the format below. Instead of looking at summaries for each model, we will find the best model with cross-validation and only look at the summary for that one.  
+Let's list a bunch of possible models that we will then compare later with cross-validation! In a moment we will be making a simple cross-validation function that needs the model passed in the format below. Instead of looking at summaries for each model, we will find the best model with cross-validation and only look at the summary for that one. Notice that when we want to compare models, we want to keep the same random effects for all the models, so we are only comparing the combination of fixed effects.  
 
 ```{r}
-m1 <- 'score~diagnosis'
-m2 <- 'score~diagnosis+age'
-m3 <- 'score~diagnosis*session'
-m4 <- 'score~diagnosis*session+age'
-m5 <- 'score~diagnosis+age+(1|participant)'
-m6 <- 'score~diagnosis*session+age+(1|participant)'
+m0 <- 'score~1+(1|participant)'
+m1 <- 'score~diagnosis+(1|participant)'
+m2 <- 'score~diagnosis+age+(1|participant)'
+m3 <- 'score~diagnosis+session+(1|participant)'
+m4 <- 'score~diagnosis*session+(1|participant)'
+m5 <- 'score~diagnosis*session+age+(1|participant)'
+
 ```
 
 To do the cross-validation we first need to create the folds. We can do this with **fold**() like this:  
@@ -245,37 +246,36 @@ crossvalidate <- function(df, k, model, dependent, random){
 Now that we have the cross-validation function, let us test the 6 models we specified earlier.
 
 ```{r}
+m0
+crossvalidate(df_folded, k=3, model=m0, dependent='score', random=TRUE)
+
 m1
-crossvalidate(df_folded, k=3, model=m1, dependent='score', random=FALSE)
+crossvalidate(df_folded, k=3, model=m1, dependent='score', random=TRUE)
 
 m2
-crossvalidate(df_folded, k=3, model=m2, dependent='score', random=FALSE)
+crossvalidate(df_folded, k=3, model=m2, dependent='score', random=TRUE)
 
 m3
-crossvalidate(df_folded, k=3, model=m3, dependent='score', random=FALSE)
+crossvalidate(df_folded, k=3, model=m3, dependent='score', random=TRUE)
 
 m4
-crossvalidate(df_folded, k=3, model=m4, dependent='score', random=FALSE)
+crossvalidate(df_folded, k=3, model=m4, dependent='score', random=TRUE)
 
 m5
 crossvalidate(df_folded, k=3, model=m5, dependent='score', random=TRUE)
 
-m6
-crossvalidate(df_folded, k=3, model=m6, dependent='score', random=TRUE)
-
 ```
 
-The model m3 has the least error on average in its predictions and so, we assume that it is the best predictor of out-of-sample data. Let's look at its summary:
+The model m4 has the least error on average in its predictions and so, we assume that it is the best predictor of out-of-sample data. Let's look at its summary:
 
 ```{r}
+lmer(m4, df_folded) %>%
+  summary()
 
-lm(m3, df_folded) %>%
-  summary() %>%
-  tidy()
 
 ```
 
-In this model, we have a significant interaction between diagnosis and session. The main effect of diagnosis is no longer significant, while the main effect of session is. So this result is quite different from the first model we tried.
+In this model, we have a significant interaction between diagnosis and session. The interpretation of this result would be quite different from that of the first model we tried.
 
 
 # Windowing time series
@@ -430,7 +430,7 @@ ts %>% tail(17) %>% kable()
 
 ```
 
-Sure enough, the last greedy group (8) is smaller. This means that there are only 2 subgroups instead of 3. To solve this, so the time series is a factor sorted by its integers, we first convert it to an integer and then to a factor.  
+Sure enough, the last greedy group (8) is smaller. This means that there are only 2 subgroups instead of 3. To solve this we first convert it to an integer and then to a factor.  
 
 We could also get the means of each subgroup. To do this we first group by .groups and then .subgroups. Then we take the mean of all subgroups. If we had just grouped by .subgroups, we would have taken the mean of all the datapoints in each subgroup level. This would have left us with (in this case) 3 means, instead of 1 per subgroup level per main group level.  
 Now that we are at it, we might as well see find the ranges for each subgroup as well.  
