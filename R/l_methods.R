@@ -1,12 +1,14 @@
-## M_ methods ("manual input")
+## l_ methods ("list x")
 # Methods where you specify n as a list or vector
 
 
-# method: m_sizes
+# method: l_sizes
 # Creates grouping factor from given list of window sizes
 # Under development
 
-m_sizes <- function(n){
+# #' @param n List of group sizes
+# #' @export
+l_sizes <- function(n){
 
   # n: vector or list of group sizes
 
@@ -20,21 +22,24 @@ m_sizes <- function(n){
 }
 
 # system.time(
-#   a <- m_sizes(c(30000,50000,60000, 30000,50000,60000,
+#   a <- l_sizes(c(30000,50000,60000, 30000,50000,60000,
 #                  30000,50000,60000, 30000,50000,60000,
 #                  30000,50000,60000, 30000,50000,60000))
 # )
 
 
-# method: m_ind
+# method: l_starts
 # Takes values to start groups at
 # Allows skipping of values
 # Under development
 
-m_ind <- function(v, n){
+# #' @param v Vector
+# #' @param n List of values to start groups from
+# #' @export
+l_starts <- function(v, n){
 
   #
-  # method: m_ind
+  # method: l_starts
   # Takes values to start groups at
   # Allows skipping of values
   # Under development
@@ -114,15 +119,15 @@ m_ind <- function(v, n){
   group_sizes <- append(group_sizes, (length(v)-sum(group_sizes)))
 
   # Return the grouping factor
-  return(m_sizes(group_sizes))
+  return(l_sizes(group_sizes))
 
 }
 
 # sampleData <- rep(sample(1:1000, 1000),100)
-# length(sampleData)
+#length(sampleData)
 #
 # system.time(
-#   m_ind(sampleData, n=sample(1:1000,100))
+#   l_starts(sampleData, n=sample(1:1000,100))
 # )
 #
 # system.time(
