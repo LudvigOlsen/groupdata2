@@ -19,6 +19,7 @@ Suggests: ggplot2,
     knitr,
     rmarkdown,
     tidyr,
+    broom,
     testthat,
     lmerTest,
     hydroGOF
