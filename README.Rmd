@@ -32,6 +32,7 @@ Main functions:
 * fold  
   
 Other tools:  
+
 * %staircase%  
 
 ## Installation  
