@@ -173,17 +173,17 @@ l_sizes <- function(v, n, fixed = FALSE){
 
 }
 
-system.time(
-
-  for (i in 5:100){
-
-    a <- l_sizes(c(1:i), c(0.1,0.4,0.5), fixed = FALSE)
-  }
-)
-
-system.time(l_sizes(c(1:20), c(0.2, 0.2, 0.2), fixed = TRUE))
-
-# Create a balanced partition() function
+# system.time(
+#
+#   for (i in 5:100){
+#
+#     a <- l_sizes(c(1:i), c(0.1,0.4,0.5), fixed = FALSE)
+#   }
+# )
+#
+# system.time(l_sizes(c(1:20), c(0.2, 0.2, 0.2), fixed = TRUE))
+#
+# # Create a balanced partition() function
 
 partition <- function(data, p, cat_col = NULL,
                     id_col = NULL, fixed = FALSE) {
