@@ -3,7 +3,7 @@
 groupdata2
 ==========
 
-R package: Subsetting Methods for Balanced Cross-Validation, Time Series Windowing, and General Grouping and Splitting of Data.
+R package: Subsetting methods for balanced cross-validation, time series windowing, and general grouping and splitting of data.
 
 By Ludvig R. Olsen
 Cognitive Science, Aarhus University
@@ -36,8 +36,6 @@ To do
 
 -   fold() - implement force\_equal (n.b. should be special for greedy and staircasing)
 -   datatables
--   Change version number
--   Send to CRAN
 
 Functions
 ---------
@@ -140,18 +138,18 @@ group(df, 5, method = 'n_dist') %>%
 
 |    x| species |  age| .groups |
 |----:|:--------|----:|:--------|
-|    1| cat     |   44| 1       |
-|    2| pig     |   55| 1       |
-|    3| human   |   13| 2       |
-|    4| cat     |    1| 2       |
-|    5| pig     |   28| 3       |
-|    6| human   |   20| 3       |
-|    7| cat     |   56| 3       |
-|    8| pig     |   99| 4       |
-|    9| human   |   14| 4       |
-|   10| cat     |   47| 5       |
-|   11| pig     |   86| 5       |
-|   12| human   |   82| 5       |
+|    1| cat     |   47| 1       |
+|    2| pig     |   38| 1       |
+|    3| human   |   12| 2       |
+|    4| cat     |   10| 2       |
+|    5| pig     |   41| 3       |
+|    6| human   |   85| 3       |
+|    7| cat     |   91| 3       |
+|    8| pig     |   24| 4       |
+|    9| human   |   77| 4       |
+|   10| cat     |   63| 5       |
+|   11| pig     |   87| 5       |
+|   12| human   |   40| 5       |
 
 ``` r
 
@@ -164,11 +162,11 @@ df %>%
 
 | .groups |  mean\_age|
 |:--------|----------:|
-| 1       |   49.50000|
-| 2       |    7.00000|
-| 3       |   34.66667|
-| 4       |   56.50000|
-| 5       |   71.66667|
+| 1       |   42.50000|
+| 2       |   11.00000|
+| 3       |   72.33333|
+| 4       |   50.50000|
+| 5       |   63.33333|
 
 ### fold()
 
