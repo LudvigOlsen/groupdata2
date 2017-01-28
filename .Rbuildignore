@@ -2,6 +2,7 @@
 ^\.Rproj\.user$
 ^cran-comments\.md$
 ^revdep$
+^vignettes_in_progress$
 ^README\.Rmd$
 ^README-.*\.png$
 ^NEWS\.md$
