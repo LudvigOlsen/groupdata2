@@ -137,12 +137,35 @@ convert_percentage_ <- function(per, data) {
 
 }
 
+int_to_perc_ <- function(data, int) {
+
+  # Converts an integer to percentage of vector elements
+
+  # Example:
+  # A vector with 100 elements
+  # An integer given as 10
+  # returns 0.1 (so 10 percent)
+  # Percentage is NOT rounded
+
+  if(is.data.frame(data)){
+
+    return(int/nrow(data))
+
+  } else {
+
+    return(int/length(data))
+
+  }
+
+}
+
 is_between_ <- function(x, a, b) {
 
   # Checks if x is between a and b
 
   x > a && x < b
 }
+
 
 check_arguments_ <- function(data, n, method, force_equal,
                             allow_zero, descending){
