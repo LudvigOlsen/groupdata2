@@ -12,7 +12,12 @@ I used devtools::revdep_check() to run R CMD check on all downstream dependencie
 
 This is my first submission.  
 
-## Resubmission
+## Resubmission 2
+"Can you pls write the Description in regular sentence style/case?"
+ - changed description to "Subsetting methods for balanced cross-validation, time series windowing,
+    and general grouping and splitting of data."
+
+## Resubmission 1
 This is a resubmission. CRAN's comments and my actions towards it:  
 
 "Please only use the CRAN template for this license." - fixed
