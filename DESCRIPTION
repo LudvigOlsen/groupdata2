@@ -13,7 +13,8 @@ LazyData: true
 Imports:
     dplyr,
     plyr,
-    utils
+    utils,
+    primes
 RoxygenNote: 5.0.1
 Suggests: ggplot2,
     knitr,
