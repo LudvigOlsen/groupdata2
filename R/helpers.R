@@ -352,15 +352,16 @@ create_n_primes <- function(n, start_at=2){
 
   }
 
-  # If n is larger than 35,000 elements
-  # load prime_numbers.rds
+  # If n is larger than 70,000 elements
+  # load prime_numbers.rda
   # instead of generating them.
 
-  if (n > 35000){
+  if (n > 70000){
 
     print('loaded binary')
-    # Load 10,000,000 prime numbers
-    prime_numbers <- readRDS("data/prime_numbers.rds")
+
+    # Load prime_numbers_int
+    load("data/prime_numbers.rda")
 
     # Remove primes lower than start_at
     primes <- prime_numbers[prime_numbers >= start_at]
