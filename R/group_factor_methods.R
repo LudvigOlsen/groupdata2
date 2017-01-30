@@ -419,7 +419,7 @@ primes_split_group_factor_ <- function(v, start_at=2, force_equal = FALSE, desce
   # .. 1223334444 etc.
   #
 
-  stopifnot(start_at >= 1)
+  stopifnot(start_at >= 2)
 
   # Get a number of groups sure to be >= than the final number of groups
   n_groups <- ceiling(length(v)/start_at)

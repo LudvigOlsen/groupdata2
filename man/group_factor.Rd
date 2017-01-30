@@ -81,6 +81,7 @@ Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 Other grouping functions: \code{\link{group}},
   \code{\link{splt}}
 
-Other staircase tools: \code{\link{\%staircase\%}}
+Other staircase tools: \code{\link{\%primes\%}},
+  \code{\link{\%staircase\%}}
 }
 

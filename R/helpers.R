@@ -352,33 +352,50 @@ create_n_primes <- function(n, start_at=2){
 
   }
 
+  # If n is larger than 35,000 elements
+  # load prime_numbers.rds
+  # instead of generating them.
 
-  # Initialize n_primes
-  # Counter for created groups
-  n_primes <- 0
+  if (n > 35000){
 
-  # Initialize exponent
-  # Used to create a large set of primes to subset from
-  exp <- 1
-
-  while (n_primes <= n){
-
-    # Generate a set of primes
-    primes <- primes::generate_primes(max = n*100^exp)
+    print('loaded binary')
+    # Load 10,000,000 prime numbers
+    prime_numbers <- readRDS("data/prime_numbers.rds")
 
     # Remove primes lower than start_at
-    primes <- primes[primes >= start_at]
+    primes <- prime_numbers[prime_numbers >= start_at]
 
-    # Get number of generated primes
-    n_primes <- length(primes)
+    # Return n primes
+    return(primes[0:n])
 
-    # Add 1 to exp
-    exp <- exp+1
+  } else {
+
+    # Initialize n_primes
+    # Counter for created groups
+    n_primes <- 0
+
+    # Initialize exponent
+    # Used to create a large set of primes to subset from
+    exp <- 1
+
+    while (n_primes <= n){
+
+      # Generate a set of primes
+      primes <- primes::generate_primes(max = n*100^exp)
+
+      # Remove primes lower than start_at
+      primes <- primes[primes >= start_at]
+
+      # Get number of generated primes
+      n_primes <- length(primes)
+
+      # Add 1 to exp
+      exp <- exp+1
+    }
+
+    # Return n primes
+    return(primes[0:n])
   }
-
-  # Return n primes
-  return(primes[0:n])
-
 
 }
 

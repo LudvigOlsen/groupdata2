@@ -2,7 +2,6 @@
 % Please edit documentation in R/staircase_remainder.R
 \name{\%staircase\%}
 \alias{\%staircase\%}
-\alias{remainder}
 \alias{staircase}
 \title{Find remainder from staircase method.}
 \usage{
@@ -41,6 +40,9 @@ for (step_size in c(1:30)){
 Ludvig Renbo Olsen, \email{mail@ludvigolsen.dk}
 }
 \seealso{
-Other staircase tools: \code{\link{group_factor}}
+Other remainder tools: \code{\link{\%primes\%}}
+
+Other staircase tools: \code{\link{\%primes\%}},
+  \code{\link{group_factor}}
 }
 
