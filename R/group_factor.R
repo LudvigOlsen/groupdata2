@@ -125,6 +125,10 @@ group_factor <- function(data, n, method = 'n_dist', force_equal = FALSE,
 
       groups <- stair_split_group_factor_(data[[1]], n, force_equal, descending)
 
+    } else if (method == 'primes'){
+
+      groups <- primes_split_group_factor_(data[[1]], n, force_equal, descending)
+
     }
 
   } else {
@@ -152,6 +156,10 @@ group_factor <- function(data, n, method = 'n_dist', force_equal = FALSE,
     } else if (method == 'staircase'){
 
       groups <- stair_split_group_factor_(data, n, force_equal, descending)
+
+    } else if (method == 'primes'){
+
+      groups <- primes_split_group_factor_(data, start_at=n, force_equal, descending)
 
     }
 
