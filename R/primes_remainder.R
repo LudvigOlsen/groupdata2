@@ -2,36 +2,36 @@
 if(getRversion() >= "2.15.1")  utils::globalVariables(c("groups", "n_elements"))
 
 
-## %staircase%
-#' @title Find remainder from staircase method.
-#' @description When using the staircase method,
-#' the last group might not have the size of the second last
-#' group + step size. Use \%staircase\% to find this remainder.
+## %primes%
+#' @title Find remainder from primes method.
+#' @description When using the primes method,
+#' the last group might not have the size of the associated prime number
+#' if there are not enough elements left. Use \%primes\% to find this remainder.
 #' @author Ludvig Renbo Olsen, \email{mail@@ludvigolsen.dk}
 #' @export
-#' @param size Size to staircase (Integer)
-#' @param step_size Step size (Integer)
+#' @param size Size to group (Integer)
+#' @param start_at Prime to start at (Integer)
 #' @return Remainder (Integer).
 #' Returns 0 if the last group
-#' has the size of the second last group + step size.
+#' has the size of the associated prime number.
 #' @family staircase tools
 #' @family remainder tools
-#' @aliases staircase
+#' @aliases primes
 #' @examples
 #' # Attach packages
 #' library(groupdata2)
 #'
-#' 100 %staircase% 2
+#' 100 %primes% 2
 #'
 #' # Finding remainder with value 0
 #' size = 150
-#' for (step_size in c(1:30)){
-#'  if(size %staircase% step_size == 0){
-#'    print(step_size)
+#' for (start_at in c(1:30)){
+#'  if(size %staircase% start_at == 0){
+#'    print(start_at)
 #'  }}
 #'
 #' @importFrom dplyr %>%
-'%staircase%' <- function(size, step_size){
+'%primes%' <- function(size, start_at){
 
   #
   # Calculates the remainder (size of last group)
@@ -45,11 +45,11 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("groups", "n_elements"))
   # remainder of 0
   #
 
-  stopifnot(step_size > 0)
+  stopifnot(start_at >= 1)
 
 
   # Get the number of groups with no staircasing
-  n_groups <- ceiling(size/step_size)
+  n_groups <- ceiling(size/start_at)
 
   # Create a dataframe with 1 column containing a group index
   group_data <- data.frame('groups' = c(1:n_groups))
@@ -57,8 +57,8 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("groups", "n_elements"))
   # Create a column with number of elements (group number times step size)
   # Create a column with cumulative sum of the number of elements
   group_data <- group_data %>%
-    dplyr::mutate(n_elements = groups * step_size,
-                  cumsum = cumsum(n_elements))
+    dplyr::mutate(n_elements = create_n_primes(length(groups), start_at),
+                  cumsum = cumsum(as.numeric(n_elements)))
 
   # Get the first row where cumsum is larger or equal to 'size'
   last_group_row <- dplyr::filter(group_data, cumsum >= size)[1,]

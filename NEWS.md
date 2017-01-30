@@ -2,6 +2,8 @@
 
 * New method: 'primes' - similar to 'staircase' but with primes as steps (e.g. group sizes 2,3,5,7..)
 
+* New remainder tool: '%primes%' - similar to %staircase% but for the new primes method
+
 
 
 # groupdata2 0.1.0
