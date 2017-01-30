@@ -23,13 +23,6 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("groups", "n_elements"))
 #'
 #' 100 %primes% 2
 #'
-#' # Finding remainder with value 0
-#' size = 150
-#' for (start_at in c(1:30)){
-#'  if(size %staircase% start_at == 0){
-#'    print(start_at)
-#'  }}
-#'
 #' @importFrom dplyr %>%
 '%primes%' <- function(size, start_at){
 
