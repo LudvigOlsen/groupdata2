@@ -34,6 +34,7 @@ Main functions:
 Other tools:  
 
 * %staircase%  
+* %primes%  
 
 ## Installation  
 CRAN version:
@@ -65,7 +66,7 @@ Creates the specified groups with group_factor() and splits the given data by th
 Creates (optionally) balanced folds for use in cross-validation. Balance folds on one categorical variable and/or make sure that all datapoints sharing an ID is in the same fold.  
  
 ## Methods
-There are currently 6 methods available. They can be divided into 3 categories.  
+There are currently 7 methods available. They can be divided into 4 categories.  
 
 Examples of group sizes are based on a vector with 57 elements.  
 
@@ -106,8 +107,14 @@ E.g. group sizes: 12, 11, 11, 11, 12
 Uses step_size to divide up the data. 
 Group size increases with 1 step for every group, until there is no more data.  
 
-E.g. group sizes: 5, 10, 15, 20, 7
+E.g. group sizes: 5, 10, 15, 20, 7  
 
+### Specify start at
+##### Method: primes
+Creates groups with sizes corresponding to prime numbers.  
+Starts at n (prime number). Increases to the the next prime number until there is no more data.
+
+E.g. group sizes: 5, 7, 11, 13, 17, 4  
 
 ## Examples
 

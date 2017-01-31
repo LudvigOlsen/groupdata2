@@ -21,6 +21,7 @@ Main functions:
 Other tools:
 
 -   %staircase%
+-   %primes%
 
 Installation
 ------------
@@ -62,7 +63,7 @@ Creates (optionally) balanced folds for use in cross-validation. Balance folds o
 Methods
 -------
 
-There are currently 6 methods available. They can be divided into 3 categories.
+There are currently 7 methods available. They can be divided into 4 categories.
 
 Examples of group sizes are based on a vector with 57 elements.
 
@@ -108,6 +109,15 @@ Uses step\_size to divide up the data. Group size increases with 1 step for ever
 
 E.g. group sizes: 5, 10, 15, 20, 7
 
+### Specify start at
+
+##### Method: primes
+
+Creates groups with sizes corresponding to prime numbers.
+Starts at n (prime number). Increases to the the next prime number until there is no more data.
+
+E.g. group sizes: 5, 7, 11, 13, 17, 4
+
 Examples
 --------
 
@@ -135,18 +145,18 @@ group(df, 5, method = 'n_dist') %>%
 
 |    x| species |  age| .groups |
 |----:|:--------|----:|:--------|
-|    1| cat     |    4| 1       |
-|    2| pig     |   22| 1       |
-|    3| human   |   81| 2       |
-|    4| cat     |    7| 2       |
-|    5| pig     |   39| 3       |
-|    6| human   |   92| 3       |
-|    7| cat     |   88| 3       |
-|    8| pig     |   47| 4       |
-|    9| human   |   30| 4       |
-|   10| cat     |   29| 5       |
-|   11| pig     |   19| 5       |
-|   12| human   |   40| 5       |
+|    1| cat     |   59| 1       |
+|    2| pig     |   74| 1       |
+|    3| human   |   55| 2       |
+|    4| cat     |    4| 2       |
+|    5| pig     |   42| 3       |
+|    6| human   |   86| 3       |
+|    7| cat     |   10| 3       |
+|    8| pig     |   35| 4       |
+|    9| human   |   13| 4       |
+|   10| cat     |    3| 5       |
+|   11| pig     |   15| 5       |
+|   12| human   |   22| 5       |
 
 ``` r
 
@@ -159,11 +169,11 @@ df %>%
 
 | .groups |  mean\_age|
 |:--------|----------:|
-| 1       |   13.00000|
-| 2       |   44.00000|
-| 3       |   73.00000|
-| 4       |   38.50000|
-| 5       |   29.33333|
+| 1       |   66.50000|
+| 2       |   29.50000|
+| 3       |   46.00000|
+| 4       |   24.00000|
+| 5       |   13.33333|
 
 ### fold()
 
