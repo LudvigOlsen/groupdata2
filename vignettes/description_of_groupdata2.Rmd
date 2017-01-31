@@ -348,6 +348,57 @@ If the last group has the size of the second last group + step size, %staircase%
 >
 > meaning that the last group would contain 7 values 
 
+## Method: 'primes'  
+'primes' creates groups with sizes of primary numbers in a staircasing design. n is the prime number to start at (size of first group).  
+  
+Prime numbers are generated with the ['numbers' package](https://cran.r-project.org/package=numbers) by Hans Werner Borchers.  
+
+
+&nbsp;  
+
+**Example**    
+
+> We have a vector with 57 values. We specify n (start at) as 5.  
+>   
+> 'primes' with default settings would return groups with this many values in them:  
+>   
+> 5, 7, 11, 13, 17, 4 
+ 
+&nbsp;  
+
+By setting **force_equal** to TRUE, 'staircase' will discard the last group if it does
+not contain the expected values (step size multiplied by group index).  
+
+&nbsp;  
+
+**Example**    
+
+> 'primes' with **force_equal** set to TRUE would return groups with this many values in them:  
+>   
+> 5, 7, 11, 13, 17   
+>  
+> meaning that 4 values have been discarded.  
+
+&nbsp;  
+
+### Find remainder - %primes%
+When using the primes method, the last group might not have the size of the associated prime number, if there are not enough elements. Use %primes% to find the remainder.  
+
+Returns 0 if the last group has the size of the associated prime number. 
+
+&nbsp;  
+
+**Example**  
+
+> %primes% on a vector with size 57 and n (start at) as 5 would look like this:
+>
+> 57 %primes% 5
+> 
+> and return:
+>
+> 4
+>
+> meaning that the last group would contain 4 values 
 
 # Arguments
 
