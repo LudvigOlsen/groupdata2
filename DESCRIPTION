@@ -14,7 +14,8 @@ Imports:
     dplyr,
     plyr,
     utils,
-    primes
+    primes,
+    numbers
 RoxygenNote: 5.0.1
 Suggests: ggplot2,
     knitr,

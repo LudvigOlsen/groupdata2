@@ -346,57 +346,40 @@ create_n_primes <- function(n, start_at=2){
   #
 
   # Check if start_at is prime
-  if (!primes::is_prime(start_at)){
+  if (!numbers::isPrime(start_at)){
 
     stop("start_at is not a prime number")
 
   }
 
-  # If n is larger than 70,000 elements
-  # load prime_numbers.rda
-  # instead of generating them.
+  stopifnot(n>1)
 
-  if (n > 70000){
+  # Initialize n_primes
+  # Counter for created groups
+  n_primes <- 0
 
-    print('loaded binary')
+  # Initialize exponent
+  # Used to create a large set of primes to subset from
+  exp <- 1
 
-    # Load prime_numbers_int
-    load("data/prime_numbers.rda")
+  while (n_primes < n){
+
+    # Generate a set of primes
+    primes <- numbers::Primes(n*100^exp)
 
     # Remove primes lower than start_at
-    primes <- prime_numbers[prime_numbers >= start_at]
+    primes <- primes[primes >= start_at]
 
-    # Return n primes
-    return(primes[0:n])
+    # Get number of generated primes
+    n_primes <- length(primes)
 
-  } else {
+    # Add 1 to exp
+    exp <- exp+1
 
-    # Initialize n_primes
-    # Counter for created groups
-    n_primes <- 0
-
-    # Initialize exponent
-    # Used to create a large set of primes to subset from
-    exp <- 1
-
-    while (n_primes <= n){
-
-      # Generate a set of primes
-      primes <- primes::generate_primes(max = n*100^exp)
-
-      # Remove primes lower than start_at
-      primes <- primes[primes >= start_at]
-
-      # Get number of generated primes
-      n_primes <- length(primes)
-
-      # Add 1 to exp
-      exp <- exp+1
-    }
-
-    # Return n primes
-    return(primes[0:n])
   }
+
+  # Return n primes
+  return(primes[0:n])
 
 }
 
