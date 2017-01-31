@@ -296,7 +296,7 @@ timeSeriesFrame = data.frame('residents' = austres)
 str(timeSeriesFrame) 
 
 # Show head of data
-timeSeriesFrame %>% head(12) %>% kable(col.names = NULL)
+timeSeriesFrame %>% head(12) %>% kable()
 
 ```
 
