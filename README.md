@@ -25,17 +25,14 @@ Other tools:
 Installation
 ------------
 
+CRAN version:
+
+> install.packages("groupdata2")
+
 Development version:
 
-install.packages("devtools")
-
-devtools::install\_github("LudvigOlsen/groupdata2")
-
-To do
------
-
--   fold() - implement force\_equal (n.b. should be special for greedy and staircasing)
--   datatables
+> install.packages("devtools")
+> devtools::install\_github("LudvigOlsen/groupdata2")
 
 Functions
 ---------
@@ -138,17 +135,17 @@ group(df, 5, method = 'n_dist') %>%
 
 |    x| species |  age| .groups |
 |----:|:--------|----:|:--------|
-|    1| cat     |   47| 1       |
-|    2| pig     |   38| 1       |
-|    3| human   |   12| 2       |
-|    4| cat     |   10| 2       |
-|    5| pig     |   41| 3       |
-|    6| human   |   85| 3       |
-|    7| cat     |   91| 3       |
-|    8| pig     |   24| 4       |
-|    9| human   |   77| 4       |
-|   10| cat     |   63| 5       |
-|   11| pig     |   87| 5       |
+|    1| cat     |    4| 1       |
+|    2| pig     |   22| 1       |
+|    3| human   |   81| 2       |
+|    4| cat     |    7| 2       |
+|    5| pig     |   39| 3       |
+|    6| human   |   92| 3       |
+|    7| cat     |   88| 3       |
+|    8| pig     |   47| 4       |
+|    9| human   |   30| 4       |
+|   10| cat     |   29| 5       |
+|   11| pig     |   19| 5       |
 |   12| human   |   40| 5       |
 
 ``` r
@@ -162,11 +159,11 @@ df %>%
 
 | .groups |  mean\_age|
 |:--------|----------:|
-| 1       |   42.50000|
-| 2       |   11.00000|
-| 3       |   72.33333|
-| 4       |   50.50000|
-| 5       |   63.33333|
+| 1       |   13.00000|
+| 2       |   44.00000|
+| 3       |   73.00000|
+| 4       |   38.50000|
+| 5       |   29.33333|
 
 ### fold()
 

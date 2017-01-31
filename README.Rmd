@@ -36,16 +36,14 @@ Other tools:
 * %staircase%  
 
 ## Installation  
+CRAN version:
+
+> install.packages("groupdata2")  
+
 Development version:  
 
-install.packages("devtools")  
-
-devtools::install_github("LudvigOlsen/groupdata2")  
-
-## To do  
-* fold() - implement force_equal (n.b. should be special for greedy and staircasing)  
-* datatables 
-
+> install.packages("devtools")  
+> devtools::install_github("LudvigOlsen/groupdata2")  
 
 ## Functions  
 ### group_factor()  
