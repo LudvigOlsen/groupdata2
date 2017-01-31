@@ -417,7 +417,7 @@ Used in: group_factor(), group(), splt(), fold()
 
 Type: integer or numeric  
 
-n represents either group size, step size or number of groups, depending on which method is specified.  
+n represents either number of groups, group size, step size or the number to start at, depending on which method is specified.  
 n can be given as a **whole number** (n > 1) or as **percentage** (0 < n < 1)  
 
 &nbsp;
@@ -429,7 +429,7 @@ Used in: group_factor(), group(), splt()
 Type: character  
 
 Choose which method to use when dividing up the data.  
-Available methods: greedy, n_dist, n_fill, n_last, n_rand, or staircase  
+Available methods: greedy, n_dist, n_fill, n_last, n_rand, staircase, or primes  
 
 &nbsp;
 
@@ -506,7 +506,7 @@ Used in: group()
 
 Type: integer or numeric  
 
-k represents either fold size, step size or number of folds, depending on which method is specified.  
+k represents either number of folds, fold size, step size or number to start at, depending on which method is specified.  
 k can be given as a **whole number** (n > 1) or as **percentage** (0 < n < 1)  
 
 &nbsp;
@@ -1218,6 +1218,89 @@ staircase_cumulative_plot +
        y = 'Cumulative sum of group sizes',
        title = 'Staircasing Cumulative Sum of group Sizes',
        color = 'Step Size') +
+  theme_bw()+
+  theme(axis.text.y = element_text(size=9),
+        axis.text.x = element_text(size=7))
+
+```
+
+
+## Primes
+
+### Vector with 1000 elements with n (start at) as 2, 5, 11
+
+Below you'll see a plot with the group sizes at each group when starting from prime numbers 2, 5, and 11.
+
+&nbsp; 
+
+
+```{r echo=FALSE}
+
+
+vec <- c(1:1000)
+
+if (exists ('primes_data')){
+  rm(primes_data)
+  }
+
+for (n in c(2, 5, 11)){
+
+  group_sizes <- plyr::count(group_factor(vec, n, method='primes'))
+
+  data_temp <- data.frame(group_sizes, 'start_at' = factor(n))
+
+  
+  if (exists ('primes_data')) {
+    
+    primes_data <- rbind(primes_data, data_temp)
+    
+  } else {
+    
+    primes_data <- data_temp
+    
+  }
+  
+}
+
+primes_plot <- ggplot(primes_data, aes(x, freq, color=start_at))
+
+primes_plot + 
+  geom_point() +
+  #scale_x_continuous(breaks = round(seq(1, max(data_temp$x), by = 2),1))+
+  labs(x = 'group',
+       y = 'group Size',
+       title = 'Prime numbers method - Elements per groups',
+       color = 'Start at') +
+  theme_bw()+
+  theme(axis.text.y = element_text(size=9),
+        axis.text.x = element_text(size=7))
+
+
+
+```
+
+
+&nbsp; 
+
+
+Below we will take a quick look at the cumulative sum of group elements to get an idea of what is going on under the hood.  
+Because the splitted vector had 1000 elements, it stops at 1000 on the y-axis. There are simply no more elements left!  
+
+
+```{r echo=FALSE}
+
+primes_data <- primes_data %>%
+  group_by(start_at) %>%
+  mutate(cumsum = cumsum(freq))
+
+primes_cumulative_plot <- ggplot(primes_data, aes(x, cumsum, color=start_at))
+
+primes_cumulative_plot + 
+  geom_point() +
+  labs(x = 'group',
+       y = 'Cumulative sum of group sizes',
+       title = 'Primes Cumulative Sum of group Sizes',
+       color = 'Start At') +
   theme_bw()+
   theme(axis.text.y = element_text(size=9),
         axis.text.x = element_text(size=7))
