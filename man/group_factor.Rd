@@ -5,46 +5,72 @@
 \title{Create grouping factor for subsetting your data.}
 \usage{
 group_factor(data, n, method = "n_dist", force_equal = FALSE,
-  allow_zero = FALSE, descending = FALSE, randomize = FALSE)
+  allow_zero = FALSE, fixed = FALSE, descending = FALSE,
+  randomize = FALSE)
 }
 \arguments{
-\item{data}{Dataframe or Vector}
+\item{data}{Dataframe or Vector.}
 
-\item{n}{Number of groups, group size, or step size
+\item{n}{Number of groups, group size, step size or number to start at
 (depending on chosen method)
 Given as whole numbers or percentage (\code{0} < n < \code{1}).}
 
-\item{method}{\code{greedy, n_dist, n_fill, n_last, n_rand, or staircase}
+\item{method}{\code{greedy, n_dist, n_fill, n_last, n_rand, or staircase}.
+
+ Notice: examples are sizes of the generated groups
+ based on a vector with 57 elements.
 
  \code{greedy} divides up the data greedily given a specified group size
- \eqn{(e.g. 10, 10, 10, 10, 10, 7)}
+ \eqn{(e.g. 10, 10, 10, 10, 10, 7)}.
 
  \code{n_dist} divides the data into a specified number of groups and
  distributes excess data points across groups
- \eqn{(e.g. 11, 11, 12, 11, 12)}
+ \eqn{(e.g. 11, 11, 12, 11, 12)}.
 
  \code{n_fill} divides the data into a specified number of groups and
  fills up groups with excess data points from the beginning
- \eqn{(e.g. 12, 12, 11, 11, 11)}
+ \eqn{(e.g. 12, 12, 11, 11, 11)}.
 
  \code{n_last} divides the data into a specified number of groups.
  The algorithm finds the most equal group sizes possible,
  using all data points. Only the last group is able to differ in size
- \eqn{(e.g. 11, 11, 11, 11, 13)}
+ \eqn{(e.g. 11, 11, 11, 11, 13)}.
 
  \code{n_rand} divides the data into a specified number of groups.
  Excess data points are placed randomly in groups (only 1 per group)
- \eqn{(e.g. 12, 11, 11, 11, 12)}
+ \eqn{(e.g. 12, 11, 11, 11, 12)}.
+
+ \code{l_sizes} divides the data by a list of group sizes.
+ Excess data points are placed in extra group unless \code{fixed = TRUE}.
+ \eqn{(e.g. n = c(0.2,0.3) outputs groups with sizes (11,17,29))}.
+
+ \code{l_starts} starts new groups at specified values of vector.
+ \code{n} is a list of starting positions.
+ Skip values by c(value, skip_to_number) where skip_to_number is the nth appearance of the value
+ in the vector.
+ Lists automatically starts from first data point.
+ \eqn{(e.g. n = list(1,3,7,25,50) outputs groups with sizes (2,4,18,25,8))}.
+ To skip:\eqn{(given vector c(1,2,3,1,2,3), list(1,2,c(3,2))
+ outputs groups with sizes (1,4,1))}.
 
  \code{staircase} uses step_size to divide up the data.
  Group size increases with 1 step for every group,
  until there is no more data
- \eqn{(e.g. 5, 10, 15, 20, 7)}}
+ \eqn{(e.g. 5, 10, 15, 20, 7)}.
+
+ \code{primes} uses prime numbers as group sizes.
+ Group size increases to the next prime number
+ until there is no more data.
+ \code{n} is the prime number to start at.
+ \eqn{(e.g. 5, 7, 11, 13, 17, 4)}.}
 
 \item{force_equal}{Create equal groups by discarding excess data points.
 Implementation varies between methods. (Logical)}
 
 \item{allow_zero}{Whether n can be passed as \code{0}. (Logical)}
+
+\item{fixed}{In method 'l_sizes', return only specified groups. (Logical)
+By default, passing n = 0.2 (20\%) also returns a group with 0.8 (80\%) of the elements.}
 
 \item{descending}{Change direction of method. (Not fully implemented)
 (Logical)}

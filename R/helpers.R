@@ -175,20 +175,28 @@ check_arguments_ <- function(data, n, method, force_equal,
 
   # "data" can be both a dataframe or a vector
 
-  # Stop execution if input variables aren't what we expect / can handle
-  stopifnot((!is.null(n)),
-            arg_is_number_(n),
-            n > 0,
-            is.logical(force_equal),
-            is.logical(allow_zero),
-            is.logical(descending),
-            method %in% c('greedy',
+  stopifnot(method %in% c('greedy',
                           'n_dist',
                           'n_last',
                           'n_fill',
                           'n_rand',
+                          'l_sizes',
+                          'l_starts',
                           'staircase',
                           'primes'))
+
+  if (!(method %in% c('l_starts','l_sizes'))){
+
+    stopifnot(arg_is_number_(n),
+              n > 0)
+
+  }
+
+  # Stop execution if input variables aren't what we expect / can handle
+  stopifnot((!is.null(n)),
+            is.logical(force_equal),
+            is.logical(allow_zero),
+            is.logical(descending))
 
   if (is.data.frame(data)){
 
@@ -224,44 +232,64 @@ check_convert_check_ <- function(data, n, method, force_equal,
   # If not -> stop execution
   check_arguments_(data, n, method, force_equal, allow_zero, descending)
 
-
-  ### Convert from percentage
-
-  # We check if n is given as percentage
-  # This would be done by giving a number between
-  # 0 and 1
-  # If it is, we convert it to the actual number
-  # of windows
-
-  if (is_between_(n, 0,1)){
-
-    n <- convert_percentage_(n, data)
-
-    # If the percentage given returns 0
-    # throw an error
-    stopifnot(n > 0)
-
-  }
+  if (!(method %in% c('l_starts','l_sizes'))){
 
 
-  ### Check arguments 2
+    ### Convert from percentage
 
-  # Check if
-  # .. n is a whole number
-  # .. Length of the data is larger or
-  # .. equal to n
-  # If not -> stop execution
+    # We check if n is given as percentage
+    # This would be done by giving a number between
+    # 0 and 1
+    # If it is, we convert it to the actual number
+    # of windows
 
-  if(is.data.frame(data)){
+    if (is_between_(n, 0,1)){
 
-    stopifnot(arg_is_wholenumber_(n),
-              nrow(data) >= n)
+      n <- convert_percentage_(n, data)
+
+      # If the percentage given returns 0
+      # throw an error
+      stopifnot(n > 0)
+
+    }
+
+    stopifnot(arg_is_wholenumber_(n))
+
+
+
+    ### Check arguments 2
+
+    # Check if
+    # .. n is a whole number
+    # .. Length of the data is larger or
+    # .. equal to n
+    # If not -> stop execution
+
+
+
+    if(is.data.frame(data)){
+
+      stopifnot(nrow(data) >= n)
+
+    } else {
+
+      stopifnot(length(data) >= n)
+    }
 
   } else {
 
-    stopifnot(arg_is_wholenumber_(n),
-              length(data) >= n)
+    if(is.data.frame(data)){
+
+      stopifnot(nrow(data) >= length(n))
+
+    } else {
+
+      stopifnot(length(data) >= length(n))
+    }
+
+
   }
+
 
 
   return(n)
