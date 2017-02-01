@@ -53,7 +53,7 @@ Given as whole numbers or percentage (0 < n < 1).}
  \eqn{(e.g. 12, 11, 11, 11, 12)}.
 
  \code{l_sizes} divides the data by a list of group sizes.
- Excess data points are placed in extra group unless \code{fixed = TRUE}.
+ Excess data points are placed in extra group at the end.
  \eqn{(e.g. n = c(0.2,0.3) outputs groups with sizes (11,17,29))}.
 
  \code{l_starts} starts new groups at specified values of vector.
@@ -62,7 +62,7 @@ Given as whole numbers or percentage (0 < n < 1).}
  in the vector.
  Lists automatically starts from first data point.
  \eqn{(e.g. n = list(1,3,7,25,50) outputs groups with sizes (2,4,18,25,8))}.
- To skip:\eqn{(given vector c(1,2,3,1,2,3), list(1,2,c(3,2))
+ To skip:\eqn{(given vector c(1,2,3,1,2,3), n = list(1,2,c(3,2))
  outputs groups with sizes (1,4,1))}.
 
  \code{staircase} uses step_size to divide up the data.

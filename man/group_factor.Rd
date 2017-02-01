@@ -4,9 +4,8 @@
 \alias{group_factor}
 \title{Create grouping factor for subsetting your data.}
 \usage{
-group_factor(data, n, method = "n_dist", force_equal = FALSE,
-  allow_zero = FALSE, fixed = FALSE, descending = FALSE,
-  randomize = FALSE)
+group_factor(data, n, method = "n_dist", col = NULL, force_equal = FALSE,
+  allow_zero = FALSE, descending = FALSE, randomize = FALSE)
 }
 \arguments{
 \item{data}{Dataframe or Vector.}
@@ -41,7 +40,7 @@ Given as whole numbers or percentage (\code{0} < n < \code{1}).}
  \eqn{(e.g. 12, 11, 11, 11, 12)}.
 
  \code{l_sizes} divides the data by a list of group sizes.
- Excess data points are placed in extra group unless \code{fixed = TRUE}.
+ Excess data points are placed in extra group at the end.
  \eqn{(e.g. n = c(0.2,0.3) outputs groups with sizes (11,17,29))}.
 
  \code{l_starts} starts new groups at specified values of vector.
@@ -50,7 +49,7 @@ Given as whole numbers or percentage (\code{0} < n < \code{1}).}
  in the vector.
  Lists automatically starts from first data point.
  \eqn{(e.g. n = list(1,3,7,25,50) outputs groups with sizes (2,4,18,25,8))}.
- To skip:\eqn{(given vector c(1,2,3,1,2,3), list(1,2,c(3,2))
+ To skip:\eqn{(given vector c(1,2,3,1,2,3), n = list(1,2,c(3,2))
  outputs groups with sizes (1,4,1))}.
 
  \code{staircase} uses step_size to divide up the data.
@@ -64,13 +63,13 @@ Given as whole numbers or percentage (\code{0} < n < \code{1}).}
  \code{n} is the prime number to start at.
  \eqn{(e.g. 5, 7, 11, 13, 17, 4)}.}
 
+\item{col}{Name of column with values to match in method \code{l_starts}.
+Pass 'index' to use rownames. (Character)}
+
 \item{force_equal}{Create equal groups by discarding excess data points.
 Implementation varies between methods. (Logical)}
 
 \item{allow_zero}{Whether n can be passed as \code{0}. (Logical)}
-
-\item{fixed}{In method 'l_sizes', return only specified groups. (Logical)
-By default, passing n = 0.2 (20\%) also returns a group with 0.8 (80\%) of the elements.}
 
 \item{descending}{Change direction of method. (Not fully implemented)
 (Logical)}
@@ -95,8 +94,20 @@ df <- data.frame("x"=c(1:12),
  "species" = rep(c('cat','pig', 'human'), 4),
  "age" = sample(c(1:100), 12))
 
-# Using group_factor()
+# Using group_factor() with n_dist
 groups <- group_factor(df, 5, method = 'n_dist')
+df$groups <- groups
+
+# Using group_factor() with greedy
+groups <- group_factor(df, 5, method = 'greedy')
+df$groups <- groups
+
+# Using group_factor() with l_sizes
+groups <- group_factor(df, c(0.2), method = 'l_sizes')
+df$groups <- groups
+
+# Using group_factor() with l_starts
+groups <- group_factor(df, 5, method = 'l_starts')
 df$groups <- groups
 
 }
