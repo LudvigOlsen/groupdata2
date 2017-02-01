@@ -33,6 +33,19 @@ l_sizes_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE)
 
   }
 
+
+
+  # To do !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  # When having 3 ids and getting a group of 0.2,
+  # It returns -inf
+  # Make an error message if we give only 1 group
+  # And that is less than 1 element.
+  # Or only return group 2?
+  #########################
+
+
+
   # If n is longer than v
   # raise an error
   if (length(n)>length(v)){
