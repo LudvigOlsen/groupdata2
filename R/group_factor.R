@@ -132,10 +132,11 @@ group_factor <- function(data, n, method = 'n_dist', col = NULL, force_equal = F
 
 
 
-  # If method is l_starts and data is a dataframe
+  # For method is l_starts
+  # If data is a dataframe and col is not NULL
   # We want to get the column with values to match
 
-  if(is.data.frame(data)){
+  if(is.data.frame(data) && !is.null(col)){
 
     # If col is 'index', create column with rownames for matching values
     if (col == 'index'){
@@ -144,7 +145,7 @@ group_factor <- function(data, n, method = 'n_dist', col = NULL, force_equal = F
 
     # If col is not NULL (and not 'index')
     # Get the column from data
-    } else if (!is.null(col)) {
+    } else {
 
       starts_col <- data[[col]]
 

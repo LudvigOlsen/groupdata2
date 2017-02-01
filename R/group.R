@@ -30,7 +30,7 @@
 #'  group(5, method = 'n_dist') %>%
 #'  dplyr::summarise(mean_age = mean(age))
 #'
-group <- function(data, n, method = 'n_dist', force_equal = FALSE,
+group <- function(data, n, method = 'n_dist', col = NULL, force_equal = FALSE,
                   allow_zero = FALSE, return_factor = FALSE,
                   descending = FALSE, randomize = FALSE,
                   col_name = '.groups'){
@@ -46,7 +46,7 @@ group <- function(data, n, method = 'n_dist', force_equal = FALSE,
   #
 
   # Create grouping factor
-  grouping_factor <- group_factor(data, n, method, force_equal = force_equal,
+  grouping_factor <- group_factor(data, n, method, col, force_equal = force_equal,
                                   allow_zero = allow_zero, descending = descending,
                                   randomize = randomize)
 
