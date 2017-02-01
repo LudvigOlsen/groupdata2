@@ -8,7 +8,7 @@
 
 # #' @param n List of group sizes
 # #' @export
-l_sizes_group_factor_ <- function(v, n, fixed = FALSE, force_equal = FALSE, descending = FALSE){
+l_sizes_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE){
 
   # If any elements in n are between 0-1
   # .. Convert all wholenumbers in n to percentages (0-1)
@@ -20,7 +20,7 @@ l_sizes_group_factor_ <- function(v, n, fixed = FALSE, force_equal = FALSE, desc
   ### .... returned, containg all elements of v
   # .. Else
   # .... Let exceeding elements have their own group
-  # ..... Unless of course, specified no to (fixed_n(??) = TRUE)
+  # ..... Unless of course, specified no to (force_equal = TRUE)
   # .. Create list of group sizes
   # .. Return grouping factor from group sizes
   # Else just return the given group sizes
@@ -151,14 +151,14 @@ l_sizes_group_factor_ <- function(v, n, fixed = FALSE, force_equal = FALSE, desc
   #   print('shifted group downwards')
   # }
 
-  # If fixed is TRUE
+  # If force_equal is TRUE
   # . or we have the right number of elements
   # .. return elements
   # Else
   # .. Add a new group with missing elements
 
 
-  if(isTRUE(fixed) || length(elements) == length(v)){
+  if(isTRUE(force_equal) || length(elements) == length(v)){
 
     return(elements)
 
@@ -193,9 +193,6 @@ l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE
   # Allows skipping of values
   # Under development
   #
-
-  print(v)
-  print(n)
 
   # For each element in n
   # .. If it has length 1, return (element, 1)
@@ -248,7 +245,7 @@ l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE
     indices_larger_than_prev <- indices[which(indices > ind_prev)]
 
     # Get the wanted index
-    ind_next = indices_larger_than_prev[n_list[[i]][2]]
+    ind_next = indices_larger_than_prev[as.integer(n_list[[i]][2])]
 
     # Set ind_prev to the index we just found for use in the
     # next iteration
@@ -270,7 +267,6 @@ l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE
   # at the end of group_sizes
   group_sizes <- append(group_sizes, (length(v)-sum(group_sizes)))
 
-  print(group_sizes)
   # Return the grouping factor
   return(l_sizes_group_factor_(c(1:sum(group_sizes)),group_sizes))
 

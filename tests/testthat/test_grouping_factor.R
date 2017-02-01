@@ -223,7 +223,7 @@ test_that("group sizes works with group_factor with method staircase", {
 
 })
 
-test_that("group sizes works with group_factor with method staircase", {
+test_that("group sizes works with group_factor with method primes", {
 
   group_counts <- function(v, n){
 
@@ -279,6 +279,65 @@ test_that("group sizes works with group_factor with method staircase", {
 
 })
 
+test_that("group sizes works with group_factor with method l_sizes", {
+
+  group_f <- function(v, n){
+
+    return(group_factor(v, n, method='l_sizes'))
+
+  }
+
+  group_counts <- function(v, n){
+
+    gf <- group_factor(v, n, method = 'l_sizes')
+    counts <- plyr::count(gf)
+    return(counts$freq)
+
+  }
+
+  expect_equal(group_f(c(1:10),c(0.2)),c(1,1,2,2,2,2,2,2,2,2))
+  expect_equal(group_f(c(1:11),c(0.2)),c(1,1,2,2,2,2,2,2,2,2,2))
+  expect_equal(group_f(c(1:14),c(0.2)),c(1,1,2,2,2,2,2,2,2,2,2,2,2,2))
+  expect_equal(group_f(c(1:15),c(0.2)),c(1,1,1,2,2,2,2,2,2,2,2,2,2,2,2))
+
+  expect_equal(group_f(c(1:2),c(0.2,0.5)),c(2,3))
+
+  expect_equal(group_counts(c(1:200),c(20,20,40,40)),c(20,20,40,40,80))
+  expect_equal(group_counts(c(1:200),c(0.5)),c(100,100))
+  expect_equal(group_counts(c(1:200),c(0.55)),c(110,90))
+  expect_equal(group_counts(c(1:200),c(0.555)),c(111,89))
+
+})
+
+test_that("group sizes works with group_factor with method l_starts", {
+
+  group_f <- function(v, n){
+
+    return(group_factor(v, n, method='l_starts'))
+
+  }
+
+  group_counts <- function(v, n){
+
+    gf <- group_factor(v, n, method = 'l_starts')
+    counts <- plyr::count(gf)
+    return(counts$freq)
+
+  }
+
+  expect_equal(group_f(c(1:10),c(0.2)),c(1,1,2,2,2,2,2,2,2,2))
+  expect_equal(group_f(c(1:11),c(0.2)),c(1,1,2,2,2,2,2,2,2,2,2))
+  expect_equal(group_f(c(1:14),c(0.2)),c(1,1,2,2,2,2,2,2,2,2,2,2,2,2))
+  expect_equal(group_f(c(1:15),c(0.2)),c(1,1,1,2,2,2,2,2,2,2,2,2,2,2,2))
+
+  expect_equal(group_f(c(1:2),c(0.2,0.5)),c(2,3))
+
+  expect_equal(group_counts(c(1:200),c(20,20,40,40)),c(20,20,40,40,80))
+  expect_equal(group_counts(c(1:200),c(0.5)),c(100,100))
+  expect_equal(group_counts(c(1:200),c(0.55)),c(110,90))
+  expect_equal(group_counts(c(1:200),c(0.555)),c(111,89))
+
+})
 
 
 test_that("force_equal works with group_factor with all methods",{

@@ -36,7 +36,7 @@
 #'  \eqn{(e.g. 12, 11, 11, 11, 12)}.
 #'
 #'  \code{l_sizes} divides the data by a list of group sizes.
-#'  Excess data points are placed in extra group unless \code{fixed = TRUE}.
+#'  Excess data points are placed in extra group at the end.
 #'  \eqn{(e.g. n = c(0.2,0.3) outputs groups with sizes (11,17,29))}.
 #'
 #'  \code{l_starts} starts new groups at specified values of vector.
@@ -45,7 +45,7 @@
 #'  in the vector.
 #'  Lists automatically starts from first data point.
 #'  \eqn{(e.g. n = list(1,3,7,25,50) outputs groups with sizes (2,4,18,25,8))}.
-#'  To skip:\eqn{(given vector c(1,2,3,1,2,3), list(1,2,c(3,2))
+#'  To skip:\eqn{(given vector c(1,2,3,1,2,3), n = list(1,2,c(3,2))
 #'  outputs groups with sizes (1,4,1))}.
 #'
 #'  \code{staircase} uses step_size to divide up the data.
@@ -59,11 +59,11 @@
 #'  \code{n} is the prime number to start at.
 #'  \eqn{(e.g. 5, 7, 11, 13, 17, 4)}.
 #'
+#' @param col Name of column with values to match in method \code{l_starts}
+#' when data is a dataframe. Pass 'index' to use rownames. (Character)
 #' @param force_equal Create equal groups by discarding excess data points.
 #'  Implementation varies between methods. (Logical)
 #' @param allow_zero Whether n can be passed as \code{0}. (Logical)
-#' @param fixed In method 'l_sizes', return only specified groups. (Logical)
-#'  By default, passing n = 0.2 (20\%) also returns a group with 0.8 (80\%) of the elements.
 #' @param descending Change direction of method. (Not fully implemented)
 #'  (Logical)
 #' @param randomize Randomize the grouping factor (Logical)
@@ -80,12 +80,24 @@
 #'  "species" = rep(c('cat','pig', 'human'), 4),
 #'  "age" = sample(c(1:100), 12))
 #'
-#' # Using group_factor()
+#' # Using group_factor() with n_dist
 #' groups <- group_factor(df, 5, method = 'n_dist')
 #' df$groups <- groups
 #'
-group_factor <- function(data, n, method = 'n_dist', force_equal = FALSE,
-                         allow_zero = FALSE, fixed = FALSE, descending = FALSE,
+#' # Using group_factor() with greedy
+#' groups <- group_factor(df, 5, method = 'greedy')
+#' df$groups <- groups
+#'
+#' # Using group_factor() with l_sizes
+#' groups <- group_factor(df, c(0.2), method = 'l_sizes')
+#' df$groups <- groups
+#'
+#'# Using group_factor() with l_starts
+#' groups <- group_factor(df, list('cat', c('pig',2), 'human'), method = 'l_starts', col = 'species')
+#' df$groups <- groups
+#'
+group_factor <- function(data, n, method = 'n_dist', col = NULL, force_equal = FALSE,
+                         allow_zero = FALSE, descending = FALSE,
                          randomize = FALSE){
 
   #
@@ -119,6 +131,27 @@ group_factor <- function(data, n, method = 'n_dist', force_equal = FALSE,
   n <- check_convert_check_(data, n, method, force_equal, allow_zero, descending)
 
 
+
+  # If method is l_starts and data is a dataframe
+  # We want to get the column with values to match
+
+  if(is.data.frame(data)){
+
+    # If col is 'index', create column with rownames for matching values
+    if (col == 'index'){
+
+      starts_col <- rownames(data)
+
+    # If col is not NULL (and not 'index')
+    # Get the column from data
+    } else if (!is.null(col)) {
+
+      starts_col <- data[[col]]
+
+    }
+
+  }
+
   # Create grouping factors
   # .. Check if data is a dataframe or a vector
   # .. Call grouping factor function for specified method
@@ -147,11 +180,12 @@ group_factor <- function(data, n, method = 'n_dist', force_equal = FALSE,
 
     } else if (method == 'l_sizes'){
 
-      groups <- l_sizes_group_factor_(data[[1]], n, fixed, force_equal, descending)
+      groups <- l_sizes_group_factor_(data[[1]], n, force_equal, descending)
 
     } else if (method == 'l_starts'){
 
-      groups <- l_starts_group_factor_(data[[1]], n, force_equal, descending)
+      # Notice that we pass the starts_col as data
+      groups <- l_starts_group_factor_(starts_col, n, force_equal, descending)
 
     }else if (method == 'staircase'){
 
@@ -187,7 +221,7 @@ group_factor <- function(data, n, method = 'n_dist', force_equal = FALSE,
 
     } else if (method == 'l_sizes'){
 
-      groups <- l_sizes_group_factor_(data, n, fixed, force_equal, descending)
+      groups <- l_sizes_group_factor_(data, n, force_equal, descending)
 
     } else if (method == 'l_starts'){
 
