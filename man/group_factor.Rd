@@ -63,8 +63,8 @@ Given as whole numbers or percentage (\code{0} < n < \code{1}).}
  \code{n} is the prime number to start at.
  \eqn{(e.g. 5, 7, 11, 13, 17, 4)}.}
 
-\item{col}{Name of column with values to match in method \code{l_starts}.
-Pass 'index' to use rownames. (Character)}
+\item{col}{Name of column with values to match in method \code{l_starts}
+when data is a dataframe. Pass 'index' to use rownames. (Character)}
 
 \item{force_equal}{Create equal groups by discarding excess data points.
 Implementation varies between methods. (Logical)}
@@ -107,7 +107,7 @@ groups <- group_factor(df, c(0.2), method = 'l_sizes')
 df$groups <- groups
 
 # Using group_factor() with l_starts
-groups <- group_factor(df, 5, method = 'l_starts')
+groups <- group_factor(df, list('cat', c('pig',2), 'human'), method = 'l_starts', col = 'species')
 df$groups <- groups
 
 }

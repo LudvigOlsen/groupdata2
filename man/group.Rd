@@ -7,9 +7,9 @@
 \alias{window}
 \title{Create groups from your data.}
 \usage{
-group(data, n, method = "n_dist", force_equal = FALSE, allow_zero = FALSE,
-  return_factor = FALSE, descending = FALSE, randomize = FALSE,
-  col_name = ".groups")
+group(data, n, method = "n_dist", col = NULL, force_equal = FALSE,
+  allow_zero = FALSE, return_factor = FALSE, descending = FALSE,
+  randomize = FALSE, col_name = ".groups")
 }
 \arguments{
 \item{data}{Dataframe or Vector.}
@@ -66,6 +66,9 @@ Given as whole numbers or percentage (\code{0} < n < \code{1}).}
  until there is no more data.
  \code{n} is the prime number to start at.
  \eqn{(e.g. 5, 7, 11, 13, 17, 4)}.}
+
+\item{col}{Name of column with values to match in method \code{l_starts}
+when data is a dataframe. Pass 'index' to use rownames. (Character)}
 
 \item{force_equal}{Create equal groups by discarding excess data points.
 Implementation varies between methods. (Logical)}
