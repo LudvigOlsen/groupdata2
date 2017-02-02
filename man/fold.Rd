@@ -10,7 +10,7 @@ fold(data, k = 5, cat_col = NULL, id_col = NULL, method = "n_dist")
 \item{data}{Dataframe or Vector.}
 
 \item{k}{Number of folds, fold size, or step size (depending on chosen method)
-Given as whole numbers or percentage (0 < n < 1).}
+Given as whole number or percentage (0 < n < 1).}
 
 \item{cat_col}{Categorical variable to balance between folds.
 
@@ -20,7 +20,7 @@ Given as whole numbers or percentage (0 < n < 1).}
  N.B. If also passing an id_col, cat_col should be a constant for that ID.}
 
 \item{id_col}{Factor with IDs.
- This will be used to keep all rows with an ID in the same fold
+ This will be used to keep all rows that share an ID in the same fold
  (if possible).
 
  E.g. If we have measured a participant multiple times and want to see the
