@@ -295,12 +295,12 @@ test_that("group sizes works with group_factor with method l_sizes", {
 
   }
 
-  expect_equal(group_f(c(1:10),c(0.2)),c(1,1,2,2,2,2,2,2,2,2))
-  expect_equal(group_f(c(1:11),c(0.2)),c(1,1,2,2,2,2,2,2,2,2,2))
-  expect_equal(group_f(c(1:14),c(0.2)),c(1,1,2,2,2,2,2,2,2,2,2,2,2,2))
-  expect_equal(group_f(c(1:15),c(0.2)),c(1,1,1,2,2,2,2,2,2,2,2,2,2,2,2))
+  expect_equal(group_f(c(1:10),c(0.2)),factor(c(1,1,2,2,2,2,2,2,2,2)))
+  expect_equal(group_f(c(1:11),c(0.2)),factor(c(1,1,2,2,2,2,2,2,2,2,2)))
+  expect_equal(group_f(c(1:14),c(0.2)),factor(c(1,1,2,2,2,2,2,2,2,2,2,2,2,2)))
+  expect_equal(group_f(c(1:15),c(0.2)),factor(c(1,1,1,2,2,2,2,2,2,2,2,2,2,2,2)))
 
-  expect_equal(group_f(c(1:2),c(0.2,0.5)),c(2,3))
+  expect_equal(group_f(c(1:2),c(0.2,0.5)),factor(c(2,3)))
 
   expect_equal(group_counts(c(1:200),c(20,20,40,40)),c(20,20,40,40,80))
   expect_equal(group_counts(c(1:200),c(0.5)),c(100,100))
@@ -317,25 +317,43 @@ test_that("group sizes works with group_factor with method l_starts", {
 
   }
 
-  group_counts <- function(v, n){
+  expect_equal(group_f(c(1:10),list(3,5,7)),
+               factor(c(1,1,2,2,3,3,4,4,4,4)))
 
-    gf <- group_factor(v, n, method = 'l_starts')
-    counts <- plyr::count(gf)
-    return(counts$freq)
+  expect_equal(group_f(rep(c(1:5),2),list(3,c(4,2))),
+               factor(c(1,1,2,2,2,2,2,2,3,3)))
 
-  }
+  expect_equal(group_f(rep(c(1:5),2),list(1,3,c(4,2))),
+               factor(c(1,1,2,2,2,2,2,2,3,3)))
 
-  expect_equal(group_f(c(1:10),c(0.2)),c(1,1,2,2,2,2,2,2,2,2))
-  expect_equal(group_f(c(1:11),c(0.2)),c(1,1,2,2,2,2,2,2,2,2,2))
-  expect_equal(group_f(c(1:14),c(0.2)),c(1,1,2,2,2,2,2,2,2,2,2,2,2,2))
-  expect_equal(group_f(c(1:15),c(0.2)),c(1,1,1,2,2,2,2,2,2,2,2,2,2,2,2))
+  expect_equal(group_f(c("a","b","a","b","a","b"),
+                       list("a",c("b",2),"b")),
+               factor(c(1,1,1,2,2,3)))
 
-  expect_equal(group_f(c(1:2),c(0.2,0.5)),c(2,3))
+  expect_equal(group_f(c("a","b","a","b","a","b"),
+                       list(c("b",2),"b")),
+               factor(c(1,1,1,2,2,3)))
 
-  expect_equal(group_counts(c(1:200),c(20,20,40,40)),c(20,20,40,40,80))
-  expect_equal(group_counts(c(1:200),c(0.5)),c(100,100))
-  expect_equal(group_counts(c(1:200),c(0.55)),c(110,90))
-  expect_equal(group_counts(c(1:200),c(0.555)),c(111,89))
+  # If factor
+  expect_equal(group_f(factor(c(1:10)),
+                       list(3,5,7)),
+               factor(c(1,1,2,2,3,3,4,4,4,4)))
+
+  expect_equal(group_f(factor(rep(c(1:5),2)),
+                       list(3,c(4,2))),
+               factor(c(1,1,2,2,2,2,2,2,3,3)))
+
+  expect_equal(group_f(factor(rep(c(1:5),2)),
+                       list(1,3,c(4,2))),
+               factor(c(1,1,2,2,2,2,2,2,3,3)))
+
+  expect_equal(group_f(factor(c("a","b","a","b","a","b")),
+                       list("a",c("b",2),"b")),
+               factor(c(1,1,1,2,2,3)))
+
+  expect_equal(group_f(factor(c("a","b","a","b","a","b")),
+                       list(c("b",2),"b")),
+               factor(c(1,1,1,2,2,3)))
 
 })
 
@@ -413,6 +431,11 @@ test_that("force_equal works with group_factor with all methods",{
   expect_equal(group_counts(v, 23, 'primes'), c(23,29))
   expect_equal(group_counts(v, 29, 'primes'), c(29))
   expect_equal(group_counts(v, 2, 'primes'), c(2,3,5,7,11,13))
+
+  expect_equal(group_counts(v, 2, 'l_sizes'), c(2))
+  expect_equal(group_counts(v, 0.2, 'l_sizes'), c(11))
+  expect_equal(group_counts(v, list(0.2,0.3), 'l_sizes'), c(11,17))
+  expect_equal(group_counts(v, c(0.2,0.3), 'l_sizes'), c(11,17))
 
 })
 

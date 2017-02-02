@@ -4,6 +4,7 @@ context("fold()")
 # Create more tests for fold() down the road.
 # I need more examples of datasets to test it on to find
 # quirky behavior
+# Add tests for other methods
 
 test_that("dimensions of dataframe with fold()",{
 
