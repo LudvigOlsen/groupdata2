@@ -16,7 +16,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 #' @export
 #' @param k Number of folds, fold size, or step size (depending on chosen method)
-#'  Given as whole numbers or percentage (0 < n < 1).
+#'  Given as whole number or percentage (0 < n < 1).
 #' @param cat_col Categorical variable to balance between folds.
 #'
 #'  E.g. when predicting a binary variable (a or b), it is necessary to have
@@ -24,7 +24,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'
 #'  N.B. If also passing an id_col, cat_col should be a constant for that ID.
 #' @param id_col Factor with IDs.
-#'  This will be used to keep all rows with an ID in the same fold
+#'  This will be used to keep all rows that share an ID in the same fold
 #'  (if possible).
 #'
 #'  E.g. If we have measured a participant multiple times and want to see the
