@@ -21,7 +21,7 @@
 #' # Using splt()
 #' df_list <- splt(df, 5, method = 'n_dist')
 #'
-splt <- function(data, n, method = 'n_dist', force_equal = FALSE,
+splt <- function(data, n, method = 'n_dist', col = NULL, force_equal = FALSE,
                  allow_zero = FALSE, descending = FALSE, randomize = FALSE){
 
   #
@@ -97,7 +97,7 @@ splt <- function(data, n, method = 'n_dist', force_equal = FALSE,
 
   if (is.data.frame(data)){
 
-    return(dsplit_(data, n, method, force_equal, allow_zero, descending, randomize))
+    return(dsplit_(data, n, method, col, force_equal, allow_zero, descending, randomize))
 
   } else {
 

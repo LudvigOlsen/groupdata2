@@ -1,7 +1,7 @@
 ## Dataframe and vector splitters
 
 #' @importFrom utils head tail
-dsplit_ <- function(data, n, method, force_equal = FALSE, allow_zero = FALSE,
+dsplit_ <- function(data, n, method, col = NULL, force_equal = FALSE, allow_zero = FALSE,
                    descending = FALSE, randomize = FALSE){
 
   #
@@ -14,7 +14,8 @@ dsplit_ <- function(data, n, method, force_equal = FALSE, allow_zero = FALSE,
   if (method == 'staircase') {
 
     # Create grouping factor
-    groups <- group_factor(data[[1]], n, method = method, force_equal = force_equal,
+    groups <- group_factor(data[[1]], n, method = method,
+                           force_equal = force_equal,
                           descending = descending, randomize = randomize)
 
     if (isTRUE(force_equal)){
@@ -23,13 +24,25 @@ dsplit_ <- function(data, n, method, force_equal = FALSE, allow_zero = FALSE,
 
     }
 
+  } else if (method == 'l_starts'){
+
+    # groups <- group_factor(data[[col]], n, method = method,
+    #                        descending = descending,
+    #                        randomize = randomize)
+    groups <- group_factor(data, n, method = method, col,
+                           force_equal = force_equal,
+                           allow_zero = allow_zero,
+                           descending = descending,
+                           randomize = randomize)
+
   } else {
 
     # Create grouping factor
-    groups <- group_factor(data[[1]], n, method = method, descending = descending,
+    groups <- group_factor(data[[1]], n, method = method,
+                           descending = descending,
                           randomize = randomize)
-
   }
+
   # Split dataframe into a list of dataframes
   data_splitted <- split(data , f = groups)
 
