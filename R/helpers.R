@@ -324,7 +324,8 @@ replace_level <- function(factor, match, replace){
 
 }
 
-group_uniques_ <- function(data, n, id_col, method, col_name='.groups'){
+group_uniques_ <- function(data, n, id_col, method,
+                           col_name='.groups', force_equal = FALSE){
 
   #
   # Creates groups of unique IDs (e.g. subjects)
@@ -335,7 +336,9 @@ group_uniques_ <- function(data, n, id_col, method, col_name='.groups'){
   unique_ids <- unique(data[[id_col]])
 
   # Create groups of IDs
-  id_groups <- group(unique_ids, n, method = method, randomize = TRUE, col_name = col_name)
+  id_groups <- group(unique_ids, n, method = method,
+                     randomize = TRUE, col_name = col_name,
+                     force_equal = force_equal)
 
   # Add grouping factor to data
   data <- merge(data,id_groups,by.x=c(id_col), by.y=c(colnames(id_groups)[1]))
@@ -344,6 +347,8 @@ group_uniques_ <- function(data, n, id_col, method, col_name='.groups'){
   return(data)
 
 }
+
+
 
 replace_col_name <- function(data, old_name, new_name){
 
