@@ -17,6 +17,7 @@ Main functions:
 -   group
 -   splt
 -   fold
+-   partition
 
 Other tools:
 
@@ -60,12 +61,16 @@ Creates the specified groups with group\_factor() and splits the given data by t
 
 Creates (optionally) balanced folds for use in cross-validation. Balance folds on one categorical variable and/or make sure that all datapoints sharing an ID is in the same fold.
 
+### partition()
+
+Creates (optionally) balanced partitions (e.g. training/test sets). Balance partitions on one categorical variable and/or make sure that all datapoints sharing an ID is in the same partition.
+
 Methods
 -------
 
-There are currently 7 methods available. They can be divided into 4 categories.
+There are currently 9 methods available. They can be divided into 5 categories.
 
-Examples of group sizes are based on a vector with 57 elements.
+*Examples of group sizes are based on a vector with 57 elements.*
 
 ### Specify group size
 
@@ -100,6 +105,22 @@ E.g. group sizes: 11, 11, 11, 11, 13
 Divides the data into a specified number of groups. Excess data points are placed randomly in groups (only 1 per group).
 
 E.g. group sizes: 12, 11, 11, 11, 12
+
+### Specify list
+
+##### Method: l\_sizes
+
+Uses a list / vector of group sizes to divide up the data.
+Excess data points are placed in an extra group.
+
+E.g. n = c(11, 11) returns group sizes: 11, 11, 35
+
+##### Method: l\_starts
+
+Uses a list of starting points to divide up the data.
+Starting points are values in a vector (e.g. column in dataframe). Skip to a specific nth appearance of a value by using c(value, skip\_to).
+
+E.g. n = list(11, 15, 27, 43) returns group sizes: 10, 4, 12, 16, 15
 
 ### Specify step size
 
@@ -145,18 +166,18 @@ group(df, 5, method = 'n_dist') %>%
 
 |    x| species |  age| .groups |
 |----:|:--------|----:|:--------|
-|    1| cat     |   59| 1       |
-|    2| pig     |   74| 1       |
-|    3| human   |   55| 2       |
-|    4| cat     |    4| 2       |
-|    5| pig     |   42| 3       |
-|    6| human   |   86| 3       |
-|    7| cat     |   10| 3       |
-|    8| pig     |   35| 4       |
-|    9| human   |   13| 4       |
-|   10| cat     |    3| 5       |
-|   11| pig     |   15| 5       |
-|   12| human   |   22| 5       |
+|    1| cat     |   81| 1       |
+|    2| pig     |    5| 1       |
+|    3| human   |   75| 2       |
+|    4| cat     |   58| 2       |
+|    5| pig     |   60| 3       |
+|    6| human   |   99| 3       |
+|    7| cat     |   91| 3       |
+|    8| pig     |   70| 4       |
+|    9| human   |   67| 4       |
+|   10| cat     |   38| 5       |
+|   11| pig     |   36| 5       |
+|   12| human   |   79| 5       |
 
 ``` r
 
@@ -169,11 +190,11 @@ df %>%
 
 | .groups |  mean\_age|
 |:--------|----------:|
-| 1       |   66.50000|
-| 2       |   29.50000|
-| 3       |   46.00000|
-| 4       |   24.00000|
-| 5       |   13.33333|
+| 1       |   43.00000|
+| 2       |   66.50000|
+| 3       |   83.33333|
+| 4       |   68.50000|
+| 5       |   51.00000|
 
 ### fold()
 

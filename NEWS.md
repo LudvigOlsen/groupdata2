@@ -1,5 +1,7 @@
 # groupdata2 0.1.0.9000
 
+* New main function: partition() - used for creating balanced partitions by partition sizes
+
 * New method category: l_ methods - n is passed as a list  
 
 * New method: 'l_sizes' - Uses list of group sizes to create grouping factor. Can be used for fast partitioning (e.g. n = c(0.2, 0.3) returns 3 groups with 0.2 (20\%), 0.3 (30\%) and the exceeding 0.5 (50\%) of the data points)  
