@@ -33,6 +33,13 @@ l_sizes_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE)
 
   }
 
+  # If n is given as a list() object
+  # unlist n to get a c() vector
+  if (typeof(n) == 'list' && !is.data.frame(n)){
+
+    n <- unlist(n)
+
+  }
 
 
   # To do !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -173,7 +180,9 @@ l_sizes_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE)
 
   if(isTRUE(force_equal) || length(elements) == length(v)){
 
-    return(elements)
+    elements %>%
+      as.factor() %>%
+      return()
 
   } else {
 
@@ -181,6 +190,7 @@ l_sizes_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE)
 
     elements %>%
       append(rep(max(elements)+1, missing_elements)) %>%
+      as.factor() %>%
       return()
 
   }
@@ -237,7 +247,7 @@ l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE
 
     # Insert first value of v in the beginning
     # of n
-    n_list <- append(n_list, list(c(v[1],1)), 0)
+    n_list <- append(n_list, list(c(as.character(v[1]),1)), 0)
 
   }
 
