@@ -3,45 +3,45 @@
 if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 
 ## partition
-#' @title Create balanced partitions
+#' @title Create balanced partitions.
 #' @description Splits data into partitions.
 #'  Balances a given categorical variable between partitions and keeps (if possible)
-#'  all data points with the same ID (e.g. participant_id) in the same partition.
+#'  all data points with a shared ID (e.g. participant_id) in the same partition.
 #' @details
-#'  cat_col: data is first subset by cat_col.
-#'  Subsets are grouped and merged. ||
-#'  id_col: groups are created from unique IDs. ||
-#'  cat_col AND id_col: data is subset by cat_col
+#'  \code{cat_col}: data is first subset by \code{cat_col}.
+#'  Subsets are grouped and merged.
+#'
+#'  \code{id_col}: groups are created from unique IDs.
+#'
+#'  \code{cat_col} AND \code{id_col}: data is subset by \code{cat_col}
 #'  and groups are created from unique IDs in each subset.
 #'  Subsets are merged.
-#'  If list_out is TRUE, merged data is subset by groups and
-#'  returned in a list.
+#'
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 #' @export
 #' @inheritParams group_factor
 #' @param p List / vector of partition sizes.
-#'  Given as whole numbers or percentage (0 < n < 1).
-#'  \code{(E.g. c(0.2, 3, 0.1))}.
+#'  Given as whole number(s) and/or percentage(s) (\code{0} < \code{n} < \code{1}).
+#'  E.g. \eqn{c(0.2, 3, 0.1)}.
 #' @param cat_col Categorical variable to balance between partitions.
 #'
 #'  E.g. when training/testing a model for predicting a binary variable (a or b),
 #'  it is necessary to have both represented in both the training set and the test set.
 #'
 #'  N.B. If also passing an id_col, cat_col should be a constant for that ID.
-#' @param id_col Factor with IDs.
-#'  This will be used to keep all rows that share an ID in the same partition
-#'  (if possible).
+#' @param id_col Factor with IDs. Used to keep all rows that share an ID in
+#'  the same partition (if possible).
 #'
 #'  E.g. If we have measured a participant multiple times and want to see the
 #'  effect of time, we want to have all observations of this participant in
 #'  the same partition.
 #' @param list_out Return partitions in a list. (Logical)
 #' @param force_equal Discard excess data. (Logical)
-#' @return If \code{list_out = TRUE}:
+#' @return If \code{list_out is TRUE}:
 #'
 #' A list of partitions where partitions are dataframes.
 #'
-#' If \code{list_out = FALSE}:
+#' If \code{list_out is FALSE}:
 #'
 #' A dataframe with grouping factor for subsetting.
 #' @examples
@@ -60,7 +60,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'
 #' # Using partition()
 #' # Without cat_col and id_col
-#' partitions <- partition(df, c(0.5))
+#' partitions <- partition(df, c(0.2,0.3))
 #'
 #' # With cat_col
 #' partitions <- partition(df, c(0.5), cat_col = 'diagnosis')
@@ -77,7 +77,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #' partitions <- partition(df, c(0.5), list_out = FALSE)
 #'
 #' @importFrom dplyr group_by_ do %>%
-partition <- function(data, p = c(0.2, 0.8),cat_col = NULL,
+partition <- function(data, p = 0.2, cat_col = NULL,
                       id_col = NULL, force_equal = FALSE,
                       list_out = TRUE) {
 
@@ -166,7 +166,12 @@ partition <- function(data, p = c(0.2, 0.8),cat_col = NULL,
 
     plyr::llply(c(1:max(as.integer(data[['.partitions']]))), function(part){
 
-      return(data[data$.partitions == part,])
+      temp_data <- data[data$.partitions == part,]
+
+      temp_data$.partitions <- NULL
+
+      return(temp_data)
+
 
     }) %>% return()
 
