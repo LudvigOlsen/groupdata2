@@ -9,8 +9,11 @@ fold(data, k = 5, cat_col = NULL, id_col = NULL, method = "n_dist")
 \arguments{
 \item{data}{Dataframe or Vector.}
 
-\item{k}{Number of folds, fold size, or step size (depending on chosen method)
-Given as whole number or percentage (0 < n < 1).}
+\item{k}{\emph{Dependent on method.}
+
+ Number of folds (default), fold size, with more (see \code{method}).
+
+ Given as whole number(s) and/or percentage(s) (0 < n < 1).}
 
 \item{cat_col}{Categorical variable to balance between folds.
 
@@ -27,54 +30,74 @@ Given as whole number or percentage (0 < n < 1).}
  effect of time, we want to have all observations of this participant in
  the same fold.}
 
-\item{method}{\code{greedy, n_dist, n_fill, n_last, n_rand, or staircase}.
+\item{method}{\code{greedy}, \code{n_dist}, \code{n_fill}, \code{n_last},
+ \code{n_rand}, \code{l_sizes}, \code{l_starts}, \code{staircase}, or
+ \code{primes}.
 
- Notice: examples are sizes of the generated groups
+ \strong{Notice}: examples are sizes of the generated groups
  based on a vector with 57 elements.
 
- \code{greedy} divides up the data greedily given a specified group size
+ \subsection{greedy}{Divides up the data greedily given a specified group size
  \eqn{(e.g. 10, 10, 10, 10, 10, 7)}.
 
- \code{n_dist} divides the data into a specified number of groups and
+ \code{n} is group size}
+
+ \subsection{n_dist (default)}{Divides the data into a specified number of groups and
  distributes excess data points across groups
  \eqn{(e.g. 11, 11, 12, 11, 12)}.
 
- \code{n_fill} divides the data into a specified number of groups and
+ \code{n} is number of groups}
+
+ \subsection{n_fill}{Divides the data into a specified number of groups and
  fills up groups with excess data points from the beginning
  \eqn{(e.g. 12, 12, 11, 11, 11)}.
 
- \code{n_last} divides the data into a specified number of groups.
- The algorithm finds the most equal group sizes possible,
+ \code{n} is number of groups}
+
+ \subsection{n_last}{Divides the data into a specified number of groups.
+ It finds the most equal group sizes possible,
  using all data points. Only the last group is able to differ in size
  \eqn{(e.g. 11, 11, 11, 11, 13)}.
 
- \code{n_rand} divides the data into a specified number of groups.
+ \code{n} is number of groups}
+
+ \subsection{n_rand}{Divides the data into a specified number of groups.
  Excess data points are placed randomly in groups (only 1 per group)
  \eqn{(e.g. 12, 11, 11, 11, 12)}.
 
- \code{l_sizes} divides the data by a list of group sizes.
- Excess data points are placed in extra group at the end.
- \eqn{(e.g. n = c(0.2,0.3) outputs groups with sizes (11,17,29))}.
+ \code{n} is number of groups}
 
- \code{l_starts} starts new groups at specified values of vector.
+ \subsection{l_sizes}{Divides the data by a list of group sizes.
+ Excess data points are placed in extra group at the end.
+ \eqn{(e.g. n = list(0.2,0.3) outputs groups with sizes (11,17,29))}.
+
+ \code{n} is a list of group sizes}
+
+ \subsection{l_starts}{Starts new groups at specified values of vector.
+
  \code{n} is a list of starting positions.
  Skip values by c(value, skip_to_number) where skip_to_number is the nth appearance of the value
  in the vector.
- Lists automatically starts from first data point.
- \eqn{(e.g. n = list(1,3,7,25,50) outputs groups with sizes (2,4,18,25,8))}.
- To skip:\eqn{(given vector c(1,2,3,1,2,3), n = list(1,2,c(3,2))
- outputs groups with sizes (1,4,1))}.
+ Groups automatically starts from first data point.
 
- \code{staircase} uses step_size to divide up the data.
+ \eqn{E.g. n = list(1,3,7,25,50) outputs groups with sizes (2,4,18,25,8)}.
+
+ To skip: \eqn{given vector c("a", "e", "o", "a", "e", "o"), n = list("a", "e", c("o", 2))
+ outputs groups with sizes (1,4,1)}.}
+
+ \subsection{staircase}{Uses step size to divide up the data.
  Group size increases with 1 step for every group,
  until there is no more data
  \eqn{(e.g. 5, 10, 15, 20, 7)}.
 
- \code{primes} uses prime numbers as group sizes.
+ \code{n} is step size}
+
+ \subsection{primes}{Uses prime numbers as group sizes.
  Group size increases to the next prime number
  until there is no more data.
- \code{n} is the prime number to start at.
- \eqn{(e.g. 5, 7, 11, 13, 17, 4)}.}
+ \eqn{(e.g. 5, 7, 11, 13, 17, 4)}.
+
+ \code{n} is the prime number to start}}
 }
 \value{
 Dataframe with grouping factor for subsetting in cross-validation.
@@ -82,13 +105,15 @@ Dataframe with grouping factor for subsetting in cross-validation.
 \description{
 Divides data into groups by a range of methods.
  Balances a given categorical variable between folds and keeps (if possible)
- all data points with the same ID (e.g. participant_id) in the same fold.
+ all data points with a shared ID (e.g. participant_id) in the same fold.
 }
 \details{
-cat_col: data is first subset by cat_col.
- Subsets are folded/grouped and merged. ||
- id_col: folds are created from unique IDs. ||
- cat_col AND id_col: data is subset by cat_col
+\code{cat_col}: data is first subset by \code{cat_col}.
+ Subsets are folded/grouped and merged.
+
+ \code{id_col}: folds are created from unique IDs.
+
+ \code{cat_col} AND \code{id_col}: data is subset by \code{cat_col}
  and folds are created from unique IDs in each subset.
  Subsets are merged.
 }

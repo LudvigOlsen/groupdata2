@@ -30,6 +30,14 @@
 #'  group(5, method = 'n_dist') %>%
 #'  dplyr::summarise(mean_age = mean(age))
 #'
+#' # Using group_factor() with l_starts
+#' # "c('pig',2)" skips to the second appearance of
+#' # "pig" after the first appearance of "cat"
+#' df_grouped <- group(df,
+#'                     list('cat', c('pig',2), 'human'),
+#'                     method = 'l_starts',
+#'                     col = 'species')
+#'
 group <- function(data, n, method = 'n_dist', col = NULL, force_equal = FALSE,
                   allow_zero = FALSE, return_factor = FALSE,
                   descending = FALSE, randomize = FALSE,

@@ -2,17 +2,17 @@
 % Please edit documentation in R/partition.R
 \name{partition}
 \alias{partition}
-\title{Create balanced partitions}
+\title{Create balanced partitions.}
 \usage{
-partition(data, p = c(0.2, 0.8), cat_col = NULL, id_col = NULL,
+partition(data, p = 0.2, cat_col = NULL, id_col = NULL,
   force_equal = FALSE, list_out = TRUE)
 }
 \arguments{
 \item{data}{Dataframe or Vector.}
 
 \item{p}{List / vector of partition sizes.
-Given as whole numbers or percentage (0 < n < 1).
-\code{(E.g. c(0.2, 3, 0.1))}.}
+Given as whole number(s) and/or percentage(s) (\code{0} < \code{n} < \code{1}).
+E.g. \eqn{c(0.2, 3, 0.1)}.}
 
 \item{cat_col}{Categorical variable to balance between partitions.
 
@@ -21,9 +21,8 @@ Given as whole numbers or percentage (0 < n < 1).
 
  N.B. If also passing an id_col, cat_col should be a constant for that ID.}
 
-\item{id_col}{Factor with IDs.
- This will be used to keep all rows that share an ID in the same partition
- (if possible).
+\item{id_col}{Factor with IDs. Used to keep all rows that share an ID in
+ the same partition (if possible).
 
  E.g. If we have measured a participant multiple times and want to see the
  effect of time, we want to have all observations of this participant in
@@ -34,28 +33,28 @@ Given as whole numbers or percentage (0 < n < 1).
 \item{list_out}{Return partitions in a list. (Logical)}
 }
 \value{
-If \code{list_out = TRUE}:
+If \code{list_out is TRUE}:
 
 A list of partitions where partitions are dataframes.
 
-If \code{list_out = FALSE}:
+If \code{list_out is FALSE}:
 
 A dataframe with grouping factor for subsetting.
 }
 \description{
 Splits data into partitions.
  Balances a given categorical variable between partitions and keeps (if possible)
- all data points with the same ID (e.g. participant_id) in the same partition.
+ all data points with a shared ID (e.g. participant_id) in the same partition.
 }
 \details{
-cat_col: data is first subset by cat_col.
- Subsets are grouped and merged. ||
- id_col: groups are created from unique IDs. ||
- cat_col AND id_col: data is subset by cat_col
+\code{cat_col}: data is first subset by \code{cat_col}.
+ Subsets are grouped and merged.
+
+ \code{id_col}: groups are created from unique IDs.
+
+ \code{cat_col} AND \code{id_col}: data is subset by \code{cat_col}
  and groups are created from unique IDs in each subset.
  Subsets are merged.
- If list_out is TRUE, merged data is subset by groups and
- returned in a list.
 }
 \examples{
 # Attach packages
@@ -73,7 +72,7 @@ df$session <- rep(c('1','2', '3'), 6)
 
 # Using partition()
 # Without cat_col and id_col
-partitions <- partition(df, c(0.5))
+partitions <- partition(df, c(0.2,0.3))
 
 # With cat_col
 partitions <- partition(df, c(0.5), cat_col = 'diagnosis')

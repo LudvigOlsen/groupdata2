@@ -5,18 +5,23 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #' @title Create balanced folds for cross-validation.
 #' @description Divides data into groups by a range of methods.
 #'  Balances a given categorical variable between folds and keeps (if possible)
-#'  all data points with the same ID (e.g. participant_id) in the same fold.
+#'  all data points with a shared ID (e.g. participant_id) in the same fold.
 #' @details
-#'  cat_col: data is first subset by cat_col.
-#'  Subsets are folded/grouped and merged. ||
-#'  id_col: folds are created from unique IDs. ||
-#'  cat_col AND id_col: data is subset by cat_col
+#'  \code{cat_col}: data is first subset by \code{cat_col}.
+#'  Subsets are folded/grouped and merged.
+#'
+#'  \code{id_col}: folds are created from unique IDs.
+#'
+#'  \code{cat_col} AND \code{id_col}: data is subset by \code{cat_col}
 #'  and folds are created from unique IDs in each subset.
 #'  Subsets are merged.
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 #' @export
-#' @param k Number of folds, fold size, or step size (depending on chosen method)
-#'  Given as whole number or percentage (0 < n < 1).
+#' @param k \emph{Dependent on method.}
+#'
+#'  Number of folds (default), fold size, with more (see \code{method}).
+#'
+#'  Given as whole number(s) and/or percentage(s) (0 < n < 1).
 #' @param cat_col Categorical variable to balance between folds.
 #'
 #'  E.g. when predicting a binary variable (a or b), it is necessary to have
