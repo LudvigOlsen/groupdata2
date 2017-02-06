@@ -1,3 +1,4 @@
+library(groupdata2)
 context("create_n_primes")
 
 
