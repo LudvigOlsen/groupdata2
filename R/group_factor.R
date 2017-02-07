@@ -82,7 +82,7 @@
 #'
 #'  \code{n} is the prime number to start}
 #'
-#' @param col Name of column with values to match in method \code{l_starts}
+#' @param starts_col Name of column with values to match in method \code{l_starts}
 #' when data is a dataframe. Pass 'index' to use rownames. (Character)
 #' @param force_equal Create equal groups by discarding excess data points.
 #'  Implementation varies between methods. (Logical)
@@ -116,10 +116,10 @@
 #' df$groups <- groups
 #'
 #'# Using group_factor() with l_starts
-#' groups <- group_factor(df, list('cat', c('pig',2), 'human'), method = 'l_starts', col = 'species')
+#' groups <- group_factor(df, list('cat', c('pig',2), 'human'), method = 'l_starts', starts_col = 'species')
 #' df$groups <- groups
 #'
-group_factor <- function(data, n, method = 'n_dist', col = NULL, force_equal = FALSE,
+group_factor <- function(data, n, method = 'n_dist', starts_col = NULL, force_equal = FALSE,
                          allow_zero = FALSE, descending = FALSE,
                          randomize = FALSE){
 
@@ -154,21 +154,21 @@ group_factor <- function(data, n, method = 'n_dist', col = NULL, force_equal = F
   n <- check_convert_check_(data, n, method, force_equal, allow_zero, descending)
 
   # For method is l_starts
-  # If data is a dataframe and col is not NULL
+  # If data is a dataframe and starts_col is not NULL
   # We want to get the column with values to match
 
-  if(is.data.frame(data) && !is.null(col)){
+  if(is.data.frame(data) && !is.null(starts_col)){
 
-    # If col is 'index', create column with rownames for matching values
-    if (col == 'index'){
+    # If starts_col is 'index', create column with rownames for matching values
+    if (starts_col == 'index'){
 
       starts_col <- rownames(data)
 
-    # If col is not NULL (and not 'index')
+    # If starts_col is not NULL (and not 'index')
     # Get the column from data
     } else {
 
-      starts_col <- data[[col]]
+      starts_col <- data[[starts_col]]
 
     }
 

@@ -4,7 +4,8 @@
 \alias{fold}
 \title{Create balanced folds for cross-validation.}
 \usage{
-fold(data, k = 5, cat_col = NULL, id_col = NULL, method = "n_dist")
+fold(data, k = 5, cat_col = NULL, id_col = NULL, starts_col = NULL,
+  method = "n_dist")
 }
 \arguments{
 \item{data}{Dataframe or Vector.}
@@ -29,6 +30,9 @@ fold(data, k = 5, cat_col = NULL, id_col = NULL, method = "n_dist")
  E.g. If we have measured a participant multiple times and want to see the
  effect of time, we want to have all observations of this participant in
  the same fold.}
+
+\item{starts_col}{Name of column with values to match in method \code{l_starts}
+when data is a dataframe. Pass 'index' to use rownames. (Character)}
 
 \item{method}{\code{greedy}, \code{n_dist}, \code{n_fill}, \code{n_last},
  \code{n_rand}, \code{l_sizes}, \code{l_starts}, \code{staircase}, or

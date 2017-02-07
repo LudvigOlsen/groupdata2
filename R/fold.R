@@ -71,7 +71,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #' df_folded <- df_folded[order(df_folded$.folds),]
 #'
 #' @importFrom dplyr group_by_ do %>%
-fold <- function(data, k=5, cat_col = NULL, id_col = NULL, method = 'n_dist'){
+fold <- function(data, k=5, cat_col = NULL, id_col = NULL, starts_col = NULL, method = 'n_dist'){
 
   #
   # Takes:
@@ -123,7 +123,8 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL, method = 'n_dist'){
       data <- data %>%
         group_by_(cat_col) %>%
         do(group_uniques_(., k, id_col, method,
-                          col_name = '.folds')) %>%
+                          col_name = '.folds',
+                          starts_col = starts_col)) %>%
         group_by_('.folds')
 
 
@@ -138,7 +139,8 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL, method = 'n_dist'){
         group_by_(cat_col) %>%
         do(group(., k, method = method,
                  randomize = TRUE,
-                 col_name = '.folds'))
+                 col_name = '.folds',
+                 starts_col = starts_col))
 
 
     }
@@ -155,7 +157,8 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL, method = 'n_dist'){
 
       data <- data %>%
         group_uniques_(k, id_col, method,
-                       col_name = '.folds')
+                       col_name = '.folds',
+                       starts_col = starts_col)
 
 
       # If id_col is NULL
@@ -167,7 +170,8 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL, method = 'n_dist'){
       data <- group(data, k,
                     method = method,
                     randomize = TRUE,
-                    col_name = '.folds')
+                    col_name = '.folds',
+                    starts_col = starts_col)
 
     }
 

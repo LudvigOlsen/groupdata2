@@ -86,9 +86,6 @@ splt(data, n, method = "n_dist", col = NULL, force_equal = FALSE,
 
  \code{n} is the prime number to start}}
 
-\item{col}{Name of column with values to match in method \code{l_starts}
-when data is a dataframe. Pass 'index' to use rownames. (Character)}
-
 \item{force_equal}{Create equal groups by discarding excess data points.
 Implementation varies between methods. (Logical)}
 

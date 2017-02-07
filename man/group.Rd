@@ -7,7 +7,7 @@
 \alias{window}
 \title{Create groups from your data.}
 \usage{
-group(data, n, method = "n_dist", col = NULL, force_equal = FALSE,
+group(data, n, method = "n_dist", starts_col = NULL, force_equal = FALSE,
   allow_zero = FALSE, return_factor = FALSE, descending = FALSE,
   randomize = FALSE, col_name = ".groups")
 }
@@ -90,7 +90,7 @@ group(data, n, method = "n_dist", col = NULL, force_equal = FALSE,
 
  \code{n} is the prime number to start}}
 
-\item{col}{Name of column with values to match in method \code{l_starts}
+\item{starts_col}{Name of column with values to match in method \code{l_starts}
 when data is a dataframe. Pass 'index' to use rownames. (Character)}
 
 \item{force_equal}{Create equal groups by discarding excess data points.
@@ -139,7 +139,7 @@ df_means <- df \%>\%
 df_grouped <- group(df,
                     list('cat', c('pig',2), 'human'),
                     method = 'l_starts',
-                    col = 'species')
+                    starts_col = 'species')
 
 }
 \author{

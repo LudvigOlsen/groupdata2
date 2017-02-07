@@ -324,7 +324,7 @@ replace_level <- function(factor, match, replace){
 
 }
 
-group_uniques_ <- function(data, n, id_col, method,
+group_uniques_ <- function(data, n, id_col, method, starts_col = NULL,
                            col_name='.groups', force_equal = FALSE){
 
   #
@@ -337,6 +337,7 @@ group_uniques_ <- function(data, n, id_col, method,
 
   # Create groups of IDs
   id_groups <- group(unique_ids, n, method = method,
+                     starts_col = starts_col,
                      randomize = TRUE, col_name = col_name,
                      force_equal = force_equal)
 

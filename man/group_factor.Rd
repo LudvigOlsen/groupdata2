@@ -4,8 +4,9 @@
 \alias{group_factor}
 \title{Create grouping factor for subsetting your data.}
 \usage{
-group_factor(data, n, method = "n_dist", col = NULL, force_equal = FALSE,
-  allow_zero = FALSE, descending = FALSE, randomize = FALSE)
+group_factor(data, n, method = "n_dist", starts_col = NULL,
+  force_equal = FALSE, allow_zero = FALSE, descending = FALSE,
+  randomize = FALSE)
 }
 \arguments{
 \item{data}{Dataframe or Vector.}
@@ -86,7 +87,7 @@ group_factor(data, n, method = "n_dist", col = NULL, force_equal = FALSE,
 
  \code{n} is the prime number to start}}
 
-\item{col}{Name of column with values to match in method \code{l_starts}
+\item{starts_col}{Name of column with values to match in method \code{l_starts}
 when data is a dataframe. Pass 'index' to use rownames. (Character)}
 
 \item{force_equal}{Create equal groups by discarding excess data points.
@@ -130,7 +131,7 @@ groups <- group_factor(df, list(0.2, 0.3), method = 'l_sizes')
 df$groups <- groups
 
 # Using group_factor() with l_starts
-groups <- group_factor(df, list('cat', c('pig',2), 'human'), method = 'l_starts', col = 'species')
+groups <- group_factor(df, list('cat', c('pig',2), 'human'), method = 'l_starts', starts_col = 'species')
 df$groups <- groups
 
 }

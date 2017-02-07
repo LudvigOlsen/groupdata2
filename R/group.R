@@ -36,12 +36,12 @@
 #' df_grouped <- group(df,
 #'                     list('cat', c('pig',2), 'human'),
 #'                     method = 'l_starts',
-#'                     col = 'species')
+#'                     starts_col = 'species')
 #'
-group <- function(data, n, method = 'n_dist', col = NULL, force_equal = FALSE,
-                  allow_zero = FALSE, return_factor = FALSE,
-                  descending = FALSE, randomize = FALSE,
-                  col_name = '.groups'){
+group <- function(data, n, method = 'n_dist', starts_col = NULL,
+                  force_equal = FALSE, allow_zero = FALSE,
+                  return_factor = FALSE, descending = FALSE,
+                  randomize = FALSE, col_name = '.groups'){
 
   #
   # Takes dataframe or vector
@@ -54,7 +54,7 @@ group <- function(data, n, method = 'n_dist', col = NULL, force_equal = FALSE,
   #
 
   # Create grouping factor
-  grouping_factor <- group_factor(data, n, method, col, force_equal = force_equal,
+  grouping_factor <- group_factor(data, n, method, starts_col, force_equal = force_equal,
                                   allow_zero = allow_zero, descending = descending,
                                   randomize = randomize)
 
