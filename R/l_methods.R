@@ -51,8 +51,6 @@ l_sizes_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE)
   # Or only return group 2?
   #########################
 
-
-
   # If n is longer than v
   # raise an error
   if (length(n)>length(v)){
@@ -161,6 +159,13 @@ l_sizes_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE)
 
   }) %>% unlist()
 
+
+  # Check that we do not create more values than is in v
+  if(length(elements) > length(v)){
+
+    stop("n creates more values than is in v")
+
+  }
 
   # Start group number at 1
   #

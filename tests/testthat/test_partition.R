@@ -145,3 +145,20 @@ test_that(".partitions is correct in partition() with list_out == TRUE",{
 
 })
 
+test_that("partition() outputs correct error messages",{
+
+  df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
+                   "age" = rep(c(25,65,34), 3),
+                   "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
+                   "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
+
+  df <- df[order(df$participant),]
+
+  # Add session info
+  df$session <- rep(c('1','2', '3'), 6)
+
+
+  expect_error(partition(df, c(19), cat_col = 'diagnosis'), "n creates more values than is in v", fixed = TRUE)
+
+
+})
