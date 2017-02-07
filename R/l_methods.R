@@ -42,15 +42,6 @@ l_sizes_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE)
   }
 
 
-  # To do !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  # When having 3 ids and getting a group of 0.2,
-  # It returns -inf
-  # Make an error message if we give only 1 group
-  # And that is less than 1 element.
-  # Or only return group 2?
-  #########################
-
   # If n is longer than v
   # raise an error
   if (length(n)>length(v)){
@@ -185,18 +176,42 @@ l_sizes_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE)
 
   if(isTRUE(force_equal) || length(elements) == length(v)){
 
-    elements %>%
-      as.factor() %>%
-      return()
+    # If there are no elements, return NA
+    if (length(elements) == 0){
+
+      warning("No groups. Returned NA.")
+      rep(NA, length(v)) %>%
+        as.factor() %>%
+        return()
+
+    } else {
+
+      elements %>%
+        as.factor() %>%
+        return()
+
+    }
 
   } else {
 
     missing_elements <- length(v) - length(elements)
 
+
+    # If there are no elements
+    if (length(elements) == 0){
+
+      rep(2, missing_elements) %>%
+        as.factor() %>%
+        return()
+
+    } else {
+
     elements %>%
       append(rep(max(elements)+1, missing_elements)) %>%
       as.factor() %>%
       return()
+
+    }
 
   }
 

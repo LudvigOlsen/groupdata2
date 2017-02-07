@@ -158,7 +158,12 @@ test_that("partition() outputs correct error messages",{
   df$session <- rep(c('1','2', '3'), 6)
 
 
-  expect_error(partition(df, c(19), cat_col = 'diagnosis'), "n creates more values than is in v", fixed = TRUE)
+  expect_error(partition(df, c(19), cat_col = 'diagnosis'),
+               "n creates more values than is in v", fixed = TRUE)
+
+  expect_warning(expect_error(partition(c(1:3), 0.2, force_equal = TRUE),
+                              "NA in .partitions column.", fixed = TRUE),
+                 "No groups. Returned NA.", fixed = TRUE)
 
 
 })

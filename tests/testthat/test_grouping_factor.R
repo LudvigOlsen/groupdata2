@@ -449,6 +449,14 @@ test_that("allow_zero works with group_factor", {
 
 })
 
+test_that("l_sizes works with no groups",{
+
+  expect_equal(group_factor(c(1:3), 0.2, method = 'l_sizes'), factor(c(2,2,2)))
+  expect_warning(group_factor(c(1:3), 0.2, method = 'l_sizes', force_equal = TRUE), "No groups. Returned NA.", fixed = TRUE)
+
+})
+
+
 # Test descending when it has been implemented in all relevant methods
 
 # I don't yet know how to test random functions - e.g. randomize = TRUE

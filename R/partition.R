@@ -151,6 +151,7 @@ partition <- function(data, p = 0.2, cat_col = NULL,
       # Create groups from all the data points
       # .. and add grouping factor to data
 
+
       data <- group(data, n = p,
                     method = 'l_sizes',
                     randomize = TRUE,
@@ -162,18 +163,28 @@ partition <- function(data, p = 0.2, cat_col = NULL,
   }
 
 
+
   if (isTRUE(list_out)){
 
-    plyr::llply(c(1:max(as.integer(data[['.partitions']]))), function(part){
+    # If we have any NAs in .partitions
+    if (anyNA(data$.partitions)){
 
-      temp_data <- data[data$.partitions == part,]
+      stop("NA in .partitions column.")
 
-      temp_data$.partitions <- NULL
+    } else {
 
-      return(temp_data)
+      plyr::llply(c(1:max(as.integer(data[['.partitions']]))), function(part){
+
+        temp_data <- data[data$.partitions == part,]
+
+        temp_data$.partitions <- NULL
+
+        return(temp_data)
 
 
-    }) %>% return()
+      }) %>% return()
+
+    }
 
   } else {
 
