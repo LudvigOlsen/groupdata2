@@ -139,8 +139,8 @@ df$groups <- groups
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 }
 \seealso{
-Other grouping functions: \code{\link{group}},
-  \code{\link{splt}}
+Other grouping functions: \code{\link{find_starts}},
+  \code{\link{group}}, \code{\link{splt}}
 
 Other staircase tools: \code{\link{\%primes\%}},
   \code{\link{\%staircase\%}}

@@ -128,7 +128,6 @@ group_factor <- function(data, n, method = 'n_dist', starts_col = NULL, force_eq
   # Returns a grouping factor
   #
 
-
   ### Allow zero ###
 
   # If allow_zero is TRUE and n is 0
