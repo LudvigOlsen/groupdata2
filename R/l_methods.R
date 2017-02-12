@@ -315,3 +315,22 @@ l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE
 
 }
 
+# Works but undecided whether it should be included
+# as it is so easy to do that the user could do it
+# on their own and we don't want to clutter the help
+# file too much
+a_starts_group_factor_ <- function(v, force_equal = FALSE, descending = FALSE){
+
+  # Find starts using find_starts()
+  starts <- find_starts(v)
+
+  # Create grouping factor with l_starts method
+  grouping_factor <- l_starts_group_factor_(v, starts, force_equal = force_equal, descending = descending)
+
+  # Return grouping factor
+  return(grouping_factor)
+
+
+
+}
+
