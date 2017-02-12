@@ -237,6 +237,19 @@ l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE
   # Under development
   #
 
+  # If n is not a list
+  # N.b. because n == 'auto' on a list issues warning
+  if (!is.list(n)){
+
+    # And n is 'auto'
+    if (n == 'auto'){
+
+      # Find starts
+      n <- find_starts(v)
+
+    }
+  }
+
   # For each element in n
   # .. If it has length 1, return (element, 1)
   # .. Else if it has length 2, return element

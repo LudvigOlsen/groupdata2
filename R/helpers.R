@@ -190,7 +190,17 @@ check_arguments_ <- function(data, n, method, force_equal,
     stopifnot(arg_is_number_(n),
               n > 0)
 
+  } else if (method == 'l_starts'){
+
+    # Check n for l_starts
+    stopifnot(is.list(n) || is.vector(n) || n == 'auto')
+
+  } else if (method == 'l_sizes'){
+
+    stopifnot(is.list(n) || is.vector(n) && !is.character(n))
   }
+
+
 
   # Stop execution if input variables aren't what we expect / can handle
   stopifnot((!is.null(n)),
@@ -211,7 +221,6 @@ check_arguments_ <- function(data, n, method, force_equal,
               length(data) > 0)
 
   }
-
 
 }
 

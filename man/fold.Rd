@@ -89,6 +89,9 @@ when data is a dataframe. Pass 'index' to use rownames. (Character)}
  To skip: \eqn{given vector c("a", "e", "o", "a", "e", "o"), n = list("a", "e", c("o", 2))
  outputs groups with sizes (1,4,1)}.}
 
+ If passing \eqn{n = 'auto'}  the starting positions are automatically found with
+ \code{\link{find_starts}()}.
+
  \subsection{staircase}{Uses step size to divide up the data.
  Group size increases with 1 step for every group,
  until there is no more data
@@ -101,7 +104,7 @@ when data is a dataframe. Pass 'index' to use rownames. (Character)}
  until there is no more data.
  \eqn{(e.g. 5, 7, 11, 13, 17, 4)}.
 
- \code{n} is the prime number to start}}
+ \code{n} is the prime number to start at}}
 }
 \value{
 Dataframe with grouping factor for subsetting in cross-validation.
