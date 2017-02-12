@@ -52,12 +52,16 @@ find_starts <- function(data, col = NULL, return_index = FALSE){
     if (is.null(col)){
 
       # If not, raise error
-      stop("Col must be specified when data is dataframe")
+      stop("col must be specified when data is dataframe")
 
     }
 
+    # If col is a factor
     if (is.factor(data[[col]])){
 
+      warning("col is factor. Using as character.")
+
+      # Convert col to character
       data[[col]] <- as.character(data[[col]])
 
       }
@@ -69,6 +73,9 @@ find_starts <- function(data, col = NULL, return_index = FALSE){
 
     # If data is a factor
     if (is.factor(data)){
+
+      warning("data is factor. Using as character.")
+
       # Convert data to character
       data <- as.character(data)
     }
@@ -79,7 +86,7 @@ find_starts <- function(data, col = NULL, return_index = FALSE){
     if (!is.null(col)){
 
       # If it is, warn the user that it won't be used
-      warning("Col not used as data is not a dataframe")
+      warning("col not used as data is not a dataframe")
 
     }
 
