@@ -34,8 +34,9 @@ Main functions:
 
 Other tools:  
 
+* find_starts
 * %staircase%  
-* %primes%  
+* %primes% 
 
 ## Installation  
 CRAN version:

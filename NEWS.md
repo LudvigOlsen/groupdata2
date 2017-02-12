@@ -8,6 +8,8 @@
 
 * New method: 'l_starts' - Uses list of start positions to create groups. Define which values from a vector to start a new group at. Skip to later appearances of a value.  
 
+* New helper tool: 'find_starts' - Finds start positions in a vector. I.e. values that differ from the previous value. Get the values or indices of the values. Output can be used as n in 'l_starts' method.  
+
 * New method: 'primes' - similar to 'staircase' but with primes as steps (e.g. group sizes 2,3,5,7..)  
 
 * New remainder tool: '%primes%' - similar to %staircase% but for the new primes method  
