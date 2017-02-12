@@ -121,6 +121,8 @@ Skip to a specific nth appearance of a value by using c(value, skip_to).
 
 E.g. n = list(11, 15, 27, 43) returns group sizes: 10, 4, 12, 16, 15  
 
+Lol
+
 ### Specify step size
 ##### Method: staircase
 Uses step_size to divide up the data. 
