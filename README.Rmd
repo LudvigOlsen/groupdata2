@@ -121,7 +121,7 @@ Skip to a specific nth appearance of a value by using c(value, skip_to).
 
 E.g. n = c(11, 15, 27, 43) returns group sizes: 10, 4, 12, 16, 15  
 
-Identical to n = list(11, 15, c(27,1), 43) where 1 specifies that we 
+Identical to n = list(11, 15, c(27, 1), 43) where 1 specifies that we 
 want the first appearance of 27 after the previous value 15.  
 
 ### Specify step size

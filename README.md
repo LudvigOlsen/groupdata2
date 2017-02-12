@@ -123,7 +123,7 @@ Starting points are values in a vector (e.g. column in dataframe). Skip to a spe
 
 E.g. n = c(11, 15, 27, 43) returns group sizes: 10, 4, 12, 16, 15
 
-Identical to n = list(11, 15, c(27,1), 43) where 1 specifies that we want the first appearance of 27 after the previous value 15.
+Identical to n = list(11, 15, c(27, 1), 43) where 1 specifies that we want the first appearance of 27 after the previous value 15.
 
 ### Specify step size
 
@@ -169,18 +169,18 @@ group(df, 5, method = 'n_dist') %>%
 
 |    x| species |  age| .groups |
 |----:|:--------|----:|:--------|
-|    1| cat     |   79| 1       |
-|    2| pig     |   91| 1       |
-|    3| human   |   15| 2       |
-|    4| cat     |   54| 2       |
-|    5| pig     |   11| 3       |
-|    6| human   |   73| 3       |
-|    7| cat     |   31| 3       |
-|    8| pig     |   92| 4       |
-|    9| human   |   67| 4       |
-|   10| cat     |    3| 5       |
-|   11| pig     |   27| 5       |
-|   12| human   |   85| 5       |
+|    1| cat     |   69| 1       |
+|    2| pig     |   44| 1       |
+|    3| human   |   39| 2       |
+|    4| cat     |   21| 2       |
+|    5| pig     |   66| 3       |
+|    6| human   |   78| 3       |
+|    7| cat     |   11| 3       |
+|    8| pig     |   26| 4       |
+|    9| human   |   99| 4       |
+|   10| cat     |   59| 5       |
+|   11| pig     |   36| 5       |
+|   12| human   |   57| 5       |
 
 ``` r
 
@@ -193,11 +193,11 @@ df %>%
 
 | .groups |  mean\_age|
 |:--------|----------:|
-| 1       |   85.00000|
-| 2       |   34.50000|
-| 3       |   38.33333|
-| 4       |   79.50000|
-| 5       |   38.33333|
+| 1       |   56.50000|
+| 2       |   30.00000|
+| 3       |   51.66667|
+| 4       |   62.50000|
+| 5       |   50.66667|
 
 ### fold()
 
