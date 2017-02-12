@@ -1,7 +1,7 @@
 ## Dataframe and vector splitters
 
 #' @importFrom utils head tail
-dsplit_ <- function(data, n, method, col = NULL, force_equal = FALSE, allow_zero = FALSE,
+dsplit_ <- function(data, n, method, starts_col = NULL, force_equal = FALSE, allow_zero = FALSE,
                    descending = FALSE, randomize = FALSE){
 
   #
@@ -29,7 +29,7 @@ dsplit_ <- function(data, n, method, col = NULL, force_equal = FALSE, allow_zero
     # groups <- group_factor(data[[col]], n, method = method,
     #                        descending = descending,
     #                        randomize = randomize)
-    groups <- group_factor(data, n, method = method, col,
+    groups <- group_factor(data, n, method = method, starts_col,
                            force_equal = force_equal,
                            allow_zero = allow_zero,
                            descending = descending,

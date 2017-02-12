@@ -4,7 +4,7 @@
 \alias{splt}
 \title{Split data by a range of methods.}
 \usage{
-splt(data, n, method = "n_dist", col = NULL, force_equal = FALSE,
+splt(data, n, method = "n_dist", starts_col = NULL, force_equal = FALSE,
   allow_zero = FALSE, descending = FALSE, randomize = FALSE)
 }
 \arguments{
@@ -85,6 +85,9 @@ splt(data, n, method = "n_dist", col = NULL, force_equal = FALSE,
  \eqn{(e.g. 5, 7, 11, 13, 17, 4)}.
 
  \code{n} is the prime number to start}}
+
+\item{starts_col}{Name of column with values to match in method \code{l_starts}
+when data is a dataframe. Pass 'index' to use rownames. (Character)}
 
 \item{force_equal}{Create equal groups by discarding excess data points.
 Implementation varies between methods. (Logical)}
