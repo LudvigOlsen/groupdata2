@@ -161,13 +161,23 @@ df <- data.frame("x"=c(1:12),
 
 ```{r}
 # Using group()
-group(df, 5, method = 'n_dist') %>%
+group(df, n = 5, method = 'n_dist') %>%
   kable()
 
 # Using group() with dplyr pipeline to get mean age
 df %>%
-  group(5, method = 'n_dist') %>%
+  group(n = 5, method = 'n_dist') %>%
   dplyr::summarise(mean_age = mean(age)) %>%
+  kable()
+
+# Using group() with 'l_starts' method
+# Starts group at the first 'cat', 
+# then skips to the second appearance of "pig" after "cat",
+# then starts at the following "cat".
+df %>%
+  group(n = list("cat", c("pig",2), "cat"), 
+        method = 'l_starts',
+        starts_col = "species") %>%
   kable()
 
 ```
@@ -193,7 +203,7 @@ df$session <- rep(c('1','2', '3'), 6)
 set.seed(1)
 
 # Use fold() with cat_col and id_col
-df_folded <- fold(df, 3, cat_col = 'diagnosis',
+df_folded <- fold(df, k = 3, cat_col = 'diagnosis',
                   id_col = 'participant', method = 'n_dist')
 
 # Show df_folded ordered by folds

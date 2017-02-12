@@ -163,41 +163,69 @@ df <- data.frame("x"=c(1:12),
 
 ``` r
 # Using group()
-group(df, 5, method = 'n_dist') %>%
+group(df, n = 5, method = 'n_dist') %>%
   kable()
 ```
 
 |    x| species |  age| .groups |
 |----:|:--------|----:|:--------|
-|    1| cat     |   69| 1       |
-|    2| pig     |   44| 1       |
-|    3| human   |   39| 2       |
-|    4| cat     |   21| 2       |
-|    5| pig     |   66| 3       |
-|    6| human   |   78| 3       |
-|    7| cat     |   11| 3       |
-|    8| pig     |   26| 4       |
-|    9| human   |   99| 4       |
-|   10| cat     |   59| 5       |
+|    1| cat     |   28| 1       |
+|    2| pig     |   14| 1       |
+|    3| human   |   16| 2       |
+|    4| cat     |    7| 2       |
+|    5| pig     |   20| 3       |
+|    6| human   |   25| 3       |
+|    7| cat     |   56| 3       |
+|    8| pig     |   53| 4       |
+|    9| human   |   98| 4       |
+|   10| cat     |   32| 5       |
 |   11| pig     |   36| 5       |
-|   12| human   |   57| 5       |
+|   12| human   |   50| 5       |
 
 ``` r
 
 # Using group() with dplyr pipeline to get mean age
 df %>%
-  group(5, method = 'n_dist') %>%
+  group(n = 5, method = 'n_dist') %>%
   dplyr::summarise(mean_age = mean(age)) %>%
   kable()
 ```
 
 | .groups |  mean\_age|
 |:--------|----------:|
-| 1       |   56.50000|
-| 2       |   30.00000|
-| 3       |   51.66667|
-| 4       |   62.50000|
-| 5       |   50.66667|
+| 1       |   21.00000|
+| 2       |   11.50000|
+| 3       |   33.66667|
+| 4       |   75.50000|
+| 5       |   39.33333|
+
+``` r
+
+# Using group() with 'l_starts' method
+# Starts group at the first 'cat', 
+# then skips to the second appearance of "pig" after "cat",
+# then starts at the following "cat".
+df %>%
+  group(n = list("cat", c("pig",2), "cat"), 
+        method = 'l_starts',
+        starts_col = "species") %>%
+  kable()
+```
+
+|    x| species |  age| .groups |
+|----:|:--------|----:|:--------|
+|    1| cat     |   28| 1       |
+|    2| pig     |   14| 1       |
+|    3| human   |   16| 1       |
+|    4| cat     |    7| 1       |
+|    5| pig     |   20| 2       |
+|    6| human   |   25| 2       |
+|    7| cat     |   56| 3       |
+|    8| pig     |   53| 3       |
+|    9| human   |   98| 3       |
+|   10| cat     |   32| 3       |
+|   11| pig     |   36| 3       |
+|   12| human   |   50| 3       |
 
 ### fold()
 
@@ -219,7 +247,7 @@ df$session <- rep(c('1','2', '3'), 6)
 set.seed(1)
 
 # Use fold() with cat_col and id_col
-df_folded <- fold(df, 3, cat_col = 'diagnosis',
+df_folded <- fold(df, k = 3, cat_col = 'diagnosis',
                   id_col = 'participant', method = 'n_dist')
 
 # Show df_folded ordered by folds
