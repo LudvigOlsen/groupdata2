@@ -66,9 +66,9 @@ group_factor(data, n, method = "n_dist", starts_col = NULL,
  \code{n} is a list of starting positions.
  Skip values by c(value, skip_to_number) where skip_to_number is the nth appearance of the value
  in the vector.
- Groups automatically starts from first data point.
+ Groups automatically start from first data point.
 
- \eqn{E.g. n = list(1,3,7,25,50) outputs groups with sizes (2,4,18,25,8)}.
+ \eqn{E.g. n = c(1,3,7,25,50) outputs groups with sizes (2,4,18,25,8)}.
 
  To skip: \eqn{given vector c("a", "e", "o", "a", "e", "o"), n = list("a", "e", c("o", 2))
  outputs groups with sizes (1,4,1)}.}
@@ -131,7 +131,8 @@ groups <- group_factor(df, list(0.2, 0.3), method = 'l_sizes')
 df$groups <- groups
 
 # Using group_factor() with l_starts
-groups <- group_factor(df, list('cat', c('pig',2), 'human'), method = 'l_starts', starts_col = 'species')
+groups <- group_factor(df, list('cat', c('pig',2), 'human'),
+                       method = 'l_starts', starts_col = 'species')
 df$groups <- groups
 
 }
