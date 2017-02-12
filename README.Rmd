@@ -112,17 +112,19 @@ E.g. group sizes: 12, 11, 11, 11, 12
 Uses a list / vector of group sizes to divide up the data.  
 Excess data points are placed in an extra group.  
 
-E.g. n = c(11, 11) returns group sizes: 11, 11, 35  
+E.g. *n = c(11, 11)* returns group sizes: 11, 11, 35  
 
 ##### Method: l_starts
-Uses a list of starting points to divide up the data.  
-Starting points are values in a vector (e.g. column in dataframe). 
+Uses a list of starting positions to divide up the data.  
+Starting positions are values in a vector (e.g. column in dataframe). 
 Skip to a specific nth appearance of a value by using c(value, skip_to).  
 
-E.g. n = c(11, 15, 27, 43) returns group sizes: 10, 4, 12, 16, 15  
+E.g. *n = c(11, 15, 27, 43)* returns group sizes: 10, 4, 12, 16, 15  
 
-Identical to n = list(11, 15, c(27, 1), 43) where 1 specifies that we 
+Identical to *n = list(11, 15, c(27, 1), 43)* where 1 specifies that we 
 want the first appearance of 27 after the previous value 15.  
+
+If passing *n = 'auto'* starting posititions are automatically found with find_starts().  
 
 ### Specify step size
 ##### Method: staircase

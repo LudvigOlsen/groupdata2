@@ -114,16 +114,18 @@ E.g. group sizes: 12, 11, 11, 11, 12
 Uses a list / vector of group sizes to divide up the data.
 Excess data points are placed in an extra group.
 
-E.g. n = c(11, 11) returns group sizes: 11, 11, 35
+E.g. *n = c(11, 11)* returns group sizes: 11, 11, 35
 
 ##### Method: l\_starts
 
-Uses a list of starting points to divide up the data.
-Starting points are values in a vector (e.g. column in dataframe). Skip to a specific nth appearance of a value by using c(value, skip\_to).
+Uses a list of starting positions to divide up the data.
+Starting positions are values in a vector (e.g. column in dataframe). Skip to a specific nth appearance of a value by using c(value, skip\_to).
 
-E.g. n = c(11, 15, 27, 43) returns group sizes: 10, 4, 12, 16, 15
+E.g. *n = c(11, 15, 27, 43)* returns group sizes: 10, 4, 12, 16, 15
 
-Identical to n = list(11, 15, c(27, 1), 43) where 1 specifies that we want the first appearance of 27 after the previous value 15.
+Identical to *n = list(11, 15, c(27, 1), 43)* where 1 specifies that we want the first appearance of 27 after the previous value 15.
+
+If passing *n = 'auto'* starting posititions are automatically found with find\_starts().
 
 ### Specify step size
 
@@ -169,18 +171,18 @@ group(df, n = 5, method = 'n_dist') %>%
 
 |    x| species |  age| .groups |
 |----:|:--------|----:|:--------|
-|    1| cat     |   28| 1       |
-|    2| pig     |   14| 1       |
-|    3| human   |   16| 2       |
-|    4| cat     |    7| 2       |
-|    5| pig     |   20| 3       |
-|    6| human   |   25| 3       |
-|    7| cat     |   56| 3       |
-|    8| pig     |   53| 4       |
-|    9| human   |   98| 4       |
-|   10| cat     |   32| 5       |
-|   11| pig     |   36| 5       |
-|   12| human   |   50| 5       |
+|    1| cat     |   17| 1       |
+|    2| pig     |    4| 1       |
+|    3| human   |   21| 2       |
+|    4| cat     |   42| 2       |
+|    5| pig     |   75| 3       |
+|    6| human   |   16| 3       |
+|    7| cat     |   84| 3       |
+|    8| pig     |   47| 4       |
+|    9| human   |    7| 4       |
+|   10| cat     |   86| 5       |
+|   11| pig     |    1| 5       |
+|   12| human   |   51| 5       |
 
 ``` r
 
@@ -193,11 +195,11 @@ df %>%
 
 | .groups |  mean\_age|
 |:--------|----------:|
-| 1       |   21.00000|
-| 2       |   11.50000|
-| 3       |   33.66667|
-| 4       |   75.50000|
-| 5       |   39.33333|
+| 1       |   10.50000|
+| 2       |   31.50000|
+| 3       |   58.33333|
+| 4       |   27.00000|
+| 5       |   46.00000|
 
 ``` r
 
@@ -214,18 +216,18 @@ df %>%
 
 |    x| species |  age| .groups |
 |----:|:--------|----:|:--------|
-|    1| cat     |   28| 1       |
-|    2| pig     |   14| 1       |
-|    3| human   |   16| 1       |
-|    4| cat     |    7| 1       |
-|    5| pig     |   20| 2       |
-|    6| human   |   25| 2       |
-|    7| cat     |   56| 3       |
-|    8| pig     |   53| 3       |
-|    9| human   |   98| 3       |
-|   10| cat     |   32| 3       |
-|   11| pig     |   36| 3       |
-|   12| human   |   50| 3       |
+|    1| cat     |   17| 1       |
+|    2| pig     |    4| 1       |
+|    3| human   |   21| 1       |
+|    4| cat     |   42| 1       |
+|    5| pig     |   75| 2       |
+|    6| human   |   16| 2       |
+|    7| cat     |   84| 3       |
+|    8| pig     |   47| 3       |
+|    9| human   |    7| 3       |
+|   10| cat     |   86| 3       |
+|   11| pig     |    1| 3       |
+|   12| human   |   51| 3       |
 
 ### fold()
 
