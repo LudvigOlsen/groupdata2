@@ -12,7 +12,8 @@
 #'  Number of groups (default), group size, list of group sizes,
 #'  list of group starts, step size or prime number to start at. See \code{method}.
 #'
-#'  Passed as whole number(s) and/or percentage(s) (\code{0} < \code{n} < \code{1}).
+#'  Passed as whole number(s) and/or percentage(s) (\code{0} < \code{n} < \code{1})
+#'  and/or character.
 #'
 #'  Method \code{l_starts} allows \code{'auto'}.
 #' @param method \code{greedy}, \code{n_dist}, \code{n_fill}, \code{n_last},
@@ -52,7 +53,7 @@
 #'
 #'  \code{n} is number of groups}
 #'
-#'  \subsection{l_sizes}{Divides the data by a list of group sizes.
+#'  \subsection{l_sizes}{Divides up the data by a list of group sizes.
 #'  Excess data points are placed in extra group at the end.
 #'  \eqn{(e.g. n = list(0.2,0.3) outputs groups with sizes (11,17,29))}.
 #'

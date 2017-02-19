@@ -83,10 +83,7 @@ library(knitr)
 # General information
 groupdata2 is a set of functions and methods for easy grouping, windowing, folding and splitting of data.  
 
-&nbsp;  
-
-There are 4 main functions:  
-&nbsp;  
+There are 5 main functions:  
 
 ### group_factor()  
 Returns a factor with group numbers, e.g. 111222333.  
@@ -101,6 +98,9 @@ Splits the given data into the specified groups made with group_factor() and ret
 ### fold()  
 Creates (optionally) balanced folds for use in cross-validation. Balance folds on one categorical variable and/or make sure that all datapoints sharing an ID is in the same fold.  
 
+### partition()
+Creates (optionally) balanced partitions (e.g. training/test sets). Balance partitions on one categorical variable and/or make sure that all datapoints sharing an ID is in the same partition.
+
 ## Groups, windows or folds?  
 When working with time series we would often refer to the kind of groups made by group_factor(), group() and splt() as **windows**. 
 In this vignette, these will be referred to as groups.  
@@ -112,9 +112,9 @@ fold() creates balanced groups for cross-validation by using group(). These are 
 In the examples we will be using knitr::kable() to visualize some of the data such as dataframes. You do not need to use kable() in any way when using the functions.  
 
 # Methods
-There are currently 6 methods for grouping the data.  
+There are currently 9 methods for grouping the data.  
 
-It is possible to create groups based on group size, step size or number of groups. These can be given as whole number or percentage.   
+It is possible to create groups based on *number of groups* (default), *group size*, *list of group sizes*, *list of group start positions*, *step size* or *prime number to start at*. These can be passed as whole number(s) or percentage(s), while method 'l_starts' can also be passed as 'auto'.  
 
 Here we will take a look at the different methods. 
 
@@ -294,7 +294,129 @@ equally sized groups by discarding excess data elements.
 >  
 > meaning that 2 values have been discarded.  
 
+&nbsp; 
+
+
+## Method: 'l_sizes'
+'l_sizes' divides up the data by a list of group sizes.   
+Excess data points are placed in extra group at the end.   
+
+*n* is a list/vector of group sizes
+
 &nbsp;  
+
+**Example**    
+
+> We have a vector with 57 values. We want to get back 3 groups containing
+> 20%, 30% and 50% of the data points.
+>   
+> 'l_sizes' with n = c(0.2, 0.3) would return groups with this many values in them:  
+>   
+> 11, 17, 29   
+ 
+&nbsp;  
+
+By setting **force_equal** to TRUE, 'l_sizes' discard any excess elements.  
+
+&nbsp;  
+
+**Example**    
+
+> 'l_sizes' with n = c(0.2, 0.3) and **force_equal** set to TRUE would return groups with this many values in them:  
+>   
+> 11, 17 
+>  
+> meaning that 29 values have been discarded.  
+
+&nbsp;
+
+
+## Method: 'l_starts'  
+
+'l_starts' starts new groups at specified values of vector.  
+
+*n* is a list of starting positions. Skip values by c(value, skip_to_number) where skip_to_number is the nth appearance of the value in the vector. Groups automatically start from first data point.  
+
+If passing n = 'auto' the starting positions are automatically found with find_starts().
+
+If data is a dataframe, starts_col must be set to indicate the column to match starts. 
+Set starts_col to 'index' for matching with row names.  
+
+&nbsp;  
+
+**Example**    
+
+> We have a vector with 57 values ranging from (1:57). We want to get back groups starting at 
+> specific values in the vector.
+>   
+> 'l_starts' with n = c(1, 3, 7, 25, 50) would return groups with this many values in them:  
+>   
+> 2, 4, 18, 25, 8   
+ 
+&nbsp;  
+
+**force_equal** does not have any effect with method 'l_starts'.  
+
+&nbsp;  
+
+### Skipping   
+
+Groups can start at nth appearance of the value by using c(value, skip_to_number).  
+
+&nbsp;  
+
+**Example**    
+
+> We have a vector with the values c("a", "e", "o", "a", "e", "o") and want to start
+> groups at the first "a", the first following "e" and the second following "o".  
+>
+> 'l_starts' with n = list("a", "e", c("o", 2)) would return groups with this many values in them:  
+> 
+> 1, 4, 1
+> 
+
+&nbsp;  
+
+### Automatically find group starts
+
+Using the find_starts() function, 'l_starts' is capable of finding the beginning of groups automatically.  
+A group start is a value which differs from the previous value.  
+
+&nbsp;
+
+**Example**    
+
+> We have a vector with the values c("a", "a", "o", "o", "o", "a", "a") and want to 
+> automatically discover groups of data and group them.  
+>
+> 'l_starts' with n = 'auto' would return groups with this many values in them:  
+> 
+> 2, 3, 2  
+> 
+
+&nbsp;  
+
+
+### find_starts()
+
+find_starts() finds group starts in a given vector.   
+A group start is a value which differs from the previous value.  
+Setting return_index to TRUE returns indices of group starts.   
+
+&nbsp;
+
+**Example**    
+
+> We have a vector with the values c("a", "a", "o", "o", "o", "a", "a") and want to 
+> automatically discover group starts.  
+>
+> find_starts() would return these group starts:  
+> 
+> "a", "o", "a"  
+> 
+
+&nbsp;  
+
 
 ## Method: 'staircase'  
 'staircase' uses step_size to divide up the data.  
@@ -349,7 +471,7 @@ If the last group has the size of the second last group + step size, %staircase%
 > meaning that the last group would contain 7 values 
 
 ## Method: 'primes'  
-'primes' creates groups with sizes of primary numbers in a staircasing design. n is the prime number to start at (size of first group).  
+'primes' creates groups with sizes of primary numbers in a staircasing design. *n* is the prime number to start at (size of first group).  
   
 Prime numbers are generated with the ['numbers' package](https://cran.r-project.org/package=numbers) by Hans Werner Borchers.  
 
@@ -366,8 +488,8 @@ Prime numbers are generated with the ['numbers' package](https://cran.r-project.
  
 &nbsp;  
 
-By setting **force_equal** to TRUE, 'staircase' will discard the last group if it does
-not contain the expected values (step size multiplied by group index).  
+By setting **force_equal** to TRUE, 'primes' will discard the last group if it does
+not contain the expected number of values.  
 
 &nbsp;  
 
@@ -415,14 +537,17 @@ Used in: group_factor(), group(), splt(), fold()
 
 ## n
 
-Type: integer or numeric  
+Type: integer, numeric, character, or list  
 
-n represents either number of groups, group size, step size or the number to start at, depending on which method is specified.  
-n can be given as a **whole number** (n > 1) or as **percentage** (0 < n < 1)  
+*n* represents either number of groups (default), group size, list of group sizes, list of group starts, step size or prime number to start at, *depending on which method is specified*.  
+*n* can be given as a **whole number(s)** (n > 1) or as **percentage(s)** (0 < n < 1).  
+
+Method l_starts allows *n = 'auto'*.  
 
 &nbsp;
 
 Used in: group_factor(), group(), splt()  
+
 
 ## method
 
@@ -430,6 +555,19 @@ Type: character
 
 Choose which method to use when dividing up the data.  
 Available methods: greedy, n_dist, n_fill, n_last, n_rand, staircase, or primes  
+
+&nbsp;
+
+Used in: group_factor(), group(), splt(), fold()  
+
+
+## starts_col
+
+Type: character
+
+Name of column with values to match in method 'l_starts' when data is a dataframe.   
+
+Pass 'index' to use rownames.  
 
 &nbsp;
 
@@ -446,7 +584,8 @@ Implementation is different in the different methods. Read more in their section
 
 &nbsp;
 
-Used in: group_factor(), group(), splt()  
+Used in: group_factor(), group(), splt(), partition()  
+
 
 ## allow_zero  
 
@@ -484,13 +623,13 @@ Used in: group_factor(), group(), splt()
 
 Type: logical (TRUE or FALSE)  
 
-After creating the the grouping factor using the chosen method, it is possible to randomly reorganize it before returning it. Notice that this **applies to all the functions**, as group() and splt() uses the grouping factor!  
+After creating the the grouping factor using the chosen method, it is possible to randomly reorganize it before returning it. Notice that this **applies to all the functions that allows for the argument**, as group() and splt() uses the grouping factor!  
 
 &nbsp;
 
 Used in: group_factor(), group(), splt()  
 
-N.B. fold() always uses some randomization.  
+N.B. fold() and partition() always uses some randomization.  
 
 ## col_name
 
@@ -506,12 +645,25 @@ Used in: group()
 
 Type: integer or numeric  
 
-k represents either number of folds, fold size, step size or number to start at, depending on which method is specified.  
-k can be given as a **whole number** (n > 1) or as **percentage** (0 < n < 1)  
+*k* represents either number of folds (default), fold size, list of fold sizes, list of fold starts, step size or prime number to start at, *depending on which method is specified*.  
+*k* can be given as a **whole number(s)** (k > 1) and/or as **percentage(s)** (0 < k < 1)
+and/or as character.  
 
 &nbsp;
 
 Used in: fold()  
+
+## p
+
+Type: integer or numeric  
+
+Size(s) of partition(s). Passed as vector if specifying multiple partitions.  
+p can be given as a **whole number(s)** (p > 1) or as **percentage(s)** (0 < p < 1).  
+
+&nbsp;
+
+Used in: partition()  
+
 
 ## cat_col
 
@@ -529,7 +681,7 @@ Else, the participant might be placed in multiple folds.
 
 &nbsp;
 
-Used in: fold()  
+Used in: fold(), partition()  
 
 ## id_col
 
@@ -541,10 +693,19 @@ E.g. If we have measured a participant multiple times and want to see the effect
 
 &nbsp;
 
-Used in: fold()  
+Used in: fold(), partition()  
 
 &nbsp;
 
+## list_out
+
+Return list of partitions (TRUE) or a grouped dataframe (FALSE).  
+
+&nbsp;
+
+Used in: partition()  
+
+&nbsp;
 
 # Using Functions
 

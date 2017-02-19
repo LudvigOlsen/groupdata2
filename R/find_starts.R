@@ -114,7 +114,7 @@ find_starts_vec_ <- function(v, return_index = FALSE){
   # down one row.
   # Checks if the current value is the same as the previous.
 
-  # Shift v one row down
+  # Shift / offset v one row down
   # Insert NA at beginning and remove last element of v
   # to get same length as v
   v2 <- c(NA, v[1:length(v)-1])

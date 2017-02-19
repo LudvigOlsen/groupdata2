@@ -71,7 +71,7 @@ when data is a dataframe. Pass 'index' to use rownames. (Character)}
 
  \code{n} is number of groups}
 
- \subsection{l_sizes}{Divides the data by a list of group sizes.
+ \subsection{l_sizes}{Divides up the data by a list of group sizes.
  Excess data points are placed in extra group at the end.
  \eqn{(e.g. n = list(0.2,0.3) outputs groups with sizes (11,17,29))}.
 
