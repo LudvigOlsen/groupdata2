@@ -29,8 +29,8 @@ Main functions:
 * group_factor  
 * group  
 * splt  
-* fold  
 * partition  
+* fold  
 
 Other tools:  
 
@@ -64,11 +64,11 @@ Returns the given data as a dataframe with added grouping factor made with group
 ### splt()  
 Creates the specified groups with group_factor() and splits the given data by the grouping factor with base::split. Returns the splits in a list.  
 
-### fold()  
-Creates (optionally) balanced folds for use in cross-validation. Balance folds on one categorical variable and/or make sure that all datapoints sharing an ID is in the same fold.  
-
 ### partition()  
 Creates (optionally) balanced partitions (e.g. training/test sets). Balance partitions on one categorical variable and/or make sure that all datapoints sharing an ID is in the same partition.
+
+### fold()  
+Creates (optionally) balanced folds for use in cross-validation. Balance folds on one categorical variable and/or make sure that all datapoints sharing an ID is in the same fold.  
  
 ## Methods
 There are currently 9 methods available. They can be divided into 5 categories.  
