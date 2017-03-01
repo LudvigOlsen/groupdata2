@@ -89,7 +89,7 @@
 #'  \code{n} is the prime number to start at}
 #'
 #' @param starts_col Name of column with values to match in method \code{l_starts}
-#' when data is a dataframe. Pass 'index' to use rownames. (Character)
+#' when data is a dataframe. Pass 'index' to use row names. (Character)
 #' @param force_equal Create equal groups by discarding excess data points.
 #'  Implementation varies between methods. (Logical)
 #' @param allow_zero Whether n can be passed as \code{0}. (Logical)
@@ -165,9 +165,43 @@ group_factor <- function(data, n, method = 'n_dist', starts_col = NULL, force_eq
 
   if(is.data.frame(data) && !is.null(starts_col)){
 
-    # If starts_col is 'index', create column with rownames for matching values
+    # If starts_col is 'index', create column with row names for matching values
     if (starts_col == 'index'){
 
+      # Check if there is a column in dataframe
+      # called 'index'
+      # If so, throw warning that the index column in
+      # data will be used.
+      # Use the 'index' colum present in data.
+
+      if ('index' %in% colnames(data)){
+
+        warning("data contains column named 'index'. This is used as starts_col instead of row names.
+                Change starts_col to \'.index\' to use row names - no matter if \'.index\' exists in data.")
+
+        starts_col <- data[[starts_col]]
+
+      # Else get the row names of data to use as starts_col
+      } else {
+
+        starts_col <- rownames(data)
+
+      }
+
+    # Else if starts_col is '.index'
+    # get row names no matter if it exists already
+    # in data
+    } else if (starts_col == '.index') {
+
+      # Check if .index exists as column in dataframe
+      # If so, warn that it will not be used.
+      if ('.index' %in% colnames(data)){
+
+        warning("data contains column named '.index' but this is ignored. Using row names as starts_col instead.")
+
+      }
+
+      # Get the row names of data to use as starts_col
       starts_col <- rownames(data)
 
     # If starts_col is not NULL (and not 'index')
