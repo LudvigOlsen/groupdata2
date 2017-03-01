@@ -334,6 +334,18 @@ test_that("group sizes works with group_factor with method l_starts", {
                        list(c("b",2),"b")),
                factor(c(1,1,1,2,2,3)))
 
+  # n = 'auto'
+
+  expect_equal(group_f(c(1:10),'auto'),
+               factor(c(1,2,3,4,5,6,7,8,9,10)))
+
+  expect_equal(group_f(c(1,1,2,2,3,3,4,5,1,1,2,2),'auto'),
+               factor(c(1,1,2,2,3,3,4,5,6,6,7,7)))
+
+  expect_equal(group_f(c('a','a','b','b','c','3','4','4','c'),'auto'),
+               factor(c(1,1,2,2,3,4,5,5,6)))
+
+
   # If factor
   expect_equal(group_f(factor(c(1:10)),
                        list(3,5,7)),
@@ -355,8 +367,36 @@ test_that("group sizes works with group_factor with method l_starts", {
                        list(c("b",2),"b")),
                factor(c(1,1,1,2,2,3)))
 
+  # n = 'auto'
+  # Raises warning because find_starts converts factor to string
+
+  expect_warning(
+    expect_equal(group_f(factor(c('a','a','b','b','c','3','4','4','c')),'auto'),
+                 factor(c(1,1,2,2,3,4,5,5,6))),
+    "data is factor. Using as character.", fixed = TRUE)
+
+  expect_warning(
+    expect_equal(group_f(factor(c(1,1,2,2,3,4,4,5,5,5)),'auto'),
+                 factor(c(1,1,2,2,3,4,4,5,5,5))),
+    "data is factor. Using as character.", fixed = TRUE)
+
 })
 
+test_that("l_starts raises error correctly when value is not found", {
+
+  expect_error(group(c(1:5), c(1,3,6), method = 'l_starts'),
+               "Start value \"6\" not found in vector", fixed = TRUE)
+
+  expect_error(group(c("a","b","c","d"), n = c(1,3,6), method = 'l_starts'),
+               "Start value \"1\" not found in vector", fixed = TRUE)
+
+  expect_error(group(c("a","b","c","d"), n = c("b","d","e"), method = 'l_starts'),
+               "Start value \"e\" not found in vector", fixed = TRUE)
+
+  expect_error(group(c(3,4,5,6), n = c(2,4,5), method = 'l_starts'),
+               "Start value \"2\" not found in vector", fixed = TRUE)
+
+})
 
 test_that("force_equal works with group_factor with all methods",{
 
