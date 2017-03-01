@@ -32,7 +32,7 @@ fold(data, k = 5, cat_col = NULL, id_col = NULL, starts_col = NULL,
  the same fold.}
 
 \item{starts_col}{Name of column with values to match in method \code{l_starts}
-when data is a dataframe. Pass 'index' to use rownames. (Character)}
+when data is a dataframe. Pass 'index' to use row names. (Character)}
 
 \item{method}{\code{greedy}, \code{n_dist}, \code{n_fill}, \code{n_last},
  \code{n_rand}, \code{l_sizes}, \code{l_starts}, \code{staircase}, or

@@ -97,7 +97,7 @@ group(data, n, method = "n_dist", starts_col = NULL, force_equal = FALSE,
  \code{n} is the prime number to start at}}
 
 \item{starts_col}{Name of column with values to match in method \code{l_starts}
-when data is a dataframe. Pass 'index' to use rownames. (Character)}
+when data is a dataframe. Pass 'index' to use row names. (Character)}
 
 \item{force_equal}{Create equal groups by discarding excess data points.
 Implementation varies between methods. (Logical)}
