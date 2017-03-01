@@ -18,7 +18,7 @@ R package: Subsetting methods for balanced cross-validation,
 time series windowing, and general grouping and splitting of data.  
 
 By Ludvig R. Olsen,  
-Cognitive Science, Aarhus University,  
+Cognitive Science, Aarhus University.  
 Started in Oct. 2016 
 
 Contact at:
