@@ -339,8 +339,8 @@ By setting **force_equal** to TRUE, 'l_sizes' discard any excess elements.
 
 If passing n = 'auto' the starting positions are automatically found with find_starts().
 
-If data is a dataframe, starts_col must be set to indicate the column to match starts. 
-Set starts_col to 'index' for matching with row names.  
+If data is a dataframe, starts_col must be set to indicate the column to match starts.  
+Set starts_col to 'index' or '.index' for matching with row names. 'index' first looks for column named 'index' in data, while '.index' completely ignores potential column in data named '.index'.  
 
 &nbsp;  
 
@@ -567,7 +567,7 @@ Type: character
 
 Name of column with values to match in method 'l_starts' when data is a dataframe.   
 
-Pass 'index' to use rownames.  
+Pass 'index' or '.index' to use rownames. 'index' first looks for column named 'index' in data, while '.index' completely ignores potential column in data named '.index'.  
 
 &nbsp;
 
