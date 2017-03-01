@@ -237,12 +237,15 @@ l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE
   # Under development
   #
 
+
+  # Check if n is 'auto'
+
   # If n is not a list
   # N.b. because n == 'auto' on a list issues warning
   if (!is.list(n)){
 
     # And n is 'auto'
-    if (n == 'auto'){
+    if (n[1] == 'auto'){
 
       # Find starts
       n <- find_starts(v)
@@ -290,28 +293,51 @@ l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE
   # found above the previously found index
   ind_prev <- 0
 
-  # We iterate through n and find the index for each value
-  start_indices <- plyr::llply(1:length(n_list), function(i){
+  # We use tryCatch to catch the error if a start value is not found
+  start_indices <- tryCatch({
 
-    # Get all indices of v where it has the current value of n
-    indices <- which(v == n_list[[i]][1])
+      # We iterate through n and find the index for each value
+      plyr::llply(1:length(n_list), function(i){
 
-    # Get all the indices that are larger the the index found in
-    # the previous iteration
-    indices_larger_than_prev <- indices[which(indices > ind_prev)]
+      # Get all indices of v where it has the current value of n
+      indices <- which(v == n_list[[i]][1])
 
-    # Get the wanted index
-    ind_next = indices_larger_than_prev[as.integer(n_list[[i]][2])]
+      # Get all the indices that are larger the the index found in
+      # the previous iteration
+      indices_larger_than_prev <- indices[which(indices > ind_prev)]
 
-    # Set ind_prev to the index we just found for use in the
-    # next iteration
-    # <<- saves to parent scope (outer function)
-    ind_prev <<- ind_next
+      # Get the wanted index
+      ind_next = indices_larger_than_prev[as.integer(n_list[[i]][2])]
 
-    # Return the found index
-    return(ind_next)
+      # Set ind_prev to the index we just found for use in the
+      # next iteration
+      # <<- saves to parent scope (outer function)
+      ind_prev <<- ind_next
 
-  })
+
+      # If a value is not found
+      # ind_next will be NA
+      # In this case we raise an error
+      if (is.na(ind_next)){
+
+        # Raise error
+        stop(paste("Start value \"", n_list[[i]][1], "\" not found in vector.", sep=""))
+
+      }
+
+      # Return the found index
+      return(ind_next)
+
+      })
+
+    # If an error was caught
+    }, error = function(e){
+
+      # Raise error with
+      stop(paste("group_factor: ", e$message, sep=""))
+
+    }
+    )
 
   # Get the group sizes by taking the difference
   # between each index (so indices 1,5,7,8 get group sizes 4,2,1)
