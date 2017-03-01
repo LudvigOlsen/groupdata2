@@ -6,12 +6,12 @@
 \alias{groupdata2-package}
 \title{groupdata2: A package for creating groups from data}
 \description{
-Subsetting Methods for Balanced Cross-Validation, Time Series Windowing,
-and General Grouping and Splitting of Data.
+Subsetting methods for balanced cross-validation, time series windowing,
+and general grouping and splitting of data.
 }
 \details{
-The groupdata2 package provides four main functions:
-\code{group}, \code{group_factor}, \code{splt}, and \code{fold}
+The groupdata2 package provides five main functions:
+\code{group}, \code{group_factor}, \code{splt}, \code{partition} and \code{fold}
 }
 \section{group}{
 
@@ -45,6 +45,18 @@ Splits data by these groups.
 Go to \code{\link{splt}}
 }
 
+\section{partition}{
+
+Create balanced partitions (e.g. training/test sets).
+
+Splits data into partitions.
+Balances a given categorical variable between partitions
+and keeps (if possible) all data points with a shared ID
+(e.g. participant_id) in the same partition.
+
+Go to \code{\link{partition}}
+}
+
 \section{fold}{
 
 Create balanced folds for cross-validation.
@@ -56,6 +68,6 @@ all data points with the same ID (e.g. participant_id) in the same fold.
 Go to \code{\link{fold}}
 }
 \author{
-Ludvig Renbo Olsen, \email{mail@ludvigolsen.dk}
+Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 }
 
