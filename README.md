@@ -5,8 +5,8 @@ groupdata2
 
 R package: Subsetting methods for balanced cross-validation, time series windowing, and general grouping and splitting of data.
 
-By Ludvig R. Olsen
-Cognitive Science, Aarhus University
+By Ludvig R. Olsen,
+Cognitive Science, Aarhus University,
 Started in Oct. 2016
 
 Contact at: <r-pkgs@ludvigolsen.dk>
@@ -171,18 +171,18 @@ group(df, n = 5, method = 'n_dist') %>%
 
 |    x| species |  age| .groups |
 |----:|:--------|----:|:--------|
-|    1| cat     |   17| 1       |
-|    2| pig     |    4| 1       |
-|    3| human   |   21| 2       |
-|    4| cat     |   42| 2       |
-|    5| pig     |   75| 3       |
-|    6| human   |   16| 3       |
-|    7| cat     |   84| 3       |
-|    8| pig     |   47| 4       |
+|    1| cat     |   22| 1       |
+|    2| pig     |   58| 1       |
+|    3| human   |   52| 2       |
+|    4| cat     |   75| 2       |
+|    5| pig     |   99| 3       |
+|    6| human   |   12| 3       |
+|    7| cat     |   47| 3       |
+|    8| pig     |    4| 4       |
 |    9| human   |    7| 4       |
-|   10| cat     |   86| 5       |
-|   11| pig     |    1| 5       |
-|   12| human   |   51| 5       |
+|   10| cat     |   50| 5       |
+|   11| pig     |   65| 5       |
+|   12| human   |   10| 5       |
 
 ``` r
 
@@ -195,11 +195,11 @@ df %>%
 
 | .groups |  mean\_age|
 |:--------|----------:|
-| 1       |   10.50000|
-| 2       |   31.50000|
-| 3       |   58.33333|
-| 4       |   27.00000|
-| 5       |   46.00000|
+| 1       |   40.00000|
+| 2       |   63.50000|
+| 3       |   52.66667|
+| 4       |    5.50000|
+| 5       |   41.66667|
 
 ``` r
 
@@ -216,18 +216,18 @@ df %>%
 
 |    x| species |  age| .groups |
 |----:|:--------|----:|:--------|
-|    1| cat     |   17| 1       |
-|    2| pig     |    4| 1       |
-|    3| human   |   21| 1       |
-|    4| cat     |   42| 1       |
-|    5| pig     |   75| 2       |
-|    6| human   |   16| 2       |
-|    7| cat     |   84| 3       |
-|    8| pig     |   47| 3       |
+|    1| cat     |   22| 1       |
+|    2| pig     |   58| 1       |
+|    3| human   |   52| 1       |
+|    4| cat     |   75| 1       |
+|    5| pig     |   99| 2       |
+|    6| human   |   12| 2       |
+|    7| cat     |   47| 3       |
+|    8| pig     |    4| 3       |
 |    9| human   |    7| 3       |
-|   10| cat     |   86| 3       |
-|   11| pig     |    1| 3       |
-|   12| human   |   51| 3       |
+|   10| cat     |   50| 3       |
+|   11| pig     |   65| 3       |
+|   12| human   |   10| 3       |
 
 ### fold()
 

@@ -17,8 +17,8 @@ knitr::opts_chunk$set(
 R package: Subsetting methods for balanced cross-validation, 
 time series windowing, and general grouping and splitting of data.  
 
-By Ludvig R. Olsen  
-Cognitive Science, Aarhus University  
+By Ludvig R. Olsen,  
+Cognitive Science, Aarhus University,  
 Started in Oct. 2016 
 
 Contact at:
@@ -155,6 +155,7 @@ library(knitr)
 df <- data.frame("x"=c(1:12),
   "species" = rep(c('cat','pig', 'human'), 4),
   "age" = sample(c(1:100), 12))
+
 
 ```
 
