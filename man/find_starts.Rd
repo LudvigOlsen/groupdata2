@@ -61,11 +61,10 @@ group(df, n = starts_ind, method = 'l_starts',
 
 
 }
-\author{
-Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
-}
 \seealso{
 Other grouping functions: \code{\link{group_factor}},
   \code{\link{group}}, \code{\link{splt}}
 }
-
+\author{
+Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
+}

@@ -142,9 +142,6 @@ groups <- group_factor(df, list('cat', c('pig',2), 'human'),
 df$groups <- groups
 
 }
-\author{
-Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
-}
 \seealso{
 Other grouping functions: \code{\link{find_starts}},
   \code{\link{group}}, \code{\link{splt}}
@@ -152,4 +149,6 @@ Other grouping functions: \code{\link{find_starts}},
 Other staircase tools: \code{\link{\%primes\%}},
   \code{\link{\%staircase\%}}
 }
-
+\author{
+Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
+}

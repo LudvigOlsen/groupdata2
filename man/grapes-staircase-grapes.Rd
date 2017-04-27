@@ -36,13 +36,12 @@ for (step_size in c(1:30)){
  }}
 
 }
+\seealso{
+Other staircase tools: \code{\link{\%primes\%}},
+  \code{\link{group_factor}}
+
+Other remainder tools: \code{\link{\%primes\%}}
+}
 \author{
 Ludvig Renbo Olsen, \email{mail@ludvigolsen.dk}
 }
-\seealso{
-Other remainder tools: \code{\link{\%primes\%}}
-
-Other staircase tools: \code{\link{\%primes\%}},
-  \code{\link{group_factor}}
-}
-

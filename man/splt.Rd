@@ -126,11 +126,10 @@ df <- data.frame("x"=c(1:12),
 df_list <- splt(df, 5, method = 'n_dist')
 
 }
-\author{
-Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
-}
 \seealso{
 Other grouping functions: \code{\link{find_starts}},
   \code{\link{group_factor}}, \code{\link{group}}
 }
-
+\author{
+Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
+}

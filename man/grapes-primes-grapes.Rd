@@ -29,13 +29,12 @@ library(groupdata2)
 100 \%primes\% 2
 
 }
+\seealso{
+Other staircase tools: \code{\link{\%staircase\%}},
+  \code{\link{group_factor}}
+
+Other remainder tools: \code{\link{\%staircase\%}}
+}
 \author{
 Ludvig Renbo Olsen, \email{mail@ludvigolsen.dk}
 }
-\seealso{
-Other remainder tools: \code{\link{\%staircase\%}}
-
-Other staircase tools: \code{\link{\%staircase\%}},
-  \code{\link{group_factor}}
-}
-

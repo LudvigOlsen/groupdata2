@@ -92,4 +92,3 @@ partitions <- partition(df, c(0.5), list_out = FALSE)
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 }
-

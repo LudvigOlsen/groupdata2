@@ -67,7 +67,7 @@ all data points with the same ID (e.g. participant_id) in the same fold.
 
 Go to \code{\link{fold}}
 }
+
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 }
-

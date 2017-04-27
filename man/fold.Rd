@@ -161,4 +161,3 @@ df_folded <- df_folded[order(df_folded$.folds),]
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 }
-
