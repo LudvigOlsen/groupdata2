@@ -6,8 +6,6 @@
 # Creates grouping factor from given list of window sizes
 # Under development
 
-# #' @param n List of group sizes
-# #' @export
 l_sizes_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE){
 
   # If any elements in n are between 0-1
@@ -32,6 +30,9 @@ l_sizes_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE)
     stop("Element <= 0 found in n")
 
   }
+
+  stopifnot(is.logical(force_equal),
+            is.logical(descending))
 
   # If n is given as a list() object
   # unlist n to get a c() vector
@@ -220,14 +221,7 @@ l_sizes_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE)
 
 
 
-# method: l_starts
-# Takes values to start groups at
-# Allows skipping of values
-# Under development
 
-# #' @param v Vector
-# #' @param n List of values to start groups from
-# #' @export
 l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE){
 
   #
@@ -237,6 +231,8 @@ l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE
   # Under development
   #
 
+  stopifnot(is.logical(force_equal),
+            is.logical(descending))
 
   # Check if n is 'auto'
 
