@@ -26,7 +26,8 @@ dsplit_ <- function(data, n, method, starts_col = NULL, force_equal = FALSE, all
 
   } else if (method == 'l_starts'){
 
-    groups <- group_factor(data, n, method = method, starts_col,
+    groups <- group_factor(data, n, method = method,
+                           starts_col = starts_col,
                            force_equal = force_equal,
                            allow_zero = allow_zero,
                            descending = descending,

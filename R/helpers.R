@@ -225,7 +225,8 @@ check_arguments_ <- function(data, n, method, force_equal,
 }
 
 check_convert_check_ <- function(data, n, method, force_equal,
-                                allow_zero, descending){
+                                allow_zero, descending,
+                                starts_col = NULL){
 
   # Checks arguments
   # Converts n if given as percentage
@@ -290,6 +291,12 @@ check_convert_check_ <- function(data, n, method, force_equal,
     if(is.data.frame(data)){
 
       stopifnot(nrow(data) >= length(n))
+
+      if (method == 'l_starts' && is.null(starts_col)){
+
+        stop("'starts_col' cannot be NULL when using method 'l_starts' with a data.frame.")
+
+      }
 
     } else {
 

@@ -42,8 +42,8 @@ splt <- function(data, n, method = 'n_dist', starts_col = NULL, force_equal = FA
   # Check arguments
   # Convert n if given as percentage
   # Check more arguments
-  n <- check_convert_check_(data, n, method, force_equal, allow_zero, descending)
-
+  n <- check_convert_check_(data, n, method, force_equal, allow_zero, descending,
+                            starts_col = starts_col)
 
   # Force equal
   # .. Some methods have a different way of calculating
@@ -52,7 +52,7 @@ splt <- function(data, n, method = 'n_dist', starts_col = NULL, force_equal = FA
 
   if(isTRUE(force_equal)){
 
-    if(!(method %in% c('staircase'))){
+    if(!(method %in% c('staircase', 'l_sizes', 'l_starts'))){
 
       # If force_equal is set to TRUE,
       # and we don't already have equally sized windows,
