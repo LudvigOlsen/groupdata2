@@ -64,7 +64,7 @@ test_that("splt() works with force_equal on vector", {
   ### Fix
   expect_equal(splt_equal( c(1:10), c(0.2,0.3), 'l_sizes'), c(2,3) )
   # l_starts shouldn't cut any values.
-  expect_equal(splt_equal( c(1:10), c(3,5), 'l_starts'), c(2,2,5) )
+  expect_equal(splt_equal( c(1:10), c(3,5), 'l_starts'), c(2,2,6) )
 
   expect_equal(splt_equal( c(1:57), 5, 'staircase'), c(5,10,15,20) )
   expect_equal(splt_equal( c(1:57), 0.2, 'staircase'), c(11,22) )
@@ -74,10 +74,11 @@ test_that("splt() works with force_equal on vector", {
 
 test_that("splt() works with force_equal on vector", {
 
-  splt_equal <- function(data, n, method){
+  splt_equal <- function(data, n, method, starts_col = NULL){
 
     splits <- splt(data, n, method,
-                   force_equal = T)
+                   force_equal = T,
+                   starts_col = starts_col)
 
     counts <- plyr::llply(splits, function(s){
       return(nrow(s))
@@ -111,7 +112,7 @@ test_that("splt() works with force_equal on vector", {
   ### Fix
   expect_equal(splt_equal( df, c(0.2,0.3), 'l_sizes'), c(3,5) )
   # l_starts shouldn't cut any values.
-  expect_equal(splt_equal( df, c(3,5), 'l_starts'), c(2,2,14) )
+  expect_equal(splt_equal( df, c(3,5), 'l_starts', starts_col = 1), c(2,2,14) )
 
   expect_equal(splt_equal( df, 5, 'staircase'), c(5,10) )
   expect_equal(splt_equal( df, 0.2, 'staircase'), c(3,6,9) )
