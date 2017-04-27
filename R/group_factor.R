@@ -157,7 +157,9 @@ group_factor <- function(data, n, method = 'n_dist', starts_col = NULL, force_eq
   # Check arguments
   # Convert n if given as percentage
   # Check more arguments
-  n <- check_convert_check_(data, n, method, force_equal, allow_zero, descending)
+  n <- check_convert_check_(data, n, method, force_equal,
+                            allow_zero, descending,
+                            starts_col = starts_col)
 
   # For method is l_starts
   # If data is a dataframe and starts_col is not NULL
@@ -247,6 +249,7 @@ group_factor <- function(data, n, method = 'n_dist', starts_col = NULL, force_eq
     } else if (method == 'l_starts'){
 
       # Notice that we pass the starts_col as data
+
       groups <- l_starts_group_factor_(starts_col, n, force_equal, descending)
 
     }else if (method == 'staircase'){
