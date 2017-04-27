@@ -60,8 +60,6 @@ test_that("splt() works with force_equal on vector", {
   expect_equal(splt_equal( c(1:10), 3, 'n_rand'), c(3,3,3) )
   expect_equal(splt_equal( c(1:10), .3, 'n_rand'), c(3,3,3) )
   expect_equal(splt_equal( c(1:10), 3, 'l_sizes'), c(3) )
-
-  ### Fix
   expect_equal(splt_equal( c(1:10), c(0.2,0.3), 'l_sizes'), c(2,3) )
   # l_starts shouldn't cut any values.
   expect_equal(splt_equal( c(1:10), c(3,5), 'l_starts'), c(2,2,6) )
@@ -108,8 +106,6 @@ test_that("splt() works with force_equal on vector", {
   expect_equal(splt_equal( df, 3, 'n_rand'), c(6,6,6) )
   expect_equal(splt_equal( df, .2, 'n_rand'), c(6,6,6) )
   expect_equal(splt_equal( df, 3, 'l_sizes'), c(3) )
-
-  ### Fix
   expect_equal(splt_equal( df, c(0.2,0.3), 'l_sizes'), c(3,5) )
   # l_starts shouldn't cut any values.
   expect_equal(splt_equal( df, c(3,5), 'l_starts', starts_col = 1), c(2,2,14) )
