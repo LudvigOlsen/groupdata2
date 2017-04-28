@@ -396,6 +396,13 @@ test_that("l_starts raises error correctly when value is not found", {
   expect_error(group(c(3,4,5,6), n = c(2,4,5), method = 'l_starts'),
                "Start value \"2\" not found in vector", fixed = TRUE)
 
+  df <- data.frame('a' = c(1,2,3,4),
+                   'b' = c(4,5,6,7))
+
+  expect_error(group(df, n = c(2,4), method = 'l_starts',
+                     starts_col = 'c'),
+               "starts_col 'c' not found in data.frame.", fixed = TRUE)
+
 })
 
 test_that("force_equal works with group_factor with all methods",{

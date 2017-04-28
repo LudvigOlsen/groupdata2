@@ -161,7 +161,7 @@ group_factor <- function(data, n, method = 'n_dist', starts_col = NULL, force_eq
                             allow_zero, descending,
                             starts_col = starts_col)
 
-  # For method is l_starts
+  # For method l_starts
   # If data is a dataframe and starts_col is not NULL
   # We want to get the column with values to match
 
@@ -207,10 +207,34 @@ group_factor <- function(data, n, method = 'n_dist', starts_col = NULL, force_eq
       starts_col <- rownames(data)
 
     # If starts_col is not NULL (and not 'index')
-    # Get the column from data
+    # Check that the column exists in data
+    # and get the column from data
     } else {
 
-      starts_col <- data[[starts_col]]
+      # If starts_col is wholenumber
+      # convert to integer
+      if (arg_is_wholenumber_(starts_col)) starts_col <- as.integer(starts_col)
+
+      # If the column is given as name (string),
+      # check if the column exists in data
+      if (starts_col %ni% colnames(data) && !is.integer(starts_col)){
+
+        stop(paste("starts_col '", starts_col,
+                   "' not found in data.frame.", sep = ""))
+
+
+      # Else if starts_col is given as integer (col index)
+      # Check if the number is in the column indices list
+      } else if (is.integer(starts_col) && starts_col %ni% col(data)[1,]){
+
+        stop(paste("starts_col with index '", starts_col,
+                   "' not found in data.frame.", sep = ""))
+
+      } else {
+
+        starts_col <- data[[starts_col]]
+
+      }
 
     }
 
