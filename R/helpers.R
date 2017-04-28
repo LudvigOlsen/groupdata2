@@ -166,6 +166,14 @@ is_between_ <- function(x, a, b) {
   x > a && x < b
 }
 
+`%ni%` <- function(x, table) {
+
+  return(!(x %in% table))
+
+}
+
+
+
 
 check_arguments_ <- function(data, n, method, force_equal,
                             allow_zero, descending){
