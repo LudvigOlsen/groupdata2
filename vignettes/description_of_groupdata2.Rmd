@@ -107,6 +107,17 @@ In this vignette, these will be referred to as groups.
 
 fold() creates balanced groups for cross-validation by using group(). These are referred to as **folds**.  
 
+## Introduction vignettes
+
+[Cross-validation with groupdata2](cross-validation_with_groupdata2.html)  
+In this vignette, we go through the basics of cross-validation, such as creating balanced train/test sets with **partition**() and balanced folds with **fold**(). We also write up a simple cross-validation function and compare multiple linear regression models.
+
+[Time series with groupdata2](time_series_with_groupdata2.html)  
+In this vignette, we divide up a time series into groups (windows) and subgroups using **group**() with the 'greedy' and 'staircase' methods. We do some basic descriptive stats of each group and use them to reduce the data size.
+
+[Automatic groups with groupdata2](automatic_groups_with_groupdata2.html)  
+In this vignette, we will use the 'l_starts' method with **group**() to allow transferring of information from one dataset to another. We will use the automatic grouping function that finds group starts all by itself.
+
 ## Use of kable()
 
 In the examples we will be using knitr::kable() to visualize some of the data such as dataframes. You do not need to use kable() in any way when using the functions.  
