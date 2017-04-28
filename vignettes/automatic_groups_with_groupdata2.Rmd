@@ -1,0 +1,179 @@
+---
+title: "Automatic groups with groupdata2"
+author: 
+  - "Ludvig Renbo Olsen"
+date: "`r Sys.Date()`"
+abstract: |
+  This vignette is an introduction to the package groupdata2.  
+  groupdata2 is a set of subsetting methods for easy grouping, windowing, folding and splitting of data.  
+  We will go through finding and creating groups automatically with the 'l_starts' method.  
+  &nbsp;  
+  For a more extensive description of groupdata2, please see [Description of groupdata2](description_of_groupdata2.html)
+  &nbsp;  
+  &nbsp;  
+  Contact author at r-pkgs@ludvigolsen.dk
+  &nbsp;  
+  &nbsp;  
+  
+  -----
+output: 
+  rmarkdown::html_vignette:
+    css: 
+    - !expr system.file("rmarkdown/templates/html_vignette/resources/vignette.css", package = "rmarkdown")
+    - styles.css
+    fig_width: 6
+    fig_height: 4
+    toc: yes
+    number_sections: no
+  rmarkdown::pdf_document:
+    highlight: tango
+    number_sections: yes
+    toc: yes
+    toc_depth: 4
+vignette: >
+  %\VignetteIndexEntry{Automatic groups with groupdata2}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r include=FALSE}
+
+knitr::opts_chunk$set(collapse = T, comment = "#>", fig.align='center')
+options(tibble.print_min = 4L, tibble.print_max = 4L)
+
+```
+
+# Introduction
+
+In this vignette we will use the 'l_starts' method with **group**() to allow transferring of information from one dataset to another. We will use the automatic grouping function that finds group starts all by itself.
+
+
+## Attach packages
+
+```{r warning=FALSE,message=FALSE}
+library(groupdata2)
+library(dplyr) # %>%
+library(knitr) # kable
+```
+
+## Data
+
+3 participants were asked to solve a task. They had to take turns but could go for multiple runs of the task before taking a break and letting the next participant take over. They had 2 turns each. Let's call each turn a session, i.e. there was 6 sessions.  A team of experts would rate how well the participant did throughout the entire session, meaning that if the participant had some bad runs, he/she would have to make a choice of whether to save energy for the other session or whether to try and correct the rating of the current session.
+For each run of the task, we recorded how many errors the participant made. 
+
+
+```{r}
+
+df_observations <- data.frame(
+  
+  "run" = 1:30,
+  "participant" = c(1,1,1,1,
+             2,2,2,2,2,2,
+             3,3,3,3,
+             1,1,1,1,1,1,1,
+             2,2,2,
+             3,3,3,3,3,3),
+  "errors" = c(3,2,5,3,
+               0,0,1,1,0,1,
+               6,4,3,1,
+               2,1,3,2,1,1,0,
+               0,0,1,
+               3,3,4,2,2,1)
+  
+)
+
+# Show the first 20 rows of dataframe
+df_observations %>% head(20) %>%  kable()
+
+df_ratings <- data.frame(
+  
+  "session" = c(1:6),
+  "rating" = c(3,8,2,5,9,4)
+  
+)
+
+df_ratings %>% kable()
+
+```
+
+We would like to get the ratings into the dataframes with observations. For this we will first create a session column, and then get the ratings for the sessions.
+To do this we will use **group**() with the 'l_starts' method. This methods takes group start values, finds those values in a specified column, and creates groups that begin at the start values. To show this, let's try it out with some start values before having **group**() find them automatically.
+
+```{r}
+
+group(df_observations, n = c(1,2,3,1,2,3), method = 'l_starts', 
+      starts_col = 'participant', col_name = 'session') %>% 
+  kable()
+
+```
+
+**group**() went through the participant column and found one value from *n* at a time. When it encountered the value, it noted down the row index and continued down the column searching for the next value in *n*. In the end it started groups at the found row indices from top to bottom.
+Since our data has the same value in the participant column for the entire session, we can actually get **group**() to find these group starts automatically. It will go through the given column, and whenever it encounters a new value, i.e. one that is different from the previous row, it starts a new group. 
+
+```{r}
+df_observations <- group(df_observations, n = 'auto', 
+                         method = 'l_starts',
+                         starts_col = 'participant', 
+                         col_name = 'session') 
+
+df_observations %>% 
+  kable()
+
+```
+
+And it works! :)   
+If you just want the group starts, you can use the function **find_starts**().
+
+Now that we have the session information, we can transfer the ratings from the ratings dataframe.
+
+```{r}
+df_merged <- merge(df_observations, df_ratings, by = 'session')
+
+# Show head of df_merged
+df_merged %>% head(15) %>% kable()
+
+```
+
+Now we can find the average number of errors per session and see if they correlate with the experts' ratings.
+
+```{r}
+avg_errors <- df_merged %>% 
+  group_by(session) %>% 
+  dplyr::summarize("avg_errors" = mean(errors))
+
+avg_errors %>% kable()
+
+```
+
+Let's transfer the averages to the merged dataframe. Once again, we just use merge().
+Since we have just one rating per session, we will get only the first row of each session.
+
+```{r}
+df_summarized <- merge(df_merged, avg_errors, by = 'session') %>% 
+  group_by(session) %>%  # For each session
+  filter(row_number()==1) %>%  # Get first row
+  select(-errors) # Remove errors column as we use avg_errors now
+
+df_summarized %>% kable()
+```
+
+We have 1 row per session with the participant, the rating and the average errors. If we wanted to know how many runs a session contained, we could extract it from the 'run' column.
+
+Now let's check if there's a correlation between ratings and average errors.
+
+```{r}
+summary(lm(rating~avg_errors, df_summarized))
+```
+
+It seems like they follow each other pretty neatly. 
+
+
+
+# Outro
+
+Well done, you made it to the end of this introduction to groupdata2! If you want to know more about the various methods and arguments, you can read the [Description of groupdata2](description_of_groupdata2.html).  
+If you have any questions or comments to this vignette (tutorial) or groupdata2, please send them to me at  
+r-pkgs@ludvigolsen.dk, or open an issue on the github page https://github.com/LudvigOlsen/groupdata2 so I can make improvements.  
+
+&nbsp; 
+&nbsp; 

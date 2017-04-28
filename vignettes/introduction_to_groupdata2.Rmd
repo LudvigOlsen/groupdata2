@@ -6,7 +6,6 @@ date: "`r Sys.Date()`"
 abstract: |
   This vignette is an introduction to the package groupdata2.  
   groupdata2 is a set of subsetting methods for easy grouping, windowing, folding and splitting of data.
-  We will go through creating balanced folds for cross-validation and dividing up a time series into windows.
   &nbsp;  
   For a more extensive description of groupdata2, please see [Description of groupdata2](description_of_groupdata2.html)
   &nbsp;  
@@ -45,8 +44,8 @@ options(tibble.print_min = 4L, tibble.print_max = 4L)
 
 # Introduction
 
-When working with data you sometimes want to divide it into groups and subgroups for processing or descriptive statistics. It can help reduce the amount of information if needed, allowing you to compare measurements on different scales - e.g. income per year instead of per month.
-groupdata2 is a set of tools for creating groups from your data. It consists of four, easy to use, main functions, namely **group_factor**(), **group**(), **splt**(), and **fold**().  
+When working with data you sometimes want to divide it into groups and subgroups for processing or descriptive statistics. It can help reduce the amount of information, allowing you to compare measurements on different scales - e.g. income per year instead of per month.
+groupdata2 is a set of tools for creating groups from your data. It consists of five, easy to use, main functions, namely **group_factor**(), **group**(), **splt**(), **partition**(), and **fold**().  
 
 **group_factor**()  is at the heart of it all. It creates the groups and is used by the other functions. It returns a grouping factor with group numbers, i.e. 1s for all elements in group 1, 2s for group 2, etc. So if you ask it to create 2 groups from a vector ('Hans','Dorte','Mikkel','Leif') it will return a factor (1,1,2,2).   
 
@@ -55,425 +54,32 @@ If, for instance, you have a column in a dataframe with quarterly measurements, 
 
 **splt**() takes in either a dataframe or vector, creates a grouping factor, and splits the given data by this factor using base::split. Often it will be faster to use **group**() instead of **splt**(). I also find it easier to work with the output of **group**() .
 
-**fold**() is possibly the function I find the most exciting. It creates (optionally) balanced folds for cross-validation. It can balance folds on one categorical variable (e.g. diagnosis) and/or is able to keep all datapoints with the same ID (e.g. participant) in the same fold.
+**partition**() creates (optionally) balanced partitions (e.g. train/test sets) from given group sizes. It can balance partitions on one categorical variable (e.g. diagnosis) and/or is able to keep all datapoints with a shared ID (e.g. participant) in the same partition.
 
-Cross-validation is used for model selection by testing how a model performs on data that it wasn't trained on - i.e. estimating out-of-sample error. It is done by first dividing the data into groups called *folds*. Say we choose to divide the data into **5** folds. Then we *train* a model on the first four folds and *test* it on the fifth fold. We then train on folds 2,3,4,5 and test on the first fold. We continue changing which fold is the test fold until all folds have been test folds (i.e. we train and test 5 times in total). In the end we get the average performance of the models and compare these to other cross-validated models. This is a great tool, and **fold**()  makes it even more powerful. To explain this further, let's look at some data and do some grouping and cross-validation!
+**fold**() creates (optionally) balanced folds for cross-validation. It can balance folds on one categorical variable (e.g. diagnosis) and/or is able to keep all datapoints with a shared ID (e.g. participant) in the same fold.  
 
-# Creating folds for cross-validation
 
-We start by creating a dataframe with 5 columns and 18 rows. Let's imagine we test 6 participants 3 times each. Some have the diagnosis 'a', others have the diagnosis 'b'. They keep the same diagnosis and age throughout the experiment. For each session they get a score of how well they did in the experiment.  
+## Use cases
+I came up with too many use cases to present them all neatly in one vignette. To give each example more space I instead aim to create vignettes for each of them. For now, these are the available vignettes dealing with each their topic:
 
+[Cross-validation with groupdata2](cross-validation_with_groupdata2.html)  
+In this vignette, we go through the basics of cross-validation, such as creating balanced train/test sets with **partition**() and balanced folds with **fold**(). We also write up a simple cross-validation function and compare multiple linear regression models.
 
-```{r warning=FALSE,message=FALSE}
-# Attach some packages
-library(groupdata2)
-library(dplyr)
-library(ggplot2)
-library(knitr) # kable()
-library(lmerTest) #lmer()
-library(broom) #tidy()
-library(hydroGOF) # rmse()
+[Time series with groupdata2](time_series_with_groupdata2.html)  
+In this vignette, we divide up a time series into groups (windows) and subgroups using **group**() with the 'greedy' and 'staircase' methods. We do some basic descriptive stats of each group and use them to reduce the data size.
 
+[Automatic groups with groupdata2](automatic_groups_with_groupdata2.html)  
+In this vignette, we will use the 'l_starts' method with **group**() to allow transferring of information from one dataset to another. We will use the automatic grouping function that finds group starts all by itself.
 
-# Create dataframe
-df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
-                "age" = rep(c(20,23,27,21,32,31), 3),
-                "diagnosis" = rep(c('a', 'b', 'a', 'b', 'b', 'a'), 3),
-                "score" = c(10,24,15,35,24,14,24,40,30,50,54,25,45,67,40,78,62,30))
 
-# Order by participant
-df <- df[order(df$participant),] 
 
-# Remove index
-rownames(df) <- NULL
-
-# Add session info
-df$session <- as.integer(rep(c('1','2', '3'), 6))
-
-# Show the dataframe
-kable(df, align = 'c')
-
-```
-
-
-We could have a hypothesis that people with the diagnosis 'b' in general are better at the experiment. This could be tested by a simple linear model.
-
-```{r}
-lm(score~diagnosis, df) %>%
-  summary() %>%
-  tidy()
-```
-
-The linear model supports the hypothesis, as scores of participants with diagnosis 'b' are significantly larger than those of participants with diagnosis 'a'.
-
-To improve on our model we might also want to use the information we have about age and session. Perhaps the older participants do better than the younger? And maybe participants with the diagnosis 'b' are better at learning over time (session) than those with diagnosis 'a'? By including such information in our model we might explain more than if we are just looking at the diagnosis. We could also use participant as random effect, to factor out the personal differences.  
-Let's list a bunch of possible models that we will then compare later with cross-validation! In a moment we will be making a simple cross-validation function that needs the model passed in the format below. Instead of looking at summaries for each model, we will find the best model with cross-validation and only look at the summary for that one. Notice that when we want to compare models, we want to keep the same random effects for all the models, so we are only comparing the combination of fixed effects.  
-
-```{r}
-m0 <- 'score~1+(1|participant)'
-m1 <- 'score~diagnosis+(1|participant)'
-m2 <- 'score~diagnosis+age+(1|participant)'
-m3 <- 'score~diagnosis+session+(1|participant)'
-m4 <- 'score~diagnosis*session+(1|participant)'
-m5 <- 'score~diagnosis*session+age+(1|participant)'
-
-```
-
-To do the cross-validation we first need to create the folds. We can do this with **fold**() like this:  
-
-```{r}
-df_folded <- fold(df, k=5)
-
-# Order by .folds
-df_folded <- df_folded[order(df_folded$.folds),]
-
-kable(df_folded, align='c')
-
-```
-
-As you can see, we now have a new column called .folds with our 5 new folds. Because we passed the dataframe and the number of folds to create (k) to **fold**(), the group numbers are distributed randomly. This is equivalent to using **group**() with randomize set to TRUE. While this could be useful, it is not exploiting the full potential of **fold**()!  
-Instead, we want to distribute the datapoints so that we have a balanced representation of the two diagnoses in every fold. We can do this with **fold**():  
-
-```{r}
-df_folded <- fold(df, k=5, cat_col = 'diagnosis')
-
-# Order by .folds
-df_folded <- df_folded[order(df_folded$.folds),]
-
-kable(df_folded, align='c')
-
-```
-
-We can count how many of each diagnosis there are in each fold like this:  
-
-```{r}
-df_folded %>% 
-  group_by(.folds) %>% 
-  count(diagnosis) %>% 
-  kable(align='c')
-
-```
-
-We see that there is a good balance of the diagnoses in all the folds. But there is a problem. In some of our models we want to see the effect of training over time (session) and we want participant as a random effect. To do this we need to have all the measurements of a participant in the same fold! We can do this by simply passing the participant column as id_col in **fold**().    
-
-```{r}
-# Set seed so that we get the exact same folds every time we run our script
-set.seed(1)
-
-# Use fold with cat_col and id_col
-df_folded <- fold(df, k=3, cat_col = 'diagnosis', id_col = 'participant')
-
-# Order by .folds
-df_folded <- df_folded[order(df_folded$.folds),]
-
-kable(df_folded, align='c')
-
-```
-
-Notice that we only asked **fold**() to create three groups (k=3) instead of the five we had been using so far. This is because of how **fold**() works when including both cat_col and id_col. **fold**() first subsets the passed data by cat_col and then extracts the unique values of id_col for each subset. It creates groups from these lists of IDs and in the end the grouped subsets are merged. This way we end up with this distribution of diagnoses and participants in our folds:  
-
-```{r}
-df_folded %>% 
-  group_by(.folds) %>% 
-  count(diagnosis, participant) %>% 
-  kable(align='c')
-
-```
-
-Now we have 3 of each diagnosis in every fold and each participant stays within 1 fold. If we had asked **fold**() to create 5 folds, it would first have subset the data by 'diagnosis' and then found only 3 participants within each diagnosis, leading to an error as you can't make 5 groups from 3 elements.  
-
-## Cross-validation
-(Feel free to skip this.) 
-
-With the folded data, we can now proceede to the cross-validation. We want to train our models on 2 of the folds and test on the last fold. This should be done so that all the folds become test fold once. While there are faster alternatives to a for-loop, we will use it to illustrate the process. We will create a simple cross-validation function where we can specify the model to test, and whether it has random effects. The performance of the model will be measured with RMSE (Root Mean Square Error).
-
-```{r}
-crossvalidate <- function(df, k, model, dependent, random){
-  
-  # Initialize empty list for recording performances
-  performances <- c()
-  
-  # One iteration per fold
-  for (fold in c(1:k)){
-    
-    # Create training set for this iteration
-    # Subset all the datapoints where .folds does not match the current fold
-    training_set <- df[df$.folds != fold,]
-    
-    # Create test set for this iteration
-    # Subset all the datapoints where .folds matches the current fold
-    test_set <- df[df$.folds == fold,]
-    
-    ## Train model
-
-    # If there is a random effect,
-    # use lmer to train model
-    # else use lm
-
-    if (isTRUE(random)){
-
-      # Train linear mixed effects model on training set
-      model <-  lmer(model, training_set, REML=FALSE)
-
-    } else {
-
-      # Train linear model on training set
-      model <-  lm(model, training_set)
-
-    }
-
-    ## Test model
-
-    # Predict the dependent variable in the test_set with the trained model
-    predicted <- predict(model, test_set, allow.new.levels=TRUE)
-
-    # Get the Root Mean Square Error between the predicted and the observed
-    RMSE <- rmse(predicted, test_set[[dependent]])
-
-    # Add the RMSE to the performance list
-    performances[fold] <- RMSE
-
-
-  }
-
-  # Return the mean of the recorded RMSEs
-  return(c('RMSE' = mean(performances)))
-
-}
-
-```
-
-Now that we have the cross-validation function, let us test the 6 models we specified earlier.
-
-```{r}
-m0
-crossvalidate(df_folded, k=3, model=m0, dependent='score', random=TRUE)
-
-m1
-crossvalidate(df_folded, k=3, model=m1, dependent='score', random=TRUE)
-
-m2
-crossvalidate(df_folded, k=3, model=m2, dependent='score', random=TRUE)
-
-m3
-crossvalidate(df_folded, k=3, model=m3, dependent='score', random=TRUE)
-
-m4
-crossvalidate(df_folded, k=3, model=m4, dependent='score', random=TRUE)
-
-m5
-crossvalidate(df_folded, k=3, model=m5, dependent='score', random=TRUE)
-
-```
-
-The model m4 has the least error on average in its predictions and so, we assume that it is the best predictor of out-of-sample data. Let's look at its summary:
-
-```{r}
-lmer(m4, df_folded) %>%
-  summary()
-
-
-```
-
-In this model, we have a significant interaction between diagnosis and session. The interpretation of this result would be quite different from that of the first model we tried.
-
-
-# Windowing time series
-
-When working with time series, groupdata2 allows us to quickly divide them into groups / windows.  
-
-
-## Load time series data
-
-We will use the dataset austres for this vignette. It contains numbers (in thousands) of Australian residents measured *quarterly* from March 1971 to March 1994.  
-
-Let's load the data and take a look at the first values.  
-
-```{r}
-timeSeriesFrame = data.frame('residents' = austres)
-
-# Show structure of dataframe
-str(timeSeriesFrame) 
-
-# Show head of data
-timeSeriesFrame %>% head(12) %>% kable()
-
-```
-
-&nbsp;  
-A visulisation of the data. We see that the number of residents increases quite linearly with time.  
-
-```{r echo=FALSE, message=FALSE}
-# Plot of time series
-
-ggplot(timeSeriesFrame, aes(seq_along(residents), residents)) +
-  geom_point() +
-  labs(x = 'Measurement', y = 'Residents')
-
-
-```
-
-
-## Reduce number of datapoints
-
-Let's say, that instead of having four measures per year, we want 1 measure every 3 years.  
-We can do this by making groups of 12 elements each with the 'greedy' method and use the the means of each group as our measurements.  
-When using the method 'greedy', we specify group size instead of number of groups. Every group, except the last, is guaranteed to have this size. The last group gets the elements that are left, i.e. it might be smaller or of the same size as the other groups.
-
-
-```{r}
-ts = timeSeriesFrame %>%
-  
-  # Group data
-  group(n = 12, method = 'greedy') %>%
-  
-  # Find means of each group
-  dplyr::summarise(mean = mean(residents))
-
-# Show new data
-ts %>% kable() 
-```
-
-&nbsp;  
-&nbsp;  
-A visulisation of the data.  
-
-```{r echo=FALSE, message=FALSE}
-# Plot of time series
-
-ggplot(ts, aes(.groups, mean)) +
-  geom_point() +
-  labs(x = 'Groups', y = 'Mean n of residents')
-
-
-```
-
-This procedure has left us with less datapoints, which could be useful if we had a very large dataframe to start with, or if we just wanted to describe the change in residents every 3rd year (or every year for that matter by simply changing n to 4).  
-
-If we wanted to know which group had the largest increase in residents we could find the range (difference between the max and min value) within each group instead of taking the mean.  
-
-```{r}
-ts = timeSeriesFrame %>%
-  
-  # Group data
-  group(n = 12, method = 'greedy') %>%
-  
-  # Find range of each group
-  dplyr::summarise(range = diff(range(residents)))
-
-# Show new data
-ts %>% kable() 
-
-```
-
-
-
-## Staircase groups 
-
-For the fun of it, let's say we want to make staircased groups inside the greedy groups, we just created.  
-When using the method 'staircase' we specify **step size** instead of number of groups or group size. Every group is 1 step larger than the previous group (e.g. with a step size of 5, group sizes would be 5,10,15,...).  
-By creating subgroups for every greedy group, the group size will 'start over' for each greedy group.  
-
-When using the staircase method, the last group might not have the size of the second last group + step size. We want to make sure that it does have such size, so we use the helper tool **%staircase%** to find a step size with a remainder of 0.  
-
-
-```{r}
-main_group_size = 12
-
-# Loop through a list ranging from 1-30
-for (step_size in c(1:30)){
-  
-  # If the remainder is 0
-  if(main_group_size %staircase% step_size == 0){
-    
-    # Print the step size
-    print(step_size)
-    
-  }
-  
-}
-
-```
-
-So our step size could be 2, 4 or 12. We pick a step size of 2, because it will yield the most subgroups for the example.  
-
-Now we will first make the greedy groups like before, then we will create subgroups with the staircase method.  
-In order not to overwrite the '.groups' column from the first use of **group()**, we will use the **col_name** argument in **group()**.  
-We will also need to use dplyr's **do()** when using **group()** on every greedy group inside the pipeline.  
-
-
-```{r}
-ts <- timeSeriesFrame %>%
-  
-  # Group data
-  group(n = 12, method='greedy') %>%
-  
-  # Create subgroups
-  do(group(., n = 2, method='staircase', col_name = '.subgroups'))
-
-# Show head of new data
-ts %>% head(24) %>% kable() 
-
-```
-
-Notice the warning in the previous code.  
-
->   
-> Warning in bind_rows_(x, .id): Unequal factor levels: coercing to character  
->   
-
-On some time series the do() step converts the column '.subgroups' from the type *factor* into the type *character* because of unequal factor levels. This is likely because the last greedy group contains less elements than the other groups, and so we are able to make fewer subgroups. Let's check the tail of the new dataframe.
-
-```{r}
-# Show tail of new data
-ts %>% tail(17) %>% kable()
-
-```
-
-Sure enough, the last greedy group (8) is smaller. This means that there are only 2 subgroups instead of 3. To solve this we first convert it to an integer and then to a factor.  
-
-We could also get the means of each subgroup. To do this we first group by .groups and then .subgroups. Then we take the mean of all subgroups. If we had just grouped by .subgroups, we would have taken the mean of all the datapoints in each subgroup level. This would have left us with (in this case) 3 means, instead of 1 per subgroup level per main group level.  
-Now that we are at it, we might as well see find the ranges for each subgroup as well.  
-
-```{r}
-ts_means <- ts %>%
-  
-  # Convert .subgroups to an integer and then to a factor
-  mutate(.subgroups = as.integer(.subgroups),
-         .subgroups = as.factor(.subgroups)) %>%
-  
-  # Group by first .groups, then .subgroups
-  group_by(.groups, .subgroups) %>%
-  
-  # Find the mean and range of each subgroup
-  dplyr::summarise(mean = mean(residents),
-                   range = diff(range(residents)))
-
-# Show head of new data
-ts_means %>% head(9) %>% kable() 
-```
-
-&nbsp;  
-
-The differences in range follows the differences in number of measurements per subgroup.  
-Here is a visulisation of the means per subgroup:  
-
-```{r echo=FALSE, message=FALSE}
-# Plot of time series
-
-ggplot(ts_means, aes(seq_along(mean), mean)) +
-  geom_point() +
-  labs(x = 'Subgroups', y = 'Mean n of residents')
-
-
-```
+For a more extensive description of the features in groupdata2, see [Description of groupdata2](description_of_groupdata2.html).
 
 # Outro
 
-Well done, you made it to the end of this introduction to groupdata2! If you want to know more about the various methods and arguments, you can read the [Description of groupdata2](description_of_groupdata2.html)  
+Well done, you made it to the end of this introduction to groupdata2! If you want to know more about the various methods and arguments, you can read the [Description of groupdata2](description_of_groupdata2.html).  
 If you have any questions or comments to this vignette (tutorial) or groupdata2, please send them to me at  
-r-pkgs@ludvigolsen.dk,   
-so I can make improvements.  
+r-pkgs@ludvigolsen.dk, or open an issue on the github page https://github.com/LudvigOlsen/groupdata2 so I can make improvements.  
 
 &nbsp; 
 &nbsp; 

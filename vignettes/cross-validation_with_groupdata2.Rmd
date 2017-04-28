@@ -329,8 +329,12 @@ model_m4 %>%
 In this model, we have a significant interaction between diagnosis and session. The interpretation of this result would be quite different from that of the first model we tried. Also notice that the cross-validated m3 model is so close to the cross-validated m4 model that we can't really say there's a difference. The difference might as well stem from the randomization in the partition() or fold() steps. So we might consider reporting both models or at least seeing if the interpretation of the two models differ a lot. All these things are highly dependent on the context.
 
 
-# Final words
 
-That was it. If you have questions or ideas for improvement, send me a mail at r-pkgs@ludvigolsen.dk or open an issue on the github page https://github.com/LudvigOlsen/groupdata2 
+# Outro
 
-Check out the full description vignette for groupdata2 [here](description_of_groupdata2.html)
+Well done, you made it to the end of this introduction to groupdata2! If you want to know more about the various methods and arguments, you can read the [Description of groupdata2](description_of_groupdata2.html).  
+If you have any questions or comments to this vignette (tutorial) or groupdata2, please send them to me at  
+r-pkgs@ludvigolsen.dk, or open an issue on the github page https://github.com/LudvigOlsen/groupdata2 so I can make improvements.  
+
+&nbsp; 
+&nbsp; 

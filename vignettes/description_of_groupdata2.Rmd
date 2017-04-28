@@ -7,7 +7,7 @@ abstract: |
   groupdata2 is a set of subsetting methods for easy grouping, windowing, folding and splitting of data.
   Create balanced folds for cross-validation or divide a time series into windows.  
   This vignette contains descriptions of functions and methods, along with simple examples of usage. 
-  For a more gentle introduction to groupdata2, please see [Introduction to groupdata2](introduction_to_groupdata2.html)
+  For a gentler introduction to groupdata2, please see [Introduction to groupdata2](introduction_to_groupdata2.html)
   &nbsp;  
   &nbsp;  
   Contact author at r-pkgs@ludvigolsen.dk
@@ -709,8 +709,9 @@ Used in: partition()
 
 # Using Functions
 
-We will be using 'n_dist' on a dataframe to showcase the functions. Afterwards we will use and compare the methods.  
-Notice that you can also use vectors with all the functions.  
+We will be using the method 'n_dist' on a dataframe to showcase the functions. Afterwards we will use and compare the methods.  
+Notice that you can also use vectors as data with all the functions.  
+See the necessary attached packages for running the examples under [Attach Packages].
 
 ## group_factor()  
 

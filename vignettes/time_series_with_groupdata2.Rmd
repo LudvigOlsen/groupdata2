@@ -1,0 +1,254 @@
+---
+title: "Time series with groupdata2"
+author: 
+  - "Ludvig Renbo Olsen"
+date: "`r Sys.Date()`"
+abstract: |
+  This vignette is an introduction to the package groupdata2.  
+  groupdata2 is a set of subsetting methods for easy grouping, windowing, folding and splitting of data.  
+  We will go through dividing up a time series into windows.
+  &nbsp;  
+  For a more extensive description of groupdata2, please see [Description of groupdata2](description_of_groupdata2.html)
+  &nbsp;  
+  &nbsp;  
+  Contact author at r-pkgs@ludvigolsen.dk
+  &nbsp;  
+  &nbsp;  
+  
+  -----
+output: 
+  rmarkdown::html_vignette:
+    css: 
+    - !expr system.file("rmarkdown/templates/html_vignette/resources/vignette.css", package = "rmarkdown")
+    - styles.css
+    fig_width: 6
+    fig_height: 4
+    toc: yes
+    number_sections: no
+  rmarkdown::pdf_document:
+    highlight: tango
+    number_sections: yes
+    toc: yes
+    toc_depth: 4
+vignette: >
+  %\VignetteIndexEntry{Time series with groupdata2}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r include=FALSE}
+
+knitr::opts_chunk$set(collapse = T, comment = "#>", fig.align='center')
+options(tibble.print_min = 4L, tibble.print_max = 4L)
+
+```
+
+# Windowing time series
+
+When working with time series, groupdata2 allows us to quickly divide them into groups / windows.  
+
+
+## Attach packages
+
+```{r warning=FALSE,message=FALSE}
+library(groupdata2)
+library(dplyr) # %>%
+library(ggplot2)
+library(knitr) # kable
+```
+
+
+
+## Load time series data
+
+We will use the dataset austres for this vignette. It contains numbers (in thousands) of Australian residents measured *quarterly* from March 1971 to March 1994.  
+
+Let's load the data and take a look at the first values.  
+
+```{r}
+timeSeriesFrame = data.frame('residents' = austres)
+
+# Show structure of dataframe
+str(timeSeriesFrame) 
+
+# Show head of data
+timeSeriesFrame %>% head(12) %>% kable()
+
+```
+
+&nbsp;  
+A visulisation of the data. We see that the number of residents increases quite linearly with time.  
+
+```{r echo=FALSE, message=FALSE}
+# Plot of time series
+
+ggplot(timeSeriesFrame, aes(seq_along(residents), residents)) +
+  geom_point() +
+  labs(x = 'Measurement', y = 'Residents')
+
+
+```
+
+
+## Reduce number of datapoints
+
+Let's say, that instead of having four measures per year, we want 1 measure every 3 years.  
+We can do this by making groups of 12 elements each with the 'greedy' method and use the the means of each group as our measurements.  
+When using the method 'greedy', we specify the desired group size. Every group, except the last, is guaranteed to have this size. The last group gets the elements that are left, i.e. it might be smaller or of the same size as the other groups.
+
+
+```{r}
+ts = timeSeriesFrame %>%
+  
+  # Group data
+  group(n = 12, method = 'greedy') %>%
+  
+  # Find means of each group
+  dplyr::summarise(mean = mean(residents))
+
+# Show new data
+ts %>% kable() 
+```
+
+&nbsp;  
+&nbsp;  
+A visulisation of the data.  
+
+```{r echo=FALSE, message=FALSE}
+# Plot of time series
+
+ggplot(ts, aes(.groups, mean)) +
+  geom_point() +
+  labs(x = 'Groups', y = 'Mean n of residents')
+
+
+```
+
+This procedure has left us with less datapoints, which could be useful if we had a very large dataframe to start with, or if we just wanted to describe the change in residents every 3rd year (or every year for that matter by simply changing n to 4).  
+
+If we wanted to know which group had the largest increase in residents, we could find the range (difference between the max and min value) within each group instead of taking the mean.  
+
+```{r}
+ts = timeSeriesFrame %>%
+  
+  # Group data
+  group(n = 12, method = 'greedy') %>%
+  
+  # Find range of each group
+  dplyr::summarise(range = diff(range(residents)))
+
+# Show new data
+ts %>% kable() 
+
+```
+
+
+
+## Staircase groups 
+
+For the fun of it, let's say we want to make staircased groups inside the greedy groups, we just created.  
+When using the method 'staircase' we specify **step size**. Every group is 1 step larger than the previous group (e.g. with a step size of 5, group sizes would be 5,10,15,...).  
+By creating subgroups for every greedy group, the group size will 'start over' for each greedy group.  
+
+When using the staircase method, the last group might not have the size of the second last group + step size. We want to make sure that it does have such size, so we use the helper tool **%staircase%** to find a step size with a remainder of 0.  
+
+
+```{r}
+main_group_size = 12
+
+# Loop through a list ranging from 1-30
+for (step_size in c(1:30)){
+  
+  # If the remainder is 0
+  if(main_group_size %staircase% step_size == 0){
+    
+    # Print the step size
+    print(step_size)
+    
+  }
+  
+}
+
+```
+
+So our step size could be 2, 4 or 12. We pick a step size of 2, because it will yield the most subgroups for the example.  
+
+Now we will first make the greedy groups like before, then we will create subgroups with the staircase method.  
+In order not to overwrite the '.groups' column from the first use of **group()**, we will use the **col_name** argument in **group()**.  
+We will also need to use dplyr's **do()** when using **group()** on every greedy group inside the pipeline.  
+
+
+```{r}
+ts <- timeSeriesFrame %>%
+  
+  # Group data
+  group(n = 12, method='greedy') %>%
+  
+  # Create subgroups
+  do(group(., n = 2, method='staircase', col_name = '.subgroups'))
+
+# Show head of new data
+ts %>% head(24) %>% kable() 
+
+```
+
+Notice the warning in the previous code.  
+
+>   
+> Warning in bind_rows_(x, .id): Unequal factor levels: coercing to character  
+>   
+
+On some time series the do() step converts the column '.subgroups' from the type *factor* into the type *character* because of unequal factor levels. This is likely because the last greedy group contains less elements than the other groups, and so we are able to make fewer subgroups. Let's check the tail of the new dataframe.
+
+```{r}
+# Show tail of new data
+ts %>% tail(17) %>% kable()
+
+```
+
+Sure enough, the last greedy group (8) is smaller. This means that there are only 2 subgroups instead of 3. To solve this we first convert .subgroups to an integer and then to a factor.  
+
+We could also get the means of each subgroup. To do this we first group by .groups and then .subgroups. Then we take the mean of all subgroups. If we had just grouped by .subgroups, we would have taken the mean of all the datapoints in each subgroup level. This would have left us with (in this case) 3 means, instead of 1 per subgroup level per main group level.  
+Now that we are at it, we might as well find the ranges for each subgroup as well.  
+
+```{r}
+ts_means <- ts %>%
+  
+  # Convert .subgroups to an integer and then to a factor
+  mutate(.subgroups = as.integer(.subgroups),
+         .subgroups = as.factor(.subgroups)) %>%
+  
+  # Group by first .groups, then .subgroups
+  group_by(.groups, .subgroups) %>%
+  
+  # Find the mean and range of each subgroup
+  dplyr::summarise(mean = mean(residents),
+                   range = diff(range(residents)))
+
+# Show head of new data
+ts_means %>% head(9) %>% kable() 
+```
+
+&nbsp;  
+
+The differences in range follows the differences in number of measurements per subgroup.  
+Here is a visulisation of the means per subgroup:  
+
+```{r echo=FALSE, message=FALSE}
+# Plot of time series
+
+ggplot(ts_means, aes(seq_along(mean), mean)) +
+  geom_point() +
+  labs(x = 'Subgroups', y = 'Mean n of residents')
+
+
+```
+
+# Outro
+
+Well done, you made it to the end of this introduction to groupdata2! If you want to know more about the various methods and arguments, you can read the [Description of groupdata2](description_of_groupdata2.html).  
+If you have any questions or comments to this vignette (tutorial) or groupdata2, please send them to me at  
+r-pkgs@ludvigolsen.dk, or open an issue on the github page https://github.com/LudvigOlsen/groupdata2 so I can make improvements.  
+
+&nbsp; 
+&nbsp; 
