@@ -1,0 +1,336 @@
+---
+title: "Cross-validation with groupdata2"
+author: 
+  - "Ludvig Renbo Olsen"
+date: "`r Sys.Date()`"
+abstract: |
+  This vignette is an introduction to the package groupdata2.  
+  groupdata2 is a set of subsetting methods for easy grouping, windowing, folding and splitting of data.  
+  We will go through creating balanced partitions for training/test sets and balanced folds for cross-validation.  
+  &nbsp;  
+  For a more extensive description of groupdata2, please see [Description of groupdata2](description_of_groupdata2.html)
+  &nbsp;  
+  &nbsp;  
+  Contact author at r-pkgs@ludvigolsen.dk
+  &nbsp;  
+  &nbsp;  
+  
+  -----
+output: 
+  rmarkdown::html_vignette:
+    css: 
+    - !expr system.file("rmarkdown/templates/html_vignette/resources/vignette.css", package = "rmarkdown")
+    - styles.css
+    fig_width: 6
+    fig_height: 4
+    toc: yes
+    number_sections: no
+  rmarkdown::pdf_document:
+    highlight: tango
+    number_sections: yes
+    toc: yes
+    toc_depth: 4
+vignette: >
+  %\VignetteIndexEntry{Cross-validation with groupdata2}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r include=FALSE}
+
+knitr::opts_chunk$set(collapse = T, comment = "#>", fig.align='center')
+options(tibble.print_min = 4L, tibble.print_max = 4L)
+
+```
+
+# Introduction
+
+In this vignette we will train a couple of linear regression models to some data. We will use cross-validation with balanced folds to find the best model, and then test that model on a subset of the original data that we haven't used for training the model. 
+
+Our first task will be to split the dataset into a training set and a test set using **partition**(). Then we will create folds using the **fold**() function. We will code up a simple cross-validation function and put some models to the test!
+
+## groupdata2 functions in focus
+
+**partition**() creates (optionally) balanced partitions (e.g. training/test sets) from given group sizes. It can balance partitions on one categorical variable (e.g. diagnosis) and/or is able to keep all datapoints with a shared ID (e.g. participant) in the same partition.
+
+**fold**() creates (optionally) balanced folds for cross-validation. It can balance folds on one categorical variable (e.g. diagnosis) and/or is able to keep all datapoints with a shared ID (e.g. participant) in the same fold.  
+
+## What is cross-validation?
+
+The essence of cross-validation is to test a model against data that it hasn't been trained on, i.e. estimating out-of-sample error. It is done by first dividing the data into groups called *folds*. Say we choose to divide the data into **5** folds. Then, in the first iteration, we *train* a model on the first four folds and *test* it on the fifth fold. In the second iteration, we then train on folds 2,3,4,5 and test on fold 1. We continue changing which fold is the test fold until all folds have been test folds (i.e. we train and test 5 times in total). In the end we get the average performance of the models and compare these to other cross-validated models. The model with the least average error is believed to be the best at predicting unseen data from the same population(s) and thus chosen for further interpretation / use. 
+This is a great tool, and **fold**()  makes it even more powerful.  
+
+## Why training and test sets
+Even with cross-validation we have a risk of overfitting our models to our data. This means that while we get really good predictions for our current data, it won't generalize to new data that we might gather in the future. So to test if it's the case, we keep some data that we *don't touch* before we feel confident that we have found the best model. Then we use the model to predict the targets / dependent variable in that data. If the results is much worse for the test set, it likely means that our model is suffering from overfitting! Then we go back and adjust the models, until we're pretty confident again. Then we try again. Beware though, that if we run this cycle too many times, we might accidentally find a model that is a good predictor for the specific data in the test set, but not in general. 
+
+## The data
+
+Let's say we have scored 10 participants with either of two diagnoses "a" and "b" on a very interesting task, that you're free to call 'the task'. 
+
+```{r warning=FALSE,message=FALSE}
+# Attach some packages
+library(groupdata2)
+library(dplyr)
+library(ggplot2)
+library(knitr) # kable()
+library(lmerTest) #lmer()
+library(broom) #tidy()
+library(hydroGOF) # rmse()
+
+
+# Create dataframe
+df <- data.frame("participant" = factor(as.integer(
+                                        rep(c('1','2', '3', '4', '5', 
+                                        '6', '7', '8', '9', '10'), 3))),
+                "age" = rep(c(20,23,27,21,32,31,43,21,34,32), 3),
+                "diagnosis" = rep(c('a', 'b', 'a', 'b', 'b', 
+                                    'a', 'a', 'a', 'b', 'b'), 3),
+                "score" = c(10,24,15,35,24,14,11,16,33,29,  # for 1st session
+                            24,40,30,50,54,25,35,32,53,55,  # for 2nd session
+                            45,67,40,78,62,30,41,44,66,81)) # for 3rd session
+
+# Order by participant
+df <- df[order(df$participant),] 
+
+# Remove index
+rownames(df) <- NULL
+
+# Add session info
+df$session <- as.integer(rep(c('1','2', '3'), 10))
+
+# Show the dataframe
+kable(df, align = 'c')
+
+```
+
+
+As we can see, there are 5 participants for each diagnosis, and they all seem to have gotten better at the task throughout the three sessions they went through.
+
+# Creating training/test sets
+
+In this step we will split our data into two subsets called train_set and test_set. The main point will be, that we must avoid leakage between the two sets, before it is of any use to us.
+
+## What is leakage?
+Let's say we splitted the data randomly. 20 percent of the data goes to the test set, and the rest is used for training.
+In this case, we would have the same participants in the training set AND the test set. But what we want to know is how good our model is at predicting new, future participants, not how well it knows the ones we already have a diagnosis for. Furthermore, if our model is overfitted to those participants, our test set might not warn us of this, as it simply knows these participants too well. So we could get a really low error on both the test set and the training set, even though our model is useless outside of the data we're working with. 
+So how do we deal with this? In this case it's as simple as making sure each participant is only in one of the data sets. We can do this with **partition**() and the *id_col* argument.
+
+```{r}
+
+set.seed(1) # For reproducibility
+
+# Split data in 20/80 (percentage)
+partition(df, p = 0.2, id_col = "participant") %>% 
+  .[1] %>% # See only the test set 
+  kable()  # Pretty tables :) 
+
+```
+
+This is only showing the test set for now. Let's look at the output. We see that we now have 2 participants (10 and 5) and they each have all 3 sessions in this set, meaning they are not in the training set! Perfect! But ehmm.. if we look at the diagnosis column, they both have the diagnosis 'b'. If we would like to know how well our future model classifies both of the diagnoses, this won't do. It would be nicer if we have somewhat the same balance of both diagnoses in both the training set and the test set. This is luckily what the *cat_col* argument is for. More specifically (behind the scenes), it first subsets the full data by each class in the categorical column, then it creates partitions in each subset and merges the partitions in the end. When using both the id_col and cat_col arguments, it first subsets by class, then partitions by the unique values in id_col. So sometimes the final group sizes might not be exactly as specified, depending on the data. As such it is a good practice to look at the distribution of participants, classes, etc. in the final partitions, which we will do right after we try out that cat_col argument to get our final test and train sets! 
+
+```{r}
+
+set.seed(1) # For reproducibility
+
+# Split data in 20/80 (percentage)
+parts <- partition(df, p = 0.2, id_col = "participant", cat_col = 'diagnosis')
+
+test_set <- parts[[1]]
+train_set <- parts[[2]]
+
+# Show test_set
+test_set %>% kable()
+
+```
+
+Now our test set contains 2 participants (8 and 10), and the diagnosis column now contains half 'a' and half 'b'. Let's count it for the training set instead of looking at it.
+
+```{r}
+train_set %>% 
+  count(diagnosis) %>% 
+  kable(align='c')
+```
+
+We have 12 rows for each diagnosis in the training set. In this case we know that the rest of the participants are all "fully" in this dataset. But let's count them just so we will remember to do it in the future.
+
+```{r}
+train_set %>% 
+  count(participant) %>% 
+  kable(align='c')
+```
+
+# Creating folds for cross-validation
+
+In this section we will create balanced folds for cross-validation. The thoughts behind doing so will resemble those of the previous section. **fold**() basically just creates a number of ~equally sized partitions. Where **partition**() returned a list (this is optional btw.), **fold**() will return the entire training set but with a new column called ".folds". This will be used directly in the cross-validation function to subset the data on each iteration - remember, the folds take shifts being the test set (not to be confused with the one we just created before).
+
+As we're basically recreating the training / test set scenario that we discussed previously, we still want to avoid leakage between folds. We would also like somewhat balanced distributions of the diagnoses, though this depends on the context. So let's create our balanced folds.
+
+```{r}
+set.seed(1) # For reproducibility
+
+train_set <- fold(train_set, k = 4, cat_col = 'diagnosis', id_col = 'participant')
+
+# Order by .folds
+train_set <- train_set[order(train_set$.folds),]
+
+train_set %>% kable()
+```
+
+The training set now contains the ".folds" column. We can check how many of each diagnosis and participant is in each fold like so:
+
+```{r}
+train_set %>% 
+  count(participant, diagnosis) %>% 
+  kable(align='c')
+```
+
+Fold 1 contains particants 2 and 7 with 3 rows each. Participant 2 has the diagnosis 'b' and participant 7 is an 'a'. This pattern is the same for all folds. Of course our data was created for the purpose of showing these functions, so real world data is likely less perfect, which is why you always want to investigate the output to have a sense of what is going on. Also beware that the max number of folds are restricted by the number of participants in the classes, if using the id_col and the cat_col arguments together. Remember, first the function subsets the dataset by cat_col, then it creates groups (folds) from the unique values in id_col in each subset and merges the subsets. So if you only have 3 unique participants in one class, this will be the max number of folds you can create.
+
+# Cross-validation
+
+What's left, you ask? Well, now we get to have fun, training and comparing models using cross-validation! If you just came for the partition and fold functions, you can skip this and.. well start using the functions in your own code instead. But I will move on and walk you through a simple cross-validation function for testing some models for predicting the scores of the participants.
+
+## Cross-validation function
+
+We have 4 folds in our training set, so we want to train our models on 3 of the folds and test on the last fold. This should be done so that all the folds become test fold once. While there are faster alternatives to a for-loop, we will use it to illustrate the process. We will create a simple cross-validation function where we can specify the model to test, and whether it has random effects. The performance of the model will be measured with RMSE (Root Mean Square Error).
+
+```{r}
+crossvalidate <- function(data, k, model, dependent, random = FALSE){
+  # data is the training set with the ".folds" column
+  # k is the number of folds we have
+  # model is a string describing a linear regression model formula
+  # dependent is a string with the name of the score column we want to predict
+  # random is a logical; do we have random effects in the model?
+  
+  # Initialize empty list for recording performances
+  performances <- c()
+  
+  # One iteration per fold
+  for (fold in 1:k){
+    
+    # Create training set for this iteration
+    # Subset all the datapoints where .folds does not match the current fold
+    training_set <- data[data$.folds != fold,]
+    
+    # Create test set for this iteration
+    # Subset all the datapoints where .folds matches the current fold
+    testing_set <- data[data$.folds == fold,]
+    
+    ## Train model
+
+    # If there is a random effect,
+    # use lmer() to train model
+    # else use lm()
+
+    if (isTRUE(random)){
+
+      # Train linear mixed effects model on training set
+      model <-  lmer(model, training_set, REML=FALSE)
+
+    } else {
+
+      # Train linear model on training set
+      model <-  lm(model, training_set)
+
+    }
+
+    ## Test model
+
+    # Predict the dependent variable in the testing_set with the trained model
+    predicted <- predict(model, testing_set, allow.new.levels=TRUE)
+
+    # Get the Root Mean Square Error between the predicted and the observed
+    RMSE <- rmse(predicted, testing_set[[dependent]])
+
+    # Add the RMSE to the performance list
+    performances[fold] <- RMSE
+
+
+  }
+
+  # Return the mean of the recorded RMSEs
+  return(c('RMSE' = mean(performances)))
+
+}
+
+```
+
+## Linear regression models
+
+We could have a hypothesis that people with the diagnosis 'b' in general are better at the experiment. This could be tested by a simple linear model.
+
+```{r}
+lm(score~diagnosis, df) %>%
+  summary() %>%
+  tidy()
+```
+
+The linear model supports the hypothesis, as scores of participants with diagnosis 'b' are significantly larger than those of participants with diagnosis 'a'. 
+
+To improve on our model we might want to include the information we have about age and sessions. Perhaps the older participants do better than the younger? And maybe participants with the diagnosis 'b' are better at learning over time (session) than those with diagnosis 'a'? By including such information in our model we might explain more than if we are just looking at the diagnosis. We could also use participant as random effect, to factor out the personal differences.  
+Let's list a bunch of possible models that we will then compare later with cross-validation! The cross-validation function needs the model to be passed in the format below (a string). Instead of looking at summaries for each model, we will find the best model with cross-validation and only look at the summary for that one. Notice that when we want to compare models, we want to keep the same random effects for all the models, so we are only comparing the combination of fixed effects.  
+
+```{r}
+m0 <- 'score~1+(1|participant)'
+m1 <- 'score~diagnosis+(1|participant)'
+m2 <- 'score~diagnosis+age+(1|participant)'
+m3 <- 'score~diagnosis+session+(1|participant)'
+m4 <- 'score~diagnosis*session+(1|participant)'
+m5 <- 'score~diagnosis*session+age+(1|participant)'
+
+```
+
+Now let's test the 6 models we specified earlier.
+
+```{r}
+m0
+crossvalidate(train_set, k=4, model=m0, dependent='score', random=TRUE)
+
+m1
+crossvalidate(train_set, k=4, model=m1, dependent='score', random=TRUE)
+
+m2
+crossvalidate(train_set, k=4, model=m2, dependent='score', random=TRUE)
+
+m3
+crossvalidate(train_set, k=4, model=m3, dependent='score', random=TRUE)
+
+m4
+crossvalidate(train_set, k=4, model=m4, dependent='score', random=TRUE)
+
+m5
+crossvalidate(train_set, k=4, model=m5, dependent='score', random=TRUE)
+
+```
+
+The model m4 has the least error on average in its predictions and so, we assume that it is the best predictor of out-of-sample data. To make sure it doesn't overfit the data, let's look at the error for the test set.
+
+```{r}
+# Creating the model for the full training set
+model_m4 <- lmer(m4, train_set, REML = FALSE)
+
+# Predict the dependent variable in the test_set with the trained model
+predicted <- predict(model_m4, test_set, allow.new.levels=TRUE)
+
+# Get the Root Mean Square Error between the predicted and the observed
+RMSE <- rmse(predicted, test_set[['score']])
+RMSE
+```
+
+6.42 is a bit higher than the cross-validated average, but it's so close that we're not afraid of overfitting. Be aware that the scale of the RMSE is dependent on the data we have, so you might find some models with much higher RMSEs than this one. What matters is the relative difference between models, so that the best model will have the lowest error.
+
+Let's look at its summary:
+
+```{r}
+model_m4 %>%
+  summary()
+```
+
+In this model, we have a significant interaction between diagnosis and session. The interpretation of this result would be quite different from that of the first model we tried. Also notice that the cross-validated m3 model is so close to the cross-validated m4 model that we can't really say there's a difference. The difference might as well stem from the randomization in the partition() or fold() steps. So we might consider reporting both models or at least seeing if the interpretation of the two models differ a lot. All these things are highly dependent on the context.
+
+
+# Final words
+
+That was it. If you have questions or ideas for improvement, send me a mail at r-pkgs@ludvigolsen.dk or open an issue on the github page https://github.com/LudvigOlsen/groupdata2 
+
+Check out the full description vignette for groupdata2 [here](description_of_groupdata2.html)
