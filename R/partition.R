@@ -179,8 +179,7 @@ partition <- function(data, p = 0.2, cat_col = NULL,
 
         temp_data$.partitions <- NULL
 
-        return(temp_data)
-
+        temp_data %>% dplyr::ungroup() %>% return()
 
       }) %>% return()
 
