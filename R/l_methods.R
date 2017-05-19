@@ -222,7 +222,7 @@ l_sizes_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE)
 
 
 
-l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE){
+l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE, remove_missing_starts = FALSE){
 
   #
   # method: l_starts
@@ -283,48 +283,13 @@ l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE
 
   }
 
-  # Initialize ind_prev
-  # This is used to make sure that we get an index
-  # further down in v, even if the value is also
-  # found above the previously found index
-  ind_prev <- 0
-
   # We use tryCatch to catch the error if a start value is not found
   start_indices <- tryCatch({
 
-      # We iterate through n and find the index for each value
-      plyr::llply(1:length(n_list), function(i){
-
-      # Get all indices of v where it has the current value of n
-      indices <- which(v == n_list[[i]][1])
-
-      # Get all the indices that are larger the the index found in
-      # the previous iteration
-      indices_larger_than_prev <- indices[which(indices > ind_prev)]
-
-      # Get the wanted index
-      ind_next = indices_larger_than_prev[as.integer(n_list[[i]][2])]
-
-      # Set ind_prev to the index we just found for use in the
-      # next iteration
-      # <<- saves to parent scope (outer function)
-      ind_prev <<- ind_next
-
-
-      # If a value is not found
-      # ind_next will be NA
-      # In this case we raise an error
-      if (is.na(ind_next)){
-
-        # Raise error
-        stop(paste("Start value \"", n_list[[i]][1], "\" not found in vector.", sep=""))
-
-      }
-
-      # Return the found index
-      return(ind_next)
-
-      })
+    # Find indices
+    # Put in function to enable recursion when removing
+    # start values not found
+    ind_next <- l_starts_find_indices(v, n_list, remove_missing_starts)
 
     # If an error was caught
     }, error = function(e){
