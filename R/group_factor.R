@@ -96,6 +96,9 @@
 #' @param descending Change direction of method. (Not fully implemented)
 #'  (Logical)
 #' @param randomize Randomize the grouping factor (Logical)
+#' @param remove_missing_starts Recursively remove elements from the list
+#'  of starts, if not found in starts_col. For method \code{l_starts} only.
+#'  (Logical)
 #' @return Grouping factor with 1s for group 1, 2s for group 2, etc.
 #' @family grouping functions
 #' @family staircase tools
@@ -128,7 +131,7 @@
 #'
 group_factor <- function(data, n, method = 'n_dist', starts_col = NULL, force_equal = FALSE,
                          allow_zero = FALSE, descending = FALSE,
-                         randomize = FALSE){
+                         randomize = FALSE, remove_missing_starts = FALSE){
 
   #
   # Takes dataframe or vector
@@ -159,6 +162,7 @@ group_factor <- function(data, n, method = 'n_dist', starts_col = NULL, force_eq
   # Check more arguments
   n <- check_convert_check_(data, n, method, force_equal,
                             allow_zero, descending,
+                            remove_missing_starts = remove_missing_starts,
                             starts_col = starts_col)
 
   # For method l_starts
@@ -274,7 +278,9 @@ group_factor <- function(data, n, method = 'n_dist', starts_col = NULL, force_eq
 
       # Notice that we pass the starts_col as data
 
-      groups <- l_starts_group_factor_(starts_col, n, force_equal, descending)
+      groups <- l_starts_group_factor_(starts_col, n, force_equal,
+                                       descending,
+                                       remove_missing_starts = remove_missing_starts)
 
     }else if (method == 'staircase'){
 
@@ -314,7 +320,7 @@ group_factor <- function(data, n, method = 'n_dist', starts_col = NULL, force_eq
 
     } else if (method == 'l_starts'){
 
-      groups <- l_starts_group_factor_(data, n, force_equal, descending)
+      groups <- l_starts_group_factor_(data, n, force_equal, descending, remove_missing_starts)
 
     } else if (method == 'staircase'){
 

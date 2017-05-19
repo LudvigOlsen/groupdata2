@@ -9,7 +9,7 @@
 \usage{
 group(data, n, method = "n_dist", starts_col = NULL, force_equal = FALSE,
   allow_zero = FALSE, return_factor = FALSE, descending = FALSE,
-  randomize = FALSE, col_name = ".groups")
+  randomize = FALSE, col_name = ".groups", remove_missing_starts = FALSE)
 }
 \arguments{
 \item{data}{Dataframe or Vector.}
@@ -112,6 +112,10 @@ Implementation varies between methods. (Logical)}
 \item{randomize}{Randomize the grouping factor (Logical)}
 
 \item{col_name}{Name of added grouping factor}
+
+\item{remove_missing_starts}{Recursively remove elements from the list
+of starts, if they are not found in starts_col. For method \code{l_starts} only.
+(Logical)}
 }
 \value{
 Dataframe grouped by new grouping factor

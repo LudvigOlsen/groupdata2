@@ -41,7 +41,8 @@
 group <- function(data, n, method = 'n_dist', starts_col = NULL,
                   force_equal = FALSE, allow_zero = FALSE,
                   return_factor = FALSE, descending = FALSE,
-                  randomize = FALSE, col_name = '.groups'){
+                  randomize = FALSE, col_name = '.groups',
+                  remove_missing_starts = FALSE){
 
   #
   # Takes dataframe or vector
@@ -56,7 +57,8 @@ group <- function(data, n, method = 'n_dist', starts_col = NULL,
   # Create grouping factor
   grouping_factor <- group_factor(data, n, method, starts_col, force_equal = force_equal,
                                   allow_zero = allow_zero, descending = descending,
-                                  randomize = randomize)
+                                  randomize = randomize,
+                                  remove_missing_starts = remove_missing_starts)
 
   # If return_factor is set to TRUE
   # .. return the created grouping factor

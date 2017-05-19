@@ -6,7 +6,7 @@
 \usage{
 group_factor(data, n, method = "n_dist", starts_col = NULL,
   force_equal = FALSE, allow_zero = FALSE, descending = FALSE,
-  randomize = FALSE)
+  randomize = FALSE, remove_missing_starts = FALSE)
 }
 \arguments{
 \item{data}{Dataframe or Vector.}
@@ -105,6 +105,10 @@ Implementation varies between methods. (Logical)}
 (Logical)}
 
 \item{randomize}{Randomize the grouping factor (Logical)}
+
+\item{remove_missing_starts}{Recursively remove elements from the list
+of starts, if they are not found in starts_col. For method \code{l_starts} only.
+(Logical)}
 }
 \value{
 Grouping factor with 1s for group 1, 2s for group 2, etc.

@@ -2,7 +2,7 @@
 
 #' @importFrom utils head tail
 dsplit_ <- function(data, n, method, starts_col = NULL, force_equal = FALSE, allow_zero = FALSE,
-                   descending = FALSE, randomize = FALSE){
+                   descending = FALSE, randomize = FALSE, remove_missing_starts = FALSE){
 
   #
   # Takes a dataframe
@@ -31,7 +31,8 @@ dsplit_ <- function(data, n, method, starts_col = NULL, force_equal = FALSE, all
                            force_equal = force_equal,
                            allow_zero = allow_zero,
                            descending = descending,
-                           randomize = randomize)
+                           randomize = randomize,
+                           remove_missing_starts = remove_missing_starts)
 
   } else {
 
@@ -49,7 +50,7 @@ dsplit_ <- function(data, n, method, starts_col = NULL, force_equal = FALSE, all
 }
 
 vsplit_ <- function(v, n, method, force_equal = FALSE, allow_zero = FALSE,
-                   descending = FALSE, randomize = FALSE){
+                   descending = FALSE, randomize = FALSE, remove_missing_starts = FALSE){
 
   #
   # Takes a vector
@@ -76,7 +77,8 @@ vsplit_ <- function(v, n, method, force_equal = FALSE, allow_zero = FALSE,
 
     # Create grouping factor
     groups <- group_factor(v, n, method = method, descending = descending,
-                          randomize = randomize)
+                          randomize = randomize,
+                          remove_missing_starts = remove_missing_starts)
 
   }
 

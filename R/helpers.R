@@ -176,7 +176,8 @@ is_between_ <- function(x, a, b) {
 
 
 check_arguments_ <- function(data, n, method, force_equal,
-                            allow_zero, descending){
+                            allow_zero, descending,
+                            remove_missing_starts){
 
   # Checks if the given arguments live up to certain rules,
   # which allow them to be used in the function
@@ -202,6 +203,7 @@ check_arguments_ <- function(data, n, method, force_equal,
 
     # Check n for l_starts
     stopifnot(is.list(n) || is.vector(n) || n == 'auto')
+    stopifnot(is.logical(remove_missing_starts))
 
   } else if (method == 'l_sizes'){
 
@@ -234,6 +236,7 @@ check_arguments_ <- function(data, n, method, force_equal,
 
 check_convert_check_ <- function(data, n, method, force_equal,
                                 allow_zero, descending,
+                                remove_missing_starts,
                                 starts_col = NULL){
 
   # Checks arguments
@@ -248,7 +251,7 @@ check_convert_check_ <- function(data, n, method, force_equal,
 
   # Check if given arguments are allowed
   # If not -> stop execution
-  check_arguments_(data, n, method, force_equal, allow_zero, descending)
+  check_arguments_(data, n, method, force_equal, allow_zero, descending, remove_missing_starts)
 
   if (!(method %in% c('l_starts','l_sizes'))){
 
