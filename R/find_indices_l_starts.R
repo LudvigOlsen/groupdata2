@@ -1,3 +1,16 @@
+#
+# Note:
+# When using recursion to remove missing starts
+# we currently rerun the entire finding of indices.
+# This is pretty fast, but perhaps it would be even
+# faster to only rerun for the indices after the
+# already found indices. I.e. if the last found start value
+# was the fifth element of v, we don't need to match
+# start values before index 5 again.
+# This means updating variables and subsetting of data
+# though, so perhaps it's not faster?
+#
+
 l_starts_find_indices <- function(v, n_list, remove_missing_starts){
 
   # Initialize ind_prev
