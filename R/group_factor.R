@@ -102,6 +102,7 @@
 #' @return Grouping factor with 1s for group 1, 2s for group 2, etc.
 #' @family grouping functions
 #' @family staircase tools
+#' @family l_starts tools
 #' @examples
 #' # Attach packages
 #' library(groupdata2)
@@ -169,80 +170,7 @@ group_factor <- function(data, n, method = 'n_dist', starts_col = NULL, force_eq
   # If data is a dataframe and starts_col is not NULL
   # We want to get the column with values to match
 
-  if(is.data.frame(data) && !is.null(starts_col)){
-
-    # If starts_col is 'index', create column with row names for matching values
-    if (starts_col == 'index'){
-
-      # Check if there is a column in dataframe
-      # called 'index'
-      # If so, throw warning that the index column in
-      # data will be used.
-      # Use the 'index' colum present in data.
-
-      if ('index' %in% colnames(data)){
-
-        warning("data contains column named 'index'. This is used as starts_col instead of row names.
-                Change starts_col to \'.index\' to use row names - no matter if \'.index\' exists in data.")
-
-        starts_col <- data[[starts_col]]
-
-      # Else get the row names of data to use as starts_col
-      } else {
-
-        starts_col <- rownames(data)
-
-      }
-
-    # Else if starts_col is '.index'
-    # get row names no matter if it exists already
-    # in data
-    } else if (starts_col == '.index') {
-
-      # Check if .index exists as column in dataframe
-      # If so, warn that it will not be used.
-      if ('.index' %in% colnames(data)){
-
-        warning("data contains column named '.index' but this is ignored. Using row names as starts_col instead.")
-
-      }
-
-      # Get the row names of data to use as starts_col
-      starts_col <- rownames(data)
-
-    # If starts_col is not NULL (and not 'index')
-    # Check that the column exists in data
-    # and get the column from data
-    } else {
-
-      # If starts_col is wholenumber
-      # convert to integer
-      if (arg_is_wholenumber_(starts_col)) starts_col <- as.integer(starts_col)
-
-      # If the column is given as name (string),
-      # check if the column exists in data
-      if (starts_col %ni% colnames(data) && !is.integer(starts_col)){
-
-        stop(paste("starts_col '", starts_col,
-                   "' not found in data.frame.", sep = ""))
-
-
-      # Else if starts_col is given as integer (col index)
-      # Check if the number is in the column indices list
-      } else if (is.integer(starts_col) && starts_col %ni% col(data)[1,]){
-
-        stop(paste("starts_col with index '", starts_col,
-                   "' not found in data.frame.", sep = ""))
-
-      } else {
-
-        starts_col <- data[[starts_col]]
-
-      }
-
-    }
-
-  }
+  starts_col <- assign_starts_col(data, starts_col)
 
   # Create grouping factors
   # .. Check if data is a dataframe or a vector

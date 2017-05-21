@@ -172,7 +172,9 @@ is_between_ <- function(x, a, b) {
 
 }
 
-
+isEmpty_ <- function(x){
+  return(length(x)==0)
+}
 
 
 check_arguments_ <- function(data, n, method, force_equal,
@@ -444,4 +446,192 @@ create_n_primes <- function(n, start_at=2){
 
 }
 
+
+# l_starts helpers
+
+relist_starts_ <- function(list){
+
+  list %>% unlist() %>% splt(n = 2, method = 'greedy') %>% return()
+
+}
+
+extract_start_values_ <- function(nested_list){
+
+  unlisted <- nested_list %>% unlist()
+
+  return(unlisted[seq(1, length(unlisted), 2)])
+
+}
+
+assign_starts_col <- function(data, starts_col) {
+
+  if(is.data.frame(data) && !is.null(starts_col)){
+
+    # If starts_col is 'index', create column with row names for matching values
+    if (starts_col == 'index'){
+
+      # Check if there is a column in dataframe
+      # called 'index'
+      # If so, throw warning that the index column in
+      # data will be used.
+      # Use the 'index' colum present in data.
+
+      if ('index' %in% colnames(data)){
+
+        warning("data contains column named 'index'. This is used as starts_col instead of row names.
+                Change starts_col to \'.index\' to use row names - no matter if \'.index\' exists in data.")
+
+        starts_col <- data[[starts_col]]
+
+        # Else get the row names of data to use as starts_col
+      } else {
+
+        starts_col <- rownames(data)
+
+      }
+
+      # Else if starts_col is '.index'
+      # get row names no matter if it exists already
+      # in data
+    } else if (starts_col == '.index') {
+
+      # Check if .index exists as column in dataframe
+      # If so, warn that it will not be used.
+      if ('.index' %in% colnames(data)){
+
+        warning("data contains column named '.index' but this is ignored. Using row names as starts_col instead.")
+
+      }
+
+      # Get the row names of data to use as starts_col
+      starts_col <- rownames(data)
+
+      # If starts_col is not NULL (and not 'index')
+      # Check that the column exists in data
+      # and get the column from data
+    } else {
+
+      # If starts_col is wholenumber
+      # convert to integer
+      if (arg_is_wholenumber_(starts_col)) starts_col <- as.integer(starts_col)
+
+      # If the column is given as name (string),
+      # check if the column exists in data
+      if (starts_col %ni% colnames(data) && !is.integer(starts_col)){
+
+        stop(paste("starts_col '", starts_col,
+                   "' not found in data.frame.", sep = ""))
+
+
+        # Else if starts_col is given as integer (col index)
+        # Check if the number is in the column indices list
+      } else if (is.integer(starts_col) && starts_col %ni% col(data)[1,]){
+
+        stop(paste("starts_col with index '", starts_col,
+                   "' not found in data.frame.", sep = ""))
+
+      } else {
+
+        starts_col <- data[[starts_col]]
+
+      }
+
+    }
+
+  }
+
+  return(starts_col)
+}
+
+l_starts_find_indices_ <- function(v, n_list, remove_missing_starts){
+
+  #
+  # Note:
+  # When using recursion to remove missing starts
+  # we currently rerun the entire finding of indices.
+  # This is pretty fast, but perhaps it would be even
+  # faster to only rerun for the indices after the
+  # already found indices. I.e. if the last found start value
+  # was the fifth element of v, we don't need to match
+  # start values before index 5 again.
+  # This means updating variables and subsetting of data
+  # though, so perhaps it's not faster?
+  #
+
+  # Initialize ind_prev
+  # This is used to make sure that we get an index
+  # further down in v, even if the value is also
+  # found above the previously found index
+  ind_prev <- 0
+
+
+  tryCatch({
+
+    # We iterate through n and find the index for each value
+    indices <- plyr::llply(1:length(n_list), function(i){
+
+      # Get all indices of v where it has the current value of n
+      indices <- which(v == n_list[[i]][1])
+
+      # Get all the indices that are larger the the index found in
+      # the previous iteration
+      indices_larger_than_prev <- indices[which(indices > ind_prev)]
+
+      # Get the wanted index
+      ind_next = indices_larger_than_prev[as.integer(n_list[[i]][2])]
+
+      # Set ind_prev to the index we just found for use in the
+      # next iteration
+      # <<- saves to parent scope (outer function)
+      ind_prev <<- ind_next
+
+
+      # If a value is not found
+      # ind_next will be NA
+      # In this case we remove the start_value
+      # or raise an error
+      if (is.na(ind_next)){
+
+        if (isTRUE(remove_missing_starts)){
+
+          # Delete the start value that wasn't found
+          # We delete it in the parent scope, so it
+          # is used when calling the function again
+          # recursively
+          n_list[[i]] <<- NULL
+
+          stop("Missing start value removed from n_list. You should not be seeing this error. Please contact the author.")
+
+        } else {
+
+          # Raise error
+          stop(paste("Start value \"", n_list[[i]][1], "\" not found in vector.", sep=""))
+
+        }
+
+      }
+
+      # Return the found index
+      return(ind_next)
+
+    })
+
+    return(list(indices, n_list))
+
+  }, error = function(e){
+
+    # Removed missing start value? Use recursion.
+    if (grepl('Missing start value removed from n_list', e$message)){
+
+      return(l_starts_find_indices_(v, n_list, remove_missing_starts))
+
+    } else {
+
+      stop(e$message)
+
+    }
+
+  })
+
+}
 
