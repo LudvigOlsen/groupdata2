@@ -222,7 +222,10 @@ l_sizes_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE)
 
 
 
-l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE, remove_missing_starts = FALSE){
+l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE,
+                                   remove_missing_starts = FALSE,
+                                   return_missing_starts = FALSE,
+                                   return_missing_starts_skip_numbers = FALSE){
 
   #
   # method: l_starts
@@ -233,6 +236,11 @@ l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE
 
   stopifnot(is.logical(force_equal),
             is.logical(descending))
+
+  # If we want to return the missing starts,
+  # We need to recursively remove them first
+  if (isTRUE(return_missing_starts)) remove_missing_starts <- TRUE
+
 
   # Check if n is 'auto'
 
@@ -283,14 +291,17 @@ l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE
 
   }
 
+  n_list_backup <- n_list
+
   # We use tryCatch to catch the error if a start value is not found
   start_indices <- tryCatch({
 
     # Find indices
     # Put in function to enable recursion when removing
     # start values not found
-    ind_next <- l_starts_find_indices(v, n_list, remove_missing_starts)
-
+    found <- l_starts_find_indices_(v, n_list, remove_missing_starts)
+    n_list <- found[2]
+    ind_next <- found[1]
     # If an error was caught
     }, error = function(e){
 
@@ -299,6 +310,30 @@ l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE
 
     }
     )
+
+  if (isTRUE(return_missing_starts)) {
+
+    #
+    # If what we want is the missing starts,
+    # we find the values that were recursively
+    # removed in l_starts_find_indices_.
+    # We can either return values with related skip numbers
+    # or only values.
+    #
+
+    n_list_backup <- relist_starts_(n_list_backup)
+    n_list <- relist_starts_(n_list)
+
+    missing_starts <- setdiff(n_list_backup, n_list)
+    if (isEmpty_(missing_starts)) return(NULL)
+    else if (isTRUE(return_missing_starts_skip_numbers)) return(missing_starts)
+    else {
+      missing_values <- missing_starts %>% extract_start_values_()
+      return(missing_values)
+    }
+
+  }
+
 
   # Get the group sizes by taking the difference
   # between each index (so indices 1,5,7,8 get group sizes 4,2,1)
