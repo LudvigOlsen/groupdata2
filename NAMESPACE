@@ -2,6 +2,7 @@
 
 export("%primes%")
 export("%staircase%")
+export(find_missing_starts)
 export(find_starts)
 export(fold)
 export(group)
