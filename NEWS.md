@@ -10,10 +10,13 @@
 
 * New helper tool: 'find_starts' - Finds start positions in a vector. I.e. values that differ from the previous value. Get the values or indices of the values. Output can be used as n in 'l_starts' method.  
 
+* New helper tool: 'find_missing_starts' - Returns the start posititions that would be recursively removed when using the 'l_starts' with remove_missing_starts set to TRUE.
+
+* Added argument 'remove_missing_starts' to grouping functions. Recursively remove the starting positions not found with 'l_starts' method.
+
 * New method: 'primes' - similar to 'staircase' but with primes as steps (e.g. group sizes 2,3,5,7..)  
 
 * New remainder tool: '%primes%' - similar to %staircase% but for the new primes method  
-
 
 
 # groupdata2 0.1.0
