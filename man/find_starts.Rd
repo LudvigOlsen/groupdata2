@@ -62,8 +62,8 @@ group(df, n = starts_ind, method = 'l_starts',
 
 }
 \seealso{
-Other grouping functions: \code{\link{group_factor}},
-  \code{\link{group}}, \code{\link{splt}}
+Other l_starts tools: \code{\link{find_missing_starts}},
+  \code{\link{group_factor}}, \code{\link{group}}
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}

@@ -11,6 +11,8 @@
 #' @param col_name Name of added grouping factor
 #' @return Dataframe grouped by new grouping factor
 #' @family grouping functions
+#' @family staircase tools
+#' @family l_starts tools
 #' @aliases window binning split
 #' @examples
 #' # Attach packages

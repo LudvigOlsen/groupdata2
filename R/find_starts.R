@@ -9,7 +9,7 @@
 #' @param col Name of column to find starts in. Used when data is
 #'  dataframe. (Character)
 #' @return Vector with either start values or indices of start values.
-#' @family grouping functions
+#' @family l_starts tools
 #' @examples
 #' # Attach packages
 #' library(groupdata2)

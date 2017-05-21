@@ -107,7 +107,7 @@ Implementation varies between methods. (Logical)}
 \item{randomize}{Randomize the grouping factor (Logical)}
 
 \item{remove_missing_starts}{Recursively remove elements from the list
-of starts, if they are not found in starts_col. For method \code{l_starts} only.
+of starts, if not found in starts_col. For method \code{l_starts} only.
 (Logical)}
 }
 \value{
@@ -132,8 +132,8 @@ df_list <- splt(df, 5, method = 'n_dist')
 
 }
 \seealso{
-Other grouping functions: \code{\link{find_starts}},
-  \code{\link{group_factor}}, \code{\link{group}}
+Other grouping functions: \code{\link{group_factor}},
+  \code{\link{group}}
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}

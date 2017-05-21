@@ -38,7 +38,7 @@ for (step_size in c(1:30)){
 }
 \seealso{
 Other staircase tools: \code{\link{\%primes\%}},
-  \code{\link{group_factor}}
+  \code{\link{group_factor}}, \code{\link{group}}
 
 Other remainder tools: \code{\link{\%primes\%}}
 }
