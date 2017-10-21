@@ -76,7 +76,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #' # with list_out = FALSE
 #' partitions <- partition(df, c(0.5), list_out = FALSE)
 #'
-#' @importFrom dplyr group_by_ do %>%
+#' @importFrom dplyr group_by do %>%
 partition <- function(data, p = 0.2, cat_col = NULL,
                       id_col = NULL, force_equal = FALSE,
                       list_out = TRUE) {
@@ -105,7 +105,7 @@ partition <- function(data, p = 0.2, cat_col = NULL,
       # Group by new grouping factor '.partitions'
 
       data <- data %>%
-        group_by_(cat_col) %>%
+        group_by(!! as.name(cat_col)) %>%
         do(group_uniques_(., n = p, id_col, method = 'l_sizes',
                           col_name = '.partitions',
                           force_equal = force_equal)) %>%
@@ -120,7 +120,7 @@ partition <- function(data, p = 0.2, cat_col = NULL,
       # .. and add grouping factor to data
 
       data <- data %>%
-        group_by_(cat_col) %>%
+        group_by(!! as.name(cat_col)) %>%
         do(group(., n = p, method = 'l_sizes',
                  randomize = TRUE,
                  col_name = '.partitions',
@@ -151,7 +151,6 @@ partition <- function(data, p = 0.2, cat_col = NULL,
       # Create groups from all the data points
       # .. and add grouping factor to data
 
-
       data <- group(data, n = p,
                     method = 'l_sizes',
                     randomize = TRUE,
@@ -161,7 +160,6 @@ partition <- function(data, p = 0.2, cat_col = NULL,
     }
 
   }
-
 
 
   if (isTRUE(list_out)){
@@ -191,8 +189,6 @@ partition <- function(data, p = 0.2, cat_col = NULL,
     return(data)
 
   }
-
-
 
 }
 

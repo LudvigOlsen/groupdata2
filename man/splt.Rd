@@ -106,8 +106,9 @@ Implementation varies between methods. (Logical)}
 
 \item{randomize}{Randomize the grouping factor (Logical)}
 
-\item{remove_missing_starts}{Recursively remove elements from the list
-of starts, if not found in starts_col. For method \code{l_starts} only.
+\item{remove_missing_starts}{Recursively remove elements from the
+list of starts that are not found.
+For method \code{l_starts} only.
 (Logical)}
 }
 \value{

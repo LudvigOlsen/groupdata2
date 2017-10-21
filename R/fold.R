@@ -71,7 +71,9 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #' df_folded <- df_folded[order(df_folded$.folds),]
 #'
 #' @importFrom dplyr group_by_ do %>%
-fold <- function(data, k=5, cat_col = NULL, id_col = NULL, starts_col = NULL, method = 'n_dist'){
+fold <- function(data, k=5, cat_col = NULL, id_col = NULL,
+                 starts_col = NULL, method = 'n_dist',
+                 remove_missing_starts = FALSE){
 
   #
   # Takes:
@@ -124,8 +126,9 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL, starts_col = NULL, me
         group_by_(cat_col) %>%
         do(group_uniques_(., k, id_col, method,
                           col_name = '.folds',
-                          starts_col = starts_col)) %>%
-        group_by_('.folds')
+                          starts_col = starts_col,
+                          remove_missing_starts = remove_missing_starts)) %>%
+        group_by(!! as.name('.folds'))
 
 
       # If id_col is NULL
@@ -136,11 +139,12 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL, starts_col = NULL, me
       # .. and add grouping factor to data
 
       data <- data %>%
-        group_by_(cat_col) %>%
+        group_by(!! as.name(cat_col)) %>%
         do(group(., k, method = method,
                  randomize = TRUE,
                  col_name = '.folds',
-                 starts_col = starts_col))
+                 starts_col = starts_col,
+                 remove_missing_starts = remove_missing_starts))
 
 
     }
@@ -158,7 +162,8 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL, starts_col = NULL, me
       data <- data %>%
         group_uniques_(k, id_col, method,
                        col_name = '.folds',
-                       starts_col = starts_col)
+                       starts_col = starts_col,
+                       remove_missing_starts = remove_missing_starts)
 
 
       # If id_col is NULL
@@ -171,7 +176,8 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL, starts_col = NULL, me
                     method = method,
                     randomize = TRUE,
                     col_name = '.folds',
-                    starts_col = starts_col)
+                    starts_col = starts_col,
+                    remove_missing_starts = remove_missing_starts)
 
     }
 

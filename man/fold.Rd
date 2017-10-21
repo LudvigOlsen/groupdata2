@@ -5,7 +5,7 @@
 \title{Create balanced folds for cross-validation.}
 \usage{
 fold(data, k = 5, cat_col = NULL, id_col = NULL, starts_col = NULL,
-  method = "n_dist")
+  method = "n_dist", remove_missing_starts = FALSE)
 }
 \arguments{
 \item{data}{Dataframe or Vector.}
@@ -105,6 +105,11 @@ when data is a dataframe. Pass 'index' to use row names. (Character)}
  \eqn{(e.g. 5, 7, 11, 13, 17, 4)}.
 
  \code{n} is the prime number to start at}}
+
+\item{remove_missing_starts}{Recursively remove elements from the
+list of starts that are not found.
+For method \code{l_starts} only.
+(Logical)}
 }
 \value{
 Dataframe with grouping factor for subsetting in cross-validation.

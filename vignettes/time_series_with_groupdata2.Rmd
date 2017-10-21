@@ -93,7 +93,7 @@ ggplot(timeSeriesFrame, aes(seq_along(residents), residents)) +
 ## Reduce number of datapoints
 
 Let's say, that instead of having four measures per year, we want 1 measure every 3 years.  
-We can do this by making groups of 12 elements each with the 'greedy' method and use the the means of each group as our measurements.  
+We can do this by making groups of 12 elements each with the 'greedy' method and use the means of each group as our measurements.  
 When using the method 'greedy', we specify the desired group size. Every group, except the last, is guaranteed to have this size. The last group gets the elements that are left, i.e. it might be smaller or of the same size as the other groups.
 
 

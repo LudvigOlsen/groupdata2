@@ -429,6 +429,24 @@ Setting return_index to TRUE returns indices of group starts.
 &nbsp;  
 
 
+### find_missing_starts()
+
+find_missing_starts() tells you the values and (optionally) skip_to numbers that would be recursively removed when using the 'l_starts' method with the remove_missing_starts argument set to TRUE.  
+Set return_skip_numbers to FALSE to get only the missing values without the skip_to numbers.  
+&nbsp;
+
+**Example**    
+
+> We have a vector with the values c("a", "a", "o", "o", "o", "a", "a") and 
+> a vector of starting positions c("a","d","o","p","a").
+>
+> find_missing_starts() would return this list of values and skip_to numbers:  
+> 
+> list(c("d",1), c("p",1))
+> 
+
+&nbsp;  
+
 ## Method: 'staircase'  
 'staircase' uses step_size to divide up the data.  
 For each group, the group size will be step size multiplied with
@@ -651,6 +669,14 @@ Name of added grouping factor column. Allows multiple grouping factors in a data
 &nbsp;  
 
 Used in: group()  
+
+## remove_missing_starts
+
+Type: logical (TRUE or FALSE)  
+
+Recursively remove elements from the list of starts that are not found. For method 'l_starts' only.
+
+Used in: group_factor(), group(), splt(), fold()  
 
 ## k
 

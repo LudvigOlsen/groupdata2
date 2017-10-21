@@ -96,8 +96,9 @@
 #' @param descending Change direction of method. (Not fully implemented)
 #'  (Logical)
 #' @param randomize Randomize the grouping factor (Logical)
-#' @param remove_missing_starts Recursively remove elements from the list
-#'  of starts, if not found in starts_col. For method \code{l_starts} only.
+#' @param remove_missing_starts Recursively remove elements from the
+#'  list of starts that are not found.
+#'  For method \code{l_starts} only.
 #'  (Logical)
 #' @return Grouping factor with 1s for group 1, 2s for group 2, etc.
 #' @family grouping functions

@@ -105,7 +105,7 @@ group <- function(data, n, method = 'n_dist', starts_col = NULL,
     data <- replace_col_name(data, '.TempGroupsName', col_name)
 
     # Return data grouped by the grouping factor
-    return(dplyr::group_by_(data, col_name))
+    return(dplyr::group_by(data, !! as.name(col_name)))
 
   } else { # If data is vector
 
@@ -125,7 +125,7 @@ group <- function(data, n, method = 'n_dist', starts_col = NULL,
     data <- replace_col_name(data, '.TempGroupsName', col_name)
 
     # Return data grouped by the grouping factor
-    return(dplyr::group_by_(data, col_name))
+    return(dplyr::group_by(data, !! as.name(col_name)))
 
   }
 

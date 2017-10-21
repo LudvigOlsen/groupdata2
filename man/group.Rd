@@ -113,8 +113,9 @@ Implementation varies between methods. (Logical)}
 
 \item{col_name}{Name of added grouping factor}
 
-\item{remove_missing_starts}{Recursively remove elements from the list
-of starts, if not found in starts_col. For method \code{l_starts} only.
+\item{remove_missing_starts}{Recursively remove elements from the
+list of starts that are not found.
+For method \code{l_starts} only.
 (Logical)}
 }
 \value{

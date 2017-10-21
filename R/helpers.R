@@ -279,7 +279,6 @@ check_convert_check_ <- function(data, n, method, force_equal,
     stopifnot(arg_is_wholenumber_(n))
 
 
-
     ### Check arguments 2
 
     # Check if
@@ -287,7 +286,6 @@ check_convert_check_ <- function(data, n, method, force_equal,
     # .. Length of the data is larger or
     # .. equal to n
     # If not -> stop execution
-
 
 
     if(is.data.frame(data)){
@@ -334,6 +332,7 @@ max_num_factor <- function(factor){
   #
 
   factor %>%
+    as.character() %>%
     as.numeric() %>%
     max() %>%
     return()
@@ -354,7 +353,8 @@ replace_level <- function(factor, match, replace){
 }
 
 group_uniques_ <- function(data, n, id_col, method, starts_col = NULL,
-                           col_name='.groups', force_equal = FALSE){
+                           col_name='.groups', force_equal = FALSE,
+                           remove_missing_starts = FALSE){
 
   #
   # Creates groups of unique IDs (e.g. subjects)
@@ -368,7 +368,8 @@ group_uniques_ <- function(data, n, id_col, method, starts_col = NULL,
   id_groups <- group(unique_ids, n, method = method,
                      starts_col = starts_col,
                      randomize = TRUE, col_name = col_name,
-                     force_equal = force_equal)
+                     force_equal = force_equal,
+                     remove_missing_starts = remove_missing_starts)
 
   # Add grouping factor to data
   data <- merge(data,id_groups,by.x=c(id_col), by.y=c(colnames(id_groups)[1]))
