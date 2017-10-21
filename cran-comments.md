@@ -1,6 +1,7 @@
 ## Test environments
 * local OS X install, R 3.3.2  
 * local OS X install, R 3.4.2  
+* local ubuntu 17.04 install, R 3.3.2
 * win-builder
 
 ## R CMD check results  
