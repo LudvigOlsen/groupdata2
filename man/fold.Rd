@@ -21,7 +21,7 @@ fold(data, k = 5, cat_col = NULL, id_col = NULL, starts_col = NULL,
  E.g. when predicting a binary variable (a or b), it is necessary to have
  both represented in every fold
 
- N.B. If also passing an id_col, cat_col should be a constant for that ID.}
+ N.B. If also passing an id_col, cat_col should be constant within each ID.}
 
 \item{id_col}{Factor with IDs.
  This will be used to keep all rows that share an ID in the same fold
@@ -72,7 +72,7 @@ when data is a dataframe. Pass 'index' to use row names. (Character)}
  \code{n} is number of groups}
 
  \subsection{l_sizes}{Divides up the data by a list of group sizes.
- Excess data points are placed in extra group at the end.
+ Excess data points are placed in an extra group at the end.
  \eqn{(e.g. n = list(0.2,0.3) outputs groups with sizes (11,17,29))}.
 
  \code{n} is a list of group sizes}

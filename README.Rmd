@@ -48,6 +48,12 @@ Development version:
 > install.packages("devtools")  
 > devtools::install_github("LudvigOlsen/groupdata2")  
 
+## Vignettes  
+groupdata2 contains a number of vignettes with relevant use cases and descriptions.  
+  
+> vignette(package='groupdata2') # for an overview   
+> vignette("introduction_to_groupdata2") # begin here   
+
 ## Functions  
 ### group_factor()  
 Returns a factor with group numbers, e.g. (1,1,1,2,2,2,3,3,3).  

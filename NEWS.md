@@ -1,4 +1,4 @@
-# groupdata2 0.1.0.9000
+# groupdata2 1.0.0
 
 * New main function: partition() - used for creating balanced partitions by partition sizes
 

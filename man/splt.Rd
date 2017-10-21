@@ -59,7 +59,7 @@ splt(data, n, method = "n_dist", starts_col = NULL, force_equal = FALSE,
  \code{n} is number of groups}
 
  \subsection{l_sizes}{Divides up the data by a list of group sizes.
- Excess data points are placed in extra group at the end.
+ Excess data points are placed in an extra group at the end.
  \eqn{(e.g. n = list(0.2,0.3) outputs groups with sizes (11,17,29))}.
 
  \code{n} is a list of group sizes}

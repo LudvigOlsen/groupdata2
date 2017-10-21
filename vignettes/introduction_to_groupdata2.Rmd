@@ -54,9 +54,9 @@ If, for instance, you have a column in a dataframe with quarterly measurements, 
 
 **splt**() takes in either a dataframe or vector, creates a grouping factor, and splits the given data by this factor using base::split. Often it will be faster to use **group**() instead of **splt**(). I also find it easier to work with the output of **group**() .
 
-**partition**() creates (optionally) balanced partitions (e.g. train/test sets) from given group sizes. It can balance partitions on one categorical variable (e.g. diagnosis) and/or is able to keep all datapoints with a shared ID (e.g. participant) in the same partition.
+**partition**() creates (optionally) balanced partitions (e.g. train/test sets) from given group sizes. It can balance partitions on one categorical variable and/or is able to keep all datapoints with a shared ID in the same partition.
 
-**fold**() creates (optionally) balanced folds for cross-validation. It can balance folds on one categorical variable (e.g. diagnosis) and/or is able to keep all datapoints with a shared ID (e.g. participant) in the same fold.  
+**fold**() creates (optionally) balanced folds for cross-validation. It can balance folds on one categorical variable and/or is able to keep all datapoints with a shared ID in the same fold.  
 
 
 ## Use cases

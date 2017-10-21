@@ -45,7 +45,7 @@ options(tibble.print_min = 4L, tibble.print_max = 4L)
 
 # Introduction
 
-In this vignette we will train a couple of linear regression models to some data. We will use cross-validation with balanced folds to find the best model, and then test that model on a subset of the original data that we haven't used for training the model. 
+In this vignette we will train a couple of linear regression models on some data. We will use cross-validation with balanced folds to find the best model, and then test that model on a subset of the original data that we haven't used for training the model. 
 
 Our first task will be to split the dataset into a training set and a test set using **partition**(). Then we will create folds using the **fold**() function. We will code up a simple cross-validation function and put some models to the test!
 
@@ -61,7 +61,7 @@ The essence of cross-validation is to test a model against data that it hasn't b
 This is a great tool, and **fold**()  makes it even more powerful.  
 
 ## Why training and test sets
-Even with cross-validation we have a risk of overfitting our models to our data. This means that while we get really good predictions for our current data, it won't generalize to new data that we might gather in the future. So to test if it's the case, we keep some data that we *don't touch* before we feel confident that we have found the best model. Then we use the model to predict the targets / dependent variable in that data. If the results is much worse for the test set, it likely means that our model is suffering from overfitting! Then we go back and adjust the models, until we're pretty confident again. Then we try again. Beware though, that if we run this cycle too many times, we might accidentally find a model that is a good predictor for the specific data in the test set, but not in general. 
+Even with cross-validation we have a risk of overfitting our models to our data. This means, that while we get really good predictions for our current data, it won't generalize to new data that we might gather in the future. So to test if it's the case, we keep some data that we *don't touch* before we feel confident that we have found the best model. Then we use the model to predict the targets / dependent variable in that data. If the results is much worse for the test set, it likely means that our model is suffering from overfitting! Then we go back and adjust the models, until we're pretty confident again. Then we try again. Beware though, that if we run this cycle too many times, we might accidentally find a model that is a good predictor for the specific data in the test set, but not in general. 
 
 ## The data
 
@@ -143,7 +143,7 @@ test_set %>% kable()
 
 ```
 
-Now our test set contains 2 participants (8 and 10), and the diagnosis column now contains half 'a' and half 'b'. Let's count it for the training set instead of looking at it.
+Now our test set contains 2 participants (8 and 10), and the diagnosis column now contains 50 percent a's and 50 percent b's. Let's count it for the training set instead of looking at it.
 
 ```{r}
 train_set %>% 
@@ -161,7 +161,7 @@ train_set %>%
 
 # Creating folds for cross-validation
 
-In this section we will create balanced folds for cross-validation. The thoughts behind doing so will resemble those of the previous section. **fold**() basically just creates a number of ~equally sized partitions. Where **partition**() returned a list (this is optional btw.), **fold**() will return the entire training set but with a new column called ".folds". This will be used directly in the cross-validation function to subset the data on each iteration - remember, the folds take shifts being the test set (not to be confused with the one we just created before).
+In this section we will create balanced folds for cross-validation. The thoughts behind doing so resemble those of the previous section. **fold**() basically just creates a number of similarly sized partitions. Where **partition**() returned a list of dataframes (this is optional, btw.), **fold**() will return the entire training set but with a new column called ".folds". This will be used directly in the cross-validation function to subset the data on each iteration - remember, the folds take shifts being the test set (not to be confused with the one we just created before).
 
 As we're basically recreating the training / test set scenario that we discussed previously, we still want to avoid leakage between folds. We would also like somewhat balanced distributions of the diagnoses, though this depends on the context. So let's create our balanced folds.
 
@@ -184,11 +184,11 @@ train_set %>%
   kable(align='c')
 ```
 
-Fold 1 contains particants 2 and 7 with 3 rows each. Participant 2 has the diagnosis 'b' and participant 7 is an 'a'. This pattern is the same for all folds. Of course our data was created for the purpose of showing these functions, so real world data is likely less perfect, which is why you always want to investigate the output to have a sense of what is going on. Also beware that the max number of folds are restricted by the number of participants in the classes, if using the id_col and the cat_col arguments together. Remember, first the function subsets the dataset by cat_col, then it creates groups (folds) from the unique values in id_col in each subset and merges the subsets. So if you only have 3 unique participants in one class, this will be the max number of folds you can create.
+Fold 1 contains particants 2 and 7 with 3 rows each. Participant 2 has the diagnosis 'b' and participant 7 is an 'a'. This pattern is the same for all folds. Of course our data was created for the purpose of showing these functions, so real world data is likely less perfect, which is why you always want to investigate the output to have a sense of what is going on. Also be aware that the max. number of folds is restricted by the number of participants in the classes, if using the id_col and the cat_col arguments together. Remember, first the function subsets the dataset by cat_col, then it creates groups (folds) from the unique values in id_col in each subset and merges the subsets. So if you only have 3 unique participants in one class, this will be the max number of folds you can create.
 
 # Cross-validation
 
-What's left, you ask? Well, now we get to have fun, training and comparing models using cross-validation! If you just came for the partition and fold functions, you can skip this and.. well start using the functions in your own code instead. But I will move on and walk you through a simple cross-validation function for testing some models for predicting the scores of the participants.
+What's left, you ask? Well, now we get to have fun, training and comparing models using cross-validation! If you just came for partition() and fold() you can skip this and start using the functions in your own code instead. But I will move on and walk you (you won't let me walk alone, will you?) through a simple cross-validation function for testing some models for predicting the scores of the participants.
 
 ## Cross-validation function
 

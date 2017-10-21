@@ -27,7 +27,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'  E.g. when predicting a binary variable (a or b), it is necessary to have
 #'  both represented in every fold
 #'
-#'  N.B. If also passing an id_col, cat_col should be a constant for that ID.
+#'  N.B. If also passing an id_col, cat_col should be constant within each ID.
 #' @param id_col Factor with IDs.
 #'  This will be used to keep all rows that share an ID in the same fold
 #'  (if possible).
@@ -123,7 +123,7 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL,
       # Group by new grouping factor '.folds'
 
       data <- data %>%
-        group_by_(cat_col) %>%
+        group_by(!! as.name(cat_col)) %>%
         do(group_uniques_(., k, id_col, method,
                           col_name = '.folds',
                           starts_col = starts_col,

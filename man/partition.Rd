@@ -19,7 +19,7 @@ E.g. \eqn{c(0.2, 3, 0.1)}.}
  E.g. when training/testing a model for predicting a binary variable (a or b),
  it is necessary to have both represented in both the training set and the test set.
 
- N.B. If also passing an id_col, cat_col should be a constant for that ID.}
+ N.B. If also passing an id_col, cat_col should be constant within each ID.}
 
 \item{id_col}{Factor with IDs. Used to keep all rows that share an ID in
  the same partition (if possible).

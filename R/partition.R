@@ -28,7 +28,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'  E.g. when training/testing a model for predicting a binary variable (a or b),
 #'  it is necessary to have both represented in both the training set and the test set.
 #'
-#'  N.B. If also passing an id_col, cat_col should be a constant for that ID.
+#'  N.B. If also passing an id_col, cat_col should be constant within each ID.
 #' @param id_col Factor with IDs. Used to keep all rows that share an ID in
 #'  the same partition (if possible).
 #'
@@ -109,7 +109,7 @@ partition <- function(data, p = 0.2, cat_col = NULL,
         do(group_uniques_(., n = p, id_col, method = 'l_sizes',
                           col_name = '.partitions',
                           force_equal = force_equal)) %>%
-        group_by_('.partitions')
+        group_by(!! as.name('.partitions'))
 
 
       # If id_col is NULL

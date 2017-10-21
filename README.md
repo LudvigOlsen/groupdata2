@@ -37,6 +37,14 @@ Development version:
 > install.packages("devtools")
 > devtools::install\_github("LudvigOlsen/groupdata2")
 
+Vignettes
+---------
+
+groupdata2 contains a number of vignettes with relevant use cases and descriptions.
+
+> vignette(package='groupdata2') \# for an overview
+> vignette("introduction\_to\_groupdata2") \# begin here
+
 Functions
 ---------
 
@@ -172,17 +180,17 @@ group(df, n = 5, method = 'n_dist') %>%
 |    x| species |  age| .groups |
 |----:|:--------|----:|:--------|
 |    1| cat     |   81| 1       |
-|    2| pig     |   86| 1       |
-|    3| human   |   40| 2       |
-|    4| cat     |   39| 2       |
-|    5| pig     |   67| 3       |
-|    6| human   |    6| 3       |
-|    7| cat     |   49| 3       |
-|    8| pig     |   29| 4       |
-|    9| human   |   70| 4       |
-|   10| cat     |   34| 5       |
-|   11| pig     |   98| 5       |
-|   12| human   |   94| 5       |
+|    2| pig     |   64| 1       |
+|    3| human   |   48| 2       |
+|    4| cat     |   24| 2       |
+|    5| pig     |   60| 3       |
+|    6| human   |    1| 3       |
+|    7| cat     |   37| 3       |
+|    8| pig     |   74| 4       |
+|    9| human   |   76| 4       |
+|   10| cat     |   47| 5       |
+|   11| pig     |   83| 5       |
+|   12| human   |   68| 5       |
 
 ``` r
 
@@ -195,11 +203,11 @@ df %>%
 
 | .groups |  mean\_age|
 |:--------|----------:|
-| 1       |   83.50000|
-| 2       |   39.50000|
-| 3       |   40.66667|
-| 4       |   49.50000|
-| 5       |   75.33333|
+| 1       |   72.50000|
+| 2       |   36.00000|
+| 3       |   32.66667|
+| 4       |   75.00000|
+| 5       |   66.00000|
 
 ``` r
 
@@ -217,17 +225,17 @@ df %>%
 |    x| species |  age| .groups |
 |----:|:--------|----:|:--------|
 |    1| cat     |   81| 1       |
-|    2| pig     |   86| 1       |
-|    3| human   |   40| 1       |
-|    4| cat     |   39| 1       |
-|    5| pig     |   67| 2       |
-|    6| human   |    6| 2       |
-|    7| cat     |   49| 3       |
-|    8| pig     |   29| 3       |
-|    9| human   |   70| 3       |
-|   10| cat     |   34| 3       |
-|   11| pig     |   98| 3       |
-|   12| human   |   94| 3       |
+|    2| pig     |   64| 1       |
+|    3| human   |   48| 1       |
+|    4| cat     |   24| 1       |
+|    5| pig     |   60| 2       |
+|    6| human   |    1| 2       |
+|    7| cat     |   37| 3       |
+|    8| pig     |   74| 3       |
+|    9| human   |   76| 3       |
+|   10| cat     |   47| 3       |
+|   11| pig     |   83| 3       |
+|   12| human   |   68| 3       |
 
 ### fold()
 

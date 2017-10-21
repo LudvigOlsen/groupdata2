@@ -61,7 +61,7 @@ library(knitr) # kable
 
 ## Load time series data
 
-We will use the dataset austres for this vignette. It contains numbers (in thousands) of Australian residents measured *quarterly* from March 1971 to March 1994.  
+We will use the dataset **austres** for this vignette. It contains numbers (in thousands) of Australian residents measured *quarterly* from March 1971 to March 1994.  
 
 Let's load the data and take a look at the first values.  
 
@@ -124,7 +124,7 @@ ggplot(ts, aes(.groups, mean)) +
 
 ```
 
-This procedure has left us with less datapoints, which could be useful if we had a very large dataframe to start with, or if we just wanted to describe the change in residents every 3rd year (or every year for that matter by simply changing n to 4).  
+This procedure has left us with less datapoints, which could be useful if we had a very large dataframe to start with, or if we just wanted to describe the change in residents every 3rd year (or every year for that matter, by simply changing n to 4).  
 
 If we wanted to know which group had the largest increase in residents, we could find the range (difference between the max and min value) within each group instead of taking the mean.  
 
@@ -208,7 +208,7 @@ ts %>% tail(17) %>% kable()
 
 Sure enough, the last greedy group (8) is smaller. This means that there are only 2 subgroups instead of 3. To solve this we first convert .subgroups to an integer and then to a factor.  
 
-We could also get the means of each subgroup. To do this we first group by .groups and then .subgroups. Then we take the mean of all subgroups. If we had just grouped by .subgroups, we would have taken the mean of all the datapoints in each subgroup level. This would have left us with (in this case) 3 means, instead of 1 per subgroup level per main group level.  
+We could also get the means of each subgroup. To do this, we first group by .groups and then .subgroups. Then we find the mean number of residents for each subgroup. If we had just grouped by .subgroups, we would have taken the mean of all the datapoints in each subgroup level. This would have left us with (in this case) 3 means, instead of 1 per subgroup level per main group level.  
 Now that we are at it, we might as well find the ranges for each subgroup as well.  
 
 ```{r}
@@ -239,7 +239,7 @@ Here is a visulisation of the means per subgroup:
 
 ggplot(ts_means, aes(seq_along(mean), mean)) +
   geom_point() +
-  labs(x = 'Subgroups', y = 'Mean n of residents')
+  labs(x = 'Subgroup', y = 'Mean n of residents')
 
 
 ```
