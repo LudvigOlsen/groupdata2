@@ -1,3 +1,7 @@
+# groupdata2 1.0.0.9000
+
+No news yet :)
+
 # groupdata2 1.0.0
 
 * New main function: partition() - used for creating balanced partitions by partition sizes
