@@ -80,3 +80,20 @@ test_that("both wrapper functions, upsample() and downsample() work",{
   expect_equal(df_max_balance, df_max_upsample)
 
 })
+
+test_that("balance() works in dplyr pipeline",{
+  library(dplyr)
+  # Create dataframe
+  set.seed(1)
+  df <- data.frame(
+    "participant" = factor(c(1, 1, 2, 3, 3, 3, 3)),
+    "trial" = c(1,2,1,1,2,3,4),
+    "score" = sample(c(1:100), 7)) %>%
+    balance("min", "participant")
+
+  expect_equal(nrow(df), 3)
+  expect_equal(df$participant, factor(c(1,2,3)))
+  expect_equal(df$trial, c(2,1,3))
+  expect_equal(ncol(df), 3)
+
+})
