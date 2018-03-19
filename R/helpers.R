@@ -636,3 +636,20 @@ l_starts_find_indices_ <- function(v, n_list, remove_missing_starts){
 
 }
 
+# Sampling
+
+find_group_sizes_summary <- function(data, cat_col){
+  cat_sizes <- data %>%
+    dplyr::count(!! as.name(cat_col))
+  summ <- as.integer(summary(cat_sizes$n))
+  names(summ) <- c("min","1q","median","mean","3q","max")
+  summ
+}
+
+add_rows_with_sampling <- function(data, to_size){
+  extra_rows <- data %>%
+    dplyr::sample_n(size=to_size-nrow(.), replace = TRUE)
+  data %>%
+    dplyr::bind_rows(extra_rows)
+}
+
