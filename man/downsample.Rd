@@ -4,22 +4,57 @@
 \alias{downsample}
 \title{Downsampling of rows in a dataframe.}
 \usage{
-downsample(data, cat_col)
+downsample(data, cat_col, id_col = NULL, id_method = "n_ids")
 }
 \arguments{
 \item{data}{Dataframe.}
 
 \item{cat_col}{Name of categorical variable to balance by. (Character)}
+
+\item{id_col}{Name of factor with IDs. (Character)
+ This will be used to respect IDs as entities, which can only be added or removed in totality.
+
+
+ E.g. If we have measured a participant multiple times and
+ want make sure that we have all these measurements. Then we would either
+ remove/add all measurements for the participant or leave in
+ all measurements for the participant.}
+
+\item{id_method}{Method for balancing the IDs. (Character)
+
+ \code{n_ids} or \code{n_rows_c}.
+ \subsection{n_ids}{
+ Balances on ID level only. It makes sure there are the same number of IDs for each category.
+ This might lead to different number of rows in categories.
+ }
+ \subsection{n_rows_c}{
+ Attempts to level the number of rows per category, while only removing/adding entire IDs.
+ This is done by:
+  \subsection{Repetition}{
+  If a category needs to add all its rows one or more times, the data is repeated.
+  }
+  \subsection{Closest}{
+  Iteratively, the ID with the number of rows closest to the
+  lacking/excessive number of rows is added/removed.
+  This happens until adding/removing the closest ID would lead to a size further from
+  the target size than the current size.
+  If multiple IDs are closest, one is picked by random sampling.
+  }
+ }}
 }
 \value{
-Dataframe with some rows removed. Ordered by cat_col.
+Dataframe with some rows removed. Ordered by cat_col and (potentially) id_col.
 }
 \description{
 Uses random downsampling to fix the group sizes to the
  smallest group in the data frame.
+
+ Wraps \code{\link{balance}()}.
 }
 \details{
-Downsampling is done without replacement, meaning that rows are not duplicated but only removed.
+\subsection{Without id_col}{
+Downsampling is done without replacement, meaning that rows are not duplicated but only removed.}
+\subsection{With id_col}{See id_method description.}
 }
 \examples{
 # Attach packages

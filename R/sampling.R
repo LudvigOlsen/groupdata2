@@ -6,12 +6,17 @@
 #' @title Downsampling of rows in a dataframe.
 #' @description Uses random downsampling to fix the group sizes to the
 #'  smallest group in the data frame.
-#' @details Downsampling is done without replacement, meaning that rows are not duplicated but only removed.
+#'
+#'  Wraps \code{\link{balance}()}.
+#' @details
+#' \subsection{Without id_col}{
+#' Downsampling is done without replacement, meaning that rows are not duplicated but only removed.}
+#' \subsection{With id_col}{See id_method description.}
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 #' @export
 #' @inheritParams balance
 #' @family sampling functions
-#' @return Dataframe with some rows removed. Ordered by cat_col.
+#' @return Dataframe with some rows removed. Ordered by cat_col and (potentially) id_col.
 #' @examples
 #' # Attach packages
 #' library(groupdata2)
@@ -25,8 +30,15 @@
 #' # Using upsample() with number
 #' downsample(df,"participant")
 #'
-downsample <- function(data, cat_col) {
-  balance(data, "min", cat_col)
+downsample <- function(data,
+                       cat_col,
+                       id_col = NULL,
+                       id_method = "n_ids") {
+  balance(data,
+          size="min",
+          cat_col=cat_col,
+          id_col=id_col,
+          id_method=id_method)
 
 }
 
@@ -34,12 +46,17 @@ downsample <- function(data, cat_col) {
 #' @title Upsampling of rows in a dataframe.
 #' @description Uses random upsampling to fix the group sizes to the
 #'  largest group in the data frame.
-#' @details Upsampling is done with replacement for added rows, while the original data remains intact.
+#'
+#'  Wraps \code{\link{balance}()}.
+#' @details
+#' \subsection{Without id_col}{
+#' Upsampling is done with replacement for added rows, while the original data remains intact.}
+#' \subsection{With id_col}{See id_method description.}
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 #' @export
 #' @inheritParams balance
 #' @family sampling functions
-#' @return Dataframe with added rows. Ordered by cat_col.
+#' @return Dataframe with added rows. Ordered by cat_col and (potentially) id_col.
 #' @examples
 #' # Attach packages
 #' library(groupdata2)
@@ -53,17 +70,29 @@ downsample <- function(data, cat_col) {
 #' # Using upsample() with number
 #' upsample(df,"participant")
 #'
-upsample <- function(data, cat_col) {
-  balance(data, "max", cat_col)
-
+upsample <- function(data,
+                     cat_col,
+                     id_col = NULL,
+                     id_method = "n_ids",
+                     mark_new_rows = FALSE,
+                     new_rows_col_name = ".new_row") {
+  balance(data,
+          size="max",
+          cat_col=cat_col,
+          id_col=id_col,
+          id_method=id_method,
+          mark_new_rows=mark_new_rows,
+          new_rows_col_name=)
 }
 
 ## balance
 #' @title Balance groups by up- or downsampling.
 #' @description Uses up- or downsampling to fix the group size to the
 #'  min, max, mean, or median group size or to a specific number of rows.
-#' @details Upsampling is done with replacement for added rows, while the original data remains intact.
-#' Downsampling is done without replacement, meaning that rows are not duplicated but only removed.
+#' @details
+#' \subsection{Without id_col}{Upsampling is done with replacement for added rows, while the original data remains intact.
+#' Downsampling is done without replacement, meaning that rows are not duplicated but only removed.}
+#' \subsection{With id_col}{See id_method description.}
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 #' @export
 #' @param data Dataframe.
@@ -92,8 +121,39 @@ upsample <- function(data, cat_col) {
 #'  Uses downsampling for groups with too many rows and upsampling for groups with too few rows.
 #'  }
 #' @param cat_col Name of categorical variable to balance by. (Character)
+#' @param id_col Name of factor with IDs. (Character)
+#'  This will be used to respect IDs as entities, which can only be added or removed in totality.
+#'
+#'
+#'  E.g. If we have measured a participant multiple times and
+#'  want make sure that we have all these measurements. Then we would either
+#'  remove/add all measurements for the participant or leave in
+#'  all measurements for the participant.
+#' @param id_method Method for balancing the IDs. (Character)
+#'
+#'  \code{n_ids} or \code{n_rows_c}.
+#'  \subsection{n_ids}{
+#'  Balances on ID level only. It makes sure there are the same number of IDs for each category.
+#'  This might lead to different number of rows in categories.
+#'  }
+#'  \subsection{n_rows_c}{
+#'  Attempts to level the number of rows per category, while only removing/adding entire IDs.
+#'  This is done by:
+#'   \subsection{Repetition}{
+#'   If a category needs to add all its rows one or more times, the data is repeated.
+#'   }
+#'   \subsection{Closest}{
+#'   Iteratively, the ID with the number of rows closest to the
+#'   lacking/excessive number of rows is added/removed.
+#'   This happens until adding/removing the closest ID would lead to a size further from
+#'   the target size than the current size.
+#'   If multiple IDs are closest, one is picked by random sampling.
+#'   }
+#'  }
+#' @param mark_new_rows Add column with 1s for added rows, and 0s for original rows. (Bool)
+#' @param new_rows_col_name Name of column marking new rows. Defaults to ".new_row".
 #' @family sampling functions
-#' @return Dataframe with added and/or deleted rows. Ordered by cat_col.
+#' @return Dataframe with added and/or deleted rows. Ordered by cat_col and (potentially) id_col.
 #' @examples
 #' # Attach packages
 #' library(groupdata2)
@@ -134,7 +194,7 @@ balance <- function(data,
     stop("'cat_col' must be the name of a column in data.")
   }
 
-  stopifnot(id_method %in% c("n_ids", "n_rows")) # find more
+  stopifnot(id_method %in% c("n_ids", "n_rows_c", "n_rows_o")) # find more
 
   # mark_new_rows : should add a binary column with 1 for the additions,
   # so people can manipulate them separately
@@ -145,21 +205,21 @@ balance <- function(data,
   if (!is.null(id_col)) {
 
     if (id_method == "n_ids") {
-      balanced <- n_ids_(
+      balanced <- id_method_n_ids_(
         data = data,
         size = size,
         cat_col = cat_col,
         id_col = id_col,
         mark_new_rows = mark_new_rows
       )}
-    # else if (id_method == "n_rows") {
-    #     balanced <- n_rows_(
-    #       data = data,
-    #       size = size,
-    #       cat_col = cat_col,
-    #       id_col = id_col,
-    #       mark_new_rows = mark_new_rows)
-    #   }
+    else if (id_method == "n_rows_c") {
+        balanced <- id_method_n_rows_closest(
+          data = data,
+          size = size,
+          cat_col = cat_col,
+          id_col = id_col,
+          mark_new_rows = mark_new_rows
+        )}
   } else {
 
     to_size <- get_target_size(data, size, cat_col)
@@ -189,6 +249,12 @@ balance <- function(data,
     balanced <- replace_col_name(balanced, '.TempNewRow', new_rows_col_name)
   }
 
-  balanced
+  if (!is.null(id_col)) {
+  balanced %>%
+    dplyr::arrange(!! as.name(cat_col), !! as.name(id_col))
+  } else {
+    balanced %>%
+      dplyr::arrange(!! as.name(cat_col))
+  }
 
 }
