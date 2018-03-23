@@ -1,5 +1,7 @@
 
 
+
+
 ## downsample
 #' @title Downsampling of rows in a dataframe.
 #' @description Uses random downsampling to fix the group sizes to the
@@ -112,7 +114,13 @@ upsample <- function(data, cat_col) {
 #' balance(df, "max", "participant")
 #'
 #' @importFrom dplyr filter sample_n %>%
-balance <- function(data, size, cat_col) {
+balance <- function(data,
+                    size,
+                    cat_col,
+                    id_col = NULL,
+                    id_method = "n_ids",
+                    mark_new_rows = FALSE,
+                    new_rows_col_name = ".new_row") {
   if (is.character(size)) {
     if (size %ni% c("min", "max", "mean", "median")) {
       stop("'size' must be one of 'min','max','mean','median' or a whole number.")
@@ -126,29 +134,60 @@ balance <- function(data, size, cat_col) {
     stop("'cat_col' must be the name of a column in data.")
   }
 
-  group_sizes_summary <- find_group_sizes_summary(data, cat_col)
+  stopifnot(id_method %in% c("n_ids", "n_rows")) # find more
 
-  if (is.character(size)) {
-    to_size <- group_sizes_summary[size]
+  # mark_new_rows : should add a binary column with 1 for the additions,
+  # so people can manipulate them separately
+
+  # Add .new_row column
+  data$.TempNewRow <- 0
+
+  if (!is.null(id_col)) {
+
+    if (id_method == "n_ids") {
+      balanced <- n_ids_(
+        data = data,
+        size = size,
+        cat_col = cat_col,
+        id_col = id_col,
+        mark_new_rows = mark_new_rows
+      )}
+    # else if (id_method == "n_rows") {
+    #     balanced <- n_rows_(
+    #       data = data,
+    #       size = size,
+    #       cat_col = cat_col,
+    #       id_col = id_col,
+    #       mark_new_rows = mark_new_rows)
+    #   }
   } else {
-    to_size <- size
+
+    to_size <- get_target_size(data, size, cat_col)
+    balanced <- plyr::ldply(unique(data[[cat_col]]), function(category) {
+        data_for_cat <- data %>%
+          filter(!!as.name(cat_col) == category)
+
+        n_rows <- nrow(data_for_cat)
+
+        if (n_rows == to_size) {
+          return(data_for_cat)
+        } else if (n_rows < to_size) {
+          return(add_rows_with_sampling(data_for_cat, to_size = to_size))
+        } else {
+          data_for_cat %>%
+            sample_n(size = to_size, replace = FALSE)
+        }
+      })
+
   }
 
-  balanced <- plyr::ldply(unique(data[[cat_col]]), function(category) {
-      data_for_cat <- data %>%
-        filter(!!as.name(cat_col) == category)
-
-      n_rows <- nrow(data_for_cat)
-
-      if (n_rows == to_size) {
-        return(data_for_cat)
-      } else if (n_rows < to_size) {
-        return(add_rows_with_sampling(data_for_cat, to_size = to_size))
-      } else {
-        data_for_cat %>%
-          sample_n(size = to_size, replace = FALSE)
-      }
-    })
+  if (!isTRUE(mark_new_rows)) {
+    balanced$.TempNewRow <- NULL
+  } else {
+    # Replace temporary column name with passed column name
+    # e.g. '.new_row'
+    balanced <- replace_col_name(balanced, '.TempNewRow', new_rows_col_name)
+  }
 
   balanced
 

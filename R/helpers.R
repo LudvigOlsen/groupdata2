@@ -646,10 +646,22 @@ find_group_sizes_summary <- function(data, cat_col){
   summ
 }
 
+get_target_size <- function(data, size, cat_col){
+  group_sizes_summary <- find_group_sizes_summary(data, cat_col)
+  if (is.character(size)) {
+    to_size <- group_sizes_summary[[size]]
+  } else {
+    to_size <- size
+  }
+  to_size
+}
+
 add_rows_with_sampling <- function(data, to_size){
   extra_rows <- data %>%
-    dplyr::sample_n(size=to_size-nrow(.), replace = TRUE)
+    dplyr::sample_n(size=to_size-nrow(.), replace = TRUE) %>%
+    dplyr::mutate(.TempNewRow = 1)
   data %>%
     dplyr::bind_rows(extra_rows)
 }
+
 
