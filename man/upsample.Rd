@@ -27,7 +27,7 @@ upsample(data, cat_col, id_col = NULL, id_method = "n_ids",
  \code{n_ids}, \code{n_rows_c}, or \code{nested}.
  \subsection{n_ids}{
  Balances on ID level only. It makes sure there are the same number of IDs for each category.
- This might lead to a different number of rows in categories.
+ This might lead to a different number of rows between categories.
  }
  \subsection{n_rows_c}{
  Attempts to level the number of rows per category, while only removing/adding entire IDs.
@@ -47,7 +47,7 @@ upsample(data, cat_col, id_col = NULL, id_method = "n_ids",
  I.e. if size is "min", IDs will have the size of the smallest ID in their category.
  }}
 
-\item{mark_new_rows}{Add column with 1s for added rows, and 0s for original rows. (Bool)}
+\item{mark_new_rows}{Add column with 1s for added rows, and 0s for original rows. (Logical)}
 
 \item{new_rows_col_name}{Name of column marking new rows. Defaults to ".new_row".}
 }
@@ -71,13 +71,26 @@ library(groupdata2)
 
 # Create dataframe
 df <- data.frame(
- "participant" = factor(c(1, 1, 2, 3, 3, 3, 3)),
- "trial" = c(1,2,1,1,2,3,4),
- "score" = sample(c(1:100), 7))
+  "participant" = factor(c(1, 1, 2, 3, 3, 3, 3, 4, 4, 5, 5, 5, 5)),
+  "diagnosis" = factor(c(0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0)),
+  "trial" = c(1, 2, 1, 1, 2, 3, 4, 1, 2, 1, 2, 3, 4),
+  "score" = sample(c(1:100), 13)
+)
 
-# Using upsample() with number
-upsample(df,"participant")
+# Using upsample()
+upsample(df, cat_col="diagnosis")
 
+# Using upsample() with id_method "n_ids"
+# With column specifying added rows
+upsample(df, cat_col="diagnosis",
+        id_col="participant", id_method="n_ids",
+        mark_new_rows = TRUE)
+
+# Using upsample() with id_method "n_rows_c"
+# With column specifying added rows
+upsample(df, cat_col="diagnosis",
+        id_col="participant", id_method="n_rows_c",
+        mark_new_rows = TRUE)
 }
 \seealso{
 Other sampling functions: \code{\link{balance}},

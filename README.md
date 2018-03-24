@@ -18,6 +18,7 @@ Main functions:
 -   splt
 -   partition
 -   fold
+-   balance (\*new, \*github only)
 
 Other tools:
 
@@ -74,8 +75,12 @@ Creates (optionally) balanced partitions (e.g. training/test sets). Balance part
 
 Creates (optionally) balanced folds for use in cross-validation. Balance folds on one categorical variable and/or make sure that all datapoints sharing an ID is in the same fold.
 
-Methods
--------
+### balance()
+
+Uses up- or downsampling to fix the group size to the min, max, mean, or median group size or to a specific number of rows. Balancing can also happen on the ID level, e.g. to ensure the same number of IDs in each category.
+
+Grouping Methods
+----------------
 
 There are currently 9 methods available. They can be divided into 5 categories.
 
@@ -152,6 +157,23 @@ Starts at n (prime number). Increases to the the next prime number until there i
 
 E.g. group sizes: 5, 7, 11, 13, 17, 4
 
+Balancing ID Methods
+--------------------
+
+There are currently 3 methods for balancing on ID level.
+
+##### ID method: n\_ids
+
+Balances on ID level only. It makes sure there are the same number of IDs in each category. This might lead to a different number of rows between categories.
+
+##### ID method: n\_rows\_c
+
+Attempts to level the number of rows per category, while only removing/adding entire IDs. This is done with repetition and by iteratively picking the ID with the number of rows closest to the lacking/excessive number of rows in the category.
+
+##### ID method: nested
+
+Balances the IDs within their categories, meaning that all IDs in a category will have the same number of rows.
+
 Examples
 --------
 
@@ -179,18 +201,18 @@ group(df, n = 5, method = 'n_dist') %>%
 
 |    x| species |  age| .groups |
 |----:|:--------|----:|:--------|
-|    1| cat     |   81| 1       |
-|    2| pig     |   64| 1       |
-|    3| human   |   48| 2       |
-|    4| cat     |   24| 2       |
-|    5| pig     |   60| 3       |
-|    6| human   |    1| 3       |
-|    7| cat     |   37| 3       |
-|    8| pig     |   74| 4       |
-|    9| human   |   76| 4       |
-|   10| cat     |   47| 5       |
-|   11| pig     |   83| 5       |
-|   12| human   |   68| 5       |
+|    1| cat     |   10| 1       |
+|    2| pig     |   86| 1       |
+|    3| human   |   77| 2       |
+|    4| cat     |   28| 2       |
+|    5| pig     |   11| 3       |
+|    6| human   |   23| 3       |
+|    7| cat     |   91| 3       |
+|    8| pig     |   69| 4       |
+|    9| human   |   74| 4       |
+|   10| cat     |    4| 5       |
+|   11| pig     |   51| 5       |
+|   12| human   |   75| 5       |
 
 ``` r
 
@@ -203,11 +225,11 @@ df %>%
 
 | .groups |  mean\_age|
 |:--------|----------:|
-| 1       |   72.50000|
-| 2       |   36.00000|
-| 3       |   32.66667|
-| 4       |   75.00000|
-| 5       |   66.00000|
+| 1       |   48.00000|
+| 2       |   52.50000|
+| 3       |   41.66667|
+| 4       |   71.50000|
+| 5       |   43.33333|
 
 ``` r
 
@@ -224,18 +246,18 @@ df %>%
 
 |    x| species |  age| .groups |
 |----:|:--------|----:|:--------|
-|    1| cat     |   81| 1       |
-|    2| pig     |   64| 1       |
-|    3| human   |   48| 1       |
-|    4| cat     |   24| 1       |
-|    5| pig     |   60| 2       |
-|    6| human   |    1| 2       |
-|    7| cat     |   37| 3       |
-|    8| pig     |   74| 3       |
-|    9| human   |   76| 3       |
-|   10| cat     |   47| 3       |
-|   11| pig     |   83| 3       |
-|   12| human   |   68| 3       |
+|    1| cat     |   10| 1       |
+|    2| pig     |   86| 1       |
+|    3| human   |   77| 1       |
+|    4| cat     |   28| 1       |
+|    5| pig     |   11| 2       |
+|    6| human   |   23| 2       |
+|    7| cat     |   91| 3       |
+|    8| pig     |   69| 3       |
+|    9| human   |   74| 3       |
+|   10| cat     |    4| 3       |
+|   11| pig     |   51| 3       |
+|   12| human   |   75| 3       |
 
 ### fold()
 
@@ -307,3 +329,60 @@ df_folded %>%
 **Notice** that the we now have the opportunity to include the *session* variable and/or use *participant* as a random effect in our model when doing cross-validation, as any participant will only appear in one fold.
 
 We also have a balance in the representation of each diagnosis, which could give us better, more consistent results.
+
+### balance()
+
+``` r
+# Lets first unbalance the dataset by removing some rows
+df_b <- df %>% 
+  arrange(diagnosis) %>% 
+  filter(!row_number() %in% c(5,7,8,13,14,16,17,18))
+
+# Show distribution of diagnoses and participants
+df_b %>% 
+  count(diagnosis, participant) %>% 
+  kable()
+```
+
+| diagnosis | participant |    n|
+|:----------|:------------|----:|
+| a         | 1           |    3|
+| a         | 3           |    2|
+| a         | 6           |    1|
+| b         | 2           |    3|
+| b         | 4           |    1|
+
+``` r
+
+# First set seed to ensure reproducibility
+set.seed(1)
+
+# Downsampling by diagnosis
+balance(df_b, size="min", cat_col = "diagnosis") %>% 
+  count(diagnosis, participant) %>% 
+  kable()
+```
+
+| diagnosis | participant |    n|
+|:----------|:------------|----:|
+| a         | 1           |    2|
+| a         | 3           |    1|
+| a         | 6           |    1|
+| b         | 2           |    3|
+| b         | 4           |    1|
+
+``` r
+
+# Downsampling the IDs
+balance(df_b, size="min", cat_col = "diagnosis", 
+        id_col = "participant", id_method = "n_ids") %>% 
+  count(diagnosis, participant) %>% 
+  kable()
+```
+
+| diagnosis | participant |    n|
+|:----------|:------------|----:|
+| a         | 1           |    3|
+| a         | 3           |    2|
+| b         | 2           |    3|
+| b         | 4           |    1|

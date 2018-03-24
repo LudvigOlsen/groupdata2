@@ -4,8 +4,9 @@ author:
   - "Ludvig Renbo Olsen"
 date: "`r Sys.Date()`"
 abstract: |
-  groupdata2 is a set of subsetting methods for easy grouping, windowing, folding and splitting of data.
+  groupdata2 is a set of subsetting methods for easy grouping, windowing, folding, splitting and balancing of data.  
   Create balanced folds for cross-validation or divide a time series into windows.  
+  Balance sample sizes with up- and downsampling.  
   This vignette contains descriptions of functions and methods, along with simple examples of usage. 
   For a gentler introduction to groupdata2, please see [Introduction to groupdata2](introduction_to_groupdata2.html)
   &nbsp;  
@@ -81,9 +82,9 @@ library(knitr)
 
 
 # General information
-groupdata2 is a set of functions and methods for easy grouping, windowing, folding and splitting of data.  
+groupdata2 is a set of functions and methods for easy grouping, windowing, folding, splitting and balancing of data.  
 
-There are 5 main functions:  
+There are 6 main functions:  
 
 ### group_factor()  
 Returns a factor with group numbers, e.g. 111222333.  
@@ -100,6 +101,10 @@ Creates (optionally) balanced folds for use in cross-validation. Balance folds o
 
 ### partition()
 Creates (optionally) balanced partitions (e.g. training/test sets). Balance partitions on one categorical variable and/or make sure that all datapoints sharing an ID is in the same partition.
+
+### balance()
+Uses up- or downsampling to fix the group size to the min, max, mean, or median group size or to a specific number of rows. 
+Balancing can also happen on the ID level, e.g. to ensure the same number of IDs in each category.
 
 ## Groups, windows or folds?  
 When working with time series we would often refer to the kind of groups made by group_factor(), group() and splt() as **windows**. 
@@ -122,7 +127,7 @@ In this vignette, we will use the 'l_starts' method with **group**() to allow tr
 
 In the examples we will be using knitr::kable() to visualize some of the data such as dataframes. You do not need to use kable() in any way when using the functions.  
 
-# Methods
+# Grouping Methods
 There are currently 9 methods for grouping the data.  
 
 It is possible to create groups based on *number of groups* (default), *group size*, *list of group sizes*, *list of group start positions*, *step size* or *prime number to start at*. These can be passed as whole number(s) or percentage(s), while method 'l_starts' can also be passed as 'auto'.  
@@ -551,9 +556,32 @@ Returns 0 if the last group has the size of the associated prime number.
 >
 > meaning that the last group would contain 4 values 
 
+
+# Balancing ID Methods
+There are currently 3 methods for balancing on ID level in balance().  
+ 
+## ID method: 'n_ids'  
+Balances on ID level only. It makes sure there are the same number of IDs in each category. This might lead to a different number of rows between categories.  
+ 
+## ID method: 'n_rows_c'  
+Attempts to level the number of rows per category, while only removing/adding entire IDs.   
+This is done in 2 steps:  
+
+1. If a category needs to add all its rows one or more times, the data is repeated.  
+
+2. Iteratively, the ID with the number of rows closest to the lacking/excessive number of rows is added/removed. This happens until adding/removing the closest ID would lead to a size further from the target size than the current size. If multiple IDs are closest, one is randomly sampled.
+ 
+## ID method: 'nested'  
+Balances the IDs within their categories, meaning that all IDs in a category will have the same number of rows.  
+
+
+
 # Arguments
 
-## data
+## Grouping arguments
+These are the arguments for group_factor(), group(), splt(), fold(), partition()
+
+### data
 
 Type: dataframe or vector  
 
@@ -561,10 +589,10 @@ The data to process.
 
 &nbsp;
 
-Used in: group_factor(), group(), splt(), fold()  
+Used in: group_factor(), group(), splt(), fold(), partition()
   
 
-## n
+### n
 
 Type: integer, numeric, character, or list  
 
@@ -578,7 +606,7 @@ Method l_starts allows *n = 'auto'*.
 Used in: group_factor(), group(), splt()  
 
 
-## method
+### method
 
 Type: character  
 
@@ -590,7 +618,7 @@ Available methods: greedy, n_dist, n_fill, n_last, n_rand, staircase, or primes
 Used in: group_factor(), group(), splt(), fold()  
 
 
-## starts_col
+### starts_col
 
 Type: character
 
@@ -603,7 +631,7 @@ Pass 'index' or '.index' to use rownames. 'index' first looks for column named '
 Used in: group_factor(), group(), splt(), fold()  
 
 
-## force_equal  
+### force_equal  
 
 Type: logical (TRUE or FALSE)  
 
@@ -616,7 +644,7 @@ Implementation is different in the different methods. Read more in their section
 Used in: group_factor(), group(), splt(), partition()  
 
 
-## allow_zero  
+### allow_zero  
 
 Type: logical (TRUE or FALSE)  
 
@@ -636,7 +664,7 @@ the same length as expected.
 Used in: group_factor(), group(), splt()  
 
 
-## descending
+### descending
 
 Type: logical (TRUE or FALSE)  
 
@@ -648,7 +676,7 @@ NB. Only some of the methods can use this argument.
 
 Used in: group_factor(), group(), splt()  
 
-## randomize
+### randomize
 
 Type: logical (TRUE or FALSE)  
 
@@ -660,7 +688,7 @@ Used in: group_factor(), group(), splt()
 
 N.B. fold() and partition() always uses some randomization.  
 
-## col_name
+### col_name
 
 Type: character  
 
@@ -670,7 +698,7 @@ Name of added grouping factor column. Allows multiple grouping factors in a data
 
 Used in: group()  
 
-## remove_missing_starts
+### remove_missing_starts
 
 Type: logical (TRUE or FALSE)  
 
@@ -678,7 +706,7 @@ Recursively remove elements from the list of starts that are not found. For meth
 
 Used in: group_factor(), group(), splt(), fold()  
 
-## k
+### k
 
 Type: integer or numeric  
 
@@ -690,7 +718,7 @@ and/or as character.
 
 Used in: fold()  
 
-## p
+### p
 
 Type: integer or numeric  
 
@@ -702,7 +730,7 @@ p can be given as a **whole number(s)** (p > 1) or as **percentage(s)** (0 < p <
 Used in: partition()  
 
 
-## cat_col
+### cat_col
 
 Type: categorical vector or factor (passed as column name)  
 
@@ -720,7 +748,7 @@ Else, the participant might be placed in multiple folds.
 
 Used in: fold(), partition()  
 
-## id_col
+### id_col
 
 Type: Factor (passed as column name)  
 
@@ -732,9 +760,8 @@ E.g. If we have measured a participant multiple times and want to see the effect
 
 Used in: fold(), partition()  
 
-&nbsp;
 
-## list_out
+### list_out
 
 Return list of partitions (TRUE) or a grouped dataframe (FALSE).  
 
@@ -743,6 +770,87 @@ Return list of partitions (TRUE) or a grouped dataframe (FALSE).
 Used in: partition()  
 
 &nbsp;
+
+## Balancing arguments
+These are the arguments for balance(), upsample(), downsample()  
+
+### data
+
+Type: dataframe  
+
+The data to process.   
+
+&nbsp;  
+
+Used in: balance(), upsample(), downsample()  
+  
+### size
+
+Type: character, numeric  
+
+Size to balance categories to.  
+
+Either a specific number, given as a whole number, or one of the following strings: "min", "max", "mean", "median".  
+
+&nbsp;   
+
+Used in: balance(), upsample(), downsample()  
+
+### cat_col
+
+Type: categorical vector or factor (passed as column name)  
+
+Categorical variable to balance sample size by.  
+
+&nbsp;  
+
+Used in: balance(), upsample(), downsample()  
+
+### id_col
+
+Type: Factor (passed as column name)  
+
+Factor with IDs. IDs are considered entities, e.g. allowing us to add or remove all rows for an ID. How this is used is up to the id_method.  
+
+E.g. If we have measured a participant multiple times and want make sure that we keep all these measurements together. Then we would either remove/add all measurements for the participant or leave in all measurements for the participant.  
+
+&nbsp;  
+
+Used in: balance(), upsample(), downsample()  
+
+### id_method
+
+Type: character  
+
+Method for balancing the IDs.  
+
+Available ID methods are: n_ids, n_rows_c, or nested.   
+
+&nbsp;  
+
+Used in: balance(), upsample(), downsample()  
+
+### mark_new_rows
+
+Type: logical  
+
+Whether to add a column with 1s for added rows, and 0s for original rows.  
+
+&nbsp;  
+
+Used in: balance(), upsample(), downsample()    
+
+### new_rows_col_name
+
+Type: character  
+
+Name of column marking new rows.  
+
+&nbsp;  
+
+Used in: balance(), upsample(), downsample()  
+
+&nbsp;  
 
 # Using Functions
 
@@ -777,8 +885,9 @@ df %>% kable(align = 'c')
 3. We could get the mean age of each group  
 
 ```{r}
-aggregate(df[, 3], list(df$groups), mean) %>% 
-  rename(group = Group.1, mean_age = x) %>%
+df %>% 
+  group_by(groups) %>% 
+  summarize(mean_age = mean(age)) %>% 
   kable(align = 'c')
 
 ```
@@ -847,12 +956,12 @@ df_grouped %>% kable(align = 'c')
 
 ```
 
-2.2 Using group() with dplyr pipelines to get mean age
+2.2 Using group() with dplyr pipeline to get mean age
 
 ```{r}
 df_means <- df %>%
   group(5, method = 'n_dist') %>%
-  dplyr::summarise(mean_age = mean(age))
+  summarise(mean_age = mean(age))
 
 df_means %>% kable(align = 'c')
 
@@ -962,7 +1071,8 @@ df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                 "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
                 "score" = sample(c(1:100), 3*6))
 
-df <- df[order(df$participant),] 
+df <- df %>% 
+  arrange(participant)
 
 # Remove index
 rownames(df) <- NULL
@@ -980,7 +1090,8 @@ kable(df, align = 'c')
 df_folded <- fold(df, 3, method = 'n_dist')
 
 # Order by folds
-df_folded <- df_folded[order(df_folded$.folds),]
+df_folded <- df_folded %>% 
+  arrange(.folds)
 
 kable(df_folded, align = 'c')
 
@@ -993,7 +1104,8 @@ kable(df_folded, align = 'c')
 df_folded <- fold(df, 3, cat_col = 'diagnosis', method = 'n_dist')
 
 # Order by folds
-df_folded <- df_folded[order(df_folded$.folds),] 
+df_folded <- df_folded %>% 
+  arrange(.folds)
 
 kable(df_folded, align = 'c')
 
@@ -1002,7 +1114,9 @@ kable(df_folded, align = 'c')
 Let's count how many of each diagnosis there are in each group.  
 
 ```{r}
-df_folded %>% group_by(.folds) %>% count(diagnosis) %>% kable(align='c')
+df_folded %>% 
+  count(.folds, diagnosis) %>% 
+  kable(align='c')
 
 ```
 
@@ -1012,7 +1126,8 @@ df_folded %>% group_by(.folds) %>% count(diagnosis) %>% kable(align='c')
 df_folded <- fold(df, 3, id_col = 'participant', method = 'n_dist')
 
 # Order by folds
-df_folded <- df_folded[order(df_folded$.folds),] 
+df_folded <- df_folded %>% 
+  arrange(.folds) 
 
 # Remove index (Looks prettier in the table!)
 rownames(df_folded) <- NULL
@@ -1024,7 +1139,9 @@ kable(df_folded, align = 'c')
 Let's see how participants were distributed in the groups.  
 
 ```{r}
-df_folded %>% group_by(.folds) %>% count(participant) %>% kable(align='c')
+df_folded %>% 
+  count(.folds, participant) %>% 
+  kable(align='c')
 
 ```
 
@@ -1036,7 +1153,8 @@ fold() first divides up the dataframe by cat_col and then create n folds for bot
 df_folded <- fold(df, 3, cat_col = 'diagnosis', id_col = 'participant', method = 'n_dist')
 
 # Order by folds
-df_folded <- df_folded[order(df_folded$.folds),] 
+df_folded <- df_folded %>% 
+  arrange(.folds)
 
 kable(df_folded, align = 'c')
 
@@ -1045,7 +1163,293 @@ kable(df_folded, align = 'c')
 Let's count how many of each diagnosis there are in each group and find which participants are in which groups.
 
 ```{r}
-df_folded %>% group_by(.folds) %>% count(diagnosis, participant) %>% kable(align='c')
+df_folded %>% 
+  count(.folds, diagnosis, participant) %>% 
+  kable(align='c')
+
+```
+
+
+&nbsp;  
+
+## partition()  
+
+1. We create a dataframe  
+
+```{r}
+df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
+                "age" = rep(sample(c(1:100), 6), 3),
+                "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
+                "score" = sample(c(1:100), 3*6))
+
+df <- df %>% arrange(participant)
+
+# Remove index
+rownames(df) <- NULL
+
+# Add session info
+df$session <- rep(c('1','2', '3'), 6)
+
+kable(df, align = 'c')
+
+```
+
+2. Using partition() without balancing  
+
+```{r}
+df_partitioned <- partition(df, 0.3, list_out = FALSE)
+
+# Order by partitions
+df_partitioned <- df_partitioned %>% 
+  arrange(.partitions)
+
+# Partition Sizes
+df_partitioned %>% 
+  count(.partitions) %>% 
+  kable(align = 'c')
+
+kable(df_partitioned, align = 'c')
+
+
+```
+
+3. Using partition() with balancing but without id_col  
+
+```{r}
+df_partitioned <- partition(df, 0.3, cat_col = 'diagnosis', list_out = FALSE)
+
+# Order by partitions
+df_partitioned <- df_partitioned %>% 
+  arrange(.partitions)
+
+kable(df_partitioned, align = 'c')
+
+```
+
+Let's count how many of each diagnosis there are in each partition.  
+
+```{r}
+df_partitioned %>% 
+  count(.partitions, diagnosis) %>% 
+  kable(align='c')
+
+```
+
+4. Using partition() with id_col but without balancing  
+
+```{r}
+df_partitioned <- partition(df, 0.5, id_col = 'participant', list_out = FALSE)
+
+# Order by partitions
+df_partitioned <- df_partitioned %>% 
+  arrange(.partitions)
+
+kable(df_partitioned, align = 'c')
+
+```
+
+Let's see how participants were distributed in the partitions.  
+
+```{r}
+df_partitioned %>% 
+  count(.partitions, participant) %>% 
+  kable(align='c')
+
+```
+
+5. Using partition() with cat_col and with id_col  
+
+partition() first divides up the dataframe by cat_col and then create n partitions for both diagnoses.  
+
+```{r}
+df_partitioned <- partition(df, 0.5, cat_col = 'diagnosis', id_col = 'participant', 
+                            list_out = FALSE)
+
+# Order by folds
+df_partitioned <- df_partitioned %>% 
+  arrange(.partitions)
+
+kable(df_partitioned, align = 'c')
+
+```
+
+Let's count how many of each diagnosis there are in each group and find which participants are in which partitions.
+
+```{r}
+df_partitioned %>%
+  count(.partitions, diagnosis, participant) %>% 
+  kable(align='c')
+
+```
+
+
+&nbsp;  
+
+## balance()  
+
+1. We create a dataframe  
+
+```{r echo=FALSE}
+set.seed(2)
+```
+
+```{r}
+df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
+                "age" = rep(sample(c(1:100), 6), 3),
+                "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
+                "score" = sample(c(1:100), 3*6))
+
+df <- df %>% 
+  arrange(participant)
+
+# Add session info
+df$session <- rep(c('1','2', '3'), 6)
+
+# Sample dataset to get imbalances
+df <- df %>% 
+  sample_frac(0.7) %>% 
+  arrange(participant)
+
+# Remove index
+rownames(df) <- NULL
+
+# Counts
+df %>% 
+  count(diagnosis, participant) %>% 
+  kable(align = 'c')
+df %>% 
+  count(diagnosis) %>% 
+  kable(align = 'c')
+
+kable(df, align = 'c')
+
+```
+
+2. Using balance() for downsampling without id_col  
+
+```{r}
+df_balanced <- balance(df, "min", cat_col = "diagnosis") %>% 
+  arrange(diagnosis, participant)
+
+# Counts
+df_balanced %>% 
+  count(diagnosis) %>% 
+  kable(align = 'c')
+
+kable(df_balanced, align = 'c')
+```
+
+3. Using balance() for downsampling with id_col and id_method 'n_rows_c'  
+
+```{r}
+df_balanced <- balance(df, "min", cat_col = "diagnosis", id_col = "participant", id_method = "n_rows_c") %>% 
+  arrange(diagnosis, participant)
+
+# Partition Sizes
+df_balanced %>% 
+  count(diagnosis) %>% 
+  kable(align = 'c')
+
+kable(df_balanced, align = 'c')
+
+```
+
+Let's count how many of each participant there are in each diagnosis.  
+
+```{r}
+df_balanced %>% 
+  count(diagnosis, participant) %>% 
+  kable(align='c')
+
+```
+
+
+4. Using balance() for upsampling without id_col  
+
+```{r}
+df_balanced <- balance(df, "max", cat_col = "diagnosis") %>% 
+  arrange(diagnosis, participant)
+
+# Counts
+df_balanced %>% 
+  count(diagnosis) %>% 
+  kable(align = 'c')
+
+kable(df_balanced, align = 'c')
+```
+
+5. Using balance() for upsampling with id_col and id_method 'n_rows_c'  
+
+```{r}
+df_balanced <- balance(df, "max", cat_col = "diagnosis", 
+                       id_col = "participant", id_method = "n_rows_c") %>% 
+  arrange(diagnosis, participant)
+
+# Partition Sizes
+df_balanced %>% 
+  count(diagnosis) %>% 
+  kable(align = 'c')
+
+kable(df_balanced, align = 'c')
+
+```
+
+Let's count how many of each participant there are in each diagnosis.  
+
+```{r}
+df_balanced %>% 
+  count(diagnosis, participant) %>% 
+  kable(align='c')
+
+```
+
+
+6. Using balance() for dowsampling to a specific size without id_col  
+
+```{r}
+df_balanced <- balance(df, 3, cat_col = "diagnosis") %>% 
+  arrange(diagnosis, participant)
+
+# Counts
+df_balanced %>% 
+  count(diagnosis) %>% 
+  kable(align = 'c')
+
+kable(df_balanced, align = 'c')
+```
+
+Let's count how many of each participant there are in each diagnosis.  
+
+```{r}
+df_balanced %>% 
+  count(diagnosis, participant) %>% 
+  kable(align='c')
+
+```
+
+
+7. Using balance() for dowsampling to a specific size with id_col and id_method 'n_rows_c'  
+
+```{r}
+df_balanced <- balance(df, 3, cat_col = "diagnosis", 
+                       id_col = "participant", id_method = "n_rows_c") %>% 
+  arrange(diagnosis, participant)
+
+# Partition Sizes
+df_balanced %>% 
+  count(diagnosis) %>% 
+  kable(align = 'c')
+
+kable(df_balanced, align = 'c')
+
+```
+
+Let's count how many of each participant there are in each diagnosis.  
+
+```{r}
+df_balanced %>% 
+  count(diagnosis, participant) %>% 
+  kable(align='c')
 
 ```
 

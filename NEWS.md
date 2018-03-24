@@ -1,6 +1,12 @@
 # groupdata2 1.0.0.9000
 
-No news yet :)
+* New main function: balance() used for up- and downsampling of data to balance sample size within categories and IDs. 
+Thanks for the request from jjesusfilho #3.
+
+* New wrapper function: upsample() wraps balance() with size="max"  
+
+* New wrapper function: downsample() wraps balance() with size="min"  
+
 
 # groupdata2 1.0.0
 

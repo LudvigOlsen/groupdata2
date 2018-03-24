@@ -31,6 +31,7 @@ Main functions:
 * splt  
 * partition  
 * fold  
+* balance (\*new, \*github only)
 
 Other tools:  
 
@@ -75,8 +76,12 @@ Creates (optionally) balanced partitions (e.g. training/test sets). Balance part
 
 ### fold()  
 Creates (optionally) balanced folds for use in cross-validation. Balance folds on one categorical variable and/or make sure that all datapoints sharing an ID is in the same fold.  
+
+### balance()
+Uses up- or downsampling to fix the group size to the min, max, mean, or median group size or to a specific number of rows.
+Balancing can also happen on the ID level, e.g. to ensure the same number of IDs in each category.   
  
-## Methods
+## Grouping Methods
 There are currently 9 methods available. They can be divided into 5 categories.  
 
 *Examples of group sizes are based on a vector with 57 elements.*  
@@ -145,6 +150,18 @@ Creates groups with sizes corresponding to prime numbers.
 Starts at n (prime number). Increases to the the next prime number until there is no more data.
 
 E.g. group sizes: 5, 7, 11, 13, 17, 4  
+
+## Balancing ID Methods
+There are currently 3 methods for balancing on ID level.
+
+##### ID method: n_ids
+Balances on ID level only. It makes sure there are the same number of IDs in each category. This might lead to a different number of rows between categories.
+
+##### ID method: n_rows_c
+Attempts to level the number of rows per category, while only removing/adding entire IDs. This is done with repetition and by iteratively picking the ID with the number of rows closest to the lacking/excessive number of rows in the category.  
+
+##### ID method: nested
+Balances the IDs within their categories, meaning that all IDs in a category will have the same number of rows.  
 
 ## Examples
 
@@ -231,6 +248,35 @@ df_folded %>%
 
 We also have a balance in the representation of each diagnosis, which could give us better, more consistent results.  
 
+### balance()
+
+```{r}
+# Lets first unbalance the dataset by removing some rows
+df_b <- df %>% 
+  arrange(diagnosis) %>% 
+  filter(!row_number() %in% c(5,7,8,13,14,16,17,18))
+
+# Show distribution of diagnoses and participants
+df_b %>% 
+  count(diagnosis, participant) %>% 
+  kable()
+
+# First set seed to ensure reproducibility
+set.seed(1)
+
+# Downsampling by diagnosis
+balance(df_b, size="min", cat_col = "diagnosis") %>% 
+  count(diagnosis, participant) %>% 
+  kable()
+
+# Downsampling the IDs
+balance(df_b, size="min", cat_col = "diagnosis", 
+        id_col = "participant", id_method = "n_ids") %>% 
+  count(diagnosis, participant) %>% 
+  kable()
+  
+```
+ 
 
 
 
