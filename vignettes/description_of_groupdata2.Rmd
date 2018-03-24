@@ -570,9 +570,12 @@ This is done in 2 steps:
 1. If a category needs to add all its rows one or more times, the data is repeated.  
 
 2. Iteratively, the ID with the number of rows closest to the lacking/excessive number of rows is added/removed. This happens until adding/removing the closest ID would lead to a size further from the target size than the current size. If multiple IDs are closest, one is randomly sampled.
+
+## ID method: 'distributed'   
+Distributes the lacking/excess rows equally between the IDs. If the number to distribute can not be equally divided, some IDs will have 1 row more/less than the others.   
  
 ## ID method: 'nested'  
-Balances the IDs within their categories, meaning that all IDs in a category will have the same number of rows.  
+Balances the IDs within their categories, meaning that all IDs in a category will have the same number of rows.   
 
 
 

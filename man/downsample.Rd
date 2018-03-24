@@ -23,7 +23,7 @@ downsample(data, cat_col, id_col = NULL, id_method = "n_ids")
 
 \item{id_method}{Method for balancing the IDs. (Character)
 
- \code{n_ids}, \code{n_rows_c}, or \code{nested}.
+ \code{n_ids}, \code{n_rows_c}, \code{distributed}, or \code{nested}.
  \subsection{n_ids}{
  Balances on ID level only. It makes sure there are the same number of IDs for each category.
  This might lead to a different number of rows between categories.
@@ -39,6 +39,10 @@ downsample(data, cat_col, id_col = NULL, id_method = "n_ids")
     the target size than the current size.
     If multiple IDs are closest, one is randomly sampled.
     }
+ }
+ \subsection{distributed}{
+ Distributes the lacking/excess rows equally between the IDs.
+ If the number to distribute can not be equally divided, some IDs will have 1 row more/less than the others.
  }
  \subsection{nested}{
  Calls balance() on each category with IDs as cat_col.
@@ -86,6 +90,17 @@ downsample(df, cat_col="diagnosis",
 downsample(df, cat_col="diagnosis",
         id_col="participant", id_method="n_rows_c",
         mark_new_rows = TRUE)
+
+# Using downsample() with id_method "distributed"
+downsample(df, cat_col="diagnosis",
+        id_col="participant",
+        id_method="distributed")
+
+# Using downsample() with id_method "nested"
+downsample(df, cat_col="diagnosis",
+        id_col="participant",
+        id_method="nested")
+
 }
 \seealso{
 Other sampling functions: \code{\link{balance}},

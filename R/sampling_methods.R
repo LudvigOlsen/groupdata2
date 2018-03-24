@@ -155,3 +155,130 @@ id_method_nested <- function(data, size, cat_col, id_col, mark_new_rows){
     })
 
 }
+
+id_method_distributed <- function(data, size, cat_col, id_col, mark_new_rows){
+
+  # Count of rows
+  rows_per_id_per_category <- data %>%
+    dplyr::count(!!as.name(cat_col), !!as.name(id_col))
+
+  # Get target size (number of rows)
+  to_size <- get_target_size(data, size, cat_col)
+
+  # Get the number of rows to keep for each ID
+  balanced_ids <-
+    plyr::ldply(unique(rows_per_id_per_category[[cat_col]]), function(category) {
+
+      # Subset data with current category
+      ids_for_cat <- rows_per_id_per_category %>%
+        dplyr::filter(!!as.name(cat_col) == category)
+
+      # Get stats on subset
+      current_n_rows <- sum(ids_for_cat$n)
+      difference <- current_n_rows - to_size
+
+
+      if (difference == 0) {
+        return(ids_for_cat)
+
+      #### Adding rows ####
+      } else if (difference < 0){
+
+        # The number of rows to add
+        to_add <- abs(difference)
+
+        # Get stats on subset
+        current_n_ids <- nrow(ids_for_cat)
+        add_to_all <- floor(to_add/current_n_ids)
+        to_distribute <- to_add - add_to_all * current_n_ids
+
+        # Find which IDs get an extra (distributed) row
+        add_factor <- c(rep(1, to_distribute), rep(0, current_n_ids-to_distribute))
+        add_factor <- sample(add_factor)
+        ids_for_cat$add_factor <- add_factor
+
+        # Now add number of rows to the n column
+        ids_for_cat <- ids_for_cat %>%
+          dplyr::mutate(n = n + add_factor + add_to_all) %>%
+          dplyr::select(-c(add_factor))
+
+        return(ids_for_cat)
+
+      #### Removing rows ####
+      } else if (difference > 0){
+
+        # The number of rows to remove
+        to_remove <- abs(difference)
+
+        # Iteratively:
+        # .. Update statistics
+        # .. Divide the number of rows to remove by the number of IDs.
+        # .. Pick the smallest between this and the minimum ID size.
+        # .. Subtract this number from n and remove all IDs with n == 0.
+        # .. Break
+        # .. .. if nothing needs to be removed
+        # .. .. if the number of rows to remove is smaller then the number of IDs
+
+
+        while(TRUE){
+          if (to_remove == 0){
+            break
+          }
+
+          # Update stats
+          current_n_ids <- nrow(ids_for_cat)
+          min_nrows <- min(ids_for_cat$n)
+          remove_from_all <- floor(to_remove/current_n_ids)
+          remove_from_all <- dplyr::if_else(remove_from_all>0,
+                                            min(c(remove_from_all,min_nrows)),
+                                            0)
+
+          if (remove_from_all == 0){
+            break
+          }
+
+          # Remove from all IDs
+          # Filter out empty IDs
+          ids_for_cat <- ids_for_cat %>%
+            dplyr::mutate(n = n - remove_from_all) %>%
+            dplyr::filter(n > 0)
+
+          # Update number of rows to remove
+          to_remove <- to_remove - remove_from_all*current_n_ids
+        }
+
+        # If there are still rows to remove
+        # Make a list of the 1s to remove and 0s for the rest.
+        # Shuffle the list and subtract it from n
+
+        if (to_remove > 0) {
+          current_n_ids <- nrow(ids_for_cat)
+          remove_factor <- c(rep(1,to_remove), rep(0,current_n_ids-to_remove))
+          remove_factor <- sample(remove_factor)
+          ids_for_cat$remove_factor <- remove_factor
+          ids_for_cat <- ids_for_cat %>%
+            dplyr::mutate(remove_factor=remove_factor,
+                          n = n - remove_factor) %>%
+            dplyr::select(-c(remove_factor))
+        }
+        return(ids_for_cat)
+      }
+    }) %>%
+    dplyr::rename(.to_keep_ = n)
+
+  plyr::ldply(unique(balanced_ids[[id_col]]), function(id) {
+    # Subset data with current category
+    data_for_id <- data %>%
+      dplyr::filter(!!as.name(id_col) == id)
+
+    # Get the number of rows to keep for this ID
+    to_keep <- balanced_ids %>%
+      dplyr::filter(!!as.name(id_col) == id) %>%
+      dplyr::pull(.to_keep_)
+
+    # Call balance on the subset, to get the balanced (up-/downsampled) ID
+    data_for_id %>%
+      balance(size = to_keep, cat_col = id_col, mark_new_rows = TRUE, new_rows_col_name = ".TempNewRow")
+
+  })
+}

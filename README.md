@@ -160,7 +160,7 @@ E.g. group sizes: 5, 7, 11, 13, 17, 4
 Balancing ID Methods
 --------------------
 
-There are currently 3 methods for balancing on ID level.
+There are currently 4 methods for balancing on ID level.
 
 ##### ID method: n\_ids
 
@@ -169,6 +169,10 @@ Balances on ID level only. It makes sure there are the same number of IDs in eac
 ##### ID method: n\_rows\_c
 
 Attempts to level the number of rows per category, while only removing/adding entire IDs. This is done with repetition and by iteratively picking the ID with the number of rows closest to the lacking/excessive number of rows in the category.
+
+##### ID method: distributed
+
+Distributes the lacking/excess rows equally between the IDs. If the number to distribute can not be equally divided, some IDs will have 1 row more/less than the others.
 
 ##### ID method: nested
 
@@ -201,18 +205,18 @@ group(df, n = 5, method = 'n_dist') %>%
 
 |    x| species |  age| .groups |
 |----:|:--------|----:|:--------|
-|    1| cat     |   10| 1       |
-|    2| pig     |   86| 1       |
-|    3| human   |   77| 2       |
-|    4| cat     |   28| 2       |
-|    5| pig     |   11| 3       |
-|    6| human   |   23| 3       |
-|    7| cat     |   91| 3       |
-|    8| pig     |   69| 4       |
-|    9| human   |   74| 4       |
-|   10| cat     |    4| 5       |
-|   11| pig     |   51| 5       |
-|   12| human   |   75| 5       |
+|    1| cat     |   17| 1       |
+|    2| pig     |   99| 1       |
+|    3| human   |   66| 2       |
+|    4| cat     |   86| 2       |
+|    5| pig     |   34| 3       |
+|    6| human   |   93| 3       |
+|    7| cat     |   88| 3       |
+|    8| pig     |   94| 4       |
+|    9| human   |   24| 4       |
+|   10| cat     |   47| 5       |
+|   11| pig     |   55| 5       |
+|   12| human   |   49| 5       |
 
 ``` r
 
@@ -225,11 +229,11 @@ df %>%
 
 | .groups |  mean\_age|
 |:--------|----------:|
-| 1       |   48.00000|
-| 2       |   52.50000|
-| 3       |   41.66667|
-| 4       |   71.50000|
-| 5       |   43.33333|
+| 1       |   58.00000|
+| 2       |   76.00000|
+| 3       |   71.66667|
+| 4       |   59.00000|
+| 5       |   50.33333|
 
 ``` r
 
@@ -246,18 +250,18 @@ df %>%
 
 |    x| species |  age| .groups |
 |----:|:--------|----:|:--------|
-|    1| cat     |   10| 1       |
-|    2| pig     |   86| 1       |
-|    3| human   |   77| 1       |
-|    4| cat     |   28| 1       |
-|    5| pig     |   11| 2       |
-|    6| human   |   23| 2       |
-|    7| cat     |   91| 3       |
-|    8| pig     |   69| 3       |
-|    9| human   |   74| 3       |
-|   10| cat     |    4| 3       |
-|   11| pig     |   51| 3       |
-|   12| human   |   75| 3       |
+|    1| cat     |   17| 1       |
+|    2| pig     |   99| 1       |
+|    3| human   |   66| 1       |
+|    4| cat     |   86| 1       |
+|    5| pig     |   34| 2       |
+|    6| human   |   93| 2       |
+|    7| cat     |   88| 3       |
+|    8| pig     |   94| 3       |
+|    9| human   |   24| 3       |
+|   10| cat     |   47| 3       |
+|   11| pig     |   55| 3       |
+|   12| human   |   49| 3       |
 
 ### fold()
 

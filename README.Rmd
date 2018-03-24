@@ -152,13 +152,16 @@ Starts at n (prime number). Increases to the the next prime number until there i
 E.g. group sizes: 5, 7, 11, 13, 17, 4  
 
 ## Balancing ID Methods
-There are currently 3 methods for balancing on ID level.
+There are currently 4 methods for balancing on ID level.
 
 ##### ID method: n_ids
 Balances on ID level only. It makes sure there are the same number of IDs in each category. This might lead to a different number of rows between categories.
 
 ##### ID method: n_rows_c
 Attempts to level the number of rows per category, while only removing/adding entire IDs. This is done with repetition and by iteratively picking the ID with the number of rows closest to the lacking/excessive number of rows in the category.  
+
+##### ID method: distributed
+Distributes the lacking/excess rows equally between the IDs. If the number to distribute can not be equally divided, some IDs will have 1 row more/less than the others.  
 
 ##### ID method: nested
 Balances the IDs within their categories, meaning that all IDs in a category will have the same number of rows.  
