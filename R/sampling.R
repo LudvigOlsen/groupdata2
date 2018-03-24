@@ -122,33 +122,37 @@ upsample <- function(data,
 #'  }
 #' @param cat_col Name of categorical variable to balance by. (Character)
 #' @param id_col Name of factor with IDs. (Character)
-#'  This will be used to respect IDs as entities, which can only be added or removed in totality.
 #'
+#'  IDs are considered entities, e.g. allowing us to add or remove all rows for an ID.
+#'  How this is used is up to the \code{id_method}.
 #'
 #'  E.g. If we have measured a participant multiple times and
-#'  want make sure that we have all these measurements. Then we would either
+#'  want make sure that we keep all these measurements. Then we would either
 #'  remove/add all measurements for the participant or leave in
 #'  all measurements for the participant.
 #' @param id_method Method for balancing the IDs. (Character)
 #'
-#'  \code{n_ids} or \code{n_rows_c}.
+#'  \code{n_ids}, \code{n_rows_c}, or \code{nested}.
 #'  \subsection{n_ids}{
 #'  Balances on ID level only. It makes sure there are the same number of IDs for each category.
-#'  This might lead to different number of rows in categories.
+#'  This might lead to a different number of rows in categories.
 #'  }
 #'  \subsection{n_rows_c}{
 #'  Attempts to level the number of rows per category, while only removing/adding entire IDs.
-#'  This is done by:
-#'   \subsection{Repetition}{
-#'   If a category needs to add all its rows one or more times, the data is repeated.
-#'   }
-#'   \subsection{Closest}{
-#'   Iteratively, the ID with the number of rows closest to the
-#'   lacking/excessive number of rows is added/removed.
-#'   This happens until adding/removing the closest ID would lead to a size further from
-#'   the target size than the current size.
-#'   If multiple IDs are closest, one is picked by random sampling.
-#'   }
+#'  This is done in 2 steps:
+#'  \enumerate{
+#'  \item If a category needs to add all its rows one or more times, the data is repeated.
+#'  \item Iteratively, the ID with the number of rows closest to the
+#'     lacking/excessive number of rows is added/removed.
+#'     This happens until adding/removing the closest ID would lead to a size further from
+#'     the target size than the current size.
+#'     If multiple IDs are closest, one is randomly sampled.
+#'     }
+#'  }
+#'  \subsection{nested}{
+#'  Calls balance() on each category with IDs as cat_col.
+#'
+#'  I.e. if size is "min", IDs will have the size of the smallest ID in their category.
 #'  }
 #' @param mark_new_rows Add column with 1s for added rows, and 0s for original rows. (Bool)
 #' @param new_rows_col_name Name of column marking new rows. Defaults to ".new_row".
@@ -179,6 +183,7 @@ balance <- function(data,
                     cat_col,
                     id_col = NULL,
                     id_method = "n_ids",
+                    # replace = TRUE, # TODO Some times we want to choose between replacement or repetition
                     mark_new_rows = FALSE,
                     new_rows_col_name = ".new_row") {
   if (is.character(size)) {
@@ -194,7 +199,13 @@ balance <- function(data,
     stop("'cat_col' must be the name of a column in data.")
   }
 
-  stopifnot(id_method %in% c("n_ids", "n_rows_c", "n_rows_o")) # find more
+  stopifnot(id_method %in% c("n_ids",
+                             "n_rows_c",
+                             # TODO "n_rows_o"
+                             # Should find the optimal combinations of IDs.
+                             # E.g. using dynamic programming.
+                             # "n_rows_o",
+                             "nested")) # find more
 
   # mark_new_rows : should add a binary column with 1 for the additions,
   # so people can manipulate them separately
@@ -220,6 +231,14 @@ balance <- function(data,
           id_col = id_col,
           mark_new_rows = mark_new_rows
         )}
+    else if (id_method == "nested") {
+      balanced <- id_method_nested(
+        data = data,
+        size = size,
+        cat_col = cat_col,
+        id_col = id_col,
+        mark_new_rows = mark_new_rows
+      )}
   } else {
 
     to_size <- get_target_size(data, size, cat_col)

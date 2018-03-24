@@ -132,3 +132,26 @@ id_method_n_rows_closest <- function(data, size, cat_col, id_col, mark_new_rows)
   select_rows_from_ids(data, balanced_ids, cat_col, id_col, mark_new_rows)
 
 }
+
+id_method_n_rows_optimal <- function(data, size, cat_col, id_col, mark_new_rows){
+
+  # for each cat
+  #   shuffle the rows
+  #   use dyn. prog. to get a matrix of best combinations
+  #   return first that meets target size
+  #   otherwise return best combination (sampling if multiple winners)
+
+}
+
+id_method_nested <- function(data, size, cat_col, id_col, mark_new_rows){
+
+  # nested balancing
+  # calls balance on each category with id as cat_col
+
+  plyr::ldply(unique(data[[cat_col]]), function(category) {
+      data %>%
+        dplyr::filter(!!as.name(cat_col) == category) %>%
+        balance(size=size, cat_col=id_col, mark_new_rows=mark_new_rows)
+    })
+
+}

@@ -667,13 +667,18 @@ add_rows_with_sampling <- function(data, to_size){
 select_rows_from_ids <- function(data, balanced_ids, cat_col, id_col, mark_new_rows, join_fn=dplyr::inner_join){
   # select the chosen ids in data and return
   balanced_data <- join_fn(data, balanced_ids,
-                                    by = c(cat_col, id_col)) %>%
+                           by = c(cat_col, id_col)) %>%
+    update_TempNewRow_from_ids_method()
+
+  # if (!isTRUE(mark_new_rows)) {
+  #   balanced_data$.TempNewRow <- NULL
+  # }
+  balanced_data
+}
+
+update_TempNewRow_from_ids_method <- function(data){
+  data %>%
     dplyr::mutate(.TempNewRow = dplyr::if_else(.TempNewRow + .ids_balanced_new_rows > 0, 1, 0)) %>%
     dplyr::select(-c(.ids_balanced_new_rows))
-
-  if (!isTRUE(mark_new_rows)) {
-    balanced_data$.TempNewRow <- NULL
-  }
-  balanced_data
 }
 
