@@ -1,8 +1,27 @@
 library(groupdata2)
 context("value_balanced_group_factor_()")
 
+test_that("value_balanced_group_factor_() work with n=2", {
 
-test_that("value_balanced_group_factor_() works", {
+  # Create dataframe
+  set.seed(1)
+  df <- data.frame(
+    "participant" = factor(c(1, 3, 5, 6, 7, 8)),
+    "score" = c(79,85,140,69,87,92))
+  vbf <- value_balanced_group_factor_(df, 2, val_col="score")
+  df_vbf <- df %>%
+    dplyr::mutate(.groups = vbf)
+
+  group_sums <- df_vbf %>%
+    dplyr::group_by(.groups) %>%
+    dplyr::summarize(group_sum = sum(score))
+
+  expect_equal(vbf, factor(c(1,2,2,1,2,1)))
+  expect_equal(group_sums$group_sum, c(240,312))
+
+})
+
+test_that("value_balanced_group_factor_() works with n=3", {
 
   # Create dataframe
   set.seed(1)
@@ -37,7 +56,7 @@ test_that("value_balanced_group_factor_() works", {
   df <- df %>% dplyr::filter(row_number() != 7)
   set.seed(1)
   expect_equal(value_balanced_group_factor_(df, 3, val_col="score"),
-               factor(c(3,2,2,1,1,3)))
+               factor(c(3,1,1,2,2,3)))
 
   set.seed(1)
   expect_equal(value_balanced_group_factor_(df, 3, val_col="neg_score"),
@@ -52,29 +71,40 @@ test_that("value_balanced_group_factor_() works", {
     dplyr::group_by(.groups) %>%
     dplyr::summarize(group_sum = sum(score))
 
-  expect_equal(group_sums$group_sum, c(109,94,113))
+  expect_equal(group_sums$group_sum, c(94,109,113))
+
 })
 
 
-test_that("create_rearrange_factor() works", {
+test_that("create_rearrange_factor_pair_extremes_() works", {
 
   # unequal_method "middle"
 
   # Equal size
-  expect_equal(create_rearrange_factor(40, unequal_method = "middle"), c(c(1:20), rev(c(1:20))))
-  expect_equal(create_rearrange_factor(200, unequal_method = "middle"), c(c(1:100), rev(c(1:100))))
+  expect_equal(create_rearrange_factor_pair_extremes_(40, unequal_method = "middle"), c(c(1:20), rev(c(1:20))))
+  expect_equal(create_rearrange_factor_pair_extremes_(200, unequal_method = "middle"), c(c(1:100), rev(c(1:100))))
 
   # Unequal size
-  expect_equal(create_rearrange_factor(41, unequal_method = "middle"), c(c(1:10,12:21), 11, rev(c(1:10,12:21))))
-  expect_equal(create_rearrange_factor(201, unequal_method = "middle"), c(c(1:50,52:101), 51, rev(c(1:50,52:101))))
+  expect_equal(create_rearrange_factor_pair_extremes_(41, unequal_method = "middle"), c(c(1:10,12:21), 11, rev(c(1:10,12:21))))
+  expect_equal(create_rearrange_factor_pair_extremes_(201, unequal_method = "middle"), c(c(1:50,52:101), 51, rev(c(1:50,52:101))))
 
   # unequal_method "first"
 
   # Equal size
-  expect_equal(create_rearrange_factor(40, unequal_method = "first"), c(c(1:20), rev(c(1:20))))
-  expect_equal(create_rearrange_factor(200, unequal_method = "first"), c(c(1:100), rev(c(1:100))))
+  expect_equal(create_rearrange_factor_pair_extremes_(40, unequal_method = "first"), c(c(1:20), rev(c(1:20))))
+  expect_equal(create_rearrange_factor_pair_extremes_(200, unequal_method = "first"), c(c(1:100), rev(c(1:100))))
 
   # Unequal size
-  expect_equal(create_rearrange_factor(41, unequal_method = "first"), c(1,c(c(1:20), rev(c(1:20)))+1))
-  expect_equal(create_rearrange_factor(201, unequal_method = "first"), c(1, c(c(1:100), rev(c(1:100)))+1))
+  expect_equal(create_rearrange_factor_pair_extremes_(41, unequal_method = "first"), c(1,c(c(1:20), rev(c(1:20)))+1))
+  expect_equal(create_rearrange_factor_pair_extremes_(201, unequal_method = "first"), c(1, c(c(1:100), rev(c(1:100)))+1))
+
+  # unequal_method "last"
+
+  # Equal size
+  expect_equal(create_rearrange_factor_pair_extremes_(40, unequal_method = "last"), c(c(1:20), rev(c(1:20))))
+  expect_equal(create_rearrange_factor_pair_extremes_(200, unequal_method = "last"), c(c(1:100), rev(c(1:100))))
+
+  # Unequal size
+  expect_equal(create_rearrange_factor_pair_extremes_(41, unequal_method = "last"), c(c(c(1:20), rev(c(1:20))),21))
+  expect_equal(create_rearrange_factor_pair_extremes_(201, unequal_method = "last"), c(c(c(1:100), rev(c(1:100))), 101))
 })

@@ -2,10 +2,11 @@
 % Please edit documentation in R/fold.R
 \name{fold}
 \alias{fold}
+\alias{create_balanced_groups}
 \title{Create balanced folds for cross-validation.}
 \usage{
-fold(data, k = 5, cat_col = NULL, id_col = NULL, starts_col = NULL,
-  method = "n_dist", remove_missing_starts = FALSE)
+fold(data, k = 5, cat_col = NULL, id_col = NULL, val_col = NULL,
+  starts_col = NULL, method = "n_dist", remove_missing_starts = FALSE)
 }
 \arguments{
 \item{data}{Dataframe or Vector.}
