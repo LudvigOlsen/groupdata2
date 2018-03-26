@@ -170,19 +170,6 @@ train_set %>%
   kable(align='c')
 ```
 
-If we had a hypothesis including the age of participants, we could have balanced its distribution in the partitions by adding the num_col argument. We won't be using this in the rest of the vignette, but here is the mean age per partition, when using it.
-
-```{r}
-# Split data in 20/80 (percentage)
-partition(df, p = 0.2, id_col = "participant", cat_col = 'diagnosis', num_col = "age", 
-          id_aggregation_fn = mean,
-          list_out=FALSE) %>% 
-  group_by(.partitions) %>% 
-  summarise(mean_age = mean(age),
-            sd_age = sd(age)) %>% 
-  kable()
-```
-
 
 # Creating folds for cross-validation
 

@@ -229,3 +229,46 @@ test_that("partition() outputs correct error messages",{
 
 
 })
+
+if (FALSE){ # Takes 4 seconds, so we disable it for now.
+  test_that("bootstrap test of num_col works",{
+
+    df <- data.frame("participant"=factor(rep(1:100, 100)),
+                     "diagnosis"=factor(rep(c("a","b","c","d","e"), 2000)),
+                     "age"=rep(sample(100),100))
+
+    for (i in 1:10){
+
+      set.seed(i)
+      df_partitioned <- partition(df, 0.5, cat_col="diagnosis", num_col="age", id_col="participant", list_out = FALSE)
+
+      age_distribution <- df_partitioned %>% group_by(.partitions) %>%
+        dplyr::summarise(mean_age = mean(age),
+                         sd_age = sd(age))
+
+      expect_true(is_between_(age_distribution$mean_age[1], 49, 51))
+      expect_true(is_between_(age_distribution$mean_age[2], 49, 51))
+
+    }
+
+    for (i in 1:10){
+
+      set.seed(i)
+      df_partitioned <- partition(df, c(0.2, 0.2, 0.2, 0.2, 0.2),
+                                  cat_col="diagnosis", num_col="age",
+                                  id_col="participant", list_out = FALSE)
+
+      age_distribution <- df_partitioned %>% group_by(.partitions) %>%
+        dplyr::summarise(mean_age = mean(age),
+                         sd_age = sd(age))
+
+      expect_true(is_between_(age_distribution$mean_age[1], 49, 51))
+      expect_true(is_between_(age_distribution$mean_age[2], 49, 51))
+      expect_true(is_between_(age_distribution$mean_age[3], 49, 51))
+      expect_true(is_between_(age_distribution$mean_age[4], 49, 51))
+      expect_true(is_between_(age_distribution$mean_age[5], 49, 51))
+
+    }
+
+  })
+}
