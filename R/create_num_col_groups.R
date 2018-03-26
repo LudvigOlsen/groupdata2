@@ -1,8 +1,17 @@
 
 # For creating
 create_num_col_groups <- function(data, n, num_col, cat_col=NULL, id_col=NULL, col_name,
-                                  id_aggregation_fn = sum, method="n_fill", force_equal=FALSE
+                                  id_aggregation_fn = sum, method="n_fill",
+                                  unequal_method="first", force_equal=FALSE,
+                                  pre_randomize=TRUE
                                   ) {
+
+  # Sample dataframe before use.
+  if (isTRUE(pre_randomize)){
+    data <- data %>%
+      dplyr::mutate(.__tmp_index__ = 1:n()) %>%
+      dplyr::sample_frac(1)
+  }
 
   # If cat_col is not NULL
   if (!is.null(cat_col)){
@@ -21,7 +30,7 @@ create_num_col_groups <- function(data, n, num_col, cat_col=NULL, id_col=NULL, c
         ids_for_cat <- ids_aggregated %>%
           dplyr::filter(!!as.name(cat_col) == category)
         ids_for_cat$._new_groups_ <- numerically_balanced_group_factor_(ids_for_cat, n=n, num_col = "aggr_val",
-                                                                method=method)
+                                                                method=method, unequal_method=unequal_method)
         ids_for_cat %>%
           dplyr::select(-c(aggr_val))
       })
@@ -42,7 +51,8 @@ create_num_col_groups <- function(data, n, num_col, cat_col=NULL, id_col=NULL, c
           dplyr::filter(!!as.name(cat_col) == category)
         data_for_cat$._new_groups_ <- numerically_balanced_group_factor_(data_for_cat, n=n,
                                                                  num_col = num_col,
-                                                                 method=method)
+                                                                 method=method,
+                                                                 unequal_method=unequal_method)
         data_for_cat
       })
 
@@ -66,7 +76,7 @@ create_num_col_groups <- function(data, n, num_col, cat_col=NULL, id_col=NULL, c
 
       # Create group factor
       ids_aggregated$._new_groups_ <- numerically_balanced_group_factor_(
-        ids_aggregated, n=n, num_col = "aggr_val", method=method)
+        ids_aggregated, n=n, num_col = "aggr_val", method=method, unequal_method=unequal_method)
       ids_aggregated$aggr_val <- NULL
 
       # Transfer groups to data
@@ -79,10 +89,19 @@ create_num_col_groups <- function(data, n, num_col, cat_col=NULL, id_col=NULL, c
       # Add group factor
       data$._new_groups_ <- numerically_balanced_group_factor_(data, n=n,
                                                        num_col = num_col,
-                                                       method = method)
+                                                       method = method,
+                                                       unequal_method=unequal_method)
 
     }
   }
+
+  # Reorder if pre-randomized
+  if(isTRUE(pre_randomize)){
+    data <- data %>%
+      dplyr::arrange(.__tmp_index__) %>%
+      dplyr::select(-c(.__tmp_index__))
+  }
+
 
   # Force equal
   # Remove stuff

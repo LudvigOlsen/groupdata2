@@ -7,14 +7,68 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'  Balances a given categorical variable and/or numerical variable between folds and keeps (if possible)
 #'  all data points with a shared ID (e.g. participant_id) in the same fold.
 #' @details
-#'  \code{cat_col}: data is first subset by \code{cat_col}.
-#'  Subsets are folded/grouped and merged.
+#'  \subsection{cat_col}{
+#'    \enumerate{
+#'      \item Data is subset by \code{cat_col}.
+#'      \item Subsets are grouped and merged.
+#'    }
+#'  }
 #'
-#'  \code{id_col}: folds are created from unique IDs.
+#'  \subsection{id_col}{
+#'    \enumerate{
+#'      \item Groups are created from unique IDs.
+#'    }
+#'  }
 #'
-#'  \code{cat_col} AND \code{id_col}: data is subset by \code{cat_col}
-#'  and folds are created from unique IDs in each subset.
-#'  Subsets are merged.
+#'  \subsection{num_col}{
+#'    \enumerate{
+#'      \item Rows are shuffled.
+#'
+#'      \strong{Note} that this will only have an effect on rows that have the same value in num_col.
+#'      \item Rows are ordered as smallest, largest, second smallest, second largest, ...
+#'      \item By their pairwise sum, these are once again ordered as smallest, largest, second smallest, second largest, ...
+#'      \item The ordered data is grouped using method "n_fill".
+#'    }
+#'
+#'  N.B. In case \code{data} has an unequal number of rows,
+#'  the row with the smallest value becomes the first group by itself in (1) and (2), and the order is instead:
+#'  smallest, second smallest, largest, third smallest, second largest, ...
+#'  This row will end up in the first fold.
+#'  }
+#'
+#'  \subsection{cat_col AND id_col}{
+#'    \enumerate{
+#'      \item Data is subset by \code{cat_col}.
+#'      \item Groups are created from unique IDs in each subset.
+#'      \item Subsets are merged.
+#'    }
+#'  }
+#'
+#'  \subsection{cat_col AND num_col}{
+#'    \enumerate{
+#'      \item Data is subset by \code{cat_col}.
+#'      \item Subsets are grouped by \code{num_col}.
+#'      \item Subsets are merged.
+#'    }
+#'  }
+#'
+#'  \subsection{num_col AND id_col}{
+#'    \enumerate{
+#'      \item Values in \code{num_col} are aggregated for each ID, using \code{id_aggregation_fn}.
+#'      \item The IDs are grouped, using the aggregated values as "\code{num_col}".
+#'      \item The group numbers for IDs are transferred to their rows.
+#'    }
+#'  }
+#'
+#'  \subsection{cat_col AND num_col AND id_col}{
+#'    \enumerate{
+#'      \item Values in \code{num_col} are aggregated for each ID, using \code{id_aggregation_fn}.
+#'      \item IDs are subset by \code{cat_col}.
+#'      \item The IDs for each subset are grouped,
+#'      by using the aggregated values as "\code{num_col}".
+#'      \item The group numbers for IDs are transferred to their rows.
+#'    }
+#'  }
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 #' @export
 #' @param k \emph{Dependent on method.}
@@ -139,7 +193,8 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
     data <- create_num_col_groups(data, n=k, num_col=num_col, cat_col=cat_col,
                                   id_col=id_col, col_name=".folds",
                                   id_aggregation_fn = id_aggregation_fn,
-                                  method="n_fill")
+                                  method="n_fill",
+                                  pre_randomize = TRUE)
   } else {
 
     # If cat_col is not NULL

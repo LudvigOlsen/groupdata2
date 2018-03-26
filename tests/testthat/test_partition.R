@@ -36,8 +36,12 @@ test_that(".partitions is correct in partition() with list_out == FALSE",{
   # Add session info
   df$session <- rep(c('1','2', '3'), 6)
 
+  df_unequal <- df %>%
+    dplyr::filter(row_number() != 18)
+
   col_is_factor <- function(df, n, cat_col = NULL, num_col = NULL, id_col = NULL, col){
 
+    set.seed(1)
     partitioned_df <- partition(df, n, cat_col=cat_col, num_col=num_col,
                                 id_col=id_col, list_out = FALSE)
 
@@ -49,6 +53,7 @@ test_that(".partitions is correct in partition() with list_out == FALSE",{
 
   group_counts <- function(df, n, cat_col = NULL, num_col = NULL, id_col = NULL, force_equal = FALSE){
 
+    set.seed(1)
     partitioned_df <- partition(df, n, cat_col=cat_col, num_col=num_col,
                                 id_col=id_col, force_equal = force_equal,
                                 list_out = FALSE)
@@ -69,8 +74,9 @@ test_that(".partitions is correct in partition() with list_out == FALSE",{
   expect_true(col_is_factor(df, 0.4, num_col = 'score', cat_col = 'diagnosis',
                             id_col = 'participant', col='.partitions'))
 
-  expect_equal(group_counts(df, 0.2), c(3,15))
+  # equal number of rows in df
 
+  expect_equal(group_counts(df, 0.2), c(3,15))
   expect_equal(group_counts(df, 0.2, cat_col = 'diagnosis'), c(2,16))
   expect_equal(group_counts(df, 0.2, id_col = 'participant'), c(3,15))
   expect_equal(group_counts(df, 0.2, num_col = 'score'), c(3,15))
@@ -81,40 +87,71 @@ test_that(".partitions is correct in partition() with list_out == FALSE",{
   expect_equal(group_counts(df, 0.4, num_col = 'score', id_col = 'participant'), c(6,12))
   expect_equal(group_counts(df, 0.4, cat_col = 'diagnosis', num_col = 'score',
                             id_col = 'participant'), c(6,12))
-
   expect_equal(group_counts(df, 2, cat_col = 'diagnosis',
                             id_col = 'participant'), c(12,6))
-
   expect_equal(group_counts(df, 3, cat_col = 'diagnosis', id_col = 'participant'), c(18))
-
   expect_equal(group_counts(df, 3, id_col = 'participant'), c(9,9))
-
   expect_equal(group_counts(df, 2, id_col = 'participant'), c(6,12))
-
   expect_equal(group_counts(df, 2, num_col = 'score'), c(2,16))
   expect_equal(group_counts(df, c(2,4,6), num_col = 'score'), c(2,4,6,6))
-
   expect_equal(group_counts(df, 2, cat_col = 'diagnosis', num_col = 'score'), c(4,14))
   expect_equal(group_counts(df, 2, cat_col = 'diagnosis', num_col = 'score'), c(4,14))
   expect_equal(group_counts(df, 2, id_col = 'participant', num_col = 'score'), c(6,12))
   expect_equal(group_counts(df, 2, cat_col = 'diagnosis', id_col = 'participant', num_col = 'score'), c(12,6))
   expect_equal(group_counts(df, 1, cat_col = 'diagnosis', id_col = 'participant', num_col = 'score'), c(6,12))
 
+  # unequal number of rows in df
+  set.seed(1)
+  expect_equal(group_counts(df_unequal, 0.2), c(3,14))
+  expect_equal(group_counts(df_unequal, 0.2, cat_col = 'diagnosis'), c(2,15))
+  expect_equal(group_counts(df_unequal, 0.2, id_col = 'participant'), c(3,14))
+  expect_equal(group_counts(df_unequal, 0.2, num_col = 'score'), c(3,14))
+  expect_equal(group_counts(df_unequal, 0.4, cat_col = 'diagnosis',
+                            id_col = 'participant'), c(6,11))
+  expect_equal(group_counts(df_unequal, 0.4, cat_col = 'diagnosis',
+                            num_col = 'score'), c(6,11))
+  expect_equal(group_counts(df_unequal, 0.4, num_col = 'score', id_col = 'participant'), c(5,12))
+  expect_equal(group_counts(df_unequal, 0.4, cat_col = 'diagnosis', num_col = 'score',
+                            id_col = 'participant'), c(5,12))
+  expect_equal(group_counts(df_unequal, 2, cat_col = 'diagnosis',
+                            id_col = 'participant'), c(11,6))
+  expect_equal(group_counts(df_unequal, 3, cat_col = 'diagnosis', id_col = 'participant'), c(17))
+  expect_equal(group_counts(df_unequal, 3, id_col = 'participant'), c(9,8))
+  expect_equal(group_counts(df_unequal, 2, id_col = 'participant'), c(6,11))
+  expect_equal(group_counts(df_unequal, 2, num_col = 'score'), c(2,15))
+  expect_equal(group_counts(df_unequal, c(2,4,6), num_col = 'score'), c(2,4,6,5))
+  expect_equal(group_counts(df_unequal, 2, cat_col = 'diagnosis', num_col = 'score'), c(4,13))
+  expect_equal(group_counts(df_unequal, 2, cat_col = 'diagnosis', num_col = 'score'), c(4,13))
+  expect_equal(group_counts(df_unequal, 2, id_col = 'participant', num_col = 'score'), c(5,12))
+  expect_equal(group_counts(df_unequal, 2, cat_col = 'diagnosis', id_col = 'participant', num_col = 'score'), c(11,6))
+  expect_equal(group_counts(df_unequal, 1, cat_col = 'diagnosis', id_col = 'participant', num_col = 'score'), c(5,12))
+
 
   # Test force_equal
 
+  # equal number of rows in df
+  set.seed(1)
   expect_equal(group_counts(df, 2, id_col = 'participant', force_equal = TRUE), c(6))
-
   expect_equal(group_counts(df, 3, id_col = 'participant', force_equal = TRUE), c(9))
-
   expect_equal(group_counts(df, 2, cat_col = 'diagnosis', force_equal = TRUE), c(4))
-
   expect_equal(group_counts(df, 2, num_col = 'score', force_equal = TRUE), c(2))
   expect_equal(group_counts(df, 2, cat_col = 'diagnosis', num_col = 'score', force_equal = TRUE), c(4))
   expect_equal(group_counts(df, 2, cat_col = 'diagnosis', num_col = 'score',
                             id_col = 'participant', force_equal = TRUE), c(12))
-
   expect_equal(group_counts(df, 2, id_col = 'participant',
+                            cat_col = 'diagnosis',
+                            force_equal = TRUE), c(12))
+
+  # unequal number of rows in df
+  set.seed(1)
+  expect_equal(group_counts(df_unequal, 2, id_col = 'participant', force_equal = TRUE), c(6))
+  expect_equal(group_counts(df_unequal, 3, id_col = 'participant', force_equal = TRUE), c(9))
+  expect_equal(group_counts(df_unequal, 2, cat_col = 'diagnosis', force_equal = TRUE), c(4))
+  expect_equal(group_counts(df_unequal, 2, num_col = 'score', force_equal = TRUE), c(2))
+  expect_equal(group_counts(df_unequal, 2, cat_col = 'diagnosis', num_col = 'score', force_equal = TRUE), c(4))
+  expect_equal(group_counts(df_unequal, 2, cat_col = 'diagnosis', num_col = 'score',
+                            id_col = 'participant', force_equal = TRUE), c(11))
+  expect_equal(group_counts(df_unequal, 2, id_col = 'participant',
                             cat_col = 'diagnosis',
                             force_equal = TRUE), c(12))
 

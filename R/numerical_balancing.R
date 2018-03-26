@@ -1,5 +1,6 @@
 
-numerically_balanced_group_factor_ <- function(data, n, num_col, method = "n_fill", force_equal=FALSE) {
+numerically_balanced_group_factor_ <- function(data, n, num_col, method = "n_fill",
+                                               unequal_method="first", force_equal=FALSE) {
 
   # Do function that tests if a col name already exists and then add an extra _ to the internal tmp col names until it's distinct
 
@@ -11,7 +12,7 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method = "n_fil
   data_sorted <- data %>%
     dplyr::mutate(.tmp_index_ = 1:n()) %>%
     dplyr::arrange(!!as.name(num_col)) %>%
-    rearrange(method = "pair_extremes", unequal_method = "first",
+    rearrange(method = "pair_extremes", unequal_method = unequal_method,
               drop_rearrange_factor = FALSE,
               rearrange_factor_name = "rearrange_factor")
 
@@ -24,21 +25,21 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method = "n_fil
     dplyr::group_by(rearrange_factor) %>%
     dplyr::summarize(group_aggr = sum(!!as.name(num_col)))
 
-  if(nrows_equal){
-    tmp_group_scores_sorted <- tmp_group_scores %>%
-      dplyr::arrange(group_aggr)
-  } else {
+  if (!nrows_equal & unequal_method == "first") {
     # Reorder with first group always first (otherwise doesn't work with negative numbers)
     tmp_group_scores_sorted <- tmp_group_scores %>%
       dplyr::filter(row_number() == 1) %>%
       dplyr::bind_rows(tmp_group_scores %>%
                          dplyr::filter(row_number() != 1) %>%
                          dplyr::arrange(group_aggr))
+  } else {
+    tmp_group_scores_sorted <- tmp_group_scores %>%
+      dplyr::arrange(group_aggr)
   }
 
   # Rearrange again
   tmp_second_rearrange <- tmp_group_scores_sorted %>%
-    rearrange(method = "pair_extremes", unequal_method = "first",
+    rearrange(method = "pair_extremes", unequal_method = unequal_method,
               drop_rearrange_factor = FALSE,
               rearrange_factor_name = "rearrange_factor_2") %>%
     dplyr::select(rearrange_factor, rearrange_factor_2)

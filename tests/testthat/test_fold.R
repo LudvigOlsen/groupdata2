@@ -34,13 +34,17 @@ test_that(".folds is correct in fold()",{
                    "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
                    "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
 
-  df <- df[order(df$participant),]
+  df <- df %>% arrange(participant)
 
   # Add session info
   df$session <- rep(c('1','2', '3'), 6)
 
+  df_unequal <- df %>%
+    dplyr::filter(row_number() != 18)
+
   col_is_factor <- function(df, n, cat_col = NULL, num_col = NULL, id_col = NULL, col){
 
+    set.seed(1)
     folded_df <- fold(df, n, cat_col=cat_col, num_col=num_col, id_col=id_col)
 
     return(is.factor(folded_df[[col]]))
@@ -51,6 +55,7 @@ test_that(".folds is correct in fold()",{
 
   group_counts <- function(df, n, cat_col = NULL, num_col = NULL, id_col = NULL, method){
 
+    set.seed(1)
     folded_df <- fold(df, n, cat_col=cat_col, num_col = num_col, id_col=id_col, method = method)
     counts <- plyr::count(folded_df$.folds)
     return(counts$freq)
@@ -58,20 +63,19 @@ test_that(".folds is correct in fold()",{
   }
 
   # Check if .folds is a factor
-  expect_equal(col_is_factor(df, 5, col='.folds'), TRUE)
-  expect_equal(col_is_factor(df, 5, cat_col = 'diagnosis', col='.folds'), TRUE)
-  expect_equal(col_is_factor(df, 5, id_col = 'participant', col='.folds'), TRUE)
-  expect_equal(col_is_factor(df, 3, cat_col = 'diagnosis',
-                             id_col = 'participant',col='.folds'), TRUE)
-  expect_equal(col_is_factor(df, 5, num_col = 'score', col='.folds'), TRUE)
-  expect_equal(col_is_factor(df, 5, cat_col = 'diagnosis', num_col = 'score', col='.folds'), TRUE)
-  expect_equal(col_is_factor(df, 5, id_col = 'participant', num_col = 'score', col='.folds'), TRUE)
-  expect_equal(col_is_factor(df, 3, cat_col = 'diagnosis', num_col = 'score',
-                             id_col = 'participant', col='.folds'), TRUE)
+  expect_true(col_is_factor(df, 5, col='.folds'))
+  expect_true(col_is_factor(df, 5, cat_col = 'diagnosis', col='.folds'))
+  expect_true(col_is_factor(df, 5, id_col = 'participant', col='.folds'))
+  expect_true(col_is_factor(df, 3, cat_col = 'diagnosis',
+                             id_col = 'participant',col='.folds'))
+  expect_true(col_is_factor(df, 5, num_col = 'score', col='.folds'))
+  expect_true(col_is_factor(df, 5, cat_col = 'diagnosis', num_col = 'score', col='.folds'))
+  expect_true(col_is_factor(df, 5, id_col = 'participant', num_col = 'score', col='.folds'))
+  expect_true(col_is_factor(df, 3, cat_col = 'diagnosis', num_col = 'score',
+                             id_col = 'participant', col='.folds'))
 
   expect_equal(group_counts(df, 5, method = 'greedy'), c(5,5,5,3))
   #expect_equal(group_counts(df, 5, cat_col = 'diagnosis', method = 'greedy'), c(6,6,6))
-
 
   expect_equal(group_counts(df, 5, method = 'n_dist'), c(3,4,3,4,4))
 
@@ -102,6 +106,41 @@ test_that(".folds is correct in fold()",{
 
   expect_equal(group_counts(df, 2, cat_col = 'diagnosis', num_col = 'score', id_col = 'participant',
                             method = 'n_dist'), c(12,6))
+
+
+  # Unequal number of rows in dataframe
+
+  expect_equal(group_counts(df_unequal, 5, method = 'greedy'), c(5,5,5,2))
+
+  expect_equal(group_counts(df_unequal, 5, method = 'n_dist'), c(3,3,4,3,4))
+
+  expect_equal(group_counts(df_unequal, 0.2, method = 'n_dist'), c(5,6,6))
+
+  expect_equal(group_counts(df_unequal, 5, cat_col = 'diagnosis',
+                            method = 'n_dist'), c(2,4,3,4,4))
+
+  expect_equal(group_counts(df_unequal, 3, cat_col = 'diagnosis',
+                            id_col = 'participant',
+                            method = 'n_dist'), c(6,5,6))
+
+  expect_equal(group_counts(df_unequal, 2, cat_col = 'diagnosis',
+                            id_col = 'participant',
+                            method = 'n_dist'), c(6,11))
+
+  expect_equal(group_counts(df_unequal, 3, id_col = 'participant',
+                            method = 'n_dist'), c(6,6,5))
+
+  expect_equal(group_counts(df_unequal, 2, id_col = 'participant',
+                            method = 'n_dist'), c(9,8))
+
+  expect_equal(group_counts(df_unequal, 2, num_col = 'score',
+                            method = 'n_dist'), c(9,8))
+
+  expect_equal(group_counts(df_unequal, 2, num_col = 'score', id_col = 'participant',
+                            method = 'n_dist'), c(8,9))
+
+  expect_equal(group_counts(df_unequal, 2, cat_col = 'diagnosis', num_col = 'score', id_col = 'participant',
+                            method = 'n_dist'), c(11,6))
 
 
   # warning
@@ -182,8 +221,7 @@ test_that("values are decently balanced in num_col in fold()",{
     dplyr::group_by(.folds) %>%
     dplyr::summarize(group_sums = sum(score))
 
-  expect_equal(aggregated_scores$group_sums, c(246,288,141,142)) # FLAG
-  # TODO This doesn't seem that well balanced - go through its process
+  expect_equal(aggregated_scores$group_sums, c(246,288,141,142))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
   # With num_col and cat_col
@@ -209,7 +247,7 @@ test_that("values are decently balanced in num_col in fold()",{
     dplyr::group_by(.folds) %>%
     dplyr::summarize(group_sums = sum(score))
 
-  expect_equal(aggregated_scores$group_sums, c(215, 283, 319)) # FLAG
+  expect_equal(aggregated_scores$group_sums, c(215, 283, 319))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
   df_folded <- fold(df, 2, num_col = 'score', cat_col="diagnosis", id_col="participant")

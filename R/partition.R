@@ -8,14 +8,67 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'  Balances a given categorical variable and/or numerical variable between partitions and keeps (if possible)
 #'  all data points with a shared ID (e.g. participant_id) in the same partition.
 #' @details
-#'  \code{cat_col}: data is first subset by \code{cat_col}.
-#'  Subsets are grouped and merged.
+#'  \subsection{cat_col}{
+#'    \enumerate{
+#'      \item Data is subset by \code{cat_col}.
+#'      \item Subsets are partitioned and merged.
+#'    }
+#'  }
 #'
-#'  \code{id_col}: groups are created from unique IDs.
+#'  \subsection{id_col}{
+#'    \enumerate{
+#'      \item Partitions are created from unique IDs.
+#'    }
+#'  }
 #'
-#'  \code{cat_col} AND \code{id_col}: data is subset by \code{cat_col}
-#'  and groups are created from unique IDs in each subset.
-#'  Subsets are merged.
+#'  \subsection{num_col}{
+#'    \enumerate{
+#'      \item Rows are shuffled.
+#'
+#'      \strong{Note} that this will only have an effect on rows that have the same value in num_col.
+#'      \item Rows are ordered as smallest, largest, second smallest, second largest, ...
+#'      \item By their pairwise sum, these are once again ordered as smallest, largest, second smallest, second largest, ...
+#'      \item The ordered data is partitioned.
+#'    }
+#'
+#'  N.B. In case \code{data} has an unequal number of rows,
+#'  the row with the largest value is placed in a group by itself in (1), and the order is instead:
+#'  smallest, second largest, second smallest, third largest, ... , largest.
+#'  }
+#'
+#'  \subsection{cat_col AND id_col}{
+#'    \enumerate{
+#'      \item Data is subset by \code{cat_col}.
+#'      \item Partitions are created from unique IDs in each subset.
+#'      \item Subsets are merged.
+#'    }
+#'  }
+#'
+#'  \subsection{cat_col AND num_col}{
+#'    \enumerate{
+#'      \item Data is subset by \code{cat_col}.
+#'      \item Subsets are partitioned by \code{num_col}.
+#'      \item Subsets are merged.
+#'    }
+#'  }
+#'
+#'  \subsection{num_col AND id_col}{
+#'    \enumerate{
+#'      \item Values in \code{num_col} are aggregated for each ID, using \code{id_aggregation_fn}.
+#'      \item The IDs are partitioned, using the aggregated values as "\code{num_col}".
+#'      \item The partition numbers for IDs are transferred to their rows.
+#'    }
+#'  }
+#'
+#'  \subsection{cat_col AND num_col AND id_col}{
+#'    \enumerate{
+#'      \item Values in \code{num_col} are aggregated for each ID, using \code{id_aggregation_fn}.
+#'      \item IDs are subset by \code{cat_col}.
+#'      \item The IDs for each subset are partitioned,
+#'      by using the aggregated values as "\code{num_col}".
+#'      \item The partition numbers for IDs are transferred to their rows.
+#'    }
+#'  }
 #'
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 #' @export
@@ -31,7 +84,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'  N.B. If also passing an id_col, cat_col should be constant within each ID.
 #' @param num_col Name of numerical variable to balance between partitions.
 #'
-#'  N.B. When used with \code{id_col}, values for each ID are aggregated using \code{id_aggregation_fn} before being balanced.
+#'  N.B. When used with \code{id_col}, values in \code{num_col} for each ID are aggregated using \code{id_aggregation_fn} before being balanced.
 #' @param id_col Name of factor with IDs. Used to keep all rows that share an ID in
 #'  the same partition (if possible).
 #'
@@ -61,11 +114,12 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'  "age" = rep(sample(c(1:100), 6), 3),
 #'  "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
 #'  "score" = sample(c(1:100), 3*6))
-#' df <- df[order(df$participant),]
+#' df <- df %>% arrange(participant)
 #' df$session <- rep(c('1','2', '3'), 6)
 #'
 #' # Using partition()
-#' # Without cat_col and id_col
+#'
+#' # Without balancing
 #' partitions <- partition(df, c(0.2,0.3))
 #'
 #' # With cat_col
@@ -74,8 +128,16 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #' # With id_col
 #' partitions <- partition(df, c(0.5), id_col = 'participant')
 #'
+#' # With num_col
+#' partitions <- partition(df, c(0.5), num_col = 'score')
+#'
 #' # With cat_col and id_col
 #' partitions <- partition(df, c(0.5), cat_col = 'diagnosis',
+#'                         id_col = 'participant')
+#'
+#' # With cat_col, num_col and id_col
+#' partitions <- partition(df, c(0.5), cat_col = 'diagnosis',
+#'                         num_col = "score",
 #'                         id_col = 'participant')
 #'
 #' # Return dataframe with grouping factor
@@ -107,7 +169,9 @@ partition <- function(data, p = 0.2, cat_col = NULL,
     data <- create_num_col_groups(data, n=p, num_col=num_col, cat_col=cat_col,
                                   id_col=id_col, col_name=".partitions",
                                   id_aggregation_fn = id_aggregation_fn,
-                                  method="l_sizes", force_equal=force_equal)
+                                  method="l_sizes", unequal_method="last",
+                                  force_equal=force_equal,
+                                  pre_randomize = TRUE)
 
   } else {
 
