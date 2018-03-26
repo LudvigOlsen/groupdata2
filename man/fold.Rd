@@ -5,8 +5,9 @@
 \alias{create_balanced_groups}
 \title{Create balanced folds for cross-validation.}
 \usage{
-fold(data, k = 5, cat_col = NULL, id_col = NULL, val_col = NULL,
-  starts_col = NULL, method = "n_dist", remove_missing_starts = FALSE)
+fold(data, k = 5, cat_col = NULL, num_col = NULL, id_col = NULL,
+  starts_col = NULL, method = "n_dist", id_aggregation_fn = sum,
+  remove_missing_starts = FALSE)
 }
 \arguments{
 \item{data}{Dataframe or Vector.}
@@ -17,14 +18,20 @@ fold(data, k = 5, cat_col = NULL, id_col = NULL, val_col = NULL,
 
  Given as whole number(s) and/or percentage(s) (0 < n < 1).}
 
-\item{cat_col}{Categorical variable to balance between folds.
+\item{cat_col}{Name of categorical variable to balance between folds.
 
  E.g. when predicting a binary variable (a or b), it is necessary to have
- both represented in every fold
+ both represented in every fold.
 
- N.B. If also passing an id_col, cat_col should be constant within each ID.}
+ N.B. If also passing an \code{id_col}, \code{cat_col} should be constant within each ID.}
 
-\item{id_col}{Factor with IDs.
+\item{num_col}{Name of numerical variable to balance between folds.
+
+ N.B. When used with \code{id_col}, values for each ID are aggregated using \code{id_aggregation_fn} before being balanced.
+
+ N.B. When passing \code{num_col}, the \code{method} parameter is not used.}
+
+\item{id_col}{Name of factor with IDs.
  This will be used to keep all rows that share an ID in the same fold
  (if possible).
 
@@ -33,7 +40,7 @@ fold(data, k = 5, cat_col = NULL, id_col = NULL, val_col = NULL,
  the same fold.}
 
 \item{starts_col}{Name of column with values to match in method \code{l_starts}
-when data is a dataframe. Pass 'index' to use row names. (Character)}
+when data is a dataframe. Pass \code{'index'} to use row names. (Character)}
 
 \item{method}{\code{greedy}, \code{n_dist}, \code{n_fill}, \code{n_last},
  \code{n_rand}, \code{l_sizes}, \code{l_starts}, \code{staircase}, or
@@ -107,6 +114,10 @@ when data is a dataframe. Pass 'index' to use row names. (Character)}
 
  \code{n} is the prime number to start at}}
 
+\item{id_aggregation_fn}{Function for aggregating values in \code{num_col} for each ID, before balancing \code{num_col}.
+
+ N.B. Only used when \code{num_col} is specified.}
+
 \item{remove_missing_starts}{Recursively remove elements from the
 list of starts that are not found.
 For method \code{l_starts} only.
@@ -117,7 +128,7 @@ Dataframe with grouping factor for subsetting in cross-validation.
 }
 \description{
 Divides data into groups by a range of methods.
- Balances a given categorical variable between folds and keeps (if possible)
+ Balances a given categorical variable and/or numerical variable between folds and keeps (if possible)
  all data points with a shared ID (e.g. participant_id) in the same fold.
 }
 \details{
@@ -141,27 +152,36 @@ df <- data.frame(
  "age" = rep(sample(c(1:100), 6), 3),
  "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
  "score" = sample(c(1:100), 3*6))
-df <- df[order(df$participant),]
+df <- df \%>\% arrange(participant)
 df$session <- rep(c('1','2', '3'), 6)
 
 # Using fold()
-# Without cat_col and id_col
+
+## Without balancing
 df_folded <- fold(df, 3, method = 'n_dist')
 
-# With cat_col
+## With cat_col
 df_folded <- fold(df, 3, cat_col = 'diagnosis',
  method = 'n_dist')
 
-# With id_col
+## With id_col
 df_folded <- fold(df, 3, id_col = 'participant',
  method = 'n_dist')
+
+## With num_col
+# Note: 'method' would not be used in this case
+df_folded <- fold(df, 3, num_col = 'score')
 
 # With cat_col and id_col
 df_folded <- fold(df, 3, cat_col = 'diagnosis',
  id_col = 'participant', method = 'n_dist')
 
+## With cat_col, id_col and num_col
+df_folded <- fold(df, 3, cat_col = 'diagnosis',
+ id_col = 'participant', num_col = 'score')
+
 # Order by folds
-df_folded <- df_folded[order(df_folded$.folds),]
+df_folded <- df_folded \%>\% arrange(.folds)
 
 }
 \author{

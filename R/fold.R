@@ -4,7 +4,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 ## fold
 #' @title Create balanced folds for cross-validation.
 #' @description Divides data into groups by a range of methods.
-#'  Balances a given categorical variable between folds and keeps (if possible)
+#'  Balances a given categorical variable and/or numerical variable between folds and keeps (if possible)
 #'  all data points with a shared ID (e.g. participant_id) in the same fold.
 #' @details
 #'  \code{cat_col}: data is first subset by \code{cat_col}.
@@ -22,19 +22,27 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'  Number of folds (default), fold size, with more (see \code{method}).
 #'
 #'  Given as whole number(s) and/or percentage(s) (0 < n < 1).
-#' @param cat_col Categorical variable to balance between folds.
+#' @param cat_col Name of categorical variable to balance between folds.
 #'
 #'  E.g. when predicting a binary variable (a or b), it is necessary to have
-#'  both represented in every fold
+#'  both represented in every fold.
 #'
-#'  N.B. If also passing an id_col, cat_col should be constant within each ID.
-#' @param id_col Factor with IDs.
+#'  N.B. If also passing an \code{id_col}, \code{cat_col} should be constant within each ID.
+#' @param num_col Name of numerical variable to balance between folds.
+#'
+#'  N.B. When used with \code{id_col}, values for each ID are aggregated using \code{id_aggregation_fn} before being balanced.
+#'
+#'  N.B. When passing \code{num_col}, the \code{method} parameter is not used.
+#' @param id_col Name of factor with IDs.
 #'  This will be used to keep all rows that share an ID in the same fold
 #'  (if possible).
 #'
 #'  E.g. If we have measured a participant multiple times and want to see the
 #'  effect of time, we want to have all observations of this participant in
 #'  the same fold.
+#' @param id_aggregation_fn Function for aggregating values in \code{num_col} for each ID, before balancing \code{num_col}.
+#'
+#'  N.B. Only used when \code{num_col} is specified.
 #' @inheritParams group_factor
 #' @aliases create_balanced_groups
 #' @return Dataframe with grouping factor for subsetting in cross-validation.
@@ -49,31 +57,40 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'  "age" = rep(sample(c(1:100), 6), 3),
 #'  "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
 #'  "score" = sample(c(1:100), 3*6))
-#' df <- df[order(df$participant),]
+#' df <- df %>% arrange(participant)
 #' df$session <- rep(c('1','2', '3'), 6)
 #'
 #' # Using fold()
-#' # Without cat_col and id_col
+#'
+#' ## Without balancing
 #' df_folded <- fold(df, 3, method = 'n_dist')
 #'
-#' # With cat_col
+#' ## With cat_col
 #' df_folded <- fold(df, 3, cat_col = 'diagnosis',
 #'  method = 'n_dist')
 #'
-#' # With id_col
+#' ## With id_col
 #' df_folded <- fold(df, 3, id_col = 'participant',
 #'  method = 'n_dist')
+#'
+#' ## With num_col
+#' # Note: 'method' would not be used in this case
+#' df_folded <- fold(df, 3, num_col = 'score')
 #'
 #' # With cat_col and id_col
 #' df_folded <- fold(df, 3, cat_col = 'diagnosis',
 #'  id_col = 'participant', method = 'n_dist')
 #'
+#' ## With cat_col, id_col and num_col
+#' df_folded <- fold(df, 3, cat_col = 'diagnosis',
+#'  id_col = 'participant', num_col = 'score')
+#'
 #' # Order by folds
-#' df_folded <- df_folded[order(df_folded$.folds),]
+#' df_folded <- df_folded %>% arrange(.folds)
 #'
 #' @importFrom dplyr group_by_ do %>%
-fold <- function(data, k=5, cat_col = NULL, id_col = NULL,
-                 val_col = NULL, starts_col = NULL,
+fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
+                 id_col = NULL, starts_col = NULL,
                  method = 'n_dist', id_aggregation_fn=sum,
                  remove_missing_starts = FALSE){
 
@@ -85,6 +102,7 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL,
   # .... e.g. to predict between 2 diagnoses,
   # ..... you need both of them in the fold
   # .. an id variable for keeping a subject in the same fold
+  # .. a value variable to balance in folds
   # .. method for creating grouping factor
   #
   # Returns:
@@ -101,9 +119,9 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL,
   # Stop if k is not a wholenumber
   stopifnot(arg_is_wholenumber_(k))
 
-  # If val_col is specified, warn that method is ignored
-  if (!is.null(val_col) & method != "n_dist"){
-    message("Method is ignored when val_col is not NULL. This message occurs, because method is not default value.")
+  # If num_col is specified, warn that method is ignored
+  if (!is.null(num_col) & method != "n_dist"){
+    message("Method is ignored when num_col is not NULL. This message occurs, because method is not default value.")
   }
 
   # If method is either greedy or staircase and cat_col is not NULL
@@ -116,18 +134,16 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL,
 
   }
 
-  # TODO Implement val_col !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
   # If cat_col is not NULL
   if (!is.null(cat_col)){
 
     # If id_col is not NULL
     if (!is.null(id_col)){
 
-      # If val_col is not NULL
-      if (!is.null(val_col)){
+      # If num_col is not NULL
+      if (!is.null(num_col)){
 
-        # Aggregate val_col for IDs with the passed id_aggregation_fn
+        # Aggregate num_col for IDs with the passed id_aggregation_fn
         # For each category in cat_col
         # .. create value balanced group factor based on aggregated values
         # Join the groups back into the data
@@ -135,14 +151,14 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL,
         # aggregate val col per ID
         ids_aggregated <- data %>%
           group_by(!! as.name(cat_col), !! as.name(id_col)) %>%
-          dplyr::summarize(aggr_val = id_aggregation_fn(!!as.name(val_col))) %>%
+          dplyr::summarize(aggr_val = id_aggregation_fn(!!as.name(num_col))) %>%
           dplyr::ungroup()
 
         # Find groups for each category
         ids_grouped <- plyr::ldply(unique(ids_aggregated[[cat_col]]), function(category){
           ids_for_cat <- ids_aggregated %>%
             dplyr::filter(!!as.name(cat_col) == category)
-          vb_factor <- value_balanced_group_factor_(ids_for_cat, n=k, val_col = "aggr_val")
+          vb_factor <- value_balanced_group_factor_(ids_for_cat, n=k, num_col = "aggr_val")
           ids_for_cat$.folds <- vb_factor
           ids_for_cat %>%
             dplyr::select(-c(aggr_val))
@@ -152,7 +168,7 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL,
         data <- data %>%
           dplyr::inner_join(ids_grouped, by=c(cat_col, id_col))
 
-      # If val_col is NULL
+      # If num_col is NULL
       } else {
 
         # Group by cat_col
@@ -173,8 +189,8 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL,
     # If id_col is NULL
     } else {
 
-      # If val_col is not NULL
-      if (!is.null(val_col)){
+      # If num_col is not NULL
+      if (!is.null(num_col)){
 
         # For each category in cat_col
         # .. create value balanced group factor
@@ -183,25 +199,25 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL,
         data <- plyr::ldply(unique(data[[cat_col]]), function(category){
           data_for_cat <- data %>%
             dplyr::filter(!!as.name(cat_col) == category)
-          vb_factor <- value_balanced_group_factor_(data_for_cat, n=k, val_col = val_col)
+          vb_factor <- value_balanced_group_factor_(data_for_cat, n=k, num_col = num_col)
           data_for_cat$.folds <- vb_factor
           data_for_cat
         })
 
-        # If val_col is NULL
+        # If num_col is NULL
       } else {
 
-      # Group by cat_col
-      # Create groups from data
-      # .. and add grouping factor to data
+        # Group by cat_col
+        # Create groups from data
+        # .. and add grouping factor to data
 
-      data <- data %>%
-        group_by(!! as.name(cat_col)) %>%
-        do(group(., k, method = method,
-                 randomize = TRUE,
-                 col_name = '.folds',
-                 starts_col = starts_col,
-                 remove_missing_starts = remove_missing_starts))
+        data <- data %>%
+          group_by(!! as.name(cat_col)) %>%
+          do(group(., k, method = method,
+                   randomize = TRUE,
+                   col_name = '.folds',
+                   starts_col = starts_col,
+                   remove_missing_starts = remove_missing_starts))
       }
     }
 
@@ -211,21 +227,21 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL,
     # If id_col is not NULL
     if (!is.null(id_col)){
 
-      # If val_col is not NULL
-      if (!is.null(val_col)){
+      # If num_col is not NULL
+      if (!is.null(num_col)){
 
-        # Aggregate val_col for IDs with the passed id_aggregation_fn
+        # Aggregate num_col for IDs with the passed id_aggregation_fn
         # Create value balanced group factor based on aggregated values
         # Join the groups back into the data
 
         # aggregate val col per ID
         ids_aggregated <- data %>%
           group_by(!! as.name(id_col)) %>%
-          dplyr::summarize(aggr_val = id_aggregation_fn(!!as.name(val_col))) %>%
+          dplyr::summarize(aggr_val = id_aggregation_fn(!!as.name(num_col))) %>%
           dplyr::ungroup()
 
         # Create group factor
-        vb_factor <- value_balanced_group_factor_(ids_aggregated, n=k, val_col = "aggr_val")
+        vb_factor <- value_balanced_group_factor_(ids_aggregated, n=k, num_col = "aggr_val")
         ids_aggregated$.folds <- vb_factor
         ids_aggregated$aggr_val <- NULL
 
@@ -233,44 +249,43 @@ fold <- function(data, k=5, cat_col = NULL, id_col = NULL,
         data <- data %>%
           dplyr::inner_join(ids_aggregated, by=c(id_col))
 
-      # If val_col is NULL
+      # If num_col is NULL
       } else {
 
-      # Create groups of unique IDs
-      # .. and add grouping factor to data
+        # Create groups of unique IDs
+        # .. and add grouping factor to data
 
-      data <- data %>%
-        group_uniques_(k, id_col, method,
-                       col_name = '.folds',
-                       starts_col = starts_col,
-                       remove_missing_starts = remove_missing_starts)
+        data <- data %>%
+          group_uniques_(k, id_col, method,
+                         col_name = '.folds',
+                         starts_col = starts_col,
+                         remove_missing_starts = remove_missing_starts)
       }
 
     # If id_col is NULL
     } else {
 
-      # If val_col is not NULL
-      if (!is.null(val_col)){
+      # If num_col is not NULL
+      if (!is.null(num_col)){
 
         # Add group factor
-        data$.folds <- value_balanced_group_factor_(data, n=k, val_col = val_col)
+        data$.folds <- value_balanced_group_factor_(data, n=k, num_col = num_col)
 
-      # If val_col is NULL
+      # If num_col is NULL
       } else {
 
-      # Create groups from all the data points
-      # .. and add grouping factor to data
+        # Create groups from all the data points
+        # .. and add grouping factor to data
 
-      data <- group(data, k,
-                    method = method,
-                    randomize = TRUE,
-                    col_name = '.folds',
-                    starts_col = starts_col,
-                    remove_missing_starts = remove_missing_starts)
+        data <- group(data, k,
+                      method = method,
+                      randomize = TRUE,
+                      col_name = '.folds',
+                      starts_col = starts_col,
+                      remove_missing_starts = remove_missing_starts)
       }
     }
   }
-
 
   # Return data
   return(data)

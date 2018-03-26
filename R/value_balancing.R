@@ -1,5 +1,5 @@
 
-value_balanced_group_factor_ <- function(data, n, val_col, method = "n_fill") {
+value_balanced_group_factor_ <- function(data, n, num_col, method = "n_fill") {
 
   # Do function that tests if a col name already exists and then add an extra _ to the internal tmp col names until it's distinct
 
@@ -10,7 +10,7 @@ value_balanced_group_factor_ <- function(data, n, val_col, method = "n_fill") {
   # This is done, as it is one with the least effect on sum of values in a group
   data_sorted <- data %>%
     dplyr::mutate(.tmp_index_ = 1:n()) %>%
-    dplyr::arrange(!!as.name(val_col)) %>%
+    dplyr::arrange(!!as.name(num_col)) %>%
     rearrange(method = "pair_extremes", unequal_method = "first",
               drop_rearrange_factor = FALSE,
               rearrange_factor_name = "rearrange_factor")
@@ -22,7 +22,7 @@ value_balanced_group_factor_ <- function(data, n, val_col, method = "n_fill") {
 
   tmp_group_scores <- data_sorted %>%
     dplyr::group_by(rearrange_factor) %>%
-    dplyr::summarize(group_aggr = sum(!!as.name(val_col)))
+    dplyr::summarize(group_aggr = sum(!!as.name(num_col)))
 
   if(nrows_equal){
     tmp_group_scores_sorted <- tmp_group_scores %>%

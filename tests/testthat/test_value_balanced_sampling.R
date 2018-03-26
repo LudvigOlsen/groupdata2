@@ -8,7 +8,7 @@ test_that("value_balanced_group_factor_() work with n=2", {
   df <- data.frame(
     "participant" = factor(c(1, 3, 5, 6, 7, 8)),
     "score" = c(79,85,140,69,87,92))
-  vbf <- value_balanced_group_factor_(df, 2, val_col="score")
+  vbf <- value_balanced_group_factor_(df, 2, num_col="score")
   df_vbf <- df %>%
     dplyr::mutate(.groups = vbf)
 
@@ -33,17 +33,17 @@ test_that("value_balanced_group_factor_() works with n=3", {
 
   # value_balanced_group_factor_ on unequal number of dataframe rows
   set.seed(1)
-  expect_equal(value_balanced_group_factor_(df, 3, val_col="score"),
+  expect_equal(value_balanced_group_factor_(df, 3, num_col="score"),
                factor(c(2,3,1,3,1,1,2)))
 
   set.seed(1)
-  expect_equal(value_balanced_group_factor_(df, 3, val_col="neg_score"),
-               value_balanced_group_factor_(df, 3, val_col="score"))
+  expect_equal(value_balanced_group_factor_(df, 3, num_col="neg_score"),
+               value_balanced_group_factor_(df, 3, num_col="score"))
 
   # add grouping factor to df and get sums of value col
   set.seed(1)
   df_grouped <- df %>%
-    dplyr::mutate(.groups = value_balanced_group_factor_(df, 3, val_col="score"))
+    dplyr::mutate(.groups = value_balanced_group_factor_(df, 3, num_col="score"))
 
   group_sums <- df_grouped %>%
     dplyr::group_by(.groups) %>%
@@ -55,17 +55,17 @@ test_that("value_balanced_group_factor_() works with n=3", {
 
   df <- df %>% dplyr::filter(row_number() != 7)
   set.seed(1)
-  expect_equal(value_balanced_group_factor_(df, 3, val_col="score"),
+  expect_equal(value_balanced_group_factor_(df, 3, num_col="score"),
                factor(c(3,1,1,2,2,3)))
 
   set.seed(1)
-  expect_equal(value_balanced_group_factor_(df, 3, val_col="neg_score"),
-               value_balanced_group_factor_(df, 3, val_col="score"))
+  expect_equal(value_balanced_group_factor_(df, 3, num_col="neg_score"),
+               value_balanced_group_factor_(df, 3, num_col="score"))
 
   # add grouping factor to df and get sums of value col
   set.seed(1)
   df_grouped <- df %>%
-    dplyr::mutate(.groups = value_balanced_group_factor_(df, 3, val_col="score"))
+    dplyr::mutate(.groups = value_balanced_group_factor_(df, 3, num_col="score"))
 
   group_sums <- df_grouped %>%
     dplyr::group_by(.groups) %>%
