@@ -102,7 +102,7 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
   # .... e.g. to predict between 2 diagnoses,
   # ..... you need both of them in the fold
   # .. an id variable for keeping a subject in the same fold
-  # .. a value variable to balance in folds
+  # .. a numerical variable to balance in folds
   # .. method for creating grouping factor
   #
   # Returns:
@@ -134,42 +134,19 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
 
   }
 
-  # If cat_col is not NULL
-  if (!is.null(cat_col)){
+  # If num_col is not NULL
+  if (!is.null(num_col)){
+    data <- create_num_col_groups(data, n=k, num_col=num_col, cat_col=cat_col,
+                                  id_col=id_col, col_name=".folds",
+                                  id_aggregation_fn = id_aggregation_fn,
+                                  method="n_fill")
+  } else {
 
-    # If id_col is not NULL
-    if (!is.null(id_col)){
+    # If cat_col is not NULL
+    if (!is.null(cat_col)){
 
-      # If num_col is not NULL
-      if (!is.null(num_col)){
-
-        # Aggregate num_col for IDs with the passed id_aggregation_fn
-        # For each category in cat_col
-        # .. create value balanced group factor based on aggregated values
-        # Join the groups back into the data
-
-        # aggregate val col per ID
-        ids_aggregated <- data %>%
-          group_by(!! as.name(cat_col), !! as.name(id_col)) %>%
-          dplyr::summarize(aggr_val = id_aggregation_fn(!!as.name(num_col))) %>%
-          dplyr::ungroup()
-
-        # Find groups for each category
-        ids_grouped <- plyr::ldply(unique(ids_aggregated[[cat_col]]), function(category){
-          ids_for_cat <- ids_aggregated %>%
-            dplyr::filter(!!as.name(cat_col) == category)
-          ids_for_cat$.folds <- value_balanced_group_factor_(
-            ids_for_cat, n=k, num_col = "aggr_val")
-          ids_for_cat %>%
-            dplyr::select(-c(aggr_val))
-        })
-
-        # Transfer groups to data
-        data <- data %>%
-          dplyr::inner_join(ids_grouped, by=c(cat_col, id_col))
-
-      # If num_col is NULL
-      } else {
+      # If id_col is not NULL
+      if (!is.null(id_col)){
 
         # Group by cat_col
         # For each group:
@@ -184,27 +161,8 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
                             starts_col = starts_col,
                             remove_missing_starts = remove_missing_starts)) %>%
           group_by(!! as.name('.folds'))
-      }
 
-    # If id_col is NULL
-    } else {
-
-      # If num_col is not NULL
-      if (!is.null(num_col)){
-
-        # For each category in cat_col
-        # .. create value balanced group factor
-
-        # Find groups for each category
-        data <- plyr::ldply(unique(data[[cat_col]]), function(category){
-          data_for_cat <- data %>%
-            dplyr::filter(!!as.name(cat_col) == category)
-          data_for_cat$.folds <- value_balanced_group_factor_(
-            data_for_cat, n=k, num_col = num_col)
-          data_for_cat
-        })
-
-      # If num_col is NULL
+      # If id_col is NULL
       } else {
 
         # Group by cat_col
@@ -218,39 +176,14 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
                    col_name = '.folds',
                    starts_col = starts_col,
                    remove_missing_starts = remove_missing_starts))
+
       }
-    }
 
-  # If cat_col is NULL
-  } else {
+    # If cat_col is NULL
+    } else {
 
-    # If id_col is not NULL
-    if (!is.null(id_col)){
-
-      # If num_col is not NULL
-      if (!is.null(num_col)){
-
-        # Aggregate num_col for IDs with the passed id_aggregation_fn
-        # Create value balanced group factor based on aggregated values
-        # Join the groups back into the data
-
-        # aggregate val col per ID
-        ids_aggregated <- data %>%
-          group_by(!! as.name(id_col)) %>%
-          dplyr::summarize(aggr_val = id_aggregation_fn(!!as.name(num_col))) %>%
-          dplyr::ungroup()
-
-        # Create group factor
-        vb_factor <- value_balanced_group_factor_(ids_aggregated, n=k, num_col = "aggr_val")
-        ids_aggregated$.folds <- vb_factor
-        ids_aggregated$aggr_val <- NULL
-
-        # Transfer groups to data
-        data <- data %>%
-          dplyr::inner_join(ids_aggregated, by=c(id_col))
-
-      # If num_col is NULL
-      } else {
+      # If id_col is not NULL
+      if (!is.null(id_col)){
 
         # Create groups of unique IDs
         # .. and add grouping factor to data
@@ -260,18 +193,9 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
                          col_name = '.folds',
                          starts_col = starts_col,
                          remove_missing_starts = remove_missing_starts)
-      }
 
-    # If id_col is NULL
-    } else {
 
-      # If num_col is not NULL
-      if (!is.null(num_col)){
-
-        # Add group factor
-        data$.folds <- value_balanced_group_factor_(data, n=k, num_col = num_col)
-
-      # If num_col is NULL
+      # If id_col is NULL
       } else {
 
         # Create groups from all the data points
@@ -283,6 +207,7 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
                       col_name = '.folds',
                       starts_col = starts_col,
                       remove_missing_starts = remove_missing_starts)
+
       }
     }
   }

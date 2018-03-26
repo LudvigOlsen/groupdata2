@@ -1,7 +1,7 @@
 library(groupdata2)
 context("partition()")
 
-test_that("dimensions of dataframe with fold()",{
+test_that("dimensions of dataframe with partition()",{
 
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
@@ -36,9 +36,9 @@ test_that(".partitions is correct in partition() with list_out == FALSE",{
   # Add session info
   df$session <- rep(c('1','2', '3'), 6)
 
-  col_is_factor <- function(df, n, cat_col = NULL, id_col = NULL, col){
+  col_is_factor <- function(df, n, cat_col = NULL, num_col = NULL, id_col = NULL, col){
 
-    partitioned_df <- partition(df, n, cat_col=cat_col,
+    partitioned_df <- partition(df, n, cat_col=cat_col, num_col=num_col,
                                 id_col=id_col, list_out = FALSE)
 
     return(is.factor(partitioned_df[[col]]))
@@ -47,9 +47,9 @@ test_that(".partitions is correct in partition() with list_out == FALSE",{
 
 
 
-  group_counts <- function(df, n, cat_col = NULL, id_col = NULL, force_equal = FALSE){
+  group_counts <- function(df, n, cat_col = NULL, num_col = NULL, id_col = NULL, force_equal = FALSE){
 
-    partitioned_df <- partition(df, n, cat_col=cat_col,
+    partitioned_df <- partition(df, n, cat_col=cat_col, num_col=num_col,
                                 id_col=id_col, force_equal = force_equal,
                                 list_out = FALSE)
     counts <- plyr::count(partitioned_df$.partitions)
@@ -58,17 +58,28 @@ test_that(".partitions is correct in partition() with list_out == FALSE",{
   }
 
   # Check if .folds is a factor
-  expect_equal(col_is_factor(df, 0.2, col='.partitions'), TRUE)
-  expect_equal(col_is_factor(df, 0.2, cat_col = 'diagnosis', col='.partitions'), TRUE)
-  expect_equal(col_is_factor(df, 0.2, id_col = 'participant', col='.partitions'), TRUE)
-  expect_equal(col_is_factor(df, 0.4, cat_col = 'diagnosis',
-                             id_col = 'participant',col='.partitions'), TRUE)
+  expect_true(col_is_factor(df, 0.2, col='.partitions'))
+  expect_true(col_is_factor(df, 0.2, cat_col = 'diagnosis', col='.partitions'))
+  expect_true(col_is_factor(df, 0.2, id_col = 'participant', col='.partitions'))
+  expect_true(col_is_factor(df, 0.4, cat_col = 'diagnosis',
+                            id_col = 'participant',col='.partitions'))
+  expect_true(col_is_factor(df, 0.2, num_col = 'score', col='.partitions'))
+  expect_true(col_is_factor(df, 0.3, num_col = 'score', cat_col = 'diagnosis', col='.partitions'))
+  expect_true(col_is_factor(df, 0.2, num_col = 'score', id_col = 'participant', col='.partitions'))
+  expect_true(col_is_factor(df, 0.4, num_col = 'score', cat_col = 'diagnosis',
+                            id_col = 'participant', col='.partitions'))
 
   expect_equal(group_counts(df, 0.2), c(3,15))
 
   expect_equal(group_counts(df, 0.2, cat_col = 'diagnosis'), c(2,16))
-
+  expect_equal(group_counts(df, 0.2, id_col = 'participant'), c(3,15))
+  expect_equal(group_counts(df, 0.2, num_col = 'score'), c(3,15))
   expect_equal(group_counts(df, 0.4, cat_col = 'diagnosis',
+                            id_col = 'participant'), c(6,12))
+  expect_equal(group_counts(df, 0.4, cat_col = 'diagnosis',
+                            num_col = 'score'), c(6,12))
+  expect_equal(group_counts(df, 0.4, num_col = 'score', id_col = 'participant'), c(6,12))
+  expect_equal(group_counts(df, 0.4, cat_col = 'diagnosis', num_col = 'score',
                             id_col = 'participant'), c(6,12))
 
   expect_equal(group_counts(df, 2, cat_col = 'diagnosis',
@@ -80,6 +91,15 @@ test_that(".partitions is correct in partition() with list_out == FALSE",{
 
   expect_equal(group_counts(df, 2, id_col = 'participant'), c(6,12))
 
+  expect_equal(group_counts(df, 2, num_col = 'score'), c(2,16))
+  expect_equal(group_counts(df, c(2,4,6), num_col = 'score'), c(2,4,6,6))
+
+  expect_equal(group_counts(df, 2, cat_col = 'diagnosis', num_col = 'score'), c(4,14))
+  expect_equal(group_counts(df, 2, cat_col = 'diagnosis', num_col = 'score'), c(4,14))
+  expect_equal(group_counts(df, 2, id_col = 'participant', num_col = 'score'), c(6,12))
+  expect_equal(group_counts(df, 2, cat_col = 'diagnosis', id_col = 'participant', num_col = 'score'), c(12,6))
+  expect_equal(group_counts(df, 1, cat_col = 'diagnosis', id_col = 'participant', num_col = 'score'), c(6,12))
+
 
   # Test force_equal
 
@@ -88,6 +108,11 @@ test_that(".partitions is correct in partition() with list_out == FALSE",{
   expect_equal(group_counts(df, 3, id_col = 'participant', force_equal = TRUE), c(9))
 
   expect_equal(group_counts(df, 2, cat_col = 'diagnosis', force_equal = TRUE), c(4))
+
+  expect_equal(group_counts(df, 2, num_col = 'score', force_equal = TRUE), c(2))
+  expect_equal(group_counts(df, 2, cat_col = 'diagnosis', num_col = 'score', force_equal = TRUE), c(4))
+  expect_equal(group_counts(df, 2, cat_col = 'diagnosis', num_col = 'score',
+                            id_col = 'participant', force_equal = TRUE), c(12))
 
   expect_equal(group_counts(df, 2, id_col = 'participant',
                             cat_col = 'diagnosis',
@@ -108,9 +133,9 @@ test_that(".partitions is correct in partition() with list_out == TRUE",{
   df$session <- rep(c('1','2', '3'), 6)
 
 
-  partition_count <- function(df, n, cat_col = NULL, id_col = NULL, force_equal = FALSE){
+  partition_count <- function(df, n, cat_col = NULL, num_col = NULL, id_col = NULL, force_equal = FALSE){
 
-    partitioned_df <- partition(df, n, cat_col=cat_col,
+    partitioned_df <- partition(df, n, cat_col=cat_col, num_col=num_col,
                                 id_col=id_col, force_equal = force_equal,
                                 list_out = TRUE)
 
@@ -119,10 +144,10 @@ test_that(".partitions is correct in partition() with list_out == TRUE",{
 
   }
 
-  partition_element_counts <- function(df, n, cat_col = NULL, id_col = NULL,
+  partition_element_counts <- function(df, n, cat_col = NULL, num_col = NULL, id_col = NULL,
                                        force_equal = FALSE){
 
-    partitioned_df <- partition(df, n, cat_col=cat_col,
+    partitioned_df <- partition(df, n, cat_col=cat_col, num_col=num_col,
                                 id_col=id_col, force_equal = force_equal,
                                 list_out = TRUE)
 
