@@ -42,7 +42,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'  the same fold.
 #' @param id_aggregation_fn Function for aggregating values in \code{num_col} for each ID, before balancing \code{num_col}.
 #'
-#'  N.B. Only used when \code{num_col} is specified.
+#'  N.B. Only used when \code{num_col} and \code{id_col} are both specified.
 #' @inheritParams group_factor
 #' @aliases create_balanced_groups
 #' @return Dataframe with grouping factor for subsetting in cross-validation.
@@ -158,8 +158,8 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
         ids_grouped <- plyr::ldply(unique(ids_aggregated[[cat_col]]), function(category){
           ids_for_cat <- ids_aggregated %>%
             dplyr::filter(!!as.name(cat_col) == category)
-          vb_factor <- value_balanced_group_factor_(ids_for_cat, n=k, num_col = "aggr_val")
-          ids_for_cat$.folds <- vb_factor
+          ids_for_cat$.folds <- value_balanced_group_factor_(
+            ids_for_cat, n=k, num_col = "aggr_val")
           ids_for_cat %>%
             dplyr::select(-c(aggr_val))
         })
@@ -199,12 +199,12 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
         data <- plyr::ldply(unique(data[[cat_col]]), function(category){
           data_for_cat <- data %>%
             dplyr::filter(!!as.name(cat_col) == category)
-          vb_factor <- value_balanced_group_factor_(data_for_cat, n=k, num_col = num_col)
-          data_for_cat$.folds <- vb_factor
+          data_for_cat$.folds <- value_balanced_group_factor_(
+            data_for_cat, n=k, num_col = num_col)
           data_for_cat
         })
 
-        # If num_col is NULL
+      # If num_col is NULL
       } else {
 
         # Group by cat_col

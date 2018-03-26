@@ -116,7 +116,7 @@ when data is a dataframe. Pass \code{'index'} to use row names. (Character)}
 
 \item{id_aggregation_fn}{Function for aggregating values in \code{num_col} for each ID, before balancing \code{num_col}.
 
- N.B. Only used when \code{num_col} is specified.}
+ N.B. Only used when \code{num_col} and \code{id_col} are both specified.}
 
 \item{remove_missing_starts}{Recursively remove elements from the
 list of starts that are not found.

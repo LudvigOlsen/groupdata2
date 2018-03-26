@@ -5,7 +5,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 ## partition
 #' @title Create balanced partitions.
 #' @description Splits data into partitions.
-#'  Balances a given categorical variable between partitions and keeps (if possible)
+#'  Balances a given categorical variable and/or numerical variable between partitions and keeps (if possible)
 #'  all data points with a shared ID (e.g. participant_id) in the same partition.
 #' @details
 #'  \code{cat_col}: data is first subset by \code{cat_col}.
@@ -23,18 +23,24 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #' @param p List / vector of partition sizes.
 #'  Given as whole number(s) and/or percentage(s) (\code{0} < \code{n} < \code{1}).
 #'  E.g. \eqn{c(0.2, 3, 0.1)}.
-#' @param cat_col Categorical variable to balance between partitions.
+#' @param cat_col Name of categorical variable to balance between partitions.
 #'
 #'  E.g. when training/testing a model for predicting a binary variable (a or b),
 #'  it is necessary to have both represented in both the training set and the test set.
 #'
 #'  N.B. If also passing an id_col, cat_col should be constant within each ID.
-#' @param id_col Factor with IDs. Used to keep all rows that share an ID in
+#' @param num_col Name of numerical variable to balance between partitions.
+#'
+#'  N.B. When used with \code{id_col}, values for each ID are aggregated using \code{id_aggregation_fn} before being balanced.
+#' @param id_col Name of factor with IDs. Used to keep all rows that share an ID in
 #'  the same partition (if possible).
 #'
 #'  E.g. If we have measured a participant multiple times and want to see the
 #'  effect of time, we want to have all observations of this participant in
 #'  the same partition.
+#' @param id_aggregation_fn Function for aggregating values in \code{num_col} for each ID, before balancing \code{num_col}.
+#'
+#'  N.B. Only used when \code{num_col} and \code{id_col} are both specified.
 #' @param list_out Return partitions in a list. (Logical)
 #' @param force_equal Discard excess data. (Logical)
 #' @return If \code{list_out is TRUE}:
@@ -78,7 +84,9 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'
 #' @importFrom dplyr group_by do %>%
 partition <- function(data, p = 0.2, cat_col = NULL,
-                      id_col = NULL, force_equal = FALSE,
+                      num_col = NULL, id_col = NULL,
+                      id_aggregation_fn=sum,
+                      force_equal = FALSE,
                       list_out = TRUE) {
 
   #
@@ -86,6 +94,7 @@ partition <- function(data, p = 0.2, cat_col = NULL,
   # data: dataframe or vector
   # p: list of partitions given as percentage (0-1) or group sizes (wholenumber)
   # cat_col: Categorical variable to balance by
+  # num_col: Numerical variable to balance by
   # id_col: ID column to keep rows with shared IDs in the same partition
   # force_equal: Whether you only want the inputted partitions or the exceeding values gets a partition (logical)
   #        FALSE allows you to pass "p = 0.2" and get 2 partions - 0.2 and 0.8
@@ -98,64 +107,150 @@ partition <- function(data, p = 0.2, cat_col = NULL,
     # If id_col is not NULL
     if (!is.null(id_col)){
 
-      # Group by cat_col
-      # For each group:
-      # .. create groups of the unique IDs (e.g. subjects)
-      # .. add grouping factor to data
-      # Group by new grouping factor '.partitions'
+      # If num_col is not NULL
+      if (!is.null(num_col)){
 
-      data <- data %>%
-        group_by(!! as.name(cat_col)) %>%
-        do(group_uniques_(., n = p, id_col, method = 'l_sizes',
-                          col_name = '.partitions',
-                          force_equal = force_equal)) %>%
-        group_by(!! as.name('.partitions'))
+        # Aggregate num_col for IDs with the passed id_aggregation_fn
+        # For each category in cat_col
+        # .. create value balanced group factor based on aggregated values
+        # Join the groups back into the data
 
+        # aggregate val col per ID
+        ids_aggregated <- data %>%
+          group_by(!! as.name(cat_col), !! as.name(id_col)) %>%
+          dplyr::summarize(aggr_val = id_aggregation_fn(!!as.name(num_col))) %>%
+          dplyr::ungroup()
 
-      # If id_col is NULL
+        # Find groups for each category
+        ids_grouped <- plyr::ldply(unique(ids_aggregated[[cat_col]]), function(category){
+          ids_for_cat <- ids_aggregated %>%
+            dplyr::filter(!!as.name(cat_col) == category)
+          ids_for_cat$.folds <- value_balanced_group_factor_(ids_for_cat, n=p, num_col = "aggr_val",
+                                                    method="l_sizes")
+          ids_for_cat %>%
+            dplyr::select(-c(aggr_val))
+        })
+
+        # Transfer groups to data
+        data <- data %>%
+          dplyr::inner_join(ids_grouped, by=c(cat_col, id_col))
+
+      # If num_col is NULL
+      } else {
+
+        # Group by cat_col
+        # For each group:
+        # .. create groups of the unique IDs (e.g. subjects)
+        # .. add grouping factor to data
+        # Group by new grouping factor '.partitions'
+
+        data <- data %>%
+          group_by(!! as.name(cat_col)) %>%
+          do(group_uniques_(., n = p, id_col, method = 'l_sizes',
+                            col_name = '.partitions',
+                            force_equal = force_equal)) %>%
+          group_by(!! as.name('.partitions'))
+      }
+
+    # If id_col is NULL
     } else {
 
-      # Group by cat_col
-      # Create groups from data
-      # .. and add grouping factor to data
+      # If num_col is not NULL
+      if (!is.null(num_col)){
 
-      data <- data %>%
-        group_by(!! as.name(cat_col)) %>%
-        do(group(., n = p, method = 'l_sizes',
-                 randomize = TRUE,
-                 col_name = '.partitions',
-                 force_equal = force_equal))
+        # For each category in cat_col
+        # .. create value balanced group factor
 
+        # Find groups for each category
+        data <- plyr::ldply(unique(data[[cat_col]]), function(category){
+          data_for_cat <- data %>%
+            dplyr::filter(!!as.name(cat_col) == category)
+          data_for_cat$.folds <- value_balanced_group_factor_(data_for_cat, n=p,
+                                                              num_col = num_col, method='l_sizes')
+          data_for_cat
+        })
 
+      # If num_col is NULL
+      } else {
+
+        # Group by cat_col
+        # Create groups from data
+        # .. and add grouping factor to data
+
+        data <- data %>%
+          group_by(!! as.name(cat_col)) %>%
+          do(group(., n = p, method = 'l_sizes',
+                   randomize = TRUE,
+                   col_name = '.partitions',
+                   force_equal = force_equal))
+      }
     }
 
 
-    # If cat_col is NULL
+  # If cat_col is NULL
   } else {
 
     # If id_col is not NULL
     if (!is.null(id_col)){
 
-      # Create groups of unique IDs
-      # .. and add grouping factor to data
+      # If num_col is not NULL
+      if (!is.null(num_col)){
 
-      data <- data %>%
-        group_uniques_(n = p, id_col, method = 'l_sizes',
-                       col_name = '.partitions',
-                       force_equal = force_equal)
+        # Aggregate num_col for IDs with the passed id_aggregation_fn
+        # Create value balanced group factor based on aggregated values
+        # Join the groups back into the data
 
+        # aggregate val col per ID
+        ids_aggregated <- data %>%
+          group_by(!! as.name(id_col)) %>%
+          dplyr::summarize(aggr_val = id_aggregation_fn(!!as.name(num_col))) %>%
+          dplyr::ungroup()
 
-      # If id_col is NULL
+        # Create group factor
+        ids_aggregated$.folds <- value_balanced_group_factor_(
+          ids_aggregated, n=p, num_col = "aggr_val", method='l_sizes')
+        ids_aggregated$aggr_val <- NULL
+
+        # Transfer groups to data
+        data <- data %>%
+          dplyr::inner_join(ids_aggregated, by=c(id_col))
+
+      # If num_col is NULL
+      } else {
+
+        # Create groups of unique IDs
+        # .. and add grouping factor to data
+
+        data <- data %>%
+          group_uniques_(n = p, id_col, method = 'l_sizes',
+                         col_name = '.partitions',
+                         force_equal = force_equal)
+
+      }
+
+    # If id_col is NULL
     } else {
 
-      # Create groups from all the data points
-      # .. and add grouping factor to data
+      # If num_col is not NULL
+      if (!is.null(num_col)){
 
-      data <- group(data, n = p,
-                    method = 'l_sizes',
-                    randomize = TRUE,
-                    col_name = '.partitions',
-                    force_equal = force_equal)
+        # Add group factor
+        data$.folds <- value_balanced_group_factor_(data, n=p,
+                                                    num_col = num_col,
+                                                    method = 'l_sizes')
+
+      # If num_col is NULL
+      } else {
+
+        # Create groups from all the data points
+        # .. and add grouping factor to data
+
+        data <- group(data, n = p,
+                      method = 'l_sizes',
+                      randomize = TRUE,
+                      col_name = '.partitions',
+                      force_equal = force_equal)
+      }
 
     }
 

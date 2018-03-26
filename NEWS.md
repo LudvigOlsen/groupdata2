@@ -7,6 +7,8 @@ Thanks for the request from jjesusfilho #3.
 
 * New wrapper function: downsample() wraps balance() with size="min"  
 
+* Adds parameter "num_col" to fold() and partition() for balancing on a numerical column.
+
 
 # groupdata2 1.0.0
 

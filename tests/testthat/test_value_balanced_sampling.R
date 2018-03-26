@@ -76,3 +76,35 @@ test_that("value_balanced_group_factor_() works with n=3", {
 })
 
 
+
+test_that("value_balanced_group_factor_() work method='l_sizes'", {
+
+  # Create dataframe
+  set.seed(1)
+  df <- data.frame(
+    "participant" = factor(c(1, 3, 5, 6, 7, 8)),
+    "score" = c(79,85,140,69,87,92))
+
+  vbf <- value_balanced_group_factor_(df, 0.5, num_col="score", method = 'l_sizes')
+  df_vbf <- df %>%
+    dplyr::mutate(.groups = vbf)
+
+  group_sums <- df_vbf %>%
+    dplyr::group_by(.groups) %>%
+    dplyr::summarize(group_sum = sum(score))
+
+  expect_equal(vbf, factor(c(1,2,2,1,2,1)))
+  expect_equal(group_sums$group_sum, c(240,312))
+
+  vbf <- value_balanced_group_factor_(df, 0.2, num_col="score", method = 'l_sizes')
+  df_vbf <- df %>%
+    dplyr::mutate(.groups = vbf)
+
+  group_sums <- df_vbf %>%
+    dplyr::group_by(.groups) %>%
+    dplyr::summarize(group_sum = sum(score))
+
+  expect_equal(vbf, factor(c(1,2,2,2,2,2)))
+  expect_equal(group_sums$group_sum, c(79,473))
+
+})

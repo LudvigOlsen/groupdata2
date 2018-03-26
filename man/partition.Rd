@@ -4,8 +4,8 @@
 \alias{partition}
 \title{Create balanced partitions.}
 \usage{
-partition(data, p = 0.2, cat_col = NULL, id_col = NULL,
-  force_equal = FALSE, list_out = TRUE)
+partition(data, p = 0.2, cat_col = NULL, num_col = NULL, id_col = NULL,
+  id_aggregation_fn = sum, force_equal = FALSE, list_out = TRUE)
 }
 \arguments{
 \item{data}{Dataframe or Vector.}
@@ -14,19 +14,27 @@ partition(data, p = 0.2, cat_col = NULL, id_col = NULL,
 Given as whole number(s) and/or percentage(s) (\code{0} < \code{n} < \code{1}).
 E.g. \eqn{c(0.2, 3, 0.1)}.}
 
-\item{cat_col}{Categorical variable to balance between partitions.
+\item{cat_col}{Name of categorical variable to balance between partitions.
 
  E.g. when training/testing a model for predicting a binary variable (a or b),
  it is necessary to have both represented in both the training set and the test set.
 
  N.B. If also passing an id_col, cat_col should be constant within each ID.}
 
-\item{id_col}{Factor with IDs. Used to keep all rows that share an ID in
+\item{num_col}{Name of numerical variable to balance between partitions.
+
+ N.B. When used with \code{id_col}, values for each ID are aggregated using \code{id_aggregation_fn} before being balanced.}
+
+\item{id_col}{Name of factor with IDs. Used to keep all rows that share an ID in
  the same partition (if possible).
 
  E.g. If we have measured a participant multiple times and want to see the
  effect of time, we want to have all observations of this participant in
  the same partition.}
+
+\item{id_aggregation_fn}{Function for aggregating values in \code{num_col} for each ID, before balancing \code{num_col}.
+
+ N.B. Only used when \code{num_col} and \code{id_col} are both specified.}
 
 \item{force_equal}{Discard excess data. (Logical)}
 
@@ -43,7 +51,7 @@ A dataframe with grouping factor for subsetting.
 }
 \description{
 Splits data into partitions.
- Balances a given categorical variable between partitions and keeps (if possible)
+ Balances a given categorical variable and/or numerical variable between partitions and keeps (if possible)
  all data points with a shared ID (e.g. participant_id) in the same partition.
 }
 \details{

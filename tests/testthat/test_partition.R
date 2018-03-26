@@ -8,7 +8,7 @@ test_that("dimensions of dataframe with fold()",{
                    "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
                    "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
 
-  df <- df[order(df$participant),]
+  df <- df %>% arrange(participant)
 
   # Add session info
   df$session <- rep(c('1','2', '3'), 6)
@@ -31,7 +31,7 @@ test_that(".partitions is correct in partition() with list_out == FALSE",{
                    "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
                    "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
 
-  df <- df[order(df$participant),]
+  df <- df %>% arrange(participant)
 
   # Add session info
   df$session <- rep(c('1','2', '3'), 6)
@@ -102,7 +102,7 @@ test_that(".partitions is correct in partition() with list_out == TRUE",{
                    "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
                    "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
 
-  df <- df[order(df$participant),]
+  df <- df %>% arrange(participant)
 
   # Add session info
   df$session <- rep(c('1','2', '3'), 6)
@@ -152,7 +152,7 @@ test_that("partition() outputs correct error messages",{
                    "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
                    "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
 
-  df <- df[order(df$participant),]
+  df <- df %>% arrange(participant)
 
   # Add session info
   df$session <- rep(c('1','2', '3'), 6)
