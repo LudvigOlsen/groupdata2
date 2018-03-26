@@ -45,7 +45,7 @@ options(tibble.print_min = 4L, tibble.print_max = 4L)
 # Introduction
 
 When working with data you sometimes want to divide it into groups and subgroups for processing or descriptive statistics. It can help reduce the amount of information, allowing you to compare measurements on different scales - e.g. income per year instead of per month.
-groupdata2 is a set of tools for creating groups from your data. It consists of five, easy to use, main functions, namely **group_factor**(), **group**(), **splt**(), **partition**(), and **fold**().  
+groupdata2 is a set of tools for creating groups from your data. It consists of six, easy to use, main functions, namely **group_factor**(), **group**(), **splt**(), **partition**(), **fold**(), and **balance**().  
 
 **group_factor**()  is at the heart of it all. It creates the groups and is used by the other functions. It returns a grouping factor with group numbers, i.e. 1s for all elements in group 1, 2s for group 2, etc. So if you ask it to create 2 groups from a vector ('Hans','Dorte','Mikkel','Leif') it will return a factor (1,1,2,2).   
 
@@ -54,9 +54,11 @@ If, for instance, you have a column in a dataframe with quarterly measurements, 
 
 **splt**() takes in either a dataframe or vector, creates a grouping factor, and splits the given data by this factor using base::split. Often it will be faster to use **group**() instead of **splt**(). I also find it easier to work with the output of **group**() .
 
-**partition**() creates (optionally) balanced partitions (e.g. train/test sets) from given group sizes. It can balance partitions on one categorical variable and/or is able to keep all datapoints with a shared ID in the same partition.
+**partition**() creates (optionally) balanced partitions (e.g. train/test sets) from given group sizes. It can balance partitions on one categorical variable and/or one numerical variable. It is able to keep all datapoints with a shared ID in the same partition.
 
-**fold**() creates (optionally) balanced folds for cross-validation. It can balance folds on one categorical variable and/or is able to keep all datapoints with a shared ID in the same fold.  
+**fold**() creates (optionally) balanced folds for cross-validation. It can balance folds on one categorical variable and/or one numerical variable. It is able to keep all datapoints with a shared ID in the same fold.  
+
+**balance**() uses up- or downsampling to fix the size of all groups to the min, max, mean, or median group size or to a specific number of rows. Balancing can also happen on the ID level, e.g. to ensure the same number of IDs in each category.  
 
 
 ## Use cases

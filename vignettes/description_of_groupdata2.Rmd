@@ -97,14 +97,13 @@ Returns the given data as a dataframe with added grouping factor made with group
 Splits the given data into the specified groups made with group_factor() and returns them in a list.  
 
 ### fold()  
-Creates (optionally) balanced folds for use in cross-validation. Balance folds on one categorical variable and/or make sure that all datapoints sharing an ID is in the same fold.  
+Creates (optionally) balanced folds for use in cross-validation. Balance folds on one categorical variable and/or one numerical variable. Make sure that all datapoints sharing an ID is in the same fold.  
 
 ### partition()
-Creates (optionally) balanced partitions (e.g. training/test sets). Balance partitions on one categorical variable and/or make sure that all datapoints sharing an ID is in the same partition.
+Creates (optionally) balanced partitions (e.g. training/test sets). Balance partitions on one categorical variable and/or one numerical variable. Make sure that all datapoints sharing an ID is in the same partition.
 
 ### balance()
-Uses up- or downsampling to fix the group size to the min, max, mean, or median group size or to a specific number of rows. 
-Balancing can also happen on the ID level, e.g. to ensure the same number of IDs in each category.
+Uses up- or downsampling to fix the size of all groups to the min, max, mean, or median group size or to a specific number of rows. Balancing can also happen on the ID level, e.g. to ensure the same number of IDs in each category.  
 
 ## Groups, windows or folds?  
 When working with time series we would often refer to the kind of groups made by group_factor(), group() and splt() as **windows**. 
@@ -751,6 +750,21 @@ Else, the participant might be placed in multiple folds.
 
 Used in: fold(), partition()  
 
+### num_col
+
+Type: numerical vector (passed as column name)  
+
+Numerical variable to balance between folds.  
+
+&nbsp;
+
+**N.B.**  When used with id_col, values for each ID are aggregated using id_aggregation_fn before being balanced.  
+**N.B.**  When passing num_col, the method parameter is not used.  
+
+&nbsp;
+
+Used in: fold(), partition()  
+
 ### id_col
 
 Type: Factor (passed as column name)  
@@ -763,6 +777,17 @@ E.g. If we have measured a participant multiple times and want to see the effect
 
 Used in: fold(), partition()  
 
+### id_aggregation_fn
+
+Type: Function  
+
+Function for aggregating values in num_col for each ID, before balancing num_col.  
+
+**N.B.** Only used when num_col and id_col are both specified.   
+
+&nbsp;
+
+Used in: fold(), partition()  
 
 ### list_out
 
