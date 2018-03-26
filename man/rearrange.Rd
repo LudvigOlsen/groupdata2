@@ -37,7 +37,6 @@ E.g. 1,2,3,4,4,3,2,1,\strong{5}.
 }}
 }
 \description{
-Creates a rearrange factor and sorts the data by it.
+\strong{Internal}: Creates a rearrange factor and sorts the data by it.
  A rearrange factor is simply a vector of integers to sort by.
- Currently only \strong{internal} in groupdata2.
 }

@@ -76,35 +76,3 @@ test_that("value_balanced_group_factor_() works with n=3", {
 })
 
 
-test_that("create_rearrange_factor_pair_extremes_() works", {
-
-  # unequal_method "middle"
-
-  # Equal size
-  expect_equal(create_rearrange_factor_pair_extremes_(40, unequal_method = "middle"), c(c(1:20), rev(c(1:20))))
-  expect_equal(create_rearrange_factor_pair_extremes_(200, unequal_method = "middle"), c(c(1:100), rev(c(1:100))))
-
-  # Unequal size
-  expect_equal(create_rearrange_factor_pair_extremes_(41, unequal_method = "middle"), c(c(1:10,12:21), 11, rev(c(1:10,12:21))))
-  expect_equal(create_rearrange_factor_pair_extremes_(201, unequal_method = "middle"), c(c(1:50,52:101), 51, rev(c(1:50,52:101))))
-
-  # unequal_method "first"
-
-  # Equal size
-  expect_equal(create_rearrange_factor_pair_extremes_(40, unequal_method = "first"), c(c(1:20), rev(c(1:20))))
-  expect_equal(create_rearrange_factor_pair_extremes_(200, unequal_method = "first"), c(c(1:100), rev(c(1:100))))
-
-  # Unequal size
-  expect_equal(create_rearrange_factor_pair_extremes_(41, unequal_method = "first"), c(1,c(c(1:20), rev(c(1:20)))+1))
-  expect_equal(create_rearrange_factor_pair_extremes_(201, unequal_method = "first"), c(1, c(c(1:100), rev(c(1:100)))+1))
-
-  # unequal_method "last"
-
-  # Equal size
-  expect_equal(create_rearrange_factor_pair_extremes_(40, unequal_method = "last"), c(c(1:20), rev(c(1:20))))
-  expect_equal(create_rearrange_factor_pair_extremes_(200, unequal_method = "last"), c(c(1:100), rev(c(1:100))))
-
-  # Unequal size
-  expect_equal(create_rearrange_factor_pair_extremes_(41, unequal_method = "last"), c(c(c(1:20), rev(c(1:20))),21))
-  expect_equal(create_rearrange_factor_pair_extremes_(201, unequal_method = "last"), c(c(c(1:100), rev(c(1:100))), 101))
-})
