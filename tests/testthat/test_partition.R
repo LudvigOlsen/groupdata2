@@ -1,14 +1,14 @@
 library(groupdata2)
 context("partition()")
 
-test_that("dimensions of dataframe with fold()",{
+test_that("dimensions of dataframe with partition()",{
 
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
                    "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
                    "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
 
-  df <- df[order(df$participant),]
+  df <- df %>% arrange(participant)
 
   # Add session info
   df$session <- rep(c('1','2', '3'), 6)
@@ -31,14 +31,18 @@ test_that(".partitions is correct in partition() with list_out == FALSE",{
                    "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
                    "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
 
-  df <- df[order(df$participant),]
+  df <- df %>% arrange(participant)
 
   # Add session info
   df$session <- rep(c('1','2', '3'), 6)
 
-  col_is_factor <- function(df, n, cat_col = NULL, id_col = NULL, col){
+  df_unequal <- df %>%
+    dplyr::filter(row_number() != 18)
 
-    partitioned_df <- partition(df, n, cat_col=cat_col,
+  col_is_factor <- function(df, n, cat_col = NULL, num_col = NULL, id_col = NULL, col){
+
+    set.seed(1)
+    partitioned_df <- partition(df, n, cat_col=cat_col, num_col=num_col,
                                 id_col=id_col, list_out = FALSE)
 
     return(is.factor(partitioned_df[[col]]))
@@ -47,9 +51,10 @@ test_that(".partitions is correct in partition() with list_out == FALSE",{
 
 
 
-  group_counts <- function(df, n, cat_col = NULL, id_col = NULL, force_equal = FALSE){
+  group_counts <- function(df, n, cat_col = NULL, num_col = NULL, id_col = NULL, force_equal = FALSE){
 
-    partitioned_df <- partition(df, n, cat_col=cat_col,
+    set.seed(1)
+    partitioned_df <- partition(df, n, cat_col=cat_col, num_col=num_col,
                                 id_col=id_col, force_equal = force_equal,
                                 list_out = FALSE)
     counts <- plyr::count(partitioned_df$.partitions)
@@ -58,38 +63,95 @@ test_that(".partitions is correct in partition() with list_out == FALSE",{
   }
 
   # Check if .folds is a factor
-  expect_equal(col_is_factor(df, 0.2, col='.partitions'), TRUE)
-  expect_equal(col_is_factor(df, 0.2, cat_col = 'diagnosis', col='.partitions'), TRUE)
-  expect_equal(col_is_factor(df, 0.2, id_col = 'participant', col='.partitions'), TRUE)
-  expect_equal(col_is_factor(df, 0.4, cat_col = 'diagnosis',
-                             id_col = 'participant',col='.partitions'), TRUE)
+  expect_true(col_is_factor(df, 0.2, col='.partitions'))
+  expect_true(col_is_factor(df, 0.2, cat_col = 'diagnosis', col='.partitions'))
+  expect_true(col_is_factor(df, 0.2, id_col = 'participant', col='.partitions'))
+  expect_true(col_is_factor(df, 0.4, cat_col = 'diagnosis',
+                            id_col = 'participant',col='.partitions'))
+  expect_true(col_is_factor(df, 0.2, num_col = 'score', col='.partitions'))
+  expect_true(col_is_factor(df, 0.3, num_col = 'score', cat_col = 'diagnosis', col='.partitions'))
+  expect_true(col_is_factor(df, 0.2, num_col = 'score', id_col = 'participant', col='.partitions'))
+  expect_true(col_is_factor(df, 0.4, num_col = 'score', cat_col = 'diagnosis',
+                            id_col = 'participant', col='.partitions'))
+
+  # equal number of rows in df
 
   expect_equal(group_counts(df, 0.2), c(3,15))
-
   expect_equal(group_counts(df, 0.2, cat_col = 'diagnosis'), c(2,16))
-
+  expect_equal(group_counts(df, 0.2, id_col = 'participant'), c(3,15))
+  expect_equal(group_counts(df, 0.2, num_col = 'score'), c(3,15))
   expect_equal(group_counts(df, 0.4, cat_col = 'diagnosis',
                             id_col = 'participant'), c(6,12))
-
+  expect_equal(group_counts(df, 0.4, cat_col = 'diagnosis',
+                            num_col = 'score'), c(6,12))
+  expect_equal(group_counts(df, 0.4, num_col = 'score', id_col = 'participant'), c(6,12))
+  expect_equal(group_counts(df, 0.4, cat_col = 'diagnosis', num_col = 'score',
+                            id_col = 'participant'), c(6,12))
   expect_equal(group_counts(df, 2, cat_col = 'diagnosis',
                             id_col = 'participant'), c(12,6))
-
   expect_equal(group_counts(df, 3, cat_col = 'diagnosis', id_col = 'participant'), c(18))
-
   expect_equal(group_counts(df, 3, id_col = 'participant'), c(9,9))
-
   expect_equal(group_counts(df, 2, id_col = 'participant'), c(6,12))
+  expect_equal(group_counts(df, 2, num_col = 'score'), c(2,16))
+  expect_equal(group_counts(df, c(2,4,6), num_col = 'score'), c(2,4,6,6))
+  expect_equal(group_counts(df, 2, cat_col = 'diagnosis', num_col = 'score'), c(4,14))
+  expect_equal(group_counts(df, 2, cat_col = 'diagnosis', num_col = 'score'), c(4,14))
+  expect_equal(group_counts(df, 2, id_col = 'participant', num_col = 'score'), c(6,12))
+  expect_equal(group_counts(df, 2, cat_col = 'diagnosis', id_col = 'participant', num_col = 'score'), c(12,6))
+  expect_equal(group_counts(df, 1, cat_col = 'diagnosis', id_col = 'participant', num_col = 'score'), c(6,12))
+
+  # unequal number of rows in df
+  set.seed(1)
+  expect_equal(group_counts(df_unequal, 0.2), c(3,14))
+  expect_equal(group_counts(df_unequal, 0.2, cat_col = 'diagnosis'), c(2,15))
+  expect_equal(group_counts(df_unequal, 0.2, id_col = 'participant'), c(3,14))
+  expect_equal(group_counts(df_unequal, 0.2, num_col = 'score'), c(3,14))
+  expect_equal(group_counts(df_unequal, 0.4, cat_col = 'diagnosis',
+                            id_col = 'participant'), c(6,11))
+  expect_equal(group_counts(df_unequal, 0.4, cat_col = 'diagnosis',
+                            num_col = 'score'), c(6,11))
+  expect_equal(group_counts(df_unequal, 0.4, num_col = 'score', id_col = 'participant'), c(5,12))
+  expect_equal(group_counts(df_unequal, 0.4, cat_col = 'diagnosis', num_col = 'score',
+                            id_col = 'participant'), c(5,12))
+  expect_equal(group_counts(df_unequal, 2, cat_col = 'diagnosis',
+                            id_col = 'participant'), c(11,6))
+  expect_equal(group_counts(df_unequal, 3, cat_col = 'diagnosis', id_col = 'participant'), c(17))
+  expect_equal(group_counts(df_unequal, 3, id_col = 'participant'), c(9,8))
+  expect_equal(group_counts(df_unequal, 2, id_col = 'participant'), c(6,11))
+  expect_equal(group_counts(df_unequal, 2, num_col = 'score'), c(2,15))
+  expect_equal(group_counts(df_unequal, c(2,4,6), num_col = 'score'), c(2,4,6,5))
+  expect_equal(group_counts(df_unequal, 2, cat_col = 'diagnosis', num_col = 'score'), c(4,13))
+  expect_equal(group_counts(df_unequal, 2, cat_col = 'diagnosis', num_col = 'score'), c(4,13))
+  expect_equal(group_counts(df_unequal, 2, id_col = 'participant', num_col = 'score'), c(5,12))
+  expect_equal(group_counts(df_unequal, 2, cat_col = 'diagnosis', id_col = 'participant', num_col = 'score'), c(11,6))
+  expect_equal(group_counts(df_unequal, 1, cat_col = 'diagnosis', id_col = 'participant', num_col = 'score'), c(5,12))
 
 
   # Test force_equal
 
+  # equal number of rows in df
+  set.seed(1)
   expect_equal(group_counts(df, 2, id_col = 'participant', force_equal = TRUE), c(6))
-
   expect_equal(group_counts(df, 3, id_col = 'participant', force_equal = TRUE), c(9))
-
   expect_equal(group_counts(df, 2, cat_col = 'diagnosis', force_equal = TRUE), c(4))
-
+  expect_equal(group_counts(df, 2, num_col = 'score', force_equal = TRUE), c(2))
+  expect_equal(group_counts(df, 2, cat_col = 'diagnosis', num_col = 'score', force_equal = TRUE), c(4))
+  expect_equal(group_counts(df, 2, cat_col = 'diagnosis', num_col = 'score',
+                            id_col = 'participant', force_equal = TRUE), c(12))
   expect_equal(group_counts(df, 2, id_col = 'participant',
+                            cat_col = 'diagnosis',
+                            force_equal = TRUE), c(12))
+
+  # unequal number of rows in df
+  set.seed(1)
+  expect_equal(group_counts(df_unequal, 2, id_col = 'participant', force_equal = TRUE), c(6))
+  expect_equal(group_counts(df_unequal, 3, id_col = 'participant', force_equal = TRUE), c(9))
+  expect_equal(group_counts(df_unequal, 2, cat_col = 'diagnosis', force_equal = TRUE), c(4))
+  expect_equal(group_counts(df_unequal, 2, num_col = 'score', force_equal = TRUE), c(2))
+  expect_equal(group_counts(df_unequal, 2, cat_col = 'diagnosis', num_col = 'score', force_equal = TRUE), c(4))
+  expect_equal(group_counts(df_unequal, 2, cat_col = 'diagnosis', num_col = 'score',
+                            id_col = 'participant', force_equal = TRUE), c(11))
+  expect_equal(group_counts(df_unequal, 2, id_col = 'participant',
                             cat_col = 'diagnosis',
                             force_equal = TRUE), c(12))
 
@@ -102,15 +164,15 @@ test_that(".partitions is correct in partition() with list_out == TRUE",{
                    "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
                    "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
 
-  df <- df[order(df$participant),]
+  df <- df %>% arrange(participant)
 
   # Add session info
   df$session <- rep(c('1','2', '3'), 6)
 
 
-  partition_count <- function(df, n, cat_col = NULL, id_col = NULL, force_equal = FALSE){
+  partition_count <- function(df, n, cat_col = NULL, num_col = NULL, id_col = NULL, force_equal = FALSE){
 
-    partitioned_df <- partition(df, n, cat_col=cat_col,
+    partitioned_df <- partition(df, n, cat_col=cat_col, num_col=num_col,
                                 id_col=id_col, force_equal = force_equal,
                                 list_out = TRUE)
 
@@ -119,10 +181,10 @@ test_that(".partitions is correct in partition() with list_out == TRUE",{
 
   }
 
-  partition_element_counts <- function(df, n, cat_col = NULL, id_col = NULL,
+  partition_element_counts <- function(df, n, cat_col = NULL, num_col = NULL, id_col = NULL,
                                        force_equal = FALSE){
 
-    partitioned_df <- partition(df, n, cat_col=cat_col,
+    partitioned_df <- partition(df, n, cat_col=cat_col, num_col=num_col,
                                 id_col=id_col, force_equal = force_equal,
                                 list_out = TRUE)
 
@@ -152,7 +214,7 @@ test_that("partition() outputs correct error messages",{
                    "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
                    "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
 
-  df <- df[order(df$participant),]
+  df <- df %>% arrange(participant)
 
   # Add session info
   df$session <- rep(c('1','2', '3'), 6)
@@ -167,3 +229,46 @@ test_that("partition() outputs correct error messages",{
 
 
 })
+
+if (FALSE){ # Takes 4 seconds, so we disable it for now.
+  test_that("bootstrap test of num_col works",{
+
+    df <- data.frame("participant"=factor(rep(1:100, 100)),
+                     "diagnosis"=factor(rep(c("a","b","c","d","e"), 2000)),
+                     "age"=rep(sample(100),100))
+
+    for (i in 1:10){
+
+      set.seed(i)
+      df_partitioned <- partition(df, 0.5, cat_col="diagnosis", num_col="age", id_col="participant", list_out = FALSE)
+
+      age_distribution <- df_partitioned %>% group_by(.partitions) %>%
+        dplyr::summarise(mean_age = mean(age),
+                         sd_age = sd(age))
+
+      expect_true(is_between_(age_distribution$mean_age[1], 49, 51))
+      expect_true(is_between_(age_distribution$mean_age[2], 49, 51))
+
+    }
+
+    for (i in 1:10){
+
+      set.seed(i)
+      df_partitioned <- partition(df, c(0.2, 0.2, 0.2, 0.2, 0.2),
+                                  cat_col="diagnosis", num_col="age",
+                                  id_col="participant", list_out = FALSE)
+
+      age_distribution <- df_partitioned %>% group_by(.partitions) %>%
+        dplyr::summarise(mean_age = mean(age),
+                         sd_age = sd(age))
+
+      expect_true(is_between_(age_distribution$mean_age[1], 49, 51))
+      expect_true(is_between_(age_distribution$mean_age[2], 49, 51))
+      expect_true(is_between_(age_distribution$mean_age[3], 49, 51))
+      expect_true(is_between_(age_distribution$mean_age[4], 49, 51))
+      expect_true(is_between_(age_distribution$mean_age[5], 49, 51))
+
+    }
+
+  })
+}

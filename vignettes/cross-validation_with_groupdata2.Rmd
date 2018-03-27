@@ -51,17 +51,24 @@ Our first task will be to split the dataset into a training set and a test set u
 
 ## groupdata2 functions in focus
 
-**partition**() creates (optionally) balanced partitions (e.g. training/test sets) from given group sizes. It can balance partitions on one categorical variable (e.g. diagnosis) and/or is able to keep all datapoints with a shared ID (e.g. participant) in the same partition.
+**partition**() creates (optionally) balanced partitions (e.g. training/test sets) from given group sizes. It can balance partitions on one categorical variable (e.g. diagnosis) and/or one numerical variable (e.g. age). It is also able to keep all datapoints with a shared ID (e.g. participant) in the same partition.
 
-**fold**() creates (optionally) balanced folds for cross-validation. It can balance folds on one categorical variable (e.g. diagnosis) and/or is able to keep all datapoints with a shared ID (e.g. participant) in the same fold.  
+**fold**() creates (optionally) balanced folds for cross-validation. It can balance folds on one categorical variable (e.g. diagnosis) and/or one numerical variable (e.g. age). It is also able to keep all datapoints with a shared ID (e.g. participant) in the same fold.  
 
 ## What is cross-validation?
 
-The essence of cross-validation is to test a model against data that it hasn't been trained on, i.e. estimating out-of-sample error. It is done by first dividing the data into groups called *folds*. Say we choose to divide the data into **5** folds. Then, in the first iteration, we *train* a model on the first four folds and *test* it on the fifth fold. In the second iteration, we then train on folds 2,3,4,5 and test on fold 1. We continue changing which fold is the test fold until all folds have been test folds (i.e. we train and test 5 times in total). In the end we get the average performance of the models and compare these to other cross-validated models. The model with the least average error is believed to be the best at predicting unseen data from the same population(s) and thus chosen for further interpretation / use. 
+The essence of cross-validation is to test a model against data that it hasn't been trained on, i.e. estimating out-of-sample error. It is done by first dividing the data into groups called *folds*. 
+
+Say we choose to divide the data into **5** folds. Then, in the first iteration, we *train* a model on the first four folds and *test* it on the fifth fold. In the second iteration, we then train on folds 2,3,4,5 and test on fold 1. We continue changing which fold is the test fold until all folds have been test folds (i.e. we train and test 5 times in total). In the end we get the average performance of the models and compare these to other cross-validated models.   
+The model with the least average error is believed to be the best at predicting unseen data from the same population(s) and thus chosen for further interpretation / use.  
+
 This is a great tool, and **fold**()  makes it even more powerful.  
 
 ## Why training and test sets
-Even with cross-validation we have a risk of overfitting our models to our data. This means, that while we get really good predictions for our current data, it won't generalize to new data that we might gather in the future. So to test if it's the case, we keep some data that we *don't touch* before we feel confident that we have found the best model. Then we use the model to predict the targets / dependent variable in that data. If the results is much worse for the test set, it likely means that our model is suffering from overfitting! Then we go back and adjust the models, until we're pretty confident again. Then we try again. Beware though, that if we run this cycle too many times, we might accidentally find a model that is a good predictor for the specific data in the test set, but not in general. 
+Even with cross-validation we have a risk of overfitting our models to our data. This means, that while we get really good predictions for our current data, it won't generalize to new data that we might gather in the future.  
+
+To test if this is the case, we keep some data that we *don't touch* before we feel confident that we have found the best model. Then we use the model to predict the targets / dependent variable in that data. If the results are much worse for the test set, it likely means that our model is suffering from overfitting! Then we go back and adjust the models, until we're pretty confident again. Then we try again.  
+Beware though, that if we run this cycle too many times, we might accidentally find a model that is a good predictor for the specific data in the test set, but not in general.  
 
 ## The data
 
@@ -90,7 +97,7 @@ df <- data.frame("participant" = factor(as.integer(
                             45,67,40,78,62,30,41,44,66,81)) # for 3rd session
 
 # Order by participant
-df <- df[order(df$participant),] 
+df <- df %>% arrange(participant)
 
 # Remove index
 rownames(df) <- NULL
@@ -113,6 +120,7 @@ In this step we will split our data into two subsets called train_set and test_s
 ## What is leakage?
 Let's say we splitted the data randomly. 20 percent of the data goes to the test set, and the rest is used for training.
 In this case, we would have the same participants in the training set AND the test set. But what we want to know is how good our model is at predicting new, future participants, not how well it knows the ones we already have a diagnosis for. Furthermore, if our model is overfitted to those participants, our test set might not warn us of this, as it simply knows these participants too well. So we could get a really low error on both the test set and the training set, even though our model is useless outside of the data we're working with. 
+
 So how do we deal with this? In this case it's as simple as making sure each participant is only in one of the data sets. We can do this with **partition**() and the *id_col* argument.
 
 ```{r}
@@ -126,7 +134,10 @@ partition(df, p = 0.2, id_col = "participant") %>%
 
 ```
 
-This is only showing the test set for now. Let's look at the output. We see that we now have 2 participants (10 and 5) and they each have all 3 sessions in this set, meaning they are not in the training set! Perfect! But ehmm.. if we look at the diagnosis column, they both have the diagnosis 'b'. If we would like to know how well our future model classifies both of the diagnoses, this won't do. It would be nicer if we have somewhat the same balance of both diagnoses in both the training set and the test set. This is luckily what the *cat_col* argument is for. More specifically (behind the scenes), it first subsets the full data by each class in the categorical column, then it creates partitions in each subset and merges the partitions in the end. When using both the id_col and cat_col arguments, it first subsets by class, then partitions by the unique values in id_col. So sometimes the final group sizes might not be exactly as specified, depending on the data. As such it is a good practice to look at the distribution of participants, classes, etc. in the final partitions, which we will do right after we try out that cat_col argument to get our final test and train sets! 
+This is only showing the test set for now. Let's look at the output.  
+We see that we now have 2 participants (10 and 5) and they each have all 3 sessions in this set, meaning they are not in the training set! Perfect!   
+But ehmm.. if we look at the diagnosis column, they both have the diagnosis 'b'. If we would like to know how well our future model classifies both of the diagnoses, this won't do. It would be nicer if we have somewhat the same balance of both diagnoses in both the training set and the test set. This is luckily what the *cat_col* argument is for.  
+More specifically (behind the scenes), it first subsets the full data by each class in the categorical column, then it creates partitions in each subset and merges the partitions in the end. When using both the id_col and cat_col arguments, it first subsets by class, then partitions by the unique values in id_col. So sometimes the final group sizes might not be exactly as specified, depending on the data. As such it is a good practice to look at the distribution of participants, classes, etc. in the final partitions, which we will do right after we try out that cat_col argument to get our final test and train sets! 
 
 ```{r}
 
@@ -159,6 +170,7 @@ train_set %>%
   kable(align='c')
 ```
 
+
 # Creating folds for cross-validation
 
 In this section we will create balanced folds for cross-validation. The thoughts behind doing so resemble those of the previous section. **fold**() basically just creates a number of similarly sized partitions. Where **partition**() returned a list of dataframes (this is optional, btw.), **fold**() will return the entire training set but with a new column called ".folds". This will be used directly in the cross-validation function to subset the data on each iteration - remember, the folds take shifts being the test set (not to be confused with the one we just created before).
@@ -171,7 +183,7 @@ set.seed(1) # For reproducibility
 train_set <- fold(train_set, k = 4, cat_col = 'diagnosis', id_col = 'participant')
 
 # Order by .folds
-train_set <- train_set[order(train_set$.folds),]
+train_set <- train_set %>% arrange(.folds)
 
 train_set %>% kable()
 ```

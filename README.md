@@ -69,11 +69,11 @@ Creates the specified groups with group\_factor() and splits the given data by t
 
 ### partition()
 
-Creates (optionally) balanced partitions (e.g. training/test sets). Balance partitions on one categorical variable and/or make sure that all datapoints sharing an ID is in the same partition.
+Creates (optionally) balanced partitions (e.g. training/test sets). Balance partitions on one categorical variable and/or one numerical variable. Make sure that all datapoints sharing an ID is in the same partition.
 
 ### fold()
 
-Creates (optionally) balanced folds for use in cross-validation. Balance folds on one categorical variable and/or make sure that all datapoints sharing an ID is in the same fold.
+Creates (optionally) balanced folds for use in cross-validation. Balance folds on one categorical variable and/or one numerical variable. Make sure that all datapoints sharing an ID is in the same fold.
 
 ### balance()
 
@@ -205,18 +205,18 @@ group(df, n = 5, method = 'n_dist') %>%
 
 |    x| species |  age| .groups |
 |----:|:--------|----:|:--------|
-|    1| cat     |   17| 1       |
-|    2| pig     |   99| 1       |
-|    3| human   |   66| 2       |
+|    1| cat     |   90| 1       |
+|    2| pig     |   92| 1       |
+|    3| human   |   79| 2       |
 |    4| cat     |   86| 2       |
-|    5| pig     |   34| 3       |
-|    6| human   |   93| 3       |
-|    7| cat     |   88| 3       |
-|    8| pig     |   94| 4       |
-|    9| human   |   24| 4       |
-|   10| cat     |   47| 5       |
-|   11| pig     |   55| 5       |
-|   12| human   |   49| 5       |
+|    5| pig     |   10| 3       |
+|    6| human   |   26| 3       |
+|    7| cat     |   60| 3       |
+|    8| pig     |   70| 4       |
+|    9| human   |   21| 4       |
+|   10| cat     |   32| 5       |
+|   11| pig     |   84| 5       |
+|   12| human   |   34| 5       |
 
 ``` r
 
@@ -229,11 +229,11 @@ df %>%
 
 | .groups |  mean\_age|
 |:--------|----------:|
-| 1       |   58.00000|
-| 2       |   76.00000|
-| 3       |   71.66667|
-| 4       |   59.00000|
-| 5       |   50.33333|
+| 1       |       91.0|
+| 2       |       82.5|
+| 3       |       32.0|
+| 4       |       45.5|
+| 5       |       50.0|
 
 ``` r
 
@@ -250,18 +250,18 @@ df %>%
 
 |    x| species |  age| .groups |
 |----:|:--------|----:|:--------|
-|    1| cat     |   17| 1       |
-|    2| pig     |   99| 1       |
-|    3| human   |   66| 1       |
+|    1| cat     |   90| 1       |
+|    2| pig     |   92| 1       |
+|    3| human   |   79| 1       |
 |    4| cat     |   86| 1       |
-|    5| pig     |   34| 2       |
-|    6| human   |   93| 2       |
-|    7| cat     |   88| 3       |
-|    8| pig     |   94| 3       |
-|    9| human   |   24| 3       |
-|   10| cat     |   47| 3       |
-|   11| pig     |   55| 3       |
-|   12| human   |   49| 3       |
+|    5| pig     |   10| 2       |
+|    6| human   |   26| 2       |
+|    7| cat     |   60| 3       |
+|    8| pig     |   70| 3       |
+|    9| human   |   21| 3       |
+|   10| cat     |   32| 3       |
+|   11| pig     |   84| 3       |
+|   12| human   |   34| 3       |
 
 ### fold()
 
@@ -269,10 +269,10 @@ df %>%
 # Create dataframe
 df <- data.frame(
   "participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
-  "age" = rep(c(20,23,27,21,32,31), 3),
+  "age" = rep(c(20,33,27,21,32,25), 3),
   "diagnosis" = rep(c('a', 'b', 'a', 'b', 'b', 'a'), 3),
   "score" = c(10,24,15,35,24,14,24,40,30,50,54,25,45,67,40,78,62,30))
-df <- df[order(df$participant),]
+df <- df %>% arrange(participant)
 df$session <- rep(c('1','2', '3'), 6)
 ```
 
@@ -282,12 +282,14 @@ df$session <- rep(c('1','2', '3'), 6)
 # First set seed to ensure reproducibility
 set.seed(1)
 
-# Use fold() with cat_col and id_col
+# Use fold() with cat_col, num_col and id_col
 df_folded <- fold(df, k = 3, cat_col = 'diagnosis',
-                  id_col = 'participant', method = 'n_dist')
+                  num_col = "age", 
+                  id_col = 'participant')
 
 # Show df_folded ordered by folds
-df_folded[order(df_folded$.folds),] %>%
+df_folded %>% 
+  arrange(.folds) %>%
   kable()
 ```
 
@@ -299,18 +301,18 @@ df_folded[order(df_folded$.folds),] %>%
 | 4           |   21| b         |     35| 1       | 1      |
 | 4           |   21| b         |     50| 2       | 1      |
 | 4           |   21| b         |     78| 3       | 1      |
-| 6           |   31| a         |     14| 1       | 2      |
-| 6           |   31| a         |     25| 2       | 2      |
-| 6           |   31| a         |     30| 3       | 2      |
 | 5           |   32| b         |     24| 1       | 2      |
 | 5           |   32| b         |     54| 2       | 2      |
 | 5           |   32| b         |     62| 3       | 2      |
+| 6           |   25| a         |     14| 1       | 2      |
+| 6           |   25| a         |     25| 2       | 2      |
+| 6           |   25| a         |     30| 3       | 2      |
+| 2           |   33| b         |     24| 1       | 3      |
+| 2           |   33| b         |     40| 2       | 3      |
+| 2           |   33| b         |     67| 3       | 3      |
 | 3           |   27| a         |     15| 1       | 3      |
 | 3           |   27| a         |     30| 2       | 3      |
 | 3           |   27| a         |     40| 3       | 3      |
-| 2           |   23| b         |     24| 1       | 3      |
-| 2           |   23| b         |     40| 2       | 3      |
-| 2           |   23| b         |     67| 3       | 3      |
 
 ``` r
 
@@ -329,6 +331,21 @@ df_folded %>%
 | 2      | b         | 5           |    3|
 | 3      | a         | 3           |    3|
 | 3      | b         | 2           |    3|
+
+``` r
+
+# Show age representation in folds
+df_folded %>% 
+  group_by(.folds) %>% 
+  summarize(sum_of_age = sum(age)) %>% 
+  kable()
+```
+
+| .folds |  sum\_of\_age|
+|:-------|-------------:|
+| 1      |           123|
+| 2      |           171|
+| 3      |           180|
 
 **Notice** that the we now have the opportunity to include the *session* variable and/or use *participant* as a random effect in our model when doing cross-validation, as any participant will only appear in one fold.
 

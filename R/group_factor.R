@@ -89,7 +89,7 @@
 #'  \code{n} is the prime number to start at}
 #'
 #' @param starts_col Name of column with values to match in method \code{l_starts}
-#' when data is a dataframe. Pass 'index' to use row names. (Character)
+#' when data is a dataframe. Pass \code{'index'} to use row names. (Character)
 #' @param force_equal Create equal groups by discarding excess data points.
 #'  Implementation varies between methods. (Logical)
 #' @param allow_zero Whether n can be passed as \code{0}. (Logical)

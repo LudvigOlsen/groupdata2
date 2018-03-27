@@ -323,8 +323,7 @@ check_convert_check_ <- function(data, n, method, force_equal,
 
 }
 
-#' @importFrom dplyr %>%
-max_num_factor <- function(factor){
+factor_to_num <- function(factor){
 
   #
   # Convert factor to numeric
@@ -334,6 +333,20 @@ max_num_factor <- function(factor){
   factor %>%
     as.character() %>%
     as.numeric() %>%
+    return()
+
+}
+
+#' @importFrom dplyr %>%
+max_num_factor <- function(factor){
+
+  #
+  # Convert factor to numeric
+  # Return maximum value
+  #
+
+  factor %>%
+    factor_to_num %>%
     max() %>%
     return()
 

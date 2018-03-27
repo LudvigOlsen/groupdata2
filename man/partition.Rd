@@ -4,8 +4,8 @@
 \alias{partition}
 \title{Create balanced partitions.}
 \usage{
-partition(data, p = 0.2, cat_col = NULL, id_col = NULL,
-  force_equal = FALSE, list_out = TRUE)
+partition(data, p = 0.2, cat_col = NULL, num_col = NULL, id_col = NULL,
+  id_aggregation_fn = sum, force_equal = FALSE, list_out = TRUE)
 }
 \arguments{
 \item{data}{Dataframe or Vector.}
@@ -14,19 +14,27 @@ partition(data, p = 0.2, cat_col = NULL, id_col = NULL,
 Given as whole number(s) and/or percentage(s) (\code{0} < \code{n} < \code{1}).
 E.g. \eqn{c(0.2, 3, 0.1)}.}
 
-\item{cat_col}{Categorical variable to balance between partitions.
+\item{cat_col}{Name of categorical variable to balance between partitions.
 
  E.g. when training/testing a model for predicting a binary variable (a or b),
  it is necessary to have both represented in both the training set and the test set.
 
  N.B. If also passing an id_col, cat_col should be constant within each ID.}
 
-\item{id_col}{Factor with IDs. Used to keep all rows that share an ID in
+\item{num_col}{Name of numerical variable to balance between partitions.
+
+ N.B. When used with \code{id_col}, values in \code{num_col} for each ID are aggregated using \code{id_aggregation_fn} before being balanced.}
+
+\item{id_col}{Name of factor with IDs. Used to keep all rows that share an ID in
  the same partition (if possible).
 
  E.g. If we have measured a participant multiple times and want to see the
  effect of time, we want to have all observations of this participant in
  the same partition.}
+
+\item{id_aggregation_fn}{Function for aggregating values in \code{num_col} for each ID, before balancing \code{num_col}.
+
+ N.B. Only used when \code{num_col} and \code{id_col} are both specified.}
 
 \item{force_equal}{Discard excess data. (Logical)}
 
@@ -43,18 +51,71 @@ A dataframe with grouping factor for subsetting.
 }
 \description{
 Splits data into partitions.
- Balances a given categorical variable between partitions and keeps (if possible)
+ Balances a given categorical variable and/or numerical variable between partitions and keeps (if possible)
  all data points with a shared ID (e.g. participant_id) in the same partition.
 }
 \details{
-\code{cat_col}: data is first subset by \code{cat_col}.
- Subsets are grouped and merged.
+\subsection{cat_col}{
+   \enumerate{
+     \item Data is subset by \code{cat_col}.
+     \item Subsets are partitioned and merged.
+   }
+ }
 
- \code{id_col}: groups are created from unique IDs.
+ \subsection{id_col}{
+   \enumerate{
+     \item Partitions are created from unique IDs.
+   }
+ }
 
- \code{cat_col} AND \code{id_col}: data is subset by \code{cat_col}
- and groups are created from unique IDs in each subset.
- Subsets are merged.
+ \subsection{num_col}{
+   \enumerate{
+     \item Rows are shuffled.
+
+     \strong{Note} that this will only have an effect on rows that have the same value in num_col.
+     \item Rows are ordered as smallest, largest, second smallest, second largest, ...
+     \item By their pairwise sum, these are once again ordered as smallest, largest, second smallest, second largest, ...
+     \item The ordered data is partitioned.
+   }
+
+ N.B. In case \code{data} has an unequal number of rows,
+ the row with the largest value is placed in a group by itself in (1), and the order is instead:
+ smallest, second largest, second smallest, third largest, ... , largest.
+ }
+
+ \subsection{cat_col AND id_col}{
+   \enumerate{
+     \item Data is subset by \code{cat_col}.
+     \item Partitions are created from unique IDs in each subset.
+     \item Subsets are merged.
+   }
+ }
+
+ \subsection{cat_col AND num_col}{
+   \enumerate{
+     \item Data is subset by \code{cat_col}.
+     \item Subsets are partitioned by \code{num_col}.
+     \item Subsets are merged.
+   }
+ }
+
+ \subsection{num_col AND id_col}{
+   \enumerate{
+     \item Values in \code{num_col} are aggregated for each ID, using \code{id_aggregation_fn}.
+     \item The IDs are partitioned, using the aggregated values as "\code{num_col}".
+     \item The partition numbers for IDs are transferred to their rows.
+   }
+ }
+
+ \subsection{cat_col AND num_col AND id_col}{
+   \enumerate{
+     \item Values in \code{num_col} are aggregated for each ID, using \code{id_aggregation_fn}.
+     \item IDs are subset by \code{cat_col}.
+     \item The IDs for each subset are partitioned,
+     by using the aggregated values as "\code{num_col}".
+     \item The partition numbers for IDs are transferred to their rows.
+   }
+ }
 }
 \examples{
 # Attach packages
@@ -67,11 +128,12 @@ df <- data.frame(
  "age" = rep(sample(c(1:100), 6), 3),
  "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
  "score" = sample(c(1:100), 3*6))
-df <- df[order(df$participant),]
+df <- df \%>\% arrange(participant)
 df$session <- rep(c('1','2', '3'), 6)
 
 # Using partition()
-# Without cat_col and id_col
+
+# Without balancing
 partitions <- partition(df, c(0.2,0.3))
 
 # With cat_col
@@ -80,8 +142,16 @@ partitions <- partition(df, c(0.5), cat_col = 'diagnosis')
 # With id_col
 partitions <- partition(df, c(0.5), id_col = 'participant')
 
+# With num_col
+partitions <- partition(df, c(0.5), num_col = 'score')
+
 # With cat_col and id_col
 partitions <- partition(df, c(0.5), cat_col = 'diagnosis',
+                        id_col = 'participant')
+
+# With cat_col, num_col and id_col
+partitions <- partition(df, c(0.5), cat_col = 'diagnosis',
+                        num_col = "score",
                         id_col = 'participant')
 
 # Return dataframe with grouping factor

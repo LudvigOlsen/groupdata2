@@ -2,10 +2,12 @@
 % Please edit documentation in R/fold.R
 \name{fold}
 \alias{fold}
+\alias{create_balanced_groups}
 \title{Create balanced folds for cross-validation.}
 \usage{
-fold(data, k = 5, cat_col = NULL, id_col = NULL, starts_col = NULL,
-  method = "n_dist", remove_missing_starts = FALSE)
+fold(data, k = 5, cat_col = NULL, num_col = NULL, id_col = NULL,
+  starts_col = NULL, method = "n_dist", id_aggregation_fn = sum,
+  remove_missing_starts = FALSE)
 }
 \arguments{
 \item{data}{Dataframe or Vector.}
@@ -16,14 +18,20 @@ fold(data, k = 5, cat_col = NULL, id_col = NULL, starts_col = NULL,
 
  Given as whole number(s) and/or percentage(s) (0 < n < 1).}
 
-\item{cat_col}{Categorical variable to balance between folds.
+\item{cat_col}{Name of categorical variable to balance between folds.
 
  E.g. when predicting a binary variable (a or b), it is necessary to have
- both represented in every fold
+ both represented in every fold.
 
- N.B. If also passing an id_col, cat_col should be constant within each ID.}
+ N.B. If also passing an \code{id_col}, \code{cat_col} should be constant within each ID.}
 
-\item{id_col}{Factor with IDs.
+\item{num_col}{Name of numerical variable to balance between folds.
+
+ N.B. When used with \code{id_col}, values for each ID are aggregated using \code{id_aggregation_fn} before being balanced.
+
+ N.B. When passing \code{num_col}, the \code{method} parameter is not used.}
+
+\item{id_col}{Name of factor with IDs.
  This will be used to keep all rows that share an ID in the same fold
  (if possible).
 
@@ -32,7 +40,7 @@ fold(data, k = 5, cat_col = NULL, id_col = NULL, starts_col = NULL,
  the same fold.}
 
 \item{starts_col}{Name of column with values to match in method \code{l_starts}
-when data is a dataframe. Pass 'index' to use row names. (Character)}
+when data is a dataframe. Pass \code{'index'} to use row names. (Character)}
 
 \item{method}{\code{greedy}, \code{n_dist}, \code{n_fill}, \code{n_last},
  \code{n_rand}, \code{l_sizes}, \code{l_starts}, \code{staircase}, or
@@ -106,6 +114,10 @@ when data is a dataframe. Pass 'index' to use row names. (Character)}
 
  \code{n} is the prime number to start at}}
 
+\item{id_aggregation_fn}{Function for aggregating values in \code{num_col} for each ID, before balancing \code{num_col}.
+
+ N.B. Only used when \code{num_col} and \code{id_col} are both specified.}
+
 \item{remove_missing_starts}{Recursively remove elements from the
 list of starts that are not found.
 For method \code{l_starts} only.
@@ -116,18 +128,72 @@ Dataframe with grouping factor for subsetting in cross-validation.
 }
 \description{
 Divides data into groups by a range of methods.
- Balances a given categorical variable between folds and keeps (if possible)
+ Balances a given categorical variable and/or numerical variable between folds and keeps (if possible)
  all data points with a shared ID (e.g. participant_id) in the same fold.
 }
 \details{
-\code{cat_col}: data is first subset by \code{cat_col}.
- Subsets are folded/grouped and merged.
+\subsection{cat_col}{
+   \enumerate{
+     \item Data is subset by \code{cat_col}.
+     \item Subsets are grouped and merged.
+   }
+ }
 
- \code{id_col}: folds are created from unique IDs.
+ \subsection{id_col}{
+   \enumerate{
+     \item Groups are created from unique IDs.
+   }
+ }
 
- \code{cat_col} AND \code{id_col}: data is subset by \code{cat_col}
- and folds are created from unique IDs in each subset.
- Subsets are merged.
+ \subsection{num_col}{
+   \enumerate{
+     \item Rows are shuffled.
+
+     \strong{Note} that this will only have an effect on rows that have the same value in num_col.
+     \item Rows are ordered as smallest, largest, second smallest, second largest, ...
+     \item By their pairwise sum, these are once again ordered as smallest, largest, second smallest, second largest, ...
+     \item The ordered data is grouped using method "n_fill".
+   }
+
+ N.B. In case \code{data} has an unequal number of rows,
+ the row with the smallest value becomes the first group by itself in (1) and (2), and the order is instead:
+ smallest, second smallest, largest, third smallest, second largest, ...
+ This row will end up in the first fold.
+ }
+
+ \subsection{cat_col AND id_col}{
+   \enumerate{
+     \item Data is subset by \code{cat_col}.
+     \item Groups are created from unique IDs in each subset.
+     \item Subsets are merged.
+   }
+ }
+
+ \subsection{cat_col AND num_col}{
+   \enumerate{
+     \item Data is subset by \code{cat_col}.
+     \item Subsets are grouped by \code{num_col}.
+     \item Subsets are merged.
+   }
+ }
+
+ \subsection{num_col AND id_col}{
+   \enumerate{
+     \item Values in \code{num_col} are aggregated for each ID, using \code{id_aggregation_fn}.
+     \item The IDs are grouped, using the aggregated values as "\code{num_col}".
+     \item The group numbers for IDs are transferred to their rows.
+   }
+ }
+
+ \subsection{cat_col AND num_col AND id_col}{
+   \enumerate{
+     \item Values in \code{num_col} are aggregated for each ID, using \code{id_aggregation_fn}.
+     \item IDs are subset by \code{cat_col}.
+     \item The IDs for each subset are grouped,
+     by using the aggregated values as "\code{num_col}".
+     \item The group numbers for IDs are transferred to their rows.
+   }
+ }
 }
 \examples{
 # Attach packages
@@ -140,27 +206,36 @@ df <- data.frame(
  "age" = rep(sample(c(1:100), 6), 3),
  "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
  "score" = sample(c(1:100), 3*6))
-df <- df[order(df$participant),]
+df <- df \%>\% arrange(participant)
 df$session <- rep(c('1','2', '3'), 6)
 
 # Using fold()
-# Without cat_col and id_col
+
+## Without balancing
 df_folded <- fold(df, 3, method = 'n_dist')
 
-# With cat_col
+## With cat_col
 df_folded <- fold(df, 3, cat_col = 'diagnosis',
  method = 'n_dist')
 
-# With id_col
+## With id_col
 df_folded <- fold(df, 3, id_col = 'participant',
  method = 'n_dist')
+
+## With num_col
+# Note: 'method' would not be used in this case
+df_folded <- fold(df, 3, num_col = 'score')
 
 # With cat_col and id_col
 df_folded <- fold(df, 3, cat_col = 'diagnosis',
  id_col = 'participant', method = 'n_dist')
 
+## With cat_col, id_col and num_col
+df_folded <- fold(df, 3, cat_col = 'diagnosis',
+ id_col = 'participant', num_col = 'score')
+
 # Order by folds
-df_folded <- df_folded[order(df_folded$.folds),]
+df_folded <- df_folded \%>\% arrange(.folds)
 
 }
 \author{

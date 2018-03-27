@@ -72,10 +72,10 @@ Returns the given data as a dataframe with added grouping factor made with group
 Creates the specified groups with group_factor() and splits the given data by the grouping factor with base::split. Returns the splits in a list.  
 
 ### partition()  
-Creates (optionally) balanced partitions (e.g. training/test sets). Balance partitions on one categorical variable and/or make sure that all datapoints sharing an ID is in the same partition.
+Creates (optionally) balanced partitions (e.g. training/test sets). Balance partitions on one categorical variable and/or one numerical variable. Make sure that all datapoints sharing an ID is in the same partition.
 
 ### fold()  
-Creates (optionally) balanced folds for use in cross-validation. Balance folds on one categorical variable and/or make sure that all datapoints sharing an ID is in the same fold.  
+Creates (optionally) balanced folds for use in cross-validation. Balance folds on one categorical variable and/or one numerical variable. Make sure that all datapoints sharing an ID is in the same fold.  
 
 ### balance()
 Uses up- or downsampling to fix the group size to the min, max, mean, or median group size or to a specific number of rows.
@@ -217,10 +217,10 @@ df %>%
 # Create dataframe
 df <- data.frame(
   "participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
-  "age" = rep(c(20,23,27,21,32,31), 3),
+  "age" = rep(c(20,33,27,21,32,25), 3),
   "diagnosis" = rep(c('a', 'b', 'a', 'b', 'b', 'a'), 3),
   "score" = c(10,24,15,35,24,14,24,40,30,50,54,25,45,67,40,78,62,30))
-df <- df[order(df$participant),]
+df <- df %>% arrange(participant)
 df$session <- rep(c('1','2', '3'), 6)
 
 ```
@@ -231,18 +231,26 @@ df$session <- rep(c('1','2', '3'), 6)
 # First set seed to ensure reproducibility
 set.seed(1)
 
-# Use fold() with cat_col and id_col
+# Use fold() with cat_col, num_col and id_col
 df_folded <- fold(df, k = 3, cat_col = 'diagnosis',
-                  id_col = 'participant', method = 'n_dist')
+                  num_col = "age", 
+                  id_col = 'participant')
 
 # Show df_folded ordered by folds
-df_folded[order(df_folded$.folds),] %>%
+df_folded %>% 
+  arrange(.folds) %>%
   kable()
 
 # Show distribution of diagnoses and participants
 df_folded %>% 
   group_by(.folds) %>% 
   count(diagnosis, participant) %>% 
+  kable()
+
+# Show age representation in folds
+df_folded %>% 
+  group_by(.folds) %>% 
+  summarize(sum_of_age = sum(age)) %>% 
   kable()
 
 ```
