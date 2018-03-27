@@ -248,9 +248,12 @@ df_folded %>%
   kable()
 
 # Show age representation in folds
+# Notice that we would get a more even distribution if we had more data.
+# As age is fixed per ID, we only have 3 ages per category to balance with.
 df_folded %>% 
   group_by(.folds) %>% 
-  summarize(sum_of_age = sum(age)) %>% 
+  summarize(mean_age = mean(age),
+            sd_age = sd(age)) %>% 
   kable()
 
 ```

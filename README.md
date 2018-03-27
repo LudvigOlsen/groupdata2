@@ -205,18 +205,18 @@ group(df, n = 5, method = 'n_dist') %>%
 
 |    x| species |  age| .groups |
 |----:|:--------|----:|:--------|
-|    1| cat     |   90| 1       |
-|    2| pig     |   92| 1       |
-|    3| human   |   79| 2       |
-|    4| cat     |   86| 2       |
-|    5| pig     |   10| 3       |
-|    6| human   |   26| 3       |
-|    7| cat     |   60| 3       |
-|    8| pig     |   70| 4       |
-|    9| human   |   21| 4       |
-|   10| cat     |   32| 5       |
-|   11| pig     |   84| 5       |
-|   12| human   |   34| 5       |
+|    1| cat     |   74| 1       |
+|    2| pig     |   76| 1       |
+|    3| human   |   72| 2       |
+|    4| cat     |   44| 2       |
+|    5| pig     |   16| 3       |
+|    6| human   |   63| 3       |
+|    7| cat     |   37| 3       |
+|    8| pig     |   24| 4       |
+|    9| human   |   86| 4       |
+|   10| cat     |   36| 5       |
+|   11| pig     |   89| 5       |
+|   12| human   |    3| 5       |
 
 ``` r
 
@@ -229,11 +229,11 @@ df %>%
 
 | .groups |  mean\_age|
 |:--------|----------:|
-| 1       |       91.0|
-| 2       |       82.5|
-| 3       |       32.0|
-| 4       |       45.5|
-| 5       |       50.0|
+| 1       |   75.00000|
+| 2       |   58.00000|
+| 3       |   38.66667|
+| 4       |   55.00000|
+| 5       |   42.66667|
 
 ``` r
 
@@ -250,18 +250,18 @@ df %>%
 
 |    x| species |  age| .groups |
 |----:|:--------|----:|:--------|
-|    1| cat     |   90| 1       |
-|    2| pig     |   92| 1       |
-|    3| human   |   79| 1       |
-|    4| cat     |   86| 1       |
-|    5| pig     |   10| 2       |
-|    6| human   |   26| 2       |
-|    7| cat     |   60| 3       |
-|    8| pig     |   70| 3       |
-|    9| human   |   21| 3       |
-|   10| cat     |   32| 3       |
-|   11| pig     |   84| 3       |
-|   12| human   |   34| 3       |
+|    1| cat     |   74| 1       |
+|    2| pig     |   76| 1       |
+|    3| human   |   72| 1       |
+|    4| cat     |   44| 1       |
+|    5| pig     |   16| 2       |
+|    6| human   |   63| 2       |
+|    7| cat     |   37| 3       |
+|    8| pig     |   24| 3       |
+|    9| human   |   86| 3       |
+|   10| cat     |   36| 3       |
+|   11| pig     |   89| 3       |
+|   12| human   |    3| 3       |
 
 ### fold()
 
@@ -335,17 +335,20 @@ df_folded %>%
 ``` r
 
 # Show age representation in folds
+# Notice that we would get a more even distribution if we had more data.
+# As age is fixed per ID, we only have 3 ages per category to balance with.
 df_folded %>% 
   group_by(.folds) %>% 
-  summarize(sum_of_age = sum(age)) %>% 
+  summarize(mean_age = mean(age),
+            sd_age = sd(age)) %>% 
   kable()
 ```
 
-| .folds |  sum\_of\_age|
-|:-------|-------------:|
-| 1      |           123|
-| 2      |           171|
-| 3      |           180|
+| .folds |  mean\_age|    sd\_age|
+|:-------|----------:|----------:|
+| 1      |       20.5|  0.5477226|
+| 2      |       28.5|  3.8340579|
+| 3      |       30.0|  3.2863353|
 
 **Notice** that the we now have the opportunity to include the *session* variable and/or use *participant* as a random effect in our model when doing cross-validation, as any participant will only appear in one fold.
 
