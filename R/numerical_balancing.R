@@ -50,7 +50,7 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method = "n_fil
   # Get group factor
   data_sorted %>%
     dplyr::left_join(tmp_second_rearrange, by = "rearrange_factor") %>%
-    dplyr::arrange(rearrange_factor_2) %>%
+    dplyr::arrange(rearrange_factor_2, rearrange_factor, !!as.name(num_col)) %>%
     group(n, method = method, col_name = ".vbs_groups_", force_equal = force_equal) %>%
     dplyr::ungroup() %>%
     dplyr::arrange(.tmp_index_) %>%
