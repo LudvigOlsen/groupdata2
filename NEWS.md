@@ -11,6 +11,8 @@ Thanks for the request from jjesusfilho #3.
 
 * Adds parameter "id_aggregation_fn" to fold() and partition(). Used when balancing on both id_col and num_col.  
 
+* Adds helper tool 'differs_from_previous'. Finds values in a vector that differs from the previous value by some threshold. Similar to find_starts().
+
 
 # groupdata2 1.0.0
 
