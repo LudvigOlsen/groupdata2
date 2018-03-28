@@ -48,8 +48,9 @@ find_missing_starts(df, starts, starts_col = 'a',
                     return_skip_numbers = FALSE)
 }
 \seealso{
-Other l_starts tools: \code{\link{find_starts}},
-  \code{\link{group_factor}}, \code{\link{group}}
+Other l_starts tools: \code{\link{differs_from_previous}},
+  \code{\link{find_starts}}, \code{\link{group_factor}},
+  \code{\link{group}}
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}

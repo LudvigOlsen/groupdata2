@@ -36,6 +36,7 @@ Main functions:
 Other tools:  
 
 * find_starts
+* differs_from_previous
 * %staircase%  
 * %primes% 
 

@@ -1,13 +1,21 @@
 ## find_starts
 #' @title Find start positions of groups in data.
-#' @description Find values or indices of values that are not the same
-#' as the previous value. E.g. use with the \code{l_starts} method.
+#' @description Finds values or indices of values that are not the same
+#' as the previous value.
+#'
+#' E.g. to use with the \code{l_starts} method.
+#'
+#' Wraps \code{\link{differs_from_previous}()}.
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 #' @export
 #' @param data Dataframe or Vector
+#'
+#' N.B. If checking a factor, it is converted to a character vector.
+#' Conversion will generate a warning, which can be turned off by setting \code{factor_conversion_warning} to \code{FALSE}.
 #' @param return_index Return indices of starts. (Logical)
 #' @param col Name of column to find starts in. Used when data is
 #'  dataframe. (Character)
+#' @param factor_conversion_warning Generate warning when converting factor to character. (Logical)
 #' @return Vector with either start values or indices of start values.
 #' @family l_starts tools
 #' @examples
@@ -49,109 +57,13 @@
 #'       starts_col = 'index')
 #'
 #'
-find_starts <- function(data, col = NULL, return_index = FALSE){
+find_starts <- function(data, col = NULL, return_index = FALSE, factor_conversion_warning=TRUE){
 
-  #
-  # Run find_starts_vec_ for either a vector or dataframe
-  #
-
-  # If data is a dataframe
-  if(is.data.frame(data)){
-
-    # Check if col is specified
-    if (is.null(col)){
-
-      # If not, raise error
-      stop("col must be specified when data is dataframe")
-
-    }
-
-    # If col is a factor
-    if (is.factor(data[[col]])){
-
-      warning("col is factor. Using as character.")
-
-      # Convert col to character
-      data[[col]] <- as.character(data[[col]])
-
-      }
-
-    # Create and return start values or indices of start values
-    return(find_starts_vec_(data[[col]], return_index = return_index))
-
-  } else {
-
-    # If data is a factor
-    if (is.factor(data)){
-
-      warning("data is factor. Using as character.")
-
-      # Convert data to character
-      data <- as.character(data)
-    }
-
-    # I SHOULD CHECK IF DATA IS A VECTOR SOMEWHERE.
-
-    # Check if col is specified.
-    if (!is.null(col)){
-
-      # If it is, warn the user that it won't be used
-      warning("col not used as data is not a dataframe")
-
-    }
-
-    # Create and return start values or indices of start values
-    return(find_starts_vec_(data, return_index = return_index))
-
-  }
-
+  differs_from_previous(data, col=col, threshold=NULL,
+                        return_index=return_index,
+                        include_first = TRUE,
+                        factor_conversion_warning=factor_conversion_warning)
 
 }
 
 
-find_starts_vec_ <- function(v, return_index = FALSE){
-
-  #
-  # Find values or index at which
-  # value changes in vector
-  # E.g. vector c(1,1,2,2,2,3,3) would return
-  # values c(1,2,3) or indices c(1,3,6)
-  # Uses a kind of rolling windows to determine
-  # if a value is the same as the previous or new
-
-  # Adds vector to dataframe
-  # Creates a new column shifted (what is called???)
-  # down one row.
-  # Checks if the current value is the same as the previous.
-
-  # Shift / offset v one row down
-  # Insert NA at beginning and remove last element of v
-  # to get same length as v
-  v2 <- c(NA, v[1:length(v)-1])
-
-  # Create dataframe with v, v2 and
-  # a logical column stating whether
-  # v is new or not.
-  df <- data.frame(v, v2, new = v != v2)
-
-  # The first value must always be TRUE
-  df$new[1] = TRUE
-
-  # Get indices where v contains a new value
-  new_indices <- which(df$new)
-
-  # If return_index is TRUE
-  if (isTRUE(return_index)){
-
-    # Return only the indices where
-    # v contains a new value
-    return(new_indices)
-
-  } else {
-
-    # Return values at the indices
-    return(v[new_indices])
-  }
-
-
-}

@@ -3,6 +3,7 @@
 export("%primes%")
 export("%staircase%")
 export(balance)
+export(differs_from_previous)
 export(downsample)
 export(find_missing_starts)
 export(find_starts)

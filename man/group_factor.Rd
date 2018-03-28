@@ -154,7 +154,8 @@ Other grouping functions: \code{\link{group}},
 Other staircase tools: \code{\link{\%primes\%}},
   \code{\link{\%staircase\%}}, \code{\link{group}}
 
-Other l_starts tools: \code{\link{find_missing_starts}},
+Other l_starts tools: \code{\link{differs_from_previous}},
+  \code{\link{find_missing_starts}},
   \code{\link{find_starts}}, \code{\link{group}}
 }
 \author{

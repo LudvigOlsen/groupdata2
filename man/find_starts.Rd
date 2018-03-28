@@ -4,22 +4,32 @@
 \alias{find_starts}
 \title{Find start positions of groups in data.}
 \usage{
-find_starts(data, col = NULL, return_index = FALSE)
+find_starts(data, col = NULL, return_index = FALSE,
+  factor_conversion_warning = TRUE)
 }
 \arguments{
-\item{data}{Dataframe or Vector}
+\item{data}{Dataframe or Vector
+
+N.B. If checking a factor, it is converted to a character vector.
+Conversion will generate a warning, which can be turned off by setting \code{factor_conversion_warning} to \code{FALSE}.}
 
 \item{col}{Name of column to find starts in. Used when data is
 dataframe. (Character)}
 
 \item{return_index}{Return indices of starts. (Logical)}
+
+\item{factor_conversion_warning}{Generate warning when converting factor to character. (Logical)}
 }
 \value{
 Vector with either start values or indices of start values.
 }
 \description{
-Find values or indices of values that are not the same
-as the previous value. E.g. use with the \code{l_starts} method.
+Finds values or indices of values that are not the same
+as the previous value.
+
+E.g. to use with the \code{l_starts} method.
+
+Wraps \code{\link{differs_from_previous}()}.
 }
 \examples{
 # Attach packages
@@ -62,7 +72,8 @@ group(df, n = starts_ind, method = 'l_starts',
 
 }
 \seealso{
-Other l_starts tools: \code{\link{find_missing_starts}},
+Other l_starts tools: \code{\link{differs_from_previous}},
+  \code{\link{find_missing_starts}},
   \code{\link{group_factor}}, \code{\link{group}}
 }
 \author{

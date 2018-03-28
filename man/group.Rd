@@ -160,7 +160,8 @@ Other grouping functions: \code{\link{group_factor}},
 Other staircase tools: \code{\link{\%primes\%}},
   \code{\link{\%staircase\%}}, \code{\link{group_factor}}
 
-Other l_starts tools: \code{\link{find_missing_starts}},
+Other l_starts tools: \code{\link{differs_from_previous}},
+  \code{\link{find_missing_starts}},
   \code{\link{find_starts}}, \code{\link{group_factor}}
 }
 \author{

@@ -163,7 +163,7 @@ is_between_ <- function(x, a, b) {
 
   # Checks if x is between a and b
 
-  x > a && x < b
+  x > a & x < b
 }
 
 `%ni%` <- function(x, table) {
