@@ -385,7 +385,7 @@ group_uniques_ <- function(data, n, id_col, method, starts_col = NULL,
                      remove_missing_starts = remove_missing_starts)
 
   # Add grouping factor to data
-  data <- merge(data,id_groups,by.x=c(id_col), by.y=c(colnames(id_groups)[1]))
+  data <- merge(data, id_groups, by.x=c(id_col), by.y=c(colnames(id_groups)[1]))
 
   # Return data
   return(data)
@@ -689,9 +689,58 @@ select_rows_from_ids <- function(data, balanced_ids, cat_col, id_col, mark_new_r
   balanced_data
 }
 
+# TODO Add description of this function.
+# I've forgotten what it's for and it's very specific ;)
 update_TempNewRow_from_ids_method <- function(data){
   data %>%
     dplyr::mutate(.TempNewRow = dplyr::if_else(.TempNewRow + .ids_balanced_new_rows > 0, 1, 0)) %>%
     dplyr::select(-c(.ids_balanced_new_rows))
 }
+
+## Finding and removing identical columns
+
+# Find columns that are identical values-wise
+# Ignores names of columns
+find_identical_cols <- function(data, cols=NULL){
+
+  if (is.null(cols)){
+    cols <- colnames(data)
+  }
+
+  column_combinations <- as.data.frame(t(combn(cols, 2)), stringsAsFactors=FALSE)
+
+  column_combinations[["identical"]] <- plyr::llply(1:nrow(column_combinations), function(r){
+    col_1 <- data[[column_combinations[r, 1]]]
+    col_2 <- data[[column_combinations[r, 2]]]
+    isTRUE(all_equal(col_1, col_2, ignore_row_order = FALSE))
+  }) %>% unlist()
+
+  column_combinations %>%
+    dplyr::filter(identical) %>%
+    dplyr::select(c(V1,V2))
+}
+
+# Find identical columns (based on values)
+# Remove all but one of these identical columns
+remove_identical_cols <- function(data, cols=NULL){
+
+  if (is.null(cols)){
+    cols <- colnames(data)
+  }
+
+  # Find identicals
+  identicals <- find_identical_cols(data, cols)
+
+  # Find the columns to remove
+  to_remove <- unique(identicals[[2]])
+
+  # Remove and return
+  if (is.character(to_remove)){
+    data %>% dplyr::select(-one_of(to_remove))
+  } else if (is.integer(to_remove)){
+    data %>% dplyr::select(-to_remove)
+  }
+
+}
+
 

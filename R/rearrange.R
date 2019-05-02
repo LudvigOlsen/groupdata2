@@ -38,7 +38,7 @@ rearrange <- function(data, method="pair_extremes",
   # Check data
   # Potentially convert vector to dataframe
   if (is.vector(data)){
-    data <- data %>% dplyr::as_data_frame()
+    data <- data %>% tibble::enframe(name = NULL)
   }
   if (method %ni% c("pair_extremes")) {
     stop("'method' must be name of one of the existing methods.")
@@ -96,7 +96,7 @@ create_rearrange_factor_pair_extremes_ <- function(size, unequal_method = "middl
     if (unequal_method == "middle") {
       middle <- ceiling((half_size / 2)) + 1
       idx <- idx %>%
-        dplyr::as_data_frame() %>%
+        tibble::enframe(name = NULL) %>%
         dplyr::mutate(value = ifelse(value >= middle, value + 1, value)) %>%
         dplyr::pull(value)
       return(c(idx, middle, rev(idx)))

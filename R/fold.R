@@ -146,7 +146,9 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
                  id_col = NULL, starts_col = NULL,
                  method = 'n_dist', id_aggregation_fn=sum,
-                 remove_missing_starts = FALSE){
+                 remove_missing_starts = FALSE,
+                 repeats=1, rm_identical_folds_cols = TRUE,
+                 max_repeating_times=4){
 
   #
   # Takes:
@@ -188,83 +190,165 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
 
   }
 
-  # If num_col is not NULL
-  if (!is.null(num_col)){
-    data <- create_num_col_groups(data, n=k, num_col=num_col, cat_col=cat_col,
-                                  id_col=id_col, col_name=".folds",
-                                  id_aggregation_fn = id_aggregation_fn,
-                                  method="n_fill",
-                                  pre_randomize = TRUE)
-  } else {
+  max_folds_col_number <- 0
+  continue_repeating <- TRUE
+  times_repeated <- 0
 
-    # If cat_col is not NULL
-    if (!is.null(cat_col)){
+  while (isTRUE(continue_repeating)){
 
-      # If id_col is not NULL
-      if (!is.null(id_col)){
-
-        # Group by cat_col
-        # For each group:
-        # .. create groups of the unique IDs (e.g. subjects)
-        # .. add grouping factor to data
-        # Group by new grouping factor '.folds'
-
-        data <- data %>%
-          group_by(!! as.name(cat_col)) %>%
-          do(group_uniques_(., k, id_col, method,
-                            col_name = '.folds',
-                            starts_col = starts_col,
-                            remove_missing_starts = remove_missing_starts)) %>%
-          group_by(!! as.name('.folds'))
-
-      # If id_col is NULL
-      } else {
-
-        # Group by cat_col
-        # Create groups from data
-        # .. and add grouping factor to data
-
-        data <- data %>%
-          group_by(!! as.name(cat_col)) %>%
-          do(group(., k, method = method,
-                   randomize = TRUE,
-                   col_name = '.folds',
-                   starts_col = starts_col,
-                   remove_missing_starts = remove_missing_starts))
+    # If num_col is not NULL
+    if (!is.null(num_col)){
+      for (r in 1:repeats){ # Replace with different loop fn
+        data <- create_num_col_groups(data, n=k, num_col=num_col, cat_col=cat_col,
+                                      id_col=id_col, col_name=ifelse(repeats > 1,
+                                                                     paste0(".folds_", r + max_folds_col_number),
+                                                                     ".folds"),
+                                      id_aggregation_fn = id_aggregation_fn,
+                                      method="n_fill",
+                                      pre_randomize = TRUE) %>%
+          dplyr::ungroup()
 
       }
 
-    # If cat_col is NULL
     } else {
 
-      # If id_col is not NULL
-      if (!is.null(id_col)){
+      # If cat_col is not NULL
+      if (!is.null(cat_col)){
 
-        # Create groups of unique IDs
-        # .. and add grouping factor to data
+        # If id_col is not NULL
+        if (!is.null(id_col)){
 
-        data <- data %>%
-          group_uniques_(k, id_col, method,
-                         col_name = '.folds',
-                         starts_col = starts_col,
-                         remove_missing_starts = remove_missing_starts)
+          # Group by cat_col
+          # For each group:
+          # .. create groups of the unique IDs (e.g. subjects)
+          # .. add grouping factor to data
+          # Group by new grouping factor '.folds'
 
+          for (r in 1:repeats){ # Replace with different loop fn
+            data <- data %>%
+              group_by(!! as.name(cat_col)) %>%
+              do(group_uniques_(., k, id_col, method,
+                                col_name = ifelse(repeats > 1,
+                                                paste0(".folds_", r + max_folds_col_number),
+                                                ".folds"),
+                                starts_col = starts_col,
+                                remove_missing_starts = remove_missing_starts)) %>%
+              dplyr::ungroup()
+          }
 
-      # If id_col is NULL
+        # If id_col is NULL
+        } else {
+
+          # Group by cat_col
+          # Create groups from data
+          # .. and add grouping factor to data
+
+          for (r in 1:repeats){
+            data <- data %>%
+              group_by(!! as.name(cat_col)) %>%
+              do(group(., k, method = method,
+                       randomize = TRUE,
+                       col_name = ifelse(repeats > 1,
+                                         paste0(".folds_", r + max_folds_col_number),
+                                         ".folds"),
+                       starts_col = starts_col,
+                       remove_missing_starts = remove_missing_starts)) %>%
+              dplyr::ungroup()
+          }
+        }
+
+      # If cat_col is NULL
       } else {
 
-        # Create groups from all the data points
-        # .. and add grouping factor to data
+        # If id_col is not NULL
+        if (!is.null(id_col)){
 
-        data <- group(data, k,
-                      method = method,
-                      randomize = TRUE,
-                      col_name = '.folds',
-                      starts_col = starts_col,
-                      remove_missing_starts = remove_missing_starts)
+          # Create groups of unique IDs
+          # .. and add grouping factor to data
 
+          for (r in 1:repeats){
+            data <- data %>%
+              group_uniques_(k, id_col, method,
+                             col_name = ifelse(repeats > 1,
+                                               paste0(".folds_", r + max_folds_col_number),
+                                               ".folds"),
+                             starts_col = starts_col,
+                             remove_missing_starts = remove_missing_starts) %>%
+              dplyr::ungroup()
+
+          }
+
+        # If id_col is NULL
+        } else {
+
+          # Create groups from all the data points
+          # .. and add grouping factor to data
+
+          for (r in 1:repeats){
+            data <- group(data, k,
+                          method = method,
+                          randomize = TRUE,
+                          col_name = ifelse(repeats > 1,
+                                            paste0(".folds_", r + max_folds_col_number),
+                                            ".folds"),
+                          starts_col = starts_col,
+                          remove_missing_starts = remove_missing_starts) %>%
+              dplyr::ungroup()
+          }
+
+        }
       }
     }
+
+    # Add to repetition counter
+    times_repeated = times_repeated + 1
+
+    # Remove identical .folds columns or break out of while loop
+    if (repeats>1 && isTRUE(rm_identical_folds_cols)){
+      folds_colnames <- extract_folds_colnames(data)
+      data <- remove_identical_cols(data, folds_colnames)
+      folds_colnames <- extract_folds_colnames(data)
+
+      # If we have generated too many unique folds cols
+      # Remove some
+      if (length(folds_colnames) > repeats){
+        cols_to_remove <- folds_colnames[(repeats + 1) : length(folds_colnames)]
+        data <- data %>% dplyr::select(-cols_to_remove)
+        continue_repeating <- FALSE
+
+      } else if (length(folds_colnames) == repeats || times_repeated == max_repeating_times){
+        # If we have the right number of folds columns
+        # or we have reached the max times
+        # we wish to repeat the repeating
+        # (TODO Find better vocabulary for this!)
+        continue_repeating <- FALSE
+
+      } else {
+        # Find the max number in .folds_xx
+        max_folds_col_number <- max(as.integer(substring(folds_colnames, 8)))
+      }
+
+    } else {
+      continue_repeating <- FALSE
+    }
+  }
+
+
+
+  # Group by .folds
+  if (repeats == 1){
+    data <- data %>%
+      group_by(!! as.name('.folds'))
+
+  } else {
+    # Rename the folds columns to have consecutive number
+    folds_colnames <- extract_folds_colnames(data)
+    num_names_to_create <- length(folds_colnames)
+    new_names <- paste0(".folds_", 1:num_names_to_create)
+
+    data <- data %>%
+      dplyr::rename_at(dplyr::vars(folds_colnames), ~ new_names)
+
   }
 
   # Return data
