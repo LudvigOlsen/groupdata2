@@ -306,6 +306,8 @@ test_that("repeated folding works in fold()",{
   df_folded_5reps <- fold(df, 2, num_col = 'score', num_fold_cols=5)
   expect_equal(length(extract_fold_colnames(df_folded_5reps)), 1)
 
+  # df_folded_5reps <- fold(df, 3, num_col = 'score', num_fold_cols=20)
+
   # expect_equal(aggregated_scores$group_sums, c(257, 277, 283))
   # expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
   #

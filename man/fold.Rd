@@ -8,7 +8,7 @@
 fold(data, k = 5, cat_col = NULL, num_col = NULL, id_col = NULL,
   starts_col = NULL, method = "n_dist", id_aggregation_fn = sum,
   remove_missing_starts = FALSE, num_fold_cols = 1,
-  unique_fold_cols_only = TRUE, max_iters = 4)
+  unique_fold_cols_only = TRUE, max_iters = 5)
 }
 \arguments{
 \item{data}{Dataframe or Vector.}
@@ -128,7 +128,10 @@ For method \code{l_starts} only.
  Useful for repeated cross-validation.
 
  If \code{num_fold_cols > 1}, columns will be named \eqn{".folds_1"}, \eqn{".folds_2"}, etc.
- Otherwise simply \eqn{".folds"}.}
+ Otherwise simply \eqn{".folds"}.
+
+ N.B. If \code{unique_fold_cols_only} is \code{TRUE},
+ we can end up with fewer columns than expected, see \code{max_iters}.}
 
 \item{unique_fold_cols_only}{Check if fold columns are identical and keep only unique columns.
  This can be slow due to the number of column comparisons. On the other hand, why would you want identical columns?
@@ -137,17 +140,19 @@ For method \code{l_starts} only.
 
  N.B. Only used \code{num_fold_cols > 1}.}
 
-\item{max_iters}{Maximum number of times to create \code{num_fold_cols} number of folds.
+\item{max_iters}{Maximum number of attempts at reaching \code{num_fold_cols} \emph{unique} fold columns.
 
  When only keeping unique fold columns, we risk having fewer columns than expected.
- Hence, we create \code{num_fold_cols} more columns and check again.
- In some cases, it might not be possible to create \code{num_fold_cols} unique combinations of our dataset,
+ Hence, we repeatedly create the missing columns and remove those that are not unique. This is done until
+ we have \code{num_fold_cols} unique fold columns or we have attempted \code{max_iters} times.
+ In some cases, it is not possible to create \code{num_fold_cols} unique combinations of our dataset,
  when specifying \code{cat_col}, \code{id_col} and \code{num_col}.
- \code{max_iters} specifies when to stop trying. Note that we can end up with fewer columns than expected.
+ \code{max_iters} specifies when to stop trying.
+ Note that we can end up with fewer columns than specified in \code{num_fold_cols}.
 
  If too many unique fold columns are created, we simply remove the excess columns.
 
- N.B.Only used \code{num_fold_cols > 1}.}
+ N.B. Only used \code{num_fold_cols > 1}.}
 }
 \value{
 Dataframe with grouping factor for subsetting in cross-validation.

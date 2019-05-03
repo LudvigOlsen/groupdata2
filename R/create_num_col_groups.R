@@ -1,5 +1,5 @@
 
-# For creating
+#' @importFrom dplyr n
 create_num_col_groups <- function(data, n, num_col, cat_col=NULL, id_col=NULL, col_name,
                                   id_aggregation_fn = sum, method="n_fill",
                                   unequal_method="first", force_equal=FALSE,
