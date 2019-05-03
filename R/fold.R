@@ -119,7 +119,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'
 #'  If too many unique fold columns are created, we simply remove the excess columns.
 #'
-#'  N.B.Only used \code{num_fold_cols > 1}.
+#'  N.B. Only used \code{num_fold_cols > 1}.
 #' @inheritParams group_factor
 #' @aliases create_balanced_groups
 #' @return Dataframe with grouping factor for subsetting in cross-validation.
