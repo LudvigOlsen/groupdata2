@@ -736,7 +736,7 @@ remove_identical_cols <- function(data, cols=NULL){
 
   # Remove and return
   if (is.character(to_remove)){
-    data %>% dplyr::select(-one_of(to_remove))
+    data %>% dplyr::select(-dplyr::one_of(to_remove))
   } else if (is.integer(to_remove)){
     data %>% dplyr::select(-to_remove)
   }
