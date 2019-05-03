@@ -306,6 +306,22 @@ test_that("repeated folding works in fold()",{
   df_folded_5reps <- fold(df, 2, num_col = 'score', num_fold_cols=5)
   expect_equal(length(extract_fold_colnames(df_folded_5reps)), 1)
 
+  # Test 10 cols
+  # Also test whether all fold cols are unique
+  df_folded_10 <- fold(df, 3, num_col = 'score', num_fold_cols=10)
+  folds_colnames <- extract_fold_colnames(df_folded_10)
+  expect_equal(folds_colnames, paste0(".folds_",1:10))
+  expect_equal(colnames(unique(as.matrix(df_folded_10), MARGIN=2)),
+               c("participant","age","diagnosis","score", paste0(".folds_",1:10)))
+
+
+  # system.time({
+  #
+  #   df_folded_100reps <- fold(df, 3, num_col = 'score', num_fold_cols=100,
+  #                             max_iters = 100)
+  #
+  # })
+
   # df_folded_5reps <- fold(df, 3, num_col = 'score', num_fold_cols=20)
 
   # expect_equal(aggregated_scores$group_sums, c(257, 277, 283))

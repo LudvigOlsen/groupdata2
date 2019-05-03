@@ -777,3 +777,16 @@ remove_identical_cols <- function(data, cols=NULL, exclude_comparisons=NULL, ret
 }
 
 
+rename_with_consecutive_numbering <- function(data, cols, base_name){
+
+  if (is.integer(cols)){
+    cols <- colnames(data)[cols]
+  }
+
+  num_names_to_create <- length(cols)
+  new_names <- paste0(base_name, 1:num_names_to_create)
+
+  data %>%
+    dplyr::rename_at(dplyr::vars(cols), ~ new_names)
+
+}
