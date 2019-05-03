@@ -712,7 +712,7 @@ find_identical_cols <- function(data, cols=NULL){
   column_combinations[["identical"]] <- plyr::llply(1:nrow(column_combinations), function(r){
     col_1 <- data[[column_combinations[r, 1]]]
     col_2 <- data[[column_combinations[r, 2]]]
-    isTRUE(all_equal(col_1, col_2, ignore_row_order = FALSE))
+    isTRUE(dplyr::all_equal(col_1, col_2, ignore_row_order = FALSE))
   }) %>% unlist()
 
   column_combinations %>%
