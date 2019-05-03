@@ -173,6 +173,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'  max_iters=4)
 #'
 #' @importFrom dplyr group_by_ do %>%
+#' @importFrom utils combn
 fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
                  id_col = NULL, starts_col = NULL,
                  method = 'n_dist', id_aggregation_fn=sum,
@@ -335,9 +336,9 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
 
     # Remove identical .folds columns or break out of while loop
     if (num_fold_cols>1 && isTRUE(unique_fold_cols_only)){
-      folds_colnames <- extract_folds_colnames(data)
+      folds_colnames <- extract_fold_colnames(data)
       data <- remove_identical_cols(data, folds_colnames)
-      folds_colnames <- extract_folds_colnames(data)
+      folds_colnames <- extract_fold_colnames(data)
 
       # If we have generated too many unique folds cols
       # Remove some
@@ -372,7 +373,7 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
 
   } else {
     # Rename the fold columns to have consecutive number
-    folds_colnames <- extract_folds_colnames(data)
+    folds_colnames <- extract_fold_colnames(data)
     num_names_to_create <- length(folds_colnames)
     new_names <- paste0(".folds_", 1:num_names_to_create)
 

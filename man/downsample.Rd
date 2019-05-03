@@ -82,14 +82,12 @@ downsample(df, cat_col="diagnosis")
 # Using downsample() with id_method "n_ids"
 # With column specifying added rows
 downsample(df, cat_col="diagnosis",
-        id_col="participant", id_method="n_ids",
-        mark_new_rows = TRUE)
+        id_col="participant", id_method="n_ids")
 
 # Using downsample() with id_method "n_rows_c"
 # With column specifying added rows
 downsample(df, cat_col="diagnosis",
-        id_col="participant", id_method="n_rows_c",
-        mark_new_rows = TRUE)
+        id_col="participant", id_method="n_rows_c")
 
 # Using downsample() with id_method "distributed"
 downsample(df, cat_col="diagnosis",

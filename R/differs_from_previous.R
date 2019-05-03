@@ -38,7 +38,7 @@
 #'  N.B. Only works for numerical vectors.
 #'  }
 #'  \subsection{Numerical vector with length 2}{
-#'  Given as \code{c(\emph{negative threshold}, \emph{positive threshold})}.
+#'  Given as \code{c(negative threshold, positive threshold)}.
 #'
 #'  Negative threshold must be a negative number and positive threshold must be a positive number.
 #'
