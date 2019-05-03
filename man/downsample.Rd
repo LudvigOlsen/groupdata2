@@ -109,3 +109,4 @@ Other sampling functions: \code{\link{balance}},
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 }
+\concept{sampling functions}

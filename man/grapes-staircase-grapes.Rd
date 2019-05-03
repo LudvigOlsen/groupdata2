@@ -45,3 +45,5 @@ Other remainder tools: \code{\link{\%primes\%}}
 \author{
 Ludvig Renbo Olsen, \email{mail@ludvigolsen.dk}
 }
+\concept{remainder tools}
+\concept{staircase tools}

@@ -7,7 +7,8 @@
 \usage{
 fold(data, k = 5, cat_col = NULL, num_col = NULL, id_col = NULL,
   starts_col = NULL, method = "n_dist", id_aggregation_fn = sum,
-  remove_missing_starts = FALSE)
+  remove_missing_starts = FALSE, num_fold_cols = 1,
+  unique_fold_cols_only = TRUE, max_iters = 4)
 }
 \arguments{
 \item{data}{Dataframe or Vector.}
@@ -122,6 +123,31 @@ when data is a dataframe. Pass \code{'index'} to use row names. (Character)}
 list of starts that are not found.
 For method \code{l_starts} only.
 (Logical)}
+
+\item{num_fold_cols}{Number of fold columns to create.
+ Useful for repeated cross-validation.
+
+ If \code{num_fold_cols > 1}, columns will be named \eqn{".folds_1"}, \eqn{".folds_2"}, etc.
+ Otherwise simply \eqn{".folds"}.}
+
+\item{unique_fold_cols_only}{Check if fold columns are identical and keep only unique columns.
+ This can be slow due to the number of column comparisons. On the other hand, why would you want identical columns?
+
+ N.B. We can end up with fewer columns than expected, see \code{max_iters}.
+
+ N.B. Only used \code{num_fold_cols > 1}.}
+
+\item{max_iters}{Maximum number of times to create \code{num_fold_cols} number of folds.
+
+ When only keeping unique fold columns, we risk having fewer columns than expected.
+ Hence, we create \code{num_fold_cols} more columns and check again.
+ In some cases, it might not be possible to create \code{num_fold_cols} unique combinations of our dataset,
+ when specifying \code{cat_col}, \code{id_col} and \code{num_col}.
+ \code{max_iters} specifies when to stop trying. Note that we can end up with fewer columns than expected.
+
+ If too many unique fold columns are created, we simply remove the excess columns.
+
+ N.B.Only used \code{num_fold_cols > 1}.}
 }
 \value{
 Dataframe with grouping factor for subsetting in cross-validation.
@@ -130,6 +156,7 @@ Dataframe with grouping factor for subsetting in cross-validation.
 Divides data into groups by a range of methods.
  Balances a given categorical variable and/or numerical variable between folds and keeps (if possible)
  all data points with a shared ID (e.g. participant_id) in the same fold.
+ Can create multiple unique fold columns for repeated cross-validation.
 }
 \details{
 \subsection{cat_col}{
@@ -236,6 +263,13 @@ df_folded <- fold(df, 3, cat_col = 'diagnosis',
 
 # Order by folds
 df_folded <- df_folded \%>\% arrange(.folds)
+
+## Multiple fold columns
+# Useful for repeated cross-validation
+df_folded <- fold(df, 3, cat_col = 'diagnosis',
+ id_col = 'participant', num_fold_cols = 5,
+ unique_fold_cols_only=TRUE,
+ max_iters=4)
 
 }
 \author{

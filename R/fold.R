@@ -6,6 +6,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #' @description Divides data into groups by a range of methods.
 #'  Balances a given categorical variable and/or numerical variable between folds and keeps (if possible)
 #'  all data points with a shared ID (e.g. participant_id) in the same fold.
+#'  Can create multiple unique fold columns for repeated cross-validation.
 #' @details
 #'  \subsection{cat_col}{
 #'    \enumerate{
@@ -97,6 +98,28 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #' @param id_aggregation_fn Function for aggregating values in \code{num_col} for each ID, before balancing \code{num_col}.
 #'
 #'  N.B. Only used when \code{num_col} and \code{id_col} are both specified.
+#' @param num_fold_cols Number of fold columns to create.
+#'  Useful for repeated cross-validation.
+#'
+#'  If \code{num_fold_cols > 1}, columns will be named \eqn{".folds_1"}, \eqn{".folds_2"}, etc.
+#'  Otherwise simply \eqn{".folds"}.
+#' @param unique_fold_cols_only Check if fold columns are identical and keep only unique columns.
+#'  This can be slow due to the number of column comparisons. On the other hand, why would you want identical columns?
+#'
+#'  N.B. We can end up with fewer columns than expected, see \code{max_iters}.
+#'
+#'  N.B. Only used \code{num_fold_cols > 1}.
+#' @param max_iters Maximum number of times to create \code{num_fold_cols} number of folds.
+#'
+#'  When only keeping unique fold columns, we risk having fewer columns than expected.
+#'  Hence, we create \code{num_fold_cols} more columns and check again.
+#'  In some cases, it might not be possible to create \code{num_fold_cols} unique combinations of our dataset,
+#'  when specifying \code{cat_col}, \code{id_col} and \code{num_col}.
+#'  \code{max_iters} specifies when to stop trying. Note that we can end up with fewer columns than expected.
+#'
+#'  If too many unique fold columns are created, we simply remove the excess columns.
+#'
+#'  N.B.Only used \code{num_fold_cols > 1}.
 #' @inheritParams group_factor
 #' @aliases create_balanced_groups
 #' @return Dataframe with grouping factor for subsetting in cross-validation.
@@ -142,13 +165,20 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #' # Order by folds
 #' df_folded <- df_folded %>% arrange(.folds)
 #'
+#' ## Multiple fold columns
+#' # Useful for repeated cross-validation
+#' df_folded <- fold(df, 3, cat_col = 'diagnosis',
+#'  id_col = 'participant', num_fold_cols = 5,
+#'  unique_fold_cols_only=TRUE,
+#'  max_iters=4)
+#'
 #' @importFrom dplyr group_by_ do %>%
 fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
                  id_col = NULL, starts_col = NULL,
                  method = 'n_dist', id_aggregation_fn=sum,
                  remove_missing_starts = FALSE,
-                 repeats=1, rm_identical_folds_cols = TRUE,
-                 max_repeating_times=4){
+                 num_fold_cols=1, unique_fold_cols_only = TRUE,
+                 max_iters=4){
 
   #
   # Takes:
@@ -198,9 +228,9 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
 
     # If num_col is not NULL
     if (!is.null(num_col)){
-      for (r in 1:repeats){ # Replace with different loop fn
+      for (r in 1:num_fold_cols){ # Replace with different loop fn
         data <- create_num_col_groups(data, n=k, num_col=num_col, cat_col=cat_col,
-                                      id_col=id_col, col_name=ifelse(repeats > 1,
+                                      id_col=id_col, col_name=ifelse(num_fold_cols > 1,
                                                                      paste0(".folds_", r + max_folds_col_number),
                                                                      ".folds"),
                                       id_aggregation_fn = id_aggregation_fn,
@@ -224,11 +254,11 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
           # .. add grouping factor to data
           # Group by new grouping factor '.folds'
 
-          for (r in 1:repeats){ # Replace with different loop fn
+          for (r in 1:num_fold_cols){ # Replace with different loop fn
             data <- data %>%
               group_by(!! as.name(cat_col)) %>%
               do(group_uniques_(., k, id_col, method,
-                                col_name = ifelse(repeats > 1,
+                                col_name = ifelse(num_fold_cols > 1,
                                                 paste0(".folds_", r + max_folds_col_number),
                                                 ".folds"),
                                 starts_col = starts_col,
@@ -243,12 +273,12 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
           # Create groups from data
           # .. and add grouping factor to data
 
-          for (r in 1:repeats){
+          for (r in 1:num_fold_cols){
             data <- data %>%
               group_by(!! as.name(cat_col)) %>%
               do(group(., k, method = method,
                        randomize = TRUE,
-                       col_name = ifelse(repeats > 1,
+                       col_name = ifelse(num_fold_cols > 1,
                                          paste0(".folds_", r + max_folds_col_number),
                                          ".folds"),
                        starts_col = starts_col,
@@ -266,10 +296,10 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
           # Create groups of unique IDs
           # .. and add grouping factor to data
 
-          for (r in 1:repeats){
+          for (r in 1:num_fold_cols){
             data <- data %>%
               group_uniques_(k, id_col, method,
-                             col_name = ifelse(repeats > 1,
+                             col_name = ifelse(num_fold_cols > 1,
                                                paste0(".folds_", r + max_folds_col_number),
                                                ".folds"),
                              starts_col = starts_col,
@@ -284,11 +314,11 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
           # Create groups from all the data points
           # .. and add grouping factor to data
 
-          for (r in 1:repeats){
+          for (r in 1:num_fold_cols){
             data <- group(data, k,
                           method = method,
                           randomize = TRUE,
-                          col_name = ifelse(repeats > 1,
+                          col_name = ifelse(num_fold_cols > 1,
                                             paste0(".folds_", r + max_folds_col_number),
                                             ".folds"),
                           starts_col = starts_col,
@@ -304,20 +334,20 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
     times_repeated = times_repeated + 1
 
     # Remove identical .folds columns or break out of while loop
-    if (repeats>1 && isTRUE(rm_identical_folds_cols)){
+    if (num_fold_cols>1 && isTRUE(unique_fold_cols_only)){
       folds_colnames <- extract_folds_colnames(data)
       data <- remove_identical_cols(data, folds_colnames)
       folds_colnames <- extract_folds_colnames(data)
 
       # If we have generated too many unique folds cols
       # Remove some
-      if (length(folds_colnames) > repeats){
-        cols_to_remove <- folds_colnames[(repeats + 1) : length(folds_colnames)]
+      if (length(folds_colnames) > num_fold_cols){
+        cols_to_remove <- folds_colnames[(num_fold_cols + 1) : length(folds_colnames)]
         data <- data %>% dplyr::select(-cols_to_remove)
         continue_repeating <- FALSE
 
-      } else if (length(folds_colnames) == repeats || times_repeated == max_repeating_times){
-        # If we have the right number of folds columns
+      } else if (length(folds_colnames) == num_fold_cols || times_repeated == max_iters){
+        # If we have the right number of fold columns
         # or we have reached the max times
         # we wish to repeat the repeating
         # (TODO Find better vocabulary for this!)
@@ -336,12 +366,12 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
 
 
   # Group by .folds
-  if (repeats == 1){
+  if (num_fold_cols == 1){
     data <- data %>%
       group_by(!! as.name('.folds'))
 
   } else {
-    # Rename the folds columns to have consecutive number
+    # Rename the fold columns to have consecutive number
     folds_colnames <- extract_folds_colnames(data)
     num_names_to_create <- length(folds_colnames)
     new_names <- paste0(".folds_", 1:num_names_to_create)

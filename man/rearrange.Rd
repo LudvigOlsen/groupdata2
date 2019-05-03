@@ -5,7 +5,8 @@
 \title{Rearrange data by a set of methods.}
 \usage{
 rearrange(data, method = "pair_extremes", unequal_method = "middle",
-  drop_rearrange_factor = TRUE, rearrange_factor_name = ".rearrange_factor")
+  drop_rearrange_factor = TRUE,
+  rearrange_factor_name = ".rearrange_factor")
 }
 \arguments{
 \item{data}{Dataframe or Vector.}
