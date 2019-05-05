@@ -274,7 +274,7 @@ id_method_distributed <- function(data, size, cat_col, id_col, mark_new_rows){
     # Get the number of rows to keep for this ID
     to_keep <- balanced_ids %>%
       dplyr::filter(!!as.name(id_col) == id) %>%
-      dplyr::pull(.to_keep_)
+      dplyr::pull(.data$.to_keep_)
 
     # Call balance on the subset, to get the balanced (up-/downsampled) ID
     data_for_id %>%

@@ -60,12 +60,12 @@ rearrange <- function(data, method="pair_extremes",
   data <- data %>%
     dplyr::mutate(.rearrange_factor_ = create_rearrange_factor_fn(
       size = n(), unequal_method = unequal_method)) %>%
-    dplyr::arrange(.rearrange_factor_)
+    dplyr::arrange(.data$.rearrange_factor_)
 
   # Remove rearrange factor if it shouldn't be returned
   if (isTRUE(drop_rearrange_factor)){
     data <- data %>%
-      dplyr::select(-c(.rearrange_factor_))
+      dplyr::select(-c(.data$.rearrange_factor_))
   } else {
     data <- replace_col_name(data, '.rearrange_factor_', rearrange_factor_name)
   }
@@ -101,8 +101,8 @@ create_rearrange_factor_pair_extremes_ <- function(size, unequal_method = "middl
       middle <- ceiling((half_size / 2)) + 1
       idx <- idx %>%
         tibble::enframe(name = NULL) %>%
-        dplyr::mutate(value = ifelse(value >= middle, value + 1, value)) %>%
-        dplyr::pull(value)
+        dplyr::mutate(value = ifelse(.data$value >= middle, .data$value + 1, .data$value)) %>%
+        dplyr::pull(.data$value)
       return(c(idx, middle, rev(idx)))
     } else if (unequal_method == "first") {
       return(c(1, c(idx, rev(idx)) + 1))

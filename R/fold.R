@@ -177,6 +177,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'
 #' @importFrom dplyr group_by_ do %>%
 #' @importFrom utils combn
+#' @importFrom rlang .data
 fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
                  id_col = NULL, starts_col = NULL,
                  method = 'n_dist', id_aggregation_fn=sum,

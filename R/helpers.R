@@ -693,8 +693,8 @@ select_rows_from_ids <- function(data, balanced_ids, cat_col, id_col, mark_new_r
 # I've forgotten what it's for and it's very specific ;)
 update_TempNewRow_from_ids_method <- function(data){
   data %>%
-    dplyr::mutate(.TempNewRow = dplyr::if_else(.TempNewRow + .ids_balanced_new_rows > 0, 1, 0)) %>%
-    dplyr::select(-c(.ids_balanced_new_rows))
+    dplyr::mutate(.TempNewRow = dplyr::if_else(.data$.TempNewRow + .data$.ids_balanced_new_rows > 0, 1, 0)) %>%
+    dplyr::select(-c(.data$.ids_balanced_new_rows))
 }
 
 ## Finding and removing identical columns
@@ -731,7 +731,7 @@ find_identical_cols <- function(data, cols=NULL, exclude_comparisons=NULL, retur
 
   identicals <- column_combinations %>%
     dplyr::filter(identical) %>%
-    dplyr::select(c(V1,V2))
+    dplyr::select(c(.data$V1,.data$V2))
 
   if (isTRUE(return_all_comparisons)){
     return(list(identicals, column_combinations))

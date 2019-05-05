@@ -6,7 +6,7 @@ Authors@R: person("Ludvig Renbo", "Olsen", email = "r-pkgs@ludvigolsen.dk", role
 Description: Subsetting methods for balanced cross-validation, time series windowing,
     and general grouping and splitting of data.
 Depends:
-    R (>= 3.3.1)
+    R (>= 3.5)
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -15,7 +15,8 @@ Imports:
     tibble,
     plyr,
     utils,
-    numbers
+    numbers,
+    rlang
 RoxygenNote: 6.1.1
 Suggests: ggplot2,
     knitr,
