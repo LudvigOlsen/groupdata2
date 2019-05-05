@@ -1,5 +1,5 @@
 
-# For creating
+#' @importFrom dplyr n
 create_num_col_groups <- function(data, n, num_col, cat_col=NULL, id_col=NULL, col_name,
                                   id_aggregation_fn = sum, method="n_fill",
                                   unequal_method="first", force_equal=FALSE,
@@ -32,7 +32,7 @@ create_num_col_groups <- function(data, n, num_col, cat_col=NULL, id_col=NULL, c
         ids_for_cat$._new_groups_ <- numerically_balanced_group_factor_(ids_for_cat, n=n, num_col = "aggr_val",
                                                                 method=method, unequal_method=unequal_method)
         ids_for_cat %>%
-          dplyr::select(-c(aggr_val))
+          dplyr::select(-c(.data$aggr_val))
       })
 
       # Transfer groups to data
@@ -50,7 +50,7 @@ create_num_col_groups <- function(data, n, num_col, cat_col=NULL, id_col=NULL, c
         data_for_cat <- data %>%
           dplyr::filter(!!as.name(cat_col) == category)
         data_for_cat$._new_groups_ <- numerically_balanced_group_factor_(data_for_cat, n=n,
-                                                                 num_col = num_col,
+                                                                 num_col=num_col,
                                                                  method=method,
                                                                  unequal_method=unequal_method)
         data_for_cat
@@ -98,8 +98,8 @@ create_num_col_groups <- function(data, n, num_col, cat_col=NULL, id_col=NULL, c
   # Reorder if pre-randomized
   if(isTRUE(pre_randomize)){
     data <- data %>%
-      dplyr::arrange(.__tmp_index__) %>%
-      dplyr::select(-c(.__tmp_index__))
+      dplyr::arrange(.data$.__tmp_index__) %>%
+      dplyr::select(-c(.data$.__tmp_index__))
   }
 
 
@@ -110,7 +110,7 @@ create_num_col_groups <- function(data, n, num_col, cat_col=NULL, id_col=NULL, c
     number_of_groups_specified <- length(n)
 
     data <- data %>%
-      dplyr::filter(factor_to_num(._new_groups_) <= number_of_groups_specified)
+      dplyr::filter(factor_to_num(.data$._new_groups_) <= number_of_groups_specified)
 
   }
 

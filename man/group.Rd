@@ -7,9 +7,10 @@
 \alias{split}
 \title{Create groups from your data.}
 \usage{
-group(data, n, method = "n_dist", starts_col = NULL, force_equal = FALSE,
-  allow_zero = FALSE, return_factor = FALSE, descending = FALSE,
-  randomize = FALSE, col_name = ".groups", remove_missing_starts = FALSE)
+group(data, n, method = "n_dist", starts_col = NULL,
+  force_equal = FALSE, allow_zero = FALSE, return_factor = FALSE,
+  descending = FALSE, randomize = FALSE, col_name = ".groups",
+  remove_missing_starts = FALSE)
 }
 \arguments{
 \item{data}{Dataframe or Vector.}
@@ -167,3 +168,6 @@ Other l_starts tools: \code{\link{differs_from_previous}},
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 }
+\concept{grouping functions}
+\concept{l_starts tools}
+\concept{staircase tools}

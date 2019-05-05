@@ -42,22 +42,22 @@ test_that(".folds is correct in fold()",{
   df_unequal <- df %>%
     dplyr::filter(row_number() != 18)
 
-  col_is_factor <- function(df, n, cat_col = NULL, num_col = NULL, id_col = NULL, col){
+  col_is_factor <- function(df, n, cat_col = NULL, num_col = NULL, id_col = NULL, col, num_fold_cols=1){
 
     set.seed(1)
-    folded_df <- fold(df, n, cat_col=cat_col, num_col=num_col, id_col=id_col)
-
+    folded_df <- fold(df, n, cat_col=cat_col, num_col=num_col, id_col=id_col, num_fold_cols = num_fold_cols)
+    # print(folded_df)
     return(is.factor(folded_df[[col]]))
 
   }
 
 
 
-  group_counts <- function(df, n, cat_col = NULL, num_col = NULL, id_col = NULL, method){
+  group_counts <- function(df, n, cat_col = NULL, num_col = NULL, id_col = NULL, method, num_fold_cols=1, folds_col=".folds"){
 
     set.seed(1)
-    folded_df <- fold(df, n, cat_col=cat_col, num_col = num_col, id_col=id_col, method = method)
-    counts <- plyr::count(folded_df$.folds)
+    folded_df <- fold(df, n, cat_col=cat_col, num_col = num_col, id_col=id_col, method = method, num_fold_cols=num_fold_cols)
+    counts <- plyr::count(folded_df[[folds_col]])
     return(counts$freq)
 
   }
@@ -73,6 +73,12 @@ test_that(".folds is correct in fold()",{
   expect_true(col_is_factor(df, 5, id_col = 'participant', num_col = 'score', col='.folds'))
   expect_true(col_is_factor(df, 3, cat_col = 'diagnosis', num_col = 'score',
                              id_col = 'participant', col='.folds'))
+  expect_true(col_is_factor(df, 3, cat_col = 'diagnosis', num_col = 'score',
+                            id_col = 'participant', col='.folds_1', num_fold_cols=2))
+  # Here they were identical and the .folds_2 was removed
+  expect_true(!col_is_factor(df, 3, cat_col = 'diagnosis', num_col = 'score',
+                            id_col = 'participant', col='.folds_2', num_fold_cols=2))
+
 
   expect_equal(group_counts(df, 5, method = 'greedy'), c(5,5,5,3))
   #expect_equal(group_counts(df, 5, cat_col = 'diagnosis', method = 'greedy'), c(6,6,6))
@@ -106,6 +112,11 @@ test_that(".folds is correct in fold()",{
 
   expect_equal(group_counts(df, 2, cat_col = 'diagnosis', num_col = 'score', id_col = 'participant',
                             method = 'n_dist'), c(12,6))
+
+  expect_equal(group_counts(df, 2, num_col=NULL, id_col = 'participant',
+                            method = 'n_dist', num_fold_cols = 5, folds_col = ".folds_2"), c(9,9))
+  expect_equal(group_counts(df, 2, cat_col = 'diagnosis', num_col = 'score', id_col = 'participant',
+                            method = 'n_dist', num_fold_cols = 2, folds_col = ".folds_1"), c(12,6))
 
 
   # Unequal number of rows in dataframe
@@ -257,6 +268,138 @@ test_that("values are decently balanced in num_col in fold()",{
 
   expect_equal(aggregated_scores$group_sums, c(498, 319))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
+
+
+})
+
+
+
+test_that("repeated folding works in fold()",{
+
+  set.seed(1)
+  df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
+                   "age" = rep(c(25,65,34), 3),
+                   "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
+                   "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
+
+  df <- df %>% dplyr::arrange(participant, score)
+
+  # With num_col
+  df_folded <- fold(df, 3, num_col = 'score', num_fold_cols=5)
+  folds_colnames <- extract_fold_colnames(df_folded)
+  df_folded_long <- df_folded %>%
+    tidyr::gather(key="folds_col", value=".folds", folds_colnames)
+  aggregated_scores <- df_folded_long %>%
+    dplyr::group_by(folds_col, .folds) %>%
+    dplyr::summarize(group_sums = sum(score))
+
+  expected_folds_col <- rep(c(".folds_1",".folds_2",".folds_3",".folds_4",".folds_5"), 18)
+  expected_folds_col <- expected_folds_col[order(expected_folds_col)]
+  expect_equal(df_folded_long$folds_col, expected_folds_col)
+
+  expected_aggregated_folds_col <- rep(c(".folds_1",".folds_2",".folds_3",".folds_4",".folds_5"), 3)
+  expected_aggregated_folds_col <- expected_aggregated_folds_col[order(expected_aggregated_folds_col)]
+  expect_equal(aggregated_scores$folds_col, expected_aggregated_folds_col)
+
+  # We set num_fold_cols to a larger number than is possible to create unique .folds columns
+  # Hence it will only create a smaller number of columns!
+  df_folded_5reps <- fold(df, 2, num_col = 'score', num_fold_cols=5)
+  expect_equal(length(extract_fold_colnames(df_folded_5reps)), 1)
+
+  # Test 10 cols
+  # Also test whether all fold cols are unique
+  df_folded_10 <- fold(df, 3, num_col = 'score', num_fold_cols=10)
+  folds_colnames <- extract_fold_colnames(df_folded_10)
+  expect_equal(folds_colnames, paste0(".folds_",1:10))
+  expect_equal(colnames(unique(as.matrix(df_folded_10), MARGIN=2)),
+               c("participant","age","diagnosis","score", paste0(".folds_",1:10)))
+
+
+  # system.time({
+  #
+  #   df_folded_100reps <- fold(df, 3, num_col = 'score', num_fold_cols=100,
+  #                             max_iters = 100)
+  #
+  # })
+
+  # df_folded_5reps <- fold(df, 3, num_col = 'score', num_fold_cols=20)
+
+  # expect_equal(aggregated_scores$group_sums, c(257, 277, 283))
+  # expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
+  #
+  # df_folded <- fold(df, 4, num_col = 'score')
+  # aggregated_scores <- df_folded %>%
+  #   dplyr::group_by(.folds) %>%
+  #   dplyr::summarize(group_sums = sum(score))
+  #
+  # expect_equal(aggregated_scores$group_sums, c(181,263,187, 186))
+  # expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
+  #
+  # df_folded <- fold(df, 1, num_col = 'score')
+  # aggregated_scores <- df_folded %>%
+  #   dplyr::group_by(.folds) %>%
+  #   dplyr::summarize(group_sums = sum(score))
+  #
+  # expect_equal(aggregated_scores$group_sums, sum(df_folded$score))
+  #
+  # df_folded <- fold(df, 18, num_col = 'score')
+  # aggregated_scores <- df_folded %>%
+  #   dplyr::group_by(participant, .folds) %>%
+  #   dplyr::summarize(group_sums = sum(score)) %>%
+  #   dplyr::arrange(participant, group_sums)
+  #
+  # expect_equal(aggregated_scores$group_sums, df_folded$score)
+  #
+  # # With num_col and id_col
+  # df_folded <- fold(df, 3, num_col = 'score', id_col="participant")
+  # aggregated_scores <- df_folded %>%
+  #   dplyr::group_by(.folds) %>%
+  #   dplyr::summarize(group_sums = sum(score))
+  #
+  # expect_equal(aggregated_scores$group_sums, c(246, 288, 283))
+  # expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
+  #
+  # df_folded <- fold(df, 4, num_col = 'score', id_col="participant")
+  # aggregated_scores <- df_folded %>%
+  #   dplyr::group_by(.folds) %>%
+  #   dplyr::summarize(group_sums = sum(score))
+  #
+  # expect_equal(aggregated_scores$group_sums, c(246,288,141,142))
+  # expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
+  #
+  # # With num_col and cat_col
+  # df_folded <- fold(df, 3, num_col = 'score', cat_col="diagnosis")
+  # aggregated_scores <- df_folded %>%
+  #   dplyr::group_by(.folds) %>%
+  #   dplyr::summarize(group_sums = sum(score))
+  #
+  # expect_equal(aggregated_scores$group_sums, c(215, 250, 352)) # FLAG
+  # expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
+  #
+  # df_folded <- fold(df, 4, num_col = 'score', cat_col="diagnosis")
+  # aggregated_scores <- df_folded %>%
+  #   dplyr::group_by(.folds) %>%
+  #   dplyr::summarize(group_sums = sum(score))
+  #
+  # expect_equal(aggregated_scores$group_sums, c(215, 204, 198, 200))
+  # expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
+  #
+  # # With num_col, cat_col and id_col
+  # df_folded <- fold(df, 3, num_col = 'score', cat_col="diagnosis", id_col="participant")
+  # aggregated_scores <- df_folded %>%
+  #   dplyr::group_by(.folds) %>%
+  #   dplyr::summarize(group_sums = sum(score))
+  #
+  # expect_equal(aggregated_scores$group_sums, c(215, 283, 319))
+  # expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
+  #
+  # df_folded <- fold(df, 2, num_col = 'score', cat_col="diagnosis", id_col="participant")
+  # aggregated_scores <- df_folded %>%
+  #   dplyr::group_by(.folds) %>%
+  #   dplyr::summarize(group_sums = sum(score))
+  #
+  # expect_equal(aggregated_scores$group_sums, c(498, 319))
+  # expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
 
 })

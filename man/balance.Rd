@@ -145,3 +145,4 @@ Other sampling functions: \code{\link{downsample}},
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 }
+\concept{sampling functions}

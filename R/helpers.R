@@ -385,7 +385,7 @@ group_uniques_ <- function(data, n, id_col, method, starts_col = NULL,
                      remove_missing_starts = remove_missing_starts)
 
   # Add grouping factor to data
-  data <- merge(data,id_groups,by.x=c(id_col), by.y=c(colnames(id_groups)[1]))
+  data <- merge(data, id_groups, by.x=c(id_col), by.y=c(colnames(id_groups)[1]))
 
   # Return data
   return(data)
@@ -689,9 +689,104 @@ select_rows_from_ids <- function(data, balanced_ids, cat_col, id_col, mark_new_r
   balanced_data
 }
 
+# TODO Add description of this function.
+# I've forgotten what it's for and it's very specific ;)
 update_TempNewRow_from_ids_method <- function(data){
   data %>%
-    dplyr::mutate(.TempNewRow = dplyr::if_else(.TempNewRow + .ids_balanced_new_rows > 0, 1, 0)) %>%
-    dplyr::select(-c(.ids_balanced_new_rows))
+    dplyr::mutate(.TempNewRow = dplyr::if_else(.data$.TempNewRow + .data$.ids_balanced_new_rows > 0, 1, 0)) %>%
+    dplyr::select(-c(.data$.ids_balanced_new_rows))
 }
 
+## Finding and removing identical columns
+
+# Find columns that are identical values-wise
+# Ignores names of columns
+# Exclude comparisons by passing data frame with cols V1 and V2 - e.g. to avoid comparing columns multiple times.
+# if return_all_comparisons is TRUE, it returns a list with 1. identical cols, 2. all comparisons
+find_identical_cols <- function(data, cols=NULL, exclude_comparisons=NULL, return_all_comparisons=FALSE){
+
+  if (is.null(cols)){
+    cols <- colnames(data)
+  }
+
+  column_combinations <- as.data.frame(t(combn(cols, 2)), stringsAsFactors=FALSE)
+
+  # Exclude comparisons if specified
+  if (!is.null(exclude_comparisons)){
+
+    # Asserts for exclude_comparisons data frame
+    stopifnot(is.data.frame(exclude_comparisons),
+              "V1" %in% colnames(exclude_comparisons),
+              "V2" %in% colnames(exclude_comparisons))
+
+    column_combinations <- column_combinations %>%
+      dplyr::anti_join(exclude_comparisons, by=c("V1", "V2"))
+  }
+
+  column_combinations[["identical"]] <- plyr::llply(1:nrow(column_combinations), function(r){
+    col_1 <- data[[column_combinations[r, 1]]]
+    col_2 <- data[[column_combinations[r, 2]]]
+    isTRUE(dplyr::all_equal(col_1, col_2, ignore_row_order = FALSE))
+  }) %>% unlist()
+
+  identicals <- column_combinations %>%
+    dplyr::filter(identical) %>%
+    dplyr::select(c(.data$V1,.data$V2))
+
+  if (isTRUE(return_all_comparisons)){
+    return(list(identicals, column_combinations))
+  } else {
+    return(identicals)
+  }
+
+}
+
+# Find identical columns (based on values)
+# Remove all but one of these identical columns
+# If return_all_comparisons is TRUE, return list with 1. data, 2. all comparisons
+remove_identical_cols <- function(data, cols=NULL, exclude_comparisons=NULL, return_all_comparisons=FALSE){
+
+  if (is.null(cols)){
+    cols <- colnames(data)
+  }
+
+  # Find identicals
+  identicals_and_comparisons <- find_identical_cols(data, cols, exclude_comparisons=exclude_comparisons,
+                                                    return_all_comparisons = TRUE)
+
+  identicals <- identicals_and_comparisons[[1]]
+  comparisons <- identicals_and_comparisons[[2]]
+
+  # Find the columns to remove
+  to_remove <- unique(identicals[[2]])
+
+  # Remove
+  if (is.character(to_remove)){
+    data <- data %>% dplyr::select(-dplyr::one_of(to_remove))
+  } else if (is.integer(to_remove)){
+    data <- data %>% dplyr::select(-to_remove)
+  }
+
+  if (isTRUE(return_all_comparisons)){
+    return(list(data, comparisons))
+  } else {
+    return(data)
+  }
+
+
+}
+
+
+rename_with_consecutive_numbering <- function(data, cols, base_name){
+
+  if (is.integer(cols)){
+    cols <- colnames(data)[cols]
+  }
+
+  num_names_to_create <- length(cols)
+  new_names <- paste0(base_name, 1:num_names_to_create)
+
+  data %>%
+    dplyr::rename_at(dplyr::vars(cols), ~ new_names)
+
+}

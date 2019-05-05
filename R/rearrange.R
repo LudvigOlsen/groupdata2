@@ -27,6 +27,10 @@
 #'
 #' E.g. 1,2,3,4,4,3,2,1,\strong{5}.
 #' }
+#' @param drop_rearrange_factor Whether to drop rearrange factor after sorting dataset. \code{Logical}.
+#' @param rearrange_factor_name Name of rearrange factor.
+#'
+#'  N.B. Only used when \code{drop_rearrange_factor} is FALSE.
 #'
 rearrange <- function(data, method="pair_extremes",
                       unequal_method = "middle",
@@ -38,7 +42,7 @@ rearrange <- function(data, method="pair_extremes",
   # Check data
   # Potentially convert vector to dataframe
   if (is.vector(data)){
-    data <- data %>% dplyr::as_data_frame()
+    data <- data %>% tibble::enframe(name = NULL)
   }
   if (method %ni% c("pair_extremes")) {
     stop("'method' must be name of one of the existing methods.")
@@ -56,12 +60,12 @@ rearrange <- function(data, method="pair_extremes",
   data <- data %>%
     dplyr::mutate(.rearrange_factor_ = create_rearrange_factor_fn(
       size = n(), unequal_method = unequal_method)) %>%
-    dplyr::arrange(.rearrange_factor_)
+    dplyr::arrange(.data$.rearrange_factor_)
 
   # Remove rearrange factor if it shouldn't be returned
   if (isTRUE(drop_rearrange_factor)){
     data <- data %>%
-      dplyr::select(-c(.rearrange_factor_))
+      dplyr::select(-c(.data$.rearrange_factor_))
   } else {
     data <- replace_col_name(data, '.rearrange_factor_', rearrange_factor_name)
   }
@@ -96,9 +100,9 @@ create_rearrange_factor_pair_extremes_ <- function(size, unequal_method = "middl
     if (unequal_method == "middle") {
       middle <- ceiling((half_size / 2)) + 1
       idx <- idx %>%
-        dplyr::as_data_frame() %>%
-        dplyr::mutate(value = ifelse(value >= middle, value + 1, value)) %>%
-        dplyr::pull(value)
+        tibble::enframe(name = NULL) %>%
+        dplyr::mutate(value = ifelse(.data$value >= middle, .data$value + 1, .data$value)) %>%
+        dplyr::pull(.data$value)
       return(c(idx, middle, rev(idx)))
     } else if (unequal_method == "first") {
       return(c(1, c(idx, rev(idx)) + 1))

@@ -4,9 +4,9 @@
 \alias{splt}
 \title{Split data by a range of methods.}
 \usage{
-splt(data, n, method = "n_dist", starts_col = NULL, force_equal = FALSE,
-  allow_zero = FALSE, descending = FALSE, randomize = FALSE,
-  remove_missing_starts = FALSE)
+splt(data, n, method = "n_dist", starts_col = NULL,
+  force_equal = FALSE, allow_zero = FALSE, descending = FALSE,
+  randomize = FALSE, remove_missing_starts = FALSE)
 }
 \arguments{
 \item{data}{Dataframe or Vector.}
@@ -139,3 +139,4 @@ Other grouping functions: \code{\link{group_factor}},
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 }
+\concept{grouping functions}

@@ -4,7 +4,8 @@
 \alias{find_missing_starts}
 \title{Find start positions that cannot be found in data.}
 \usage{
-find_missing_starts(data, n, starts_col = NULL, return_skip_numbers = TRUE)
+find_missing_starts(data, n, starts_col = NULL,
+  return_skip_numbers = TRUE)
 }
 \arguments{
 \item{data}{Dataframe or Vector}
@@ -55,3 +56,4 @@ Other l_starts tools: \code{\link{differs_from_previous}},
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 }
+\concept{l_starts tools}

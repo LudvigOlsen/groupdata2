@@ -38,3 +38,5 @@ Other remainder tools: \code{\link{\%staircase\%}}
 \author{
 Ludvig Renbo Olsen, \email{mail@ludvigolsen.dk}
 }
+\concept{remainder tools}
+\concept{staircase tools}

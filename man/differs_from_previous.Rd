@@ -38,7 +38,7 @@ dataframe. (Character)}
  N.B. Only works for numerical vectors.
  }
  \subsection{Numerical vector with length 2}{
- Given as \code{c(\emph{negative threshold}, \emph{positive threshold})}.
+ Given as \code{c(negative threshold, positive threshold)}.
 
  Negative threshold must be a negative number and positive threshold must be a positive number.
 
@@ -118,3 +118,4 @@ Other l_starts tools: \code{\link{find_missing_starts}},
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 }
+\concept{l_starts tools}

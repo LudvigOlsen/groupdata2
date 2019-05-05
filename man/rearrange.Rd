@@ -5,7 +5,8 @@
 \title{Rearrange data by a set of methods.}
 \usage{
 rearrange(data, method = "pair_extremes", unequal_method = "middle",
-  drop_rearrange_factor = TRUE, rearrange_factor_name = ".rearrange_factor")
+  drop_rearrange_factor = TRUE,
+  rearrange_factor_name = ".rearrange_factor")
 }
 \arguments{
 \item{data}{Dataframe or Vector.}
@@ -35,6 +36,12 @@ The last group will have size 1.
 
 E.g. 1,2,3,4,4,3,2,1,\strong{5}.
 }}
+
+\item{drop_rearrange_factor}{Whether to drop rearrange factor after sorting dataset. \code{Logical}.}
+
+\item{rearrange_factor_name}{Name of rearrange factor.
+
+ N.B. Only used when \code{drop_rearrange_factor} is FALSE.}
 }
 \description{
 \strong{Internal}: Creates a rearrange factor and sorts the data by it.

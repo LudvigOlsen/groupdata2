@@ -161,3 +161,6 @@ Other l_starts tools: \code{\link{differs_from_previous}},
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 }
+\concept{grouping functions}
+\concept{l_starts tools}
+\concept{staircase tools}

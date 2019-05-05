@@ -4,8 +4,9 @@
 \alias{partition}
 \title{Create balanced partitions.}
 \usage{
-partition(data, p = 0.2, cat_col = NULL, num_col = NULL, id_col = NULL,
-  id_aggregation_fn = sum, force_equal = FALSE, list_out = TRUE)
+partition(data, p = 0.2, cat_col = NULL, num_col = NULL,
+  id_col = NULL, id_aggregation_fn = sum, force_equal = FALSE,
+  list_out = TRUE)
 }
 \arguments{
 \item{data}{Dataframe or Vector.}

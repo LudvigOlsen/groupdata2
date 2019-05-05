@@ -13,6 +13,12 @@ Thanks for the request from jjesusfilho #3.
 
 * Adds helper tool 'differs_from_previous'. Finds values in a vector that differs from the previous value by some threshold. Similar to find_starts().
 
+* Adds parameter "num_fold_cols" to fold(). Useful for creating multiple fold columns for repeated cross-validation.
+
+* Adds parameter "unique_fold_cols_only" to fold(). Whether to only include unique fold columns or not.
+
+* Adds parameter "max_iters" to fold(). How many times to attempt creating unique fold columns. Note that it is possible to get fewer fold columns than specified in "num_fold_cols".
+
 
 # groupdata2 1.0.0
 
