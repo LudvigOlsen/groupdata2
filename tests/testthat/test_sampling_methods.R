@@ -193,7 +193,7 @@ test_that("balance() works with method distributed", {
 
 
   # Specific n
-  set.seed(1)
+  set.seed(2)
   balanced_by_n_rows <- balance(df, size=5, cat_col = "diagnosis",
                                 id_col = "participant",
                                 id_method = "distributed", mark_new_rows = FALSE)
@@ -203,7 +203,7 @@ test_that("balance() works with method distributed", {
   expect_equal(counts$diagnosis, factor(c(0, 0, 1, 1)))
 
   # Test mark_new_rows = TRUE
-  set.seed(1)
+  set.seed(2)
   balanced_by_n_rows <- balance(df, size=5, cat_col = "diagnosis",
                                 id_col = "participant",
                                 id_method = "distributed", mark_new_rows = TRUE)

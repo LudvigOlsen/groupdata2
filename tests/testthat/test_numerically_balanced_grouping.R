@@ -34,7 +34,8 @@ test_that("numerically_balanced_group_factor_() works with n=3", {
   # numerically_balanced_group_factor_ on unequal number of dataframe rows
   set.seed(1)
   expect_equal(numerically_balanced_group_factor_(df, 3, num_col="score"),
-               factor(c(2,3,1,3,1,1,2)))
+               factor(c(1,3,1,1,2,3,2)))
+               #factor(c(2,3,1,3,1,1,2)))
 
   set.seed(1)
   expect_equal(numerically_balanced_group_factor_(df, 3, num_col="neg_score"),
@@ -49,14 +50,14 @@ test_that("numerically_balanced_group_factor_() works with n=3", {
     dplyr::group_by(.groups) %>%
     dplyr::summarize(group_sum = sum(score))
 
-  expect_equal(group_sums$group_sum, c(163,124,126))
+  expect_equal(group_sums$group_sum, c(103,101,82))
 
   # numerically_balanced_group_factor_ on equal number of dataframe rows
 
-  df <- df %>% dplyr::filter(row_number() != 7)
+  df <- df %>% dplyr::filter(dplyr::row_number() != 7)
   set.seed(1)
   expect_equal(numerically_balanced_group_factor_(df, 3, num_col="score"),
-               factor(c(3,1,1,2,2,3)))
+               factor(c(3,1,2,3,2,1)))
 
   set.seed(1)
   expect_equal(numerically_balanced_group_factor_(df, 3, num_col="neg_score"),
@@ -71,7 +72,7 @@ test_that("numerically_balanced_group_factor_() works with n=3", {
     dplyr::group_by(.groups) %>%
     dplyr::summarize(group_sum = sum(score))
 
-  expect_equal(group_sums$group_sum, c(94,109,113))
+  expect_equal(group_sums$group_sum, c(82,88,102))
 
 })
 

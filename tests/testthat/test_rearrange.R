@@ -8,7 +8,7 @@ test_that("rearrange() works", {
   df <- data.frame(
     "participant" = factor(c(1, 3, 5, 6, 7, 8, 9)),
     "score" = c(79,85,140,69,87,92,87))
-  df <- df %>% arrange(score)
+  df <- df %>% dplyr::arrange(score)
 
   # with unequal number of rows
   df_rearranged <- rearrange(df, method="pair_extremes",
@@ -35,7 +35,7 @@ test_that("rearrange() works", {
 
   # with equal number of rows
 
-  df <- df %>% dplyr::filter(row_number() != 5) %>% droplevels()
+  df <- df %>% dplyr::filter(dplyr::row_number() != 5) %>% droplevels()
 
   df_rearranged <- rearrange(df, method="pair_extremes",
                              unequal_method = "first",

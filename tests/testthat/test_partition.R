@@ -8,7 +8,7 @@ test_that("dimensions of dataframe with partition()",{
                    "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
                    "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
 
-  df <- df %>% arrange(participant)
+  df <- df %>% dplyr::arrange(participant)
 
   # Add session info
   df$session <- rep(c('1','2', '3'), 6)
@@ -31,13 +31,13 @@ test_that(".partitions is correct in partition() with list_out == FALSE",{
                    "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
                    "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
 
-  df <- df %>% arrange(participant)
+  df <- df %>% dplyr::arrange(participant)
 
   # Add session info
   df$session <- rep(c('1','2', '3'), 6)
 
   df_unequal <- df %>%
-    dplyr::filter(row_number() != 18)
+    dplyr::filter(dplyr::row_number() != 18)
 
   col_is_factor <- function(df, n, cat_col = NULL, num_col = NULL, id_col = NULL, col){
 
@@ -114,7 +114,7 @@ test_that(".partitions is correct in partition() with list_out == FALSE",{
   expect_equal(group_counts(df_unequal, 0.4, cat_col = 'diagnosis', num_col = 'score',
                             id_col = 'participant'), c(5,12))
   expect_equal(group_counts(df_unequal, 2, cat_col = 'diagnosis',
-                            id_col = 'participant'), c(11,6))
+                            id_col = 'participant'), c(12,5))
   expect_equal(group_counts(df_unequal, 3, cat_col = 'diagnosis', id_col = 'participant'), c(17))
   expect_equal(group_counts(df_unequal, 3, id_col = 'participant'), c(9,8))
   expect_equal(group_counts(df_unequal, 2, id_col = 'participant'), c(6,11))
@@ -164,7 +164,7 @@ test_that(".partitions is correct in partition() with list_out == TRUE",{
                    "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
                    "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
 
-  df <- df %>% arrange(participant)
+  df <- df %>% dplyr::arrange(participant)
 
   # Add session info
   df$session <- rep(c('1','2', '3'), 6)
@@ -214,7 +214,7 @@ test_that("partition() outputs correct error messages",{
                    "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
                    "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
 
-  df <- df %>% arrange(participant)
+  df <- df %>% dplyr::arrange(participant)
 
   # Add session info
   df$session <- rep(c('1','2', '3'), 6)

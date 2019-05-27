@@ -15,22 +15,22 @@ test_that("all size settings work in balance()",{
 
   expect_equal(nrow(df_3), 3*3)
   expect_equal(df_3$participant, factor(c(1,1,1,2,2,2,3,3,3)))
-  expect_equal(df_3$trial, c(1,2,1,1,1,1,4,1,2))
+  expect_equal(df_3$trial, c(1,2,1,1,1,1,1,2,4))
   expect_equal(ncol(df_3), 3)
 
 
   # Using balance() with min
-  set.seed(1)
+  set.seed(2)
   df_min <- balance(df, "min", "participant")
 
   expect_equal(nrow(df_min), 3)
   expect_equal(df_min$participant, factor(c(1,2,3)))
-  expect_equal(df_min$trial, c(1,1,2))
+  expect_equal(df_min$trial, c(1,1,3))
   expect_equal(ncol(df_min), 3)
 
   # Using balance() with max
-  set.seed(1)
-  df_max <-balance(df, "max", "participant")
+  set.seed(2)
+  df_max <- balance(df, "max", "participant")
 
   expect_equal(nrow(df_max), 4*3)
   expect_equal(df_max$participant, factor(c(1,1,1,1,2,2,2,2,3,3,3,3)))
@@ -38,8 +38,8 @@ test_that("all size settings work in balance()",{
   expect_equal(ncol(df_max), 3)
 
   # Using balance() with mean
-  set.seed(1)
-  df_mean <-balance(df, "mean", "participant")
+  set.seed(19)
+  df_mean <- balance(df, "mean", "participant")
 
   expect_equal(nrow(df_mean), 2*3)
   expect_equal(df_mean$participant, factor(c(1,1,2,2,3,3)))
@@ -47,7 +47,7 @@ test_that("all size settings work in balance()",{
   expect_equal(ncol(df_mean), 3)
 
   # Using balance() with median
-  set.seed(1)
+  set.seed(19)
   df_median <-balance(df, "median", "participant")
 
   expect_equal(nrow(df_median), 2*3)
