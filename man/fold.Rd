@@ -8,7 +8,8 @@
 fold(data, k = 5, cat_col = NULL, num_col = NULL, id_col = NULL,
   starts_col = NULL, method = "n_dist", id_aggregation_fn = sum,
   remove_missing_starts = FALSE, num_fold_cols = 1,
-  unique_fold_cols_only = TRUE, max_iters = 5)
+  unique_fold_cols_only = TRUE, max_iters = 5,
+  handle_existing_fold_cols = "keep_warn", parallel = FALSE)
 }
 \arguments{
 \item{data}{Dataframe or Vector.}
@@ -131,14 +132,18 @@ For method \code{l_starts} only.
  Otherwise simply \eqn{".folds"}.
 
  N.B. If \code{unique_fold_cols_only} is \code{TRUE},
- we can end up with fewer columns than specified, see \code{max_iters}.}
+ we can end up with fewer columns than specified, see \code{max_iters}.
+
+ N.B. If \code{data} has existing fold columns, see \code{handle_existing_fold_cols}.}
 
 \item{unique_fold_cols_only}{Check if fold columns are identical and keep only unique columns.
- This can be slow due to the number of column comparisons. On the other hand, why would you want identical columns?
+
+ As the number of column comparisons can be time consuming,
+ we can run this part in parallel. See \code{parallel}.
 
  N.B. We can end up with fewer columns than specified in \code{num_fold_cols}, see \code{max_iters}.
 
- N.B. Only used when \code{num_fold_cols > 1}.}
+ N.B. Only used when \code{num_fold_cols > 1} or \code{data} has existing fold columns.}
 
 \item{max_iters}{Maximum number of attempts at reaching \code{num_fold_cols} \emph{unique} fold columns.
 
@@ -151,6 +156,19 @@ For method \code{l_starts} only.
  Note that we can end up with fewer columns than specified in \code{num_fold_cols}.
 
  N.B. Only used \code{num_fold_cols > 1}.}
+
+\item{handle_existing_fold_cols}{How to handle existing fold columns.
+ Either "keep_warn", "keep", or "remove".
+
+ To add extra fold columns, use "keep" or "keep_warn". Note that existing fold columns might be renamed.
+
+ To replace the existing fold columns, use "remove".}
+
+\item{parallel}{Whether to parallelize the fold column comparisons,
+ when \code{unique_fold_cols_only} is \code{TRUE}.
+
+ Requires a registered parallel backend.
+ See \code{\link[doParallel:registerDoParallel]{doParallel::registerDoParallel}}.}
 }
 \value{
 Dataframe with grouping factor for subsetting in cross-validation.

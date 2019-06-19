@@ -106,12 +106,16 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'
 #'  N.B. If \code{unique_fold_cols_only} is \code{TRUE},
 #'  we can end up with fewer columns than specified, see \code{max_iters}.
+#'
+#'  N.B. If \code{data} has existing fold columns, see \code{handle_existing_fold_cols}.
 #' @param unique_fold_cols_only Check if fold columns are identical and keep only unique columns.
-#'  This can be slow due to the number of column comparisons. On the other hand, why would you want identical columns?
+#'
+#'  As the number of column comparisons can be time consuming,
+#'  we can run this part in parallel. See \code{parallel}.
 #'
 #'  N.B. We can end up with fewer columns than specified in \code{num_fold_cols}, see \code{max_iters}.
 #'
-#'  N.B. Only used when \code{num_fold_cols > 1}.
+#'  N.B. Only used when \code{num_fold_cols > 1} or \code{data} has existing fold columns.
 #' @param max_iters Maximum number of attempts at reaching \code{num_fold_cols} \emph{unique} fold columns.
 #'
 #'  When only keeping unique fold columns, we risk having fewer columns than expected.
@@ -123,6 +127,17 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'  Note that we can end up with fewer columns than specified in \code{num_fold_cols}.
 #'
 #'  N.B. Only used \code{num_fold_cols > 1}.
+#' @param handle_existing_fold_cols How to handle existing fold columns.
+#'  Either "keep_warn", "keep", or "remove".
+#'
+#'  To add extra fold columns, use "keep" or "keep_warn". Note that existing fold columns might be renamed.
+#'
+#'  To replace the existing fold columns, use "remove".
+#' @param parallel Whether to parallelize the fold column comparisons,
+#'  when \code{unique_fold_cols_only} is \code{TRUE}.
+#'
+#'  Requires a registered parallel backend.
+#'  See \code{\link[doParallel:registerDoParallel]{doParallel::registerDoParallel}}.
 #' @inheritParams group_factor
 #' @aliases create_balanced_groups
 #' @return Dataframe with grouping factor for subsetting in cross-validation.
@@ -178,12 +193,13 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #' @importFrom dplyr group_by_ do %>%
 #' @importFrom utils combn
 #' @importFrom rlang .data
-fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
+fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
                  id_col = NULL, starts_col = NULL,
-                 method = 'n_dist', id_aggregation_fn=sum,
+                 method = 'n_dist', id_aggregation_fn = sum,
                  remove_missing_starts = FALSE,
-                 num_fold_cols=1, unique_fold_cols_only = TRUE,
-                 max_iters=5){
+                 num_fold_cols = 1, unique_fold_cols_only = TRUE,
+                 max_iters = 5, handle_existing_fold_cols = "keep_warn",
+                 parallel = FALSE){
 
   #
   # Takes:
@@ -212,7 +228,7 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
 
   # If num_col is specified, warn that method is ignored
   if (!is.null(num_col) & method != "n_dist"){
-    message("Method is ignored when num_col is not NULL. This message occurs, because method is not default value.")
+    warning("'method' is ignored when 'num_col' is not NULL. This message occurs, because 'method' is not the default value.")
   }
 
   # If method is either greedy or staircase and cat_col is not NULL
@@ -225,8 +241,36 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
 
   }
 
+  if (handle_existing_fold_cols %ni% c("keep_warn","keep","remove")){
+    stop("Please specify handle_existing_fold_cols as either 'keep_warn','keep', or 'remove'.")
+  }
+
+  # Check for existing fold columns
+  existing_fold_colnames <- extract_fold_colnames(data)
+  num_existing_fold_colnames <- length(existing_fold_colnames)
+  if (num_existing_fold_colnames > 0){
+
+    # Handle existing fold cols as specified
+    if (handle_existing_fold_cols == "remove"){
+      data <- data %>% dplyr::select(-dplyr::one_of(existing_fold_colnames))
+      existing_fold_colnames <- character()
+      num_existing_fold_colnames <- 0
+
+    } else if (handle_existing_fold_cols == "keep_warn"){
+      if (num_existing_fold_colnames == 1) {warn_terms__ <- c("column", "It", "it")}
+      else {warn_terms__ <- c("columns", "These", "them")}
+      warning(paste0("Found ", num_existing_fold_colnames," existing fold ",warn_terms__[1],
+                     ". ",warn_terms__[2]," will NOT be replaced. ",
+                     "Change 'handle_existing_fold_cols' to 'remove' if you want to replace ",warn_terms__[3],"."))
+    }
+
+  }
+
   fold_cols_to_generate <- num_fold_cols
-  max_folds_col_number <- 0
+  expected_total_num_fold_cols <- num_existing_fold_colnames + num_fold_cols
+  max_fold_cols_number <- ifelse(num_existing_fold_colnames > 0,
+                                 extract_max_fold_cols_number(existing_fold_colnames),
+                                 0)
   continue_repeating <- TRUE
   times_repeated <- 0
   completed_comparisons <- data.frame("V1" = character(), "V2" = character(),
@@ -237,17 +281,19 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
 
     # If num_col is not NULL
     if (!is.null(num_col)){
-      for (r in 1:fold_cols_to_generate){ # Replace with different loop fn
-        data <- create_num_col_groups(data, n=k, num_col=num_col, cat_col=cat_col,
-                                      id_col=id_col, col_name=ifelse(num_fold_cols > 1,
-                                                                     paste0(".folds_", r + max_folds_col_number),
-                                                                     ".folds"),
-                                      id_aggregation_fn = id_aggregation_fn,
-                                      method="n_fill",
-                                      pre_randomize = TRUE) %>%
+      plyr::l_ply(1:fold_cols_to_generate, function(r){
+        data <<- create_num_col_groups(data, n = k, num_col = num_col, cat_col = cat_col,
+                                       id_col = id_col,
+                                       col_name = name_new_fold_col(num_to_create = num_fold_cols,
+                                                                    num_existing = num_existing_fold_colnames,
+                                                                    max_existing_number = max_fold_cols_number,
+                                                                    current = r),
+                                       id_aggregation_fn = id_aggregation_fn,
+                                       method="n_fill",
+                                       pre_randomize = TRUE) %>%
           dplyr::ungroup()
 
-      }
+      })
 
     } else {
 
@@ -263,17 +309,19 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
           # .. add grouping factor to data
           # Group by new grouping factor '.folds'
 
-          for (r in 1:fold_cols_to_generate){ # Replace with different loop fn
-            data <- data %>%
+          #for (r in 1:fold_cols_to_generate){ # Replace with different loop fn
+          plyr::l_ply(1:fold_cols_to_generate, function(r){
+            data <<- data %>%
               group_by(!! as.name(cat_col)) %>%
               do(group_uniques_(., k, id_col, method,
-                                col_name = ifelse(num_fold_cols > 1,
-                                                paste0(".folds_", r + max_folds_col_number),
-                                                ".folds"),
+                                col_name = name_new_fold_col(num_to_create = num_fold_cols,
+                                                             num_existing = num_existing_fold_colnames,
+                                                             max_existing_number = max_fold_cols_number,
+                                                             current = r),
                                 starts_col = starts_col,
                                 remove_missing_starts = remove_missing_starts)) %>%
               dplyr::ungroup()
-          }
+          })
 
         # If id_col is NULL
         } else {
@@ -282,18 +330,20 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
           # Create groups from data
           # .. and add grouping factor to data
 
-          for (r in 1:fold_cols_to_generate){
-            data <- data %>%
+          #for (r in 1:fold_cols_to_generate){
+          plyr::l_ply(1:fold_cols_to_generate, function(r){
+            data <<- data %>%
               group_by(!! as.name(cat_col)) %>%
               do(group(., k, method = method,
                        randomize = TRUE,
-                       col_name = ifelse(num_fold_cols > 1,
-                                         paste0(".folds_", r + max_folds_col_number),
-                                         ".folds"),
+                       col_name = name_new_fold_col(num_to_create = num_fold_cols,
+                                                    num_existing = num_existing_fold_colnames,
+                                                    max_existing_number = max_fold_cols_number,
+                                                    current = r),
                        starts_col = starts_col,
                        remove_missing_starts = remove_missing_starts)) %>%
               dplyr::ungroup()
-          }
+          })
         }
 
       # If cat_col is NULL
@@ -305,17 +355,19 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
           # Create groups of unique IDs
           # .. and add grouping factor to data
 
-          for (r in 1:fold_cols_to_generate){
-            data <- data %>%
+          #for (r in 1:fold_cols_to_generate){
+          plyr::l_ply(1:fold_cols_to_generate, function(r){
+            data <<- data %>%
               group_uniques_(k, id_col, method,
-                             col_name = ifelse(num_fold_cols > 1,
-                                               paste0(".folds_", r + max_folds_col_number),
-                                               ".folds"),
+                             col_name = name_new_fold_col(num_to_create = num_fold_cols,
+                                                          num_existing = num_existing_fold_colnames,
+                                                          max_existing_number = max_fold_cols_number,
+                                                          current = r),
                              starts_col = starts_col,
                              remove_missing_starts = remove_missing_starts) %>%
               dplyr::ungroup()
 
-          }
+          })
 
         # If id_col is NULL
         } else {
@@ -323,17 +375,19 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
           # Create groups from all the data points
           # .. and add grouping factor to data
 
-          for (r in 1:fold_cols_to_generate){
-            data <- group(data, k,
+          plyr::l_ply(1:fold_cols_to_generate, function(r){
+          #for (r in 1:fold_cols_to_generate){
+            data <<- group(data, k,
                           method = method,
                           randomize = TRUE,
-                          col_name = ifelse(num_fold_cols > 1,
-                                            paste0(".folds_", r + max_folds_col_number),
-                                            ".folds"),
+                          col_name = name_new_fold_col(num_to_create = num_fold_cols,
+                                                       num_existing = num_existing_fold_colnames,
+                                                       max_existing_number = max_fold_cols_number,
+                                                       current = r),
                           starts_col = starts_col,
                           remove_missing_starts = remove_missing_starts) %>%
               dplyr::ungroup()
-          }
+          })
 
         }
       }
@@ -343,11 +397,12 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
     times_repeated = times_repeated + 1
 
     # Remove identical .folds columns or break out of while loop
-    if (num_fold_cols>1 && isTRUE(unique_fold_cols_only)){
+    if (expected_total_num_fold_cols > 1 && isTRUE(unique_fold_cols_only)){
       folds_colnames <- extract_fold_colnames(data)
       data_and_comparisons <- remove_identical_cols(data, folds_colnames,
-                                                    exclude_comparisons=completed_comparisons,
-                                                    return_all_comparisons=TRUE)
+                                                    exclude_comparisons = completed_comparisons,
+                                                    return_all_comparisons=TRUE,
+                                                    group_wise = TRUE, parallel=parallel)
 
       data <- data_and_comparisons[[1]]
       completed_comparisons <- completed_comparisons %>%
@@ -359,19 +414,19 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
           )
       folds_colnames <- extract_fold_colnames(data)
 
-      if (length(folds_colnames) < num_fold_cols){
-        fold_cols_to_generate <- num_fold_cols - length(folds_colnames)
+      if (length(folds_colnames) < expected_total_num_fold_cols){
+        fold_cols_to_generate <- expected_total_num_fold_cols - length(folds_colnames)
       }
 
       # If we have generated too many unique folds cols
       # NOTE: This should not happen anymore
       # Remove some
-      if (length(folds_colnames) > num_fold_cols){
-        cols_to_remove <- folds_colnames[(num_fold_cols + 1) : length(folds_colnames)]
+      if (length(folds_colnames) > expected_total_num_fold_cols){
+        cols_to_remove <- folds_colnames[(expected_total_num_fold_cols + 1) : length(folds_colnames)]
         data <- data %>% dplyr::select(-cols_to_remove)
         continue_repeating <- FALSE
 
-      } else if (length(folds_colnames) == num_fold_cols || times_repeated == max_iters){
+      } else if (length(folds_colnames) == expected_total_num_fold_cols || times_repeated == max_iters){
         # If we have the right number of fold columns
         # or we have reached the max times
         # we wish to repeat the repeating
@@ -380,7 +435,7 @@ fold <- function(data, k=5, cat_col = NULL, num_col = NULL,
 
       } else {
         # Find the max number in .folds_xx
-        max_folds_col_number <- max(as.integer(substring(folds_colnames, 8)))
+        max_fold_cols_number <- extract_max_fold_cols_number(folds_colnames)
       }
 
     } else {

@@ -699,11 +699,14 @@ update_TempNewRow_from_ids_method <- function(data){
 
 ## Finding and removing identical columns
 
-# Find columns that are identical values-wise
+# Find columns that are identical values-wise (or group-wise)
 # Ignores names of columns
 # Exclude comparisons by passing data frame with cols V1 and V2 - e.g. to avoid comparing columns multiple times.
 # if return_all_comparisons is TRUE, it returns a list with 1. identical cols, 2. all comparisons
-find_identical_cols <- function(data, cols=NULL, exclude_comparisons=NULL, return_all_comparisons=FALSE){
+# If group_wise: 1,1,2,2 == 2,2,1,1 (identical groups with different names)
+find_identical_cols <- function(data, cols=NULL, exclude_comparisons=NULL,
+                                return_all_comparisons=FALSE, group_wise=FALSE,
+                                parallel=FALSE){
 
   if (is.null(cols)){
     cols <- colnames(data)
@@ -723,10 +726,46 @@ find_identical_cols <- function(data, cols=NULL, exclude_comparisons=NULL, retur
       dplyr::anti_join(exclude_comparisons, by=c("V1", "V2"))
   }
 
-  column_combinations[["identical"]] <- plyr::llply(1:nrow(column_combinations), function(r){
+  # To avoid starting parallel processes when they are unnecessary
+  # (i.e. add more overhead than saved time)
+  # We create some heuristics. TODO: optimize further based on experiments!
+  parallel_heuristics <- (
+    (nrow(column_combinations) >= 15 && nrow(data) >= 1000) ||
+      (nrow(column_combinations) > 100 && nrow(data) > 100) ||
+      nrow(column_combinations) > 150
+  )
+
+  parallel <- parallel && parallel_heuristics
+
+  # Print statements for checking the effect of running in parallel
+  if (FALSE){
+    print(paste0("Rows in dataframe: ", nrow(data)))
+    print(paste0("Number of combinations: ", nrow(column_combinations)))
+    print(paste0("Parallel heuristic (do parallel?): ", parallel_heuristics))
+  }
+
+  column_combinations[["identical"]] <- plyr::llply(1:nrow(column_combinations),
+                                                    .parallel = parallel, function(r){
     col_1 <- data[[column_combinations[r, 1]]]
     col_2 <- data[[column_combinations[r, 2]]]
-    isTRUE(dplyr::all_equal(col_1, col_2, ignore_row_order = FALSE))
+    if (isTRUE(group_wise)){
+      d <- tibble::tibble("col_1" = as.character(col_1),
+                          "col_2" = as.character(col_2)) %>%
+        dplyr::arrange(.data$col_1) %>%
+        group(n = "auto", method = "l_starts", col_name = ".groups_1",
+              starts_col = "col_2") %>% dplyr::ungroup()
+      if (nlevels(d[[".groups_1"]]) != length(unique(d[["col_1"]]))){
+        return(FALSE)
+      } else {
+        d <- d %>%
+          group(n = "auto", method = "l_starts", col_name = ".groups_2",
+                starts_col = "col_1") %>% dplyr::ungroup()
+      return(isTRUE(dplyr::all_equal(d[[".groups_1"]], d[[".groups_2"]], ignore_row_order = FALSE)))
+      }
+    } else {
+      return(isTRUE(dplyr::all_equal(col_1, col_2, ignore_row_order = FALSE)))
+    }
+
   }) %>% unlist()
 
   identicals <- column_combinations %>%
@@ -744,15 +783,19 @@ find_identical_cols <- function(data, cols=NULL, exclude_comparisons=NULL, retur
 # Find identical columns (based on values)
 # Remove all but one of these identical columns
 # If return_all_comparisons is TRUE, return list with 1. data, 2. all comparisons
-remove_identical_cols <- function(data, cols=NULL, exclude_comparisons=NULL, return_all_comparisons=FALSE){
+# If group_wise: 1,1,2,2 == 2,2,1,1 (identical groups with different names)
+remove_identical_cols <- function(data, cols=NULL, exclude_comparisons=NULL,
+                                  return_all_comparisons=FALSE,
+                                  group_wise=FALSE, parallel=FALSE){
 
   if (is.null(cols)){
     cols <- colnames(data)
   }
 
   # Find identicals
-  identicals_and_comparisons <- find_identical_cols(data, cols, exclude_comparisons=exclude_comparisons,
-                                                    return_all_comparisons = TRUE)
+  identicals_and_comparisons <- find_identical_cols(data, cols, exclude_comparisons = exclude_comparisons,
+                                                    return_all_comparisons = TRUE, group_wise=group_wise,
+                                                    parallel=parallel)
 
   identicals <- identicals_and_comparisons[[1]]
   comparisons <- identicals_and_comparisons[[2]]

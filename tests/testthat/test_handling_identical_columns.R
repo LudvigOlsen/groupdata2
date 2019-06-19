@@ -25,3 +25,23 @@ test_that("removing identical columns work with remove_identical_cols()",{
   expect_equal(remove_identical_cols(df, cols=c(2:7)), df[c("a","b","c","d")])
 
 })
+
+test_that("removing columns with identical but differently named groups work with remove_identical_cols()",{
+
+  df <- data.frame("a"=c(1,1,2), "b"=c(1,1,3), "c"=c(1,1,2), "d"=c(2,2,1),
+                   "e"=c(1,1,2), "f"=c(1,1,2), "g"=c(1,1,3))
+
+  expect_equal(remove_identical_cols(df, group_wise=FALSE), df[c("a","b","d")])
+  expect_equal(remove_identical_cols(df, group_wise=TRUE), df[c("a")])
+  expect_equal(remove_identical_cols(df, cols=c(1:7), group_wise=TRUE), df[c("a")])
+  expect_equal(remove_identical_cols(df, cols=c(2:7), group_wise=TRUE), df[c("a","b")])
+
+  df <- data.frame("a"=c(1,1,2,3), "b"=c(1,2,1,3), "c"=c(2,1,1,2), "d"=c(2,2,1,3),
+                   "e"=c(1,3,1,2), "f"=c(3,1,1,3), "g"=c(1,1,3,4))
+
+  expect_equal(remove_identical_cols(df, group_wise=FALSE), df[c("a","b","c","d","e","f","g")])
+  expect_equal(remove_identical_cols(df, group_wise=TRUE), df[c("a","b","c")])
+  expect_equal(remove_identical_cols(df, cols=c(2:7), group_wise=TRUE), df[c("a","b","c","d")])
+  expect_equal(remove_identical_cols(df, cols=c(3:7), group_wise=TRUE), df[c("a","b","c","d","e")])
+
+})
