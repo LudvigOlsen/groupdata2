@@ -19,6 +19,10 @@ Thanks for the request from jjesusfilho #3.
 
 * Adds parameter "max_iters" to fold(). How many times to attempt creating unique fold columns. Note that it is possible to get fewer fold columns than specified in "num_fold_cols".
 
+* Adds parameter "parallel" to fold(). When creating multiple *unique* fold columns, we can run the column comparisons in parallel. Requires registered parallel backend.
+
+* Adds parameter "handle_existing_fold_cols" to fold(). When calling fold() on a data frame that already contains columns with names starting with ".folds", we can either keep them and add more, or replace them.
+
 
 # groupdata2 1.0.0
 
