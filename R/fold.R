@@ -219,8 +219,8 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
   # Convert k to wholenumber if given as percentage
   if(!arg_is_wholenumber_(k) && is_between_(k,0,1)){
 
-    k = convert_percentage_(k, data)
-
+    rows_per_fold = convert_percentage_(k, data)
+    k = ceiling(nrow(data)/rows_per_fold)
   }
 
   # Stop if k is not a wholenumber
@@ -228,7 +228,8 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
 
   # If num_col is specified, warn that method is ignored
   if (!is.null(num_col) & method != "n_dist"){
-    warning("'method' is ignored when 'num_col' is not NULL. This message occurs, because 'method' is not the default value.")
+    warning(paste0("'method' is ignored when 'num_col' is not NULL. ",
+                   "This message occurs, because 'method' is not the default value."))
   }
 
   # If method is either greedy or staircase and cat_col is not NULL
@@ -399,19 +400,23 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
     # Remove identical .folds columns or break out of while loop
     if (expected_total_num_fold_cols > 1 && isTRUE(unique_fold_cols_only)){
       folds_colnames <- extract_fold_colnames(data)
+
       data_and_comparisons <- remove_identical_cols(data, folds_colnames,
                                                     exclude_comparisons = completed_comparisons,
                                                     return_all_comparisons=TRUE,
                                                     group_wise = TRUE, parallel=parallel)
 
-      data <- data_and_comparisons[[1]]
+      data <- data_and_comparisons[["updated_data"]]
+      removed_cols <- data_and_comparisons[["removed_cols"]]
       completed_comparisons <- completed_comparisons %>%
         dplyr::bind_rows(
-          data_and_comparisons[[2]] %>%
+          data_and_comparisons[["comparisons"]] %>%
             # If they were identical,
             # we removed one and the comparison isn't useful to save
-            filter(!identical)
+            filter(!identical,
+                   V2 %ni% removed_cols)
           )
+
       folds_colnames <- extract_fold_colnames(data)
 
       if (length(folds_colnames) < expected_total_num_fold_cols){

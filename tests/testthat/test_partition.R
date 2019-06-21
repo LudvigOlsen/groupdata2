@@ -70,7 +70,8 @@ test_that(".partitions is correct in partition() with list_out == FALSE",{
                             id_col = 'participant',col='.partitions'))
   expect_true(col_is_factor(df, 0.2, num_col = 'score', col='.partitions'))
   expect_true(col_is_factor(df, 0.3, num_col = 'score', cat_col = 'diagnosis', col='.partitions'))
-  expect_true(col_is_factor(df, 0.2, num_col = 'score', id_col = 'participant', col='.partitions'))
+  expect_true(col_is_factor(df, 0.2, num_col = 'score', id_col = 'participant',
+                            col='.partitions'))
   expect_true(col_is_factor(df, 0.4, num_col = 'score', cat_col = 'diagnosis',
                             id_col = 'participant', col='.partitions'))
 

@@ -171,7 +171,9 @@ partition <- function(data, p = 0.2, cat_col = NULL,
                                   id_aggregation_fn = id_aggregation_fn,
                                   method="l_sizes", unequal_method="last",
                                   force_equal=force_equal,
-                                  pre_randomize = TRUE)
+                                  pre_randomize = TRUE,
+                                  randomize_pairs = TRUE # TODO Not best way
+                                  )
 
   } else {
 

@@ -811,7 +811,7 @@ remove_identical_cols <- function(data, cols=NULL, exclude_comparisons=NULL,
   }
 
   if (isTRUE(return_all_comparisons)){
-    return(list(data, comparisons))
+    return(list("updated_data"=data, "comparisons"=comparisons, "removed_cols"=to_remove))
   } else {
     return(data)
   }
@@ -832,4 +832,45 @@ rename_with_consecutive_numbering <- function(data, cols, base_name){
   data %>%
     dplyr::rename_at(dplyr::vars(cols), ~ new_names)
 
+}
+
+# Add underscore until var name is unique
+create_tmp_var <- function(data, tmp_var = ".tmp_index_"){
+  while (tmp_var %in% colnames(data)){
+    tmp_var <- paste0(tmp_var, "_")
+  }
+  tmp_var
+}
+
+# Used in create_num_col_groups
+rename_levels_by_reverse_rank_summary <- function(data, rank_summary, levels_col, num_col){
+
+  current_rank_summary <- create_rank_summary(data, levels_col, num_col)
+
+  reverse_rank_bind <- rank_summary %>%
+    dplyr::arrange(desc(.data$sum_)) %>%
+    dplyr::bind_cols(current_rank_summary)
+
+  pattern_and_replacement <- reverse_rank_bind %>%
+    dplyr::select(c(!!as.name(levels_col),
+                    !!as.name(paste0(levels_col,"1"))))
+
+  data <- data %>%
+    dplyr::left_join(pattern_and_replacement, by=levels_col) %>%
+    dplyr::select(-!!as.name(levels_col)) %>%
+    dplyr::rename_at(paste0(levels_col,"1"), list(~paste0(levels_col)))
+
+  updated_rank_summary <- reverse_rank_bind %>%
+    dplyr::mutate(sum_ = .data$sum_ + .data$sum_1) %>%
+    dplyr::select(!!as.name(levels_col), .data$sum_)
+
+  list("updated_rank_summary"=updated_rank_summary, "updated_data"=data)
+
+}
+
+create_rank_summary <- function(data, levels_col, num_col){
+  data %>%
+    dplyr::group_by(!!as.name(levels_col)) %>%
+    dplyr::summarize(sum_ = sum(!!as.name(num_col))) %>%
+    dplyr::arrange(sum_)
 }
