@@ -42,7 +42,6 @@ l_sizes_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE)
 
   }
 
-
   # If n is longer than v
   # raise an error
   if (length(n)>length(v)){

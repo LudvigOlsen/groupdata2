@@ -212,8 +212,6 @@ check_arguments_ <- function(data, n, method, force_equal,
     stopifnot(is.list(n) || is.vector(n) && !is.character(n))
   }
 
-
-
   # Stop execution if input variables aren't what we expect / can handle
   stopifnot((!is.null(n)),
             is.logical(force_equal),
@@ -385,6 +383,7 @@ group_uniques_ <- function(data, n, id_col, method, starts_col = NULL,
                      remove_missing_starts = remove_missing_starts)
 
   # Add grouping factor to data
+  # TODO replace with dplyr join
   data <- merge(data, id_groups, by.x=c(id_col), by.y=c(colnames(id_groups)[1]))
 
   # Return data
@@ -677,7 +676,8 @@ add_rows_with_sampling <- function(data, to_size){
     dplyr::bind_rows(extra_rows)
 }
 
-select_rows_from_ids <- function(data, balanced_ids, cat_col, id_col, mark_new_rows, join_fn=dplyr::inner_join){
+select_rows_from_ids <- function(data, balanced_ids, cat_col, id_col,
+                                 mark_new_rows, join_fn=dplyr::inner_join){
   # select the chosen ids in data and return
   balanced_data <- join_fn(data, balanced_ids,
                            by = c(cat_col, id_col)) %>%
@@ -691,6 +691,8 @@ select_rows_from_ids <- function(data, balanced_ids, cat_col, id_col, mark_new_r
 
 # TODO Add description of this function.
 # I've forgotten what it's for and it's very specific ;)
+# (used in select_rows_from_ids above, which is used in sampling_methods.R)
+# TODO use create_tmp_var in sampling methods to create unique tmp var instead
 update_TempNewRow_from_ids_method <- function(data){
   data %>%
     dplyr::mutate(.TempNewRow = dplyr::if_else(.data$.TempNewRow + .data$.ids_balanced_new_rows > 0, 1, 0)) %>%

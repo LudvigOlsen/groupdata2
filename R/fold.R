@@ -76,7 +76,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'
 #'  Number of folds (default), fold size, with more (see \code{method}).
 #'
-#'  Given as whole number(s) and/or percentage(s) (0 < n < 1).
+#'  Given as whole number and/or percentage (0 < n < 1).
 #' @param cat_col Name of categorical variable to balance between folds.
 #'
 #'  E.g. when predicting a binary variable (a or b), it is necessary to have
@@ -215,6 +215,10 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
   # Returns:
   # .. dataframe with grouping factor (folds)
   #
+
+  if (length(k) > 1){
+    stop("k must be numeric scalar.")
+  }
 
   # Convert k to wholenumber if given as percentage
   if(!arg_is_wholenumber_(k) && is_between_(k,0,1)){

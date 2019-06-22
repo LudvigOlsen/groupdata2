@@ -255,6 +255,19 @@ test_that("numerically_balanced_group_factor_() work method='l_sizes'", {
   expect_equal(vbf, factor(c(1,2,2,2,2,2)))
   expect_equal(group_sums$group_sum, c(79,473))
 
+  # With 3 partitions
+  vbf <- numerically_balanced_group_factor_(df, c(0.2,0.2), num_col="score",
+                                            method = 'l_sizes', randomize_pairs = F)
+  df_vbf <- df %>%
+    dplyr::mutate(.groups = vbf)
+
+  group_sums <- df_vbf %>%
+    dplyr::group_by(.groups) %>%
+    dplyr::summarize(group_sum = sum(score))
+
+  expect_equal(vbf, factor(c(1,2,2,2,2,2)))
+  expect_equal(group_sums$group_sum, c(79,473))
+
 })
 
 

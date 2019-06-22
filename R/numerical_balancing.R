@@ -5,16 +5,16 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method="n_fill"
 
   # Create unique local temporary index variable name
   local_tmp_index_var <- create_tmp_var(data)
+  local_tmp_groups_var <- create_tmp_var(data, ".groups")
 
   nrows_equal <- nrow(data) %% 2 == 0
 
+  print(n)
   # Check if we have enough data for pairwise folding
-  if (nrow(data) < n * 2) {
-    randomize_pairs <- FALSE
+  # or if we are running partitioning (l_sizes)
+  if (method == "l_sizes" || (length(n) == 1 && n > 1 && nrow(data) < n * 2)){
+      randomize_pairs <- FALSE
   }
-
-  # This is confusing as we only use unequal method in the first rearrange call
-  # unequal_method <- ifelse(randomize_pairs, unequal_method, "middle")
 
   # Arrange by smallest, biggest, 2nd smallest, 2nd biggest, etc.
   # If the number of rows is unequal, the row with the smallest value is alone
@@ -51,23 +51,24 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method="n_fill"
 
     }
 
-    # Create folds
+    # Create groups
     data_sorted <- data_sorted %>%
-      fold(n, method = method,
-           id_col = "rearrange_factor",
-           handle_existing_fold_cols = "remove")
+      group_uniques_(n=n,
+                     id_col="rearrange_factor",
+                     method=method,
+                     col_name=local_tmp_groups_var)
 
     if (has_excessive){
       # Calculate sums of the other pairs
       # Get the smallest (and second smallest if we have 2 rows to distribute)
       smallest_folds <- data_sorted %>%
-        dplyr::group_by(.data$.folds) %>%
-        dplyr::summarize(fold_aggr = sum(!!as.name(num_col))) %>%
-        dplyr::arrange(.data$fold_aggr) %>%
+        dplyr::group_by(!!as.name(local_tmp_groups_var)) %>%
+        dplyr::summarize(group_aggr = sum(!!as.name(num_col))) %>%
+        dplyr::arrange(.data$group_aggr) %>%
         dplyr::filter(dplyr::row_number() %in% 1:nrow(rows_to_distribute)) %>%
-        dplyr::pull(.data$.folds)
+        dplyr::pull(!!as.name(local_tmp_groups_var))
 
-      rows_to_distribute[[".folds"]] <- smallest_folds
+      rows_to_distribute[[local_tmp_groups_var]] <- smallest_folds
 
       data_sorted <- data_sorted %>%
         dplyr::bind_rows(rows_to_distribute)
@@ -118,14 +119,14 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method="n_fill"
     data_sorted <- data_sorted %>%
       dplyr::left_join(tmp_second_rearrange, by = "rearrange_factor") %>%
       dplyr::arrange(.data$rearrange_factor_2, .data$rearrange_factor, !!as.name(num_col)) %>%
-      group(n=n, method = method, col_name = ".folds", force_equal = force_equal) %>%
+      group(n=n, method = method, col_name = local_tmp_groups_var, force_equal = force_equal) %>%
       dplyr::ungroup() %>%
       dplyr::arrange(!!as.name(local_tmp_index_var))
 
   }
 
   data_sorted %>%
-    dplyr::pull(.data$.folds) %>%
+    dplyr::pull(!!as.name(local_tmp_groups_var)) %>%
     as.factor()
 
 }

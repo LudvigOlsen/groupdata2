@@ -61,7 +61,7 @@ find_starts <- function(data, col = NULL, return_index = FALSE, factor_conversio
 
   differs_from_previous(data, col=col, threshold=NULL,
                         return_index=return_index,
-                        include_first = TRUE,
+                        include_first=TRUE,
                         factor_conversion_warning=factor_conversion_warning)
 
 }

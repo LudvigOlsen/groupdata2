@@ -57,8 +57,10 @@ group <- function(data, n, method = 'n_dist', starts_col = NULL,
   #
 
   # Create grouping factor
-  grouping_factor <- group_factor(data, n, method, starts_col, force_equal = force_equal,
-                                  allow_zero = allow_zero, descending = descending,
+  grouping_factor <- group_factor(data, n, method, starts_col,
+                                  force_equal = force_equal,
+                                  allow_zero = allow_zero,
+                                  descending = descending,
                                   randomize = randomize,
                                   remove_missing_starts = remove_missing_starts)
 
@@ -85,6 +87,9 @@ group <- function(data, n, method = 'n_dist', starts_col = NULL,
   # .... with data and the grouping factor
   # .. Group by grouping factor and return data
 
+  # Create local tmp variable name
+  local_tmp_var <- create_tmp_var(data, ".TempGroupsName")
+
   # If data is dataframe
   if(is.data.frame(data)){
 
@@ -98,11 +103,11 @@ group <- function(data, n, method = 'n_dist', starts_col = NULL,
 
     # Add the grouping factor to data
     #data$.groups <- grouping_factor
-    data$.TempGroupsName <- grouping_factor
+    data[[local_tmp_var]] <- grouping_factor
 
     # Replace temporary column name with passed column name
     # e.g. '.groups'
-    data <- replace_col_name(data, '.TempGroupsName', col_name)
+    data <- replace_col_name(data, local_tmp_var, col_name)
 
     # Return data grouped by the grouping factor
     return(dplyr::group_by(data, !! as.name(col_name)))
@@ -118,11 +123,12 @@ group <- function(data, n, method = 'n_dist', starts_col = NULL,
     }
 
     # Create dataframe with data and the grouping factor
-    data <- data.frame(data, ".TempGroupsName" = grouping_factor)
+    data <- data.frame(data)
+    data[[local_tmp_var]] <- grouping_factor
 
     # Replace temporary column name with passed column name
     # e.g. '.groups'
-    data <- replace_col_name(data, '.TempGroupsName', col_name)
+    data <- replace_col_name(data, local_tmp_var, col_name)
 
     # Return data grouped by the grouping factor
     return(dplyr::group_by(data, !! as.name(col_name)))

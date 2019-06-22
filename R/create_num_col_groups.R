@@ -6,6 +6,13 @@ create_num_col_groups <- function(data, n, num_col, cat_col=NULL, id_col=NULL, c
                                   pre_randomize=TRUE, randomize_pairs = TRUE
                                   ) {
 
+  # Run some checks
+  # TODO: This was copied from group_factor, not sure we need it here
+  n <- check_convert_check_(data=data, n=n, method=method, force_equal=force_equal,
+                       allow_zero=FALSE, descending=FALSE,
+                       remove_missing_starts=FALSE,
+                       starts_col = NULL)
+
   # Sample dataframe before use.
   if (isTRUE(pre_randomize)){
 

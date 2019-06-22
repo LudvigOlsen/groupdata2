@@ -159,13 +159,14 @@ partition <- function(data, p = 0.2, cat_col = NULL,
   # num_col: Numerical variable to balance by
   # id_col: ID column to keep rows with shared IDs in the same partition
   # force_equal: Whether you only want the inputted partitions or the exceeding values gets a partition (logical)
-  #        FALSE allows you to pass "p = 0.2" and get 2 partions - 0.2 and 0.8
+  #        FALSE allows you to pass "p = 0.2" and get 2 partitions - 0.2 and 0.8
   #
 
 
 
   # If num_col is not NULL
   if (!is.null(num_col)){
+    print(p)
     data <- create_num_col_groups(data, n=p, num_col=num_col, cat_col=cat_col,
                                   id_col=id_col, col_name=".partitions",
                                   id_aggregation_fn = id_aggregation_fn,
