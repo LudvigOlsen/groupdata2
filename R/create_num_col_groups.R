@@ -1,9 +1,11 @@
 
 #' @importFrom dplyr n
 create_num_col_groups <- function(data, n, num_col, cat_col=NULL, id_col=NULL, col_name,
-                                  id_aggregation_fn = sum, method="n_fill",
+                                  id_aggregation_fn = sum,
+                                  extreme_pairing_levels=extreme_pairing_levels,
+                                  method="n_fill",
                                   unequal_method="first", force_equal=FALSE,
-                                  pre_randomize=TRUE, randomize_pairs = TRUE
+                                  pre_randomize=TRUE
                                   ) {
 
   # Run some checks
@@ -11,7 +13,10 @@ create_num_col_groups <- function(data, n, num_col, cat_col=NULL, id_col=NULL, c
   n <- check_convert_check_(data=data, n=n, method=method, force_equal=force_equal,
                        allow_zero=FALSE, descending=FALSE,
                        remove_missing_starts=FALSE,
-                       starts_col = NULL)
+                       starts_col=NULL)
+
+  # If method is n_*, we are doing folding
+  is_n_method <- substring(method, 1, 2) == "n_"
 
   # Sample dataframe before use.
   if (isTRUE(pre_randomize)){
@@ -20,13 +25,14 @@ create_num_col_groups <- function(data, n, num_col, cat_col=NULL, id_col=NULL, c
     local_tmp_index_var <- create_tmp_var(data)
     data[[local_tmp_index_var]] <- 1:nrow(data)
 
+    # Reorder randomly
     data <- data %>%
       dplyr::sample_frac(1)
   }
 
   # Init rank summary for balanced joining of fold ID's
   # when cat_col is specified
-  rank_summary <- NULL
+  if (is_n_method) rank_summary <- NULL
 
   # If cat_col is not NULL
   if (!is.null(cat_col)){
@@ -47,19 +53,21 @@ create_num_col_groups <- function(data, n, num_col, cat_col=NULL, id_col=NULL, c
         ids_for_cat$._new_groups_ <- numerically_balanced_group_factor_(
           ids_for_cat, n=n, num_col="aggr_val",
           method=method, unequal_method=unequal_method,
-          randomize_pairs=randomize_pairs)
+          extreme_pairing_levels=extreme_pairing_levels)
 
-        # Rename groups to be combined in the most balanced way
-        if (is.null(rank_summary)){
-          rank_summary <<- create_rank_summary(ids_for_cat,
-                                               levels_col = "._new_groups_",
-                                               num_col="aggr_val")
-        } else {
-          renaming_levels_list <- rename_levels_by_reverse_rank_summary(
-            data=ids_for_cat, rank_summary=rank_summary,
-            levels_col="._new_groups_", num_col="aggr_val")
-          rank_summary <<- renaming_levels_list[["updated_rank_summary"]]
-          ids_for_cat <- renaming_levels_list[["updated_data"]]
+        if (is_n_method){
+          # Rename groups to be combined in the most balanced way
+          if (is.null(rank_summary)){
+            rank_summary <<- create_rank_summary(ids_for_cat,
+                                                 levels_col = "._new_groups_",
+                                                 num_col="aggr_val")
+          } else {
+            renaming_levels_list <- rename_levels_by_reverse_rank_summary(
+              data=ids_for_cat, rank_summary=rank_summary,
+              levels_col="._new_groups_", num_col="aggr_val")
+            rank_summary <<- renaming_levels_list[["updated_rank_summary"]]
+            ids_for_cat <- renaming_levels_list[["updated_data"]]
+          }
         }
 
         ids_for_cat %>%
@@ -81,22 +89,25 @@ create_num_col_groups <- function(data, n, num_col, cat_col=NULL, id_col=NULL, c
         data_for_cat <- data %>%
           dplyr::filter(!!as.name(cat_col) == category)
         data_for_cat$._new_groups_ <- numerically_balanced_group_factor_(
-          data_for_cat, n=n, num_col=num_col, method=method,
+          data=data_for_cat, n=n, num_col=num_col, method=method,
           unequal_method=unequal_method,
-          randomize_pairs=randomize_pairs)
+          extreme_pairing_levels=extreme_pairing_levels)
 
-        # Rename groups to be combined in the most balanced way
-        if (is.null(rank_summary)){
-          rank_summary <<- create_rank_summary(data_for_cat,
-                                               levels_col = "._new_groups_",
-                                               num_col = num_col)
-        } else {
-          renaming_levels_list <- rename_levels_by_reverse_rank_summary(
-            data = data_for_cat, rank_summary = rank_summary,
-            levels_col = "._new_groups_", num_col = num_col)
-          rank_summary <<- renaming_levels_list[["updated_rank_summary"]]
-          data_for_cat <- renaming_levels_list[["updated_data"]]
+        if (is_n_method){
+          # Rename groups to be combined in the most balanced way
+          if (is.null(rank_summary)){
+            rank_summary <<- create_rank_summary(data_for_cat,
+                                                 levels_col = "._new_groups_",
+                                                 num_col = num_col)
+          } else {
+            renaming_levels_list <- rename_levels_by_reverse_rank_summary(
+              data = data_for_cat, rank_summary = rank_summary,
+              levels_col = "._new_groups_", num_col = num_col)
+            rank_summary <<- renaming_levels_list[["updated_rank_summary"]]
+            data_for_cat <- renaming_levels_list[["updated_data"]]
+          }
         }
+
         data_for_cat
       })
 
@@ -122,7 +133,7 @@ create_num_col_groups <- function(data, n, num_col, cat_col=NULL, id_col=NULL, c
       ids_aggregated$._new_groups_ <- numerically_balanced_group_factor_(
         ids_aggregated, n=n, num_col = "aggr_val", method=method,
         unequal_method=unequal_method,
-        randomize_pairs=randomize_pairs)
+        extreme_pairing_levels=extreme_pairing_levels)
       ids_aggregated$aggr_val <- NULL
 
       # Transfer groups to data
@@ -133,11 +144,10 @@ create_num_col_groups <- function(data, n, num_col, cat_col=NULL, id_col=NULL, c
     } else {
 
       # Add group factor
-      data$._new_groups_ <- numerically_balanced_group_factor_(data, n=n,
-                                                       num_col = num_col,
-                                                       method = method,
-                                                       unequal_method=unequal_method,
-                                                       randomize_pairs=randomize_pairs)
+      data$._new_groups_ <- numerically_balanced_group_factor_(
+        data, n=n, num_col = num_col, method = method,
+        unequal_method=unequal_method,
+        extreme_pairing_levels=extreme_pairing_levels)
 
     }
   }
@@ -148,6 +158,8 @@ create_num_col_groups <- function(data, n, num_col, cat_col=NULL, id_col=NULL, c
       dplyr::arrange(!! as.name(local_tmp_index_var)) %>%
       dplyr::select(-dplyr::one_of(local_tmp_index_var))
   }
+
+
 
   # Force equal
   # Remove stuff

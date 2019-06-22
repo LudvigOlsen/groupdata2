@@ -8,7 +8,7 @@ test_that("numerically_balanced_group_factor_() work with n=2", {
   df <- data.frame(
     "participant" = factor(c(1, 3, 5, 6, 7, 8)),
     "score" = c(79,85,140,69,87,92))
-  vbf <- numerically_balanced_group_factor_(df, 2, num_col="score", randomize_pairs = FALSE)
+  vbf <- numerically_balanced_group_factor_(df, 2, num_col="score")
   df_vbf <- df %>%
     dplyr::mutate(.groups = vbf)
 
@@ -16,8 +16,8 @@ test_that("numerically_balanced_group_factor_() work with n=2", {
     dplyr::group_by(.groups) %>%
     dplyr::summarize(group_sum = sum(score))
 
-  expect_equal(vbf, factor(c(1,2,2,1,2,1)))
-  expect_equal(group_sums$group_sum, c(240,312))
+  expect_equal(vbf, factor(c(2,1,1,2,1,2)))
+  expect_equal(group_sums$group_sum, c(312,240))
 
 })
 
@@ -34,20 +34,20 @@ test_that("numerically_balanced_group_factor_() works with n=3", {
 
   # numerically_balanced_group_factor_ on unequal number of dataframe rows
   set.seed(1)
-  expect_equal(numerically_balanced_group_factor_(df, 3, num_col="score", randomize_pairs = T),
+  expect_equal(numerically_balanced_group_factor_(df, 3, num_col="score"),
                factor(c(2,3,3,2,1,3,1)))
 
 
   set.seed(1)
-  nbf1 <- numerically_balanced_group_factor_(df, 3, num_col="neg_score", randomize_pairs = T)
+  nbf1 <- numerically_balanced_group_factor_(df, 3, num_col="neg_score")
   set.seed(1)
-  nbf2 <- numerically_balanced_group_factor_(df, 3, num_col="score", randomize_pairs = T)
+  nbf2 <- numerically_balanced_group_factor_(df, 3, num_col="score")
   expect_equal(nbf1,nbf2)
 
   # add grouping factor to df and get sums of value col
   set.seed(1)
   df_grouped <- df %>%
-    dplyr::mutate(.groups = numerically_balanced_group_factor_(df, 3, num_col="score", randomize_pairs = T))
+    dplyr::mutate(.groups = numerically_balanced_group_factor_(df, 3, num_col="score"))
 
   group_sums <- df_grouped %>%
     dplyr::group_by(.groups) %>%
@@ -60,15 +60,15 @@ test_that("numerically_balanced_group_factor_() works with n=3", {
 
   df <- df %>% dplyr::filter(dplyr::row_number() != 7)
   set.seed(1)
-  expect_equal(numerically_balanced_group_factor_(df, 3, num_col="score", randomize_pairs = T),
+  expect_equal(numerically_balanced_group_factor_(df, 3, num_col="score"),
                factor(c(2,3,1,2,1,3)))
 
   set.seed(1)
-  nbf1 <- numerically_balanced_group_factor_(df, 3, num_col="neg_score", randomize_pairs = T)
+  nbf1 <- numerically_balanced_group_factor_(df, 3, num_col="neg_score")
   set.seed(1)
-  nbf2 <- numerically_balanced_group_factor_(df, 3, num_col="score", randomize_pairs = T)
+  nbf2 <- numerically_balanced_group_factor_(df, 3, num_col="score")
   set.seed(1)
-  nbf3 <- numerically_balanced_group_factor_(df, 3, num_col="neg_pos_score", randomize_pairs = T)
+  nbf3 <- numerically_balanced_group_factor_(df, 3, num_col="neg_pos_score")
   expect_equal(nbf1,nbf2)
   expect_equal(nbf1,nbf3)
 
@@ -76,7 +76,7 @@ test_that("numerically_balanced_group_factor_() works with n=3", {
   set.seed(1)
   df_grouped <- df %>%
     dplyr::mutate(.groups = numerically_balanced_group_factor_(
-      df, 3, num_col="score", randomize_pairs = T))
+      df, 3, num_col="score"))
 
   group_sums <- df_grouped %>%
     dplyr::group_by(.groups) %>%
@@ -233,7 +233,7 @@ test_that("numerically_balanced_group_factor_() work method='l_sizes'", {
     "participant" = factor(c(1, 3, 5, 6, 7, 8)),
     "score" = c(79,85,140,69,87,92))
 
-  vbf <- numerically_balanced_group_factor_(df, 0.5, num_col="score", method = 'l_sizes', randomize_pairs = F)
+  vbf <- numerically_balanced_group_factor_(df, 0.5, num_col="score", method = 'l_sizes')
   df_vbf <- df %>%
     dplyr::mutate(.groups = vbf)
 
@@ -241,10 +241,10 @@ test_that("numerically_balanced_group_factor_() work method='l_sizes'", {
     dplyr::group_by(.groups) %>%
     dplyr::summarize(group_sum = sum(score))
 
-  expect_equal(vbf, factor(c(1,2,2,1,2,1)))
-  expect_equal(group_sums$group_sum, c(240,312))
+  expect_equal(vbf, factor(c(1,2,1,1,2,2)))
+  expect_equal(group_sums$group_sum, c(288,264))
 
-  vbf <- numerically_balanced_group_factor_(df, 0.2, num_col="score", method = 'l_sizes', randomize_pairs = F)
+  vbf <- numerically_balanced_group_factor_(df, 0.2, num_col="score", method = 'l_sizes')
   df_vbf <- df %>%
     dplyr::mutate(.groups = vbf)
 
@@ -252,12 +252,12 @@ test_that("numerically_balanced_group_factor_() work method='l_sizes'", {
     dplyr::group_by(.groups) %>%
     dplyr::summarize(group_sum = sum(score))
 
-  expect_equal(vbf, factor(c(1,2,2,2,2,2)))
-  expect_equal(group_sums$group_sum, c(79,473))
+  expect_equal(vbf, factor(c(2,2,2,1,2,2)))
+  expect_equal(group_sums$group_sum, c(69,483))
 
   # With 3 partitions
   vbf <- numerically_balanced_group_factor_(df, c(0.2,0.2), num_col="score",
-                                            method = 'l_sizes', randomize_pairs = F)
+                                            method = 'l_sizes')
   df_vbf <- df %>%
     dplyr::mutate(.groups = vbf)
 
@@ -265,8 +265,8 @@ test_that("numerically_balanced_group_factor_() work method='l_sizes'", {
     dplyr::group_by(.groups) %>%
     dplyr::summarize(group_sum = sum(score))
 
-  expect_equal(vbf, factor(c(1,2,2,2,2,2)))
-  expect_equal(group_sums$group_sum, c(79,473))
+  expect_equal(vbf, factor(c(3,1,3,3,2,3)))
+  expect_equal(group_sums$group_sum, c(85,87,380))
 
 })
 
@@ -283,8 +283,7 @@ test_that("numerically_balanced_group_factor_() on large datasets", {
     "score" = runif(1000))
 
   df$num_balanced_factor_1 <- numerically_balanced_group_factor_(df, 5,
-                                                                 num_col="score",
-                                                                 randomize_pairs=T)
+                                                                 num_col="score")
 
   group_sums <- df %>%
     dplyr::group_by(num_balanced_factor_1) %>%
@@ -299,8 +298,7 @@ test_that("numerically_balanced_group_factor_() on large datasets", {
 
   df_999$num_balanced_factor_2 <- numerically_balanced_group_factor_(df_999,
                                                               n=5,
-                                                              num_col="score",
-                                                              randomize_pairs=T)
+                                                              num_col="score")
 
 
   group_summaries <- df_999 %>%

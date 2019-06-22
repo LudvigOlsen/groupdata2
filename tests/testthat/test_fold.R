@@ -228,7 +228,7 @@ test_that("values are decently balanced in num_col in fold()",{
     dplyr::group_by(.folds) %>%
     dplyr::summarize(group_sums = sum(score))
 
-  expect_equal(aggregated_scores$group_sums, c(283, 288, 246))
+  expect_equal(aggregated_scores$group_sums, c(283, 246, 288))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
   df_folded <- fold(df, 4, num_col = 'score', id_col="participant")
@@ -264,7 +264,7 @@ test_that("values are decently balanced in num_col in fold()",{
     dplyr::group_by(.folds) %>%
     dplyr::summarize(group_sums = sum(score))
 
-  expect_equal(aggregated_scores$group_sums, c(237, 283, 297))
+  expect_equal(aggregated_scores$group_sums, c(283, 297, 237))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
   set.seed(1)

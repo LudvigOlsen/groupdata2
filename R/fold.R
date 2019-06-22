@@ -196,6 +196,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
                  id_col = NULL, starts_col = NULL,
                  method = 'n_dist', id_aggregation_fn = sum,
+                 extreme_pairing_levels=1,
                  remove_missing_starts = FALSE,
                  num_fold_cols = 1, unique_fold_cols_only = TRUE,
                  max_iters = 5, handle_existing_fold_cols = "keep_warn",
@@ -229,6 +230,14 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
 
   # Stop if k is not a wholenumber
   stopifnot(arg_is_wholenumber_(k))
+
+  # Check if *_cols are in data
+  if (!is.null(cat_col) && cat_col %ni% colnames(data)){
+    stop(paste0("cat_col: '", cat_col, "' is not in data"))}
+  if (!is.null(id_col) && id_col %ni% colnames(data)){
+    stop(paste0("id_col: '", id_col, "' is not in data"))}
+  if (!is.null(num_col) && num_col %ni% colnames(data)){
+    stop(paste0("num_col: '", num_col, "' is not in data"))}
 
   # If num_col is specified, warn that method is ignored
   if (!is.null(num_col) & method != "n_dist"){
@@ -294,6 +303,7 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
                                                                     max_existing_number = max_fold_cols_number,
                                                                     current = r),
                                        id_aggregation_fn = id_aggregation_fn,
+                                       extreme_pairing_levels=extreme_pairing_levels,
                                        method="n_fill",
                                        pre_randomize = TRUE) %>%
           dplyr::ungroup()

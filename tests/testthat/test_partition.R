@@ -248,18 +248,18 @@ test_that("bootstrap test of num_col works",{
                               num_col="age",
                               #id_col="participant",
                               list_out = FALSE)
-  fold(df, c(4,3))
 
   for (i in 1:10){
 
     set.seed(i)
-    df_partitioned <- partition(df, 0.5, cat_col="diagnosis", num_col="age", id_col="participant", list_out = FALSE)
+    df_partitioned <- partition(df, 0.5, cat_col="diagnosis", num_col="age",
+                                id_col="participant", list_out = FALSE)
 
     age_distribution <- df_partitioned %>% group_by(.partitions) %>%
       dplyr::summarise(mean_age = mean(age),
                        sd_age = sd(age))
 
-    expect_true(is_between_(age_distribution$mean_age[1], 49, 51))
+    expect_true(is_between_(age_distribution$mean_age[1], 50, 52))
     expect_true(is_between_(age_distribution$mean_age[2], 49, 51))
 
   }
@@ -275,13 +275,58 @@ test_that("bootstrap test of num_col works",{
       dplyr::summarise(mean_age = mean(age),
                        sd_age = sd(age))
 
-    expect_true(is_between_(age_distribution$mean_age[1], 49, 51))
-    expect_true(is_between_(age_distribution$mean_age[2], 49, 51))
-    expect_true(is_between_(age_distribution$mean_age[3], 49, 51))
-    expect_true(is_between_(age_distribution$mean_age[4], 49, 51))
-    expect_true(is_between_(age_distribution$mean_age[5], 49, 51))
+    expect_true(is_between_(age_distribution$mean_age[1], 47.5, 53.5))
+    expect_true(is_between_(age_distribution$mean_age[2], 47.5, 53.5))
+    expect_true(is_between_(age_distribution$mean_age[3], 47.5, 53.5))
+    expect_true(is_between_(age_distribution$mean_age[4], 47.5, 53.5))
+    expect_true(is_between_(age_distribution$mean_age[5], 47.5, 53.5))
 
   }
+
+  # With two levels of extreme pairing
+
+  for (i in 1:10){
+
+    set.seed(i)
+    df_partitioned <- partition(df, c(0.2, 0.2, 0.2, 0.2, 0.2),
+                                cat_col="diagnosis", num_col="age",
+                                id_col="participant", extreme_pairing_levels = 2,
+                                list_out = FALSE)
+
+    age_distribution <- df_partitioned %>% group_by(.partitions) %>%
+      dplyr::summarise(mean_age = mean(age),
+                       sd_age = sd(age))
+
+    expect_true(is_between_(age_distribution$mean_age[1], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[2], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[3], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[4], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[5], 49, 51.5))
+
+  }
+
+  # With three levels of extreme pairing
+
+  for (i in 1:10){
+
+    set.seed(i)
+    df_partitioned <- partition(df, c(0.2, 0.2, 0.2, 0.2, 0.2),
+                                cat_col="diagnosis", num_col="age",
+                                id_col="participant", extreme_pairing_levels = 3,
+                                list_out = FALSE)
+
+    age_distribution <- df_partitioned %>% group_by(.partitions) %>%
+      dplyr::summarise(mean_age = mean(age),
+                       sd_age = sd(age))
+
+    expect_true(is_between_(age_distribution$mean_age[1], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[2], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[3], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[4], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[5], 49, 51.5))
+
+  }
+
 
 })
 

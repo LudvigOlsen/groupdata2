@@ -1,19 +1,34 @@
 
 numerically_balanced_group_factor_ <- function(data, n, num_col, method="n_fill",
-                                               unequal_method="first", force_equal=FALSE,
-                                               randomize_pairs=T) {
+                                               unequal_method="first", extreme_pairing_levels=1,
+                                               force_equal=FALSE) {
 
   # Create unique local temporary index variable name
-  local_tmp_index_var <- create_tmp_var(data)
+  local_tmp_index_var <- create_tmp_var(data, ".tmp_index_")
+  local_tmp_index_2_var <- create_tmp_var(data, ".tmp_index_2_")
   local_tmp_groups_var <- create_tmp_var(data, ".groups")
 
-  nrows_equal <- nrow(data) %% 2 == 0
+  # TODO Add "rearrange_factor" var name with create_tmp_var
 
-  print(n)
+  # If method is n_*, we are doing folding
+  is_n_method <- substring(method, 1, 2) == "n_"
+
+  equal_nrows <- nrow(data) %% 2 == 0
+
   # Check if we have enough data for pairwise folding
   # or if we are running partitioning (l_sizes)
-  if (method == "l_sizes" || (length(n) == 1 && n > 1 && nrow(data) < n * 2)){
-      randomize_pairs <- FALSE
+  if (method == "l_sizes"){
+    group_by_rearrange_id <- FALSE
+  } else if (is_n_method){
+    if (length(n) > 1){
+      stop(paste0("n contained more than one element with method '",method,"'."))}
+    if (n > 1 && nrow(data) < n * 2) {
+      group_by_rearrange_id <- FALSE
+    } else {
+        group_by_rearrange_id <- TRUE
+    }
+  } else {
+    stop(paste0("method '",method,"' is currently not supported with num_col balancing."))
   }
 
   # Arrange by smallest, biggest, 2nd smallest, 2nd biggest, etc.
@@ -28,16 +43,56 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method="n_fill"
               drop_rearrange_factor = FALSE,
               rearrange_factor_name = "rearrange_factor") # Not actually a factor....
 
-  if(isTRUE(randomize_pairs)){ # TODO rename "randomize_pairs", as it's not very descriptive
+  # Perform the rearranging of extreme pairs again if specified
+  # We do it on the rearrange factor levels, so a pair consists of the rows from two
+  # rearrange factor levels
+  if (extreme_pairing_levels > 1){
 
-    has_excessive <- nlevels(factor(data_sorted$rearrange_factor)) %% n != 0
+    plyr::l_ply(1:(extreme_pairing_levels-1), function(i){
+      tmp_group_scores <- data_sorted %>%
+        dplyr::group_by(.data$rearrange_factor) %>%
+        dplyr::summarize(group_aggr = sum(!!as.name(num_col)))
 
-    if (has_excessive){
+      if (!equal_nrows & unequal_method == "first") {
+        # Reorder with first group always first (otherwise doesn't work with negative numbers)
+        tmp_group_scores_sorted <- tmp_group_scores %>%
+          dplyr::filter(dplyr::row_number() == 1) %>%
+          dplyr::bind_rows(tmp_group_scores %>%
+                             dplyr::filter(dplyr::row_number() != 1) %>%
+                             dplyr::arrange(.data$group_aggr))
+      } else {
+        tmp_group_scores_sorted <- tmp_group_scores %>%
+          dplyr::arrange(.data$group_aggr)
+      }
 
-      if (!nrows_equal){
-        group_to_distribute <- dplyr::case_when(unequal_method == "first" ~ as.numeric(1),
-                                                unequal_method == "last" ~ as.numeric(floor(nrow(data_sorted) / 2) + 1),
-                                                unequal_method == "middle" ~ as.numeric(ceiling(nrow(data_sorted) / 4) + 1))
+      # Rearrange again
+      tmp_rearrange <- tmp_group_scores_sorted %>%
+        rearrange(method = "pair_extremes", unequal_method = unequal_method,
+                  drop_rearrange_factor = FALSE,
+                  rearrange_factor_name = "rearrange_factor_2") %>%
+        dplyr::select(.data$rearrange_factor, .data$rearrange_factor_2)
+
+      data_sorted <<- data_sorted %>%
+        dplyr::left_join(tmp_rearrange, by = "rearrange_factor") %>%
+        dplyr::arrange(.data$rearrange_factor_2, .data$rearrange_factor, !!as.name(num_col)) %>%
+        dplyr::select(-.data$rearrange_factor) %>%
+        dplyr::rename(rearrange_factor = .data$rearrange_factor_2)
+
+    })
+
+  }
+
+  if(isTRUE(group_by_rearrange_id)){
+
+    equal_num_rearrange_levels <- nlevels(factor(data_sorted$rearrange_factor)) %% n == 0
+
+    if (!equal_num_rearrange_levels){
+
+      if (!equal_nrows){
+        group_to_distribute <- dplyr::case_when(
+          unequal_method == "first" ~ as.numeric(1),
+          unequal_method == "last" ~ as.numeric(floor(nrow(data_sorted) / 2) + 1),
+          unequal_method == "middle" ~ as.numeric(ceiling(nrow(data_sorted) / 4) + 1))
       } else {
         group_to_distribute <- sample(unique(data_sorted[["rearrange_factor"]]), 1)
       }
@@ -58,7 +113,7 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method="n_fill"
                      method=method,
                      col_name=local_tmp_groups_var)
 
-    if (has_excessive){
+    if (!equal_num_rearrange_levels){
       # Calculate sums of the other pairs
       # Get the smallest (and second smallest if we have 2 rows to distribute)
       smallest_folds <- data_sorted %>%
@@ -84,42 +139,18 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method="n_fill"
     # also I've seen it produce less balanced solutions that the new version.
   } else {
 
-    # Find sum of values in each rearrange factor group
-    # Once again, arrange by smallest, biggest, 2nd smallest, 2nd biggest, etc.
-    # Create groups, filling up from the top, so the potentially single rearrange factor group
-    # ie. the row with the smallest value, is the one being added to another group.
-
-    tmp_group_scores <- data_sorted %>%
-      dplyr::group_by(.data$rearrange_factor) %>%
-      dplyr::summarize(group_aggr = sum(!!as.name(num_col)))
-
-    if (!nrows_equal & unequal_method == "first") {
-      # Reorder with first group always first (otherwise doesn't work with negative numbers)
-      tmp_group_scores_sorted <- tmp_group_scores %>%
-        dplyr::filter(dplyr::row_number() == 1) %>%
-        dplyr::bind_rows(tmp_group_scores %>%
-                           dplyr::filter(dplyr::row_number() != 1) %>%
-                           dplyr::arrange(.data$group_aggr))
-    } else {
-      tmp_group_scores_sorted <- tmp_group_scores %>%
-        dplyr::arrange(.data$group_aggr)
-    }
-
-    # Rearrange again
-    tmp_second_rearrange <- tmp_group_scores_sorted %>%
-      rearrange(method = "pair_extremes", unequal_method = unequal_method,
-                drop_rearrange_factor = FALSE,
-                rearrange_factor_name = "rearrange_factor_2") %>%
-      dplyr::select(.data$rearrange_factor, .data$rearrange_factor_2)
-
-    # Join data_sorted with the second rearrange factor
-    # Order by this factor and group the dataset, filling from the top
-    # Revert order back to original order of data
-    # Get group factor
+    rearrange_factor_levels <- tibble::enframe(
+        unique(data_sorted[["rearrange_factor"]]),
+        name=NULL, value="rearrange_levels") %>%
+        dplyr::ungroup() %>%
+        dplyr::sample_frac()
+    rearrange_factor_levels[[local_tmp_index_2_var]] <- 1:nrow(rearrange_factor_levels)
     data_sorted <- data_sorted %>%
-      dplyr::left_join(tmp_second_rearrange, by = "rearrange_factor") %>%
-      dplyr::arrange(.data$rearrange_factor_2, .data$rearrange_factor, !!as.name(num_col)) %>%
-      group(n=n, method = method, col_name = local_tmp_groups_var, force_equal = force_equal) %>%
+      dplyr::left_join(rearrange_factor_levels,
+                       by=c("rearrange_factor"="rearrange_levels")) %>%
+      dplyr::arrange(!!as.name(local_tmp_index_2_var)) %>%
+      group(n=n, method = method, col_name = local_tmp_groups_var,
+            force_equal = force_equal) %>%
       dplyr::ungroup() %>%
       dplyr::arrange(!!as.name(local_tmp_index_var))
 

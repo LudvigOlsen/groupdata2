@@ -145,11 +145,12 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #' partitions <- partition(df, c(0.5), list_out = FALSE)
 #'
 #' @importFrom dplyr group_by do %>%
-partition <- function(data, p = 0.2, cat_col = NULL,
-                      num_col = NULL, id_col = NULL,
+partition <- function(data, p=0.2, cat_col=NULL,
+                      num_col=NULL, id_col=NULL,
                       id_aggregation_fn=sum,
-                      force_equal = FALSE,
-                      list_out = TRUE) {
+                      extreme_pairing_levels=1,
+                      force_equal=FALSE,
+                      list_out=TRUE) {
 
   #
   # Balanced partitioning
@@ -162,18 +163,24 @@ partition <- function(data, p = 0.2, cat_col = NULL,
   #        FALSE allows you to pass "p = 0.2" and get 2 partitions - 0.2 and 0.8
   #
 
+  if (!is.null(cat_col) && cat_col %ni% colnames(data)){
+    stop(paste0("cat_col: '", cat_col, "' is not in data"))}
+  if (!is.null(id_col) && id_col %ni% colnames(data)){
+    stop(paste0("id_col: '", id_col, "' is not in data"))}
+  if (!is.null(num_col) && num_col %ni% colnames(data)){
+    stop(paste0("num_col: '", num_col, "' is not in data"))}
 
 
   # If num_col is not NULL
   if (!is.null(num_col)){
-    print(p)
+
     data <- create_num_col_groups(data, n=p, num_col=num_col, cat_col=cat_col,
                                   id_col=id_col, col_name=".partitions",
                                   id_aggregation_fn = id_aggregation_fn,
+                                  extreme_pairing_levels=extreme_pairing_levels,
                                   method="l_sizes", unequal_method="last",
                                   force_equal=force_equal,
-                                  pre_randomize = TRUE,
-                                  randomize_pairs = TRUE # TODO Not best way
+                                  pre_randomize = TRUE
                                   )
 
   } else {
@@ -249,8 +256,11 @@ partition <- function(data, p = 0.2, cat_col = NULL,
 
       stop("NA in .partitions column.")
 
-    } else {
+    } else if (is.null(data[['.partitions']])){
 
+      stop("Column .partitions does not exist")
+
+    } else {
       plyr::llply(c(1:max(as.integer(data[['.partitions']]))), function(part){
 
         temp_data <- data[data$.partitions == part,]
