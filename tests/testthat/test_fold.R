@@ -247,7 +247,7 @@ test_that("values are decently balanced in num_col in fold()",{
     dplyr::group_by(.folds) %>%
     dplyr::summarize(group_sums = sum(score))
 
-  expect_equal(aggregated_scores$group_sums, c(321, 306, 190))
+  expect_equal(aggregated_scores$group_sums, c(286, 246, 285))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
   df_folded <- fold(df, 4, num_col = 'score', cat_col="diagnosis")
@@ -264,7 +264,7 @@ test_that("values are decently balanced in num_col in fold()",{
     dplyr::group_by(.folds) %>%
     dplyr::summarize(group_sums = sum(score))
 
-  expect_equal(aggregated_scores$group_sums, c(283, 297, 237))
+  expect_equal(aggregated_scores$group_sums, c(237, 283, 297))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
   set.seed(1)
@@ -333,3 +333,149 @@ test_that("repeated folding works in fold()",{
   # })
 
 })
+
+
+test_that("bootstrap test of num_col works",{
+
+  # Takes 4 seconds, so we disable it for now.
+  testthat::skip(message = "Skipping bootstrapped numerical balancing test in fold()")
+
+  df <- data.frame("participant"=factor(rep(1:100, 100)),
+                   "diagnosis"=factor(rep(c("a","b","c","d","e"), 2000)),
+                   "age"=rep(sample(100),100))
+
+  # Single
+  set.seed(1)
+  df_folded <- fold(df, 3, num_col="age")
+
+  for (i in 1:10){
+
+    set.seed(i)
+    df_folded <- fold(df, 0.5, cat_col="diagnosis", num_col="age",
+                      id_col="participant")
+
+    age_distribution <- df_folded %>% group_by(.folds) %>%
+      dplyr::summarise(mean_age = mean(age),
+                       sd_age = sd(age))
+
+    expect_true(is_between_(age_distribution$mean_age[1], 50, 52))
+    expect_true(is_between_(age_distribution$mean_age[2], 49, 51))
+
+  }
+
+  for (i in 1:10){
+
+    set.seed(i)
+    df_folded <- fold(df, 5, cat_col="diagnosis", num_col="age",
+                      id_col="participant")
+
+    age_distribution <- df_folded %>% group_by(.folds) %>%
+      dplyr::summarise(mean_age = mean(age),
+                       sd_age = sd(age))
+
+    expect_true(is_between_(age_distribution$mean_age[1], 47.5, 53.5))
+    expect_true(is_between_(age_distribution$mean_age[2], 47.5, 53.5))
+    expect_true(is_between_(age_distribution$mean_age[3], 47.5, 53.5))
+    expect_true(is_between_(age_distribution$mean_age[4], 47.5, 53.5))
+    expect_true(is_between_(age_distribution$mean_age[5], 47.5, 53.5))
+
+  }
+
+  # With two levels of extreme pairing
+
+  for (i in 1:10){
+
+    set.seed(i)
+    df_folded <- fold(df, 5,
+                      cat_col="diagnosis", num_col="age",
+                      id_col="participant", extreme_pairing_levels = 2)
+
+    age_distribution <- df_folded %>% group_by(.folds) %>%
+      dplyr::summarise(mean_age = mean(age),
+                       sd_age = sd(age))
+
+    expect_true(is_between_(age_distribution$mean_age[1], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[2], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[3], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[4], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[5], 49, 51.5))
+
+  }
+
+  # With three levels of extreme pairing
+
+  for (i in 1:10){
+
+    set.seed(i)
+    expect_error(fold(df, 5,
+                      cat_col="diagnosis", num_col="age",
+                      id_col="participant", extreme_pairing_levels = 3),
+                 "data is too small to perform 3 levels of extreme pairing")
+
+    df_folded <- fold(df, 5,
+                      cat_col="diagnosis", num_col="age", extreme_pairing_levels = 3)
+
+    age_distribution <- df_folded %>% group_by(.folds) %>%
+      dplyr::summarise(mean_age = mean(age),
+                       sd_age = sd(age))
+
+    expect_true(is_between_(age_distribution$mean_age[1], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[2], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[3], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[4], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[5], 49, 51.5))
+
+  }
+
+  for (i in 1:10){
+
+    set.seed(i)
+    df_folded <- fold(df, i,
+                      cat_col="diagnosis", num_col="age", extreme_pairing_levels = 1)
+
+    age_distribution <- df_folded %>% group_by(.folds) %>%
+      dplyr::summarise(mean_age = mean(age),
+                       sd_age = sd(age))
+
+    expect_true(is_between_(min(age_distribution$mean_age), 49, 51.5))
+    expect_true(is_between_(max(age_distribution$mean_age), 49, 51.5))
+
+    set.seed(i)
+    df_folded <- fold(df, i,
+                      cat_col="diagnosis", num_col="age", extreme_pairing_levels = 2)
+
+    age_distribution <- df_folded %>% group_by(.folds) %>%
+      dplyr::summarise(mean_age = mean(age),
+                       sd_age = sd(age))
+
+    expect_true(is_between_(min(age_distribution$mean_age), 49, 51.5))
+    expect_true(is_between_(max(age_distribution$mean_age), 49, 51.5))
+
+    set.seed(i)
+    df_folded <- fold(df, i,
+                      cat_col="diagnosis", num_col="age", extreme_pairing_levels = 3)
+
+    age_distribution <- df_folded %>% group_by(.folds) %>%
+      dplyr::summarise(mean_age = mean(age),
+                       sd_age = sd(age))
+
+    expect_true(is_between_(min(age_distribution$mean_age), 49, 51.5))
+    expect_true(is_between_(max(age_distribution$mean_age), 49, 51.5))
+
+  }
+
+
+
+  # set.seed(47)
+  # # With four levels of extreme pairing
+  # df_folded <- fold(df, 5,
+  #                   cat_col="diagnosis", num_col="age",
+  #                   extreme_pairing_levels = 4)
+  #
+  # age_distribution <- df_folded %>% group_by(.folds) %>%
+  #   dplyr::summarise(mean_age = mean(age),
+  #                    sd_age = sd(age))
+
+})
+
+

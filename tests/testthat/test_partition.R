@@ -327,6 +327,12 @@ test_that("bootstrap test of num_col works",{
 
   }
 
+  # With four levels of extreme pairing
+  expect_error(partition(df, c(0.2, 0.2, 0.2, 0.2, 0.2),
+                              cat_col="diagnosis", num_col="age",
+                              id_col="participant", extreme_pairing_levels = 4,
+                              list_out = FALSE),
+               " 4 levels of extreme pairing. Decrease 'extreme_pairing_levels'.")
 
 })
 

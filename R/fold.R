@@ -25,16 +25,20 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'    \enumerate{
 #'      \item Rows are shuffled.
 #'
-#'      \strong{Note} that this will only have an effect on rows that have the same value in num_col.
-#'      \item Rows are ordered as smallest, largest, second smallest, second largest, ...
-#'      \item By their pairwise sum, these are once again ordered as smallest, largest, second smallest, second largest, ...
-#'      \item The ordered data is grouped using method "n_fill".
+#'      \strong{Note} that this will only affect rows with the same value in \code{num_col}.
+#'      \item Extreme pairing 1: Rows are ordered as smallest, largest, second smallest, second largest, etc.
+#'      Each pair get a group identifier.
+#'      \item If \code{extreme_pairing_levels > 1}: The group identifiers are reordered as smallest,
+#'      largest, second smallest, second largest, etc., by the sum of \code{num_col} in the represented rows.
+#'      These pairs (of pairs) get a new set of group identifiers, and the process is repeated
+#'       \code{extreme_pairing_levels-2} times. Note that the group identifiers at the last level will represent
+#'       \code{2^extreme_pairing_levels} rows, why you should be careful when choosing that setting.
+#'      \item The final group identifiers are folded, and the fold identifiers are transferred to the rows.
 #'    }
 #'
-#'  N.B. In case \code{data} has an unequal number of rows,
-#'  the row with the smallest value becomes the first group by itself in (1) and (2), and the order is instead:
-#'  smallest, second smallest, largest, third smallest, second largest, ...
-#'  This row will end up in the first fold.
+#'  N.B. When doing extreme pairing of an unequal number of rows/groups,
+#'  the row/group with the smallest value is placed in a group by itself, and the order is instead:
+#'  smallest, second smallest, largest, third smallest, second largest, etc.
 #'  }
 #'
 #'  \subsection{cat_col AND id_col}{
@@ -98,6 +102,16 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #' @param id_aggregation_fn Function for aggregating values in \code{num_col} for each ID, before balancing \code{num_col}.
 #'
 #'  N.B. Only used when \code{num_col} and \code{id_col} are both specified.
+#' @param extreme_pairing_levels How many levels of extreme pairing to do
+#'  when \code{num_col} is not \code{NULL}.
+#'
+#'  \strong{Extreme pairing}: Rows/pairs are ordered as smallest, largest,
+#'  second smallest, second largest, etc. If \code{extreme_pairing_levels > 1},
+#'  this is done "recursively". See \code{"Details/num_col"} for more.
+#'
+#'  N.B. Works best with large datasets. If set too high,
+#'  the result might not be stochastic. Always check if an increase
+#'  actually makes the folds more balanced. See example.
 #' @param num_fold_cols Number of fold columns to create.
 #'  Useful for repeated cross-validation.
 #'
@@ -190,6 +204,24 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'  unique_fold_cols_only=TRUE,
 #'  max_iters=4)
 #'
+#' ## Check if additional extreme_pairing_levels
+#' ## improve the numerical balance
+#' set.seed(2) # try with seed 1 as well
+#' df_folded_1 <- fold(df, 3, num_col = 'score',
+#'                      extreme_pairing_levels = 1)
+#' df_folded_1 %>%
+#'   dplyr::group_by(.folds) %>%
+#'   dplyr::summarise(sum_score = sum(score),
+#'                    mean_score = mean(score))
+#'
+#' set.seed(2) # try with seed 1 as well
+#' df_folded_2 <- fold(df, 3, num_col = 'score',
+#'                      extreme_pairing_levels = 2)
+#' df_folded_2 %>%
+#'   dplyr::group_by(.folds) %>%
+#'   dplyr::summarise(sum_score = sum(score),
+#'                    mean_score = mean(score))
+#'
 #' @importFrom dplyr group_by_ do %>%
 #' @importFrom utils combn
 #' @importFrom rlang .data
@@ -223,7 +255,6 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
 
   # Convert k to wholenumber if given as percentage
   if(!arg_is_wholenumber_(k) && is_between_(k,0,1)){
-
     rows_per_fold = convert_percentage_(k, data)
     k = ceiling(nrow(data)/rows_per_fold)
   }
@@ -428,7 +459,7 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
             # If they were identical,
             # we removed one and the comparison isn't useful to save
             filter(!identical,
-                   V2 %ni% removed_cols)
+                   .data$V2 %ni% removed_cols)
           )
 
       folds_colnames <- extract_fold_colnames(data)

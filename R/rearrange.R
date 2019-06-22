@@ -39,6 +39,8 @@ rearrange <- function(data, method="pair_extremes",
 
   # Note, pre-sorting of data must happen outside rearrange.
 
+  local_tmp_rearrange_var <- create_tmp_var(data, ".rearrange_factor_")
+
   # Check data
   # Potentially convert vector to dataframe
   if (is.vector(data)){
@@ -57,17 +59,17 @@ rearrange <- function(data, method="pair_extremes",
   }
 
   # Arrange by 'by' -> create rearrange factor -> arrange by rearrance factor
+  data[[local_tmp_rearrange_var]] <- create_rearrange_factor_fn(
+      size = nrow(data), unequal_method = unequal_method)
   data <- data %>%
-    dplyr::mutate(.rearrange_factor_ = create_rearrange_factor_fn(
-      size = n(), unequal_method = unequal_method)) %>%
-    dplyr::arrange(.data$.rearrange_factor_)
+    dplyr::arrange(!!as.name(local_tmp_rearrange_var))
 
   # Remove rearrange factor if it shouldn't be returned
   if (isTRUE(drop_rearrange_factor)){
     data <- data %>%
-      dplyr::select(-c(.data$.rearrange_factor_))
+      dplyr::select(-c(!!as.name(local_tmp_rearrange_var)))
   } else {
-    data <- replace_col_name(data, '.rearrange_factor_', rearrange_factor_name)
+    data <- replace_col_name(data, local_tmp_rearrange_var, rearrange_factor_name)
   }
 
   data

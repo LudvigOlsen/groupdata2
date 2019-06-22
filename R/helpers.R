@@ -850,7 +850,7 @@ rename_levels_by_reverse_rank_summary <- function(data, rank_summary, levels_col
   current_rank_summary <- create_rank_summary(data, levels_col, num_col)
 
   reverse_rank_bind <- rank_summary %>%
-    dplyr::arrange(desc(.data$sum_)) %>%
+    dplyr::arrange(dplyr::desc(.data$sum_)) %>%
     dplyr::bind_cols(current_rank_summary)
 
   pattern_and_replacement <- reverse_rank_bind %>%
@@ -860,7 +860,7 @@ rename_levels_by_reverse_rank_summary <- function(data, rank_summary, levels_col
   data <- data %>%
     dplyr::left_join(pattern_and_replacement, by=levels_col) %>%
     dplyr::select(-!!as.name(levels_col)) %>%
-    dplyr::rename_at(paste0(levels_col,"1"), list(~paste0(levels_col)))
+    dplyr::rename_at(paste0(levels_col,"1"), ~c(levels_col))
 
   updated_rank_summary <- reverse_rank_bind %>%
     dplyr::mutate(sum_ = .data$sum_ + .data$sum_1) %>%
@@ -874,5 +874,5 @@ create_rank_summary <- function(data, levels_col, num_col){
   data %>%
     dplyr::group_by(!!as.name(levels_col)) %>%
     dplyr::summarize(sum_ = sum(!!as.name(num_col))) %>%
-    dplyr::arrange(sum_)
+    dplyr::arrange(.data$sum_)
 }

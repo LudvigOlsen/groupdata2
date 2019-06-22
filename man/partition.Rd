@@ -5,8 +5,8 @@
 \title{Create balanced partitions.}
 \usage{
 partition(data, p = 0.2, cat_col = NULL, num_col = NULL,
-  id_col = NULL, id_aggregation_fn = sum, force_equal = FALSE,
-  list_out = TRUE)
+  id_col = NULL, id_aggregation_fn = sum, extreme_pairing_levels = 1,
+  force_equal = FALSE, list_out = TRUE)
 }
 \arguments{
 \item{data}{Dataframe or Vector.}
@@ -24,7 +24,8 @@ E.g. \eqn{c(0.2, 3, 0.1)}.}
 
 \item{num_col}{Name of numerical variable to balance between partitions.
 
- N.B. When used with \code{id_col}, values in \code{num_col} for each ID are aggregated using \code{id_aggregation_fn} before being balanced.}
+ N.B. When used with \code{id_col}, values in \code{num_col} for each ID are
+ aggregated using \code{id_aggregation_fn} before being balanced.}
 
 \item{id_col}{Name of factor with IDs. Used to keep all rows that share an ID in
  the same partition (if possible).
@@ -33,9 +34,21 @@ E.g. \eqn{c(0.2, 3, 0.1)}.}
  effect of time, we want to have all observations of this participant in
  the same partition.}
 
-\item{id_aggregation_fn}{Function for aggregating values in \code{num_col} for each ID, before balancing \code{num_col}.
+\item{id_aggregation_fn}{Function for aggregating values in \code{num_col} for each ID,
+ before balancing \code{num_col}.
 
  N.B. Only used when \code{num_col} and \code{id_col} are both specified.}
+
+\item{extreme_pairing_levels}{How many levels of extreme pairing to do
+ when \code{num_col} is not \code{NULL}.
+
+ \strong{Extreme pairing}: Rows/pairs are ordered as smallest, largest,
+ second smallest, second largest, etc. If \code{extreme_pairing_levels > 1},
+ this is done "recursively". See \code{"Details/num_col"} for more.
+
+ N.B. Works best with large datasets. If set too high,
+ the result might not be stochastic. Always check if an increase
+ actually makes the partitions more balanced. See example.}
 
 \item{force_equal}{Discard excess data. (Logical)}
 
@@ -73,14 +86,20 @@ Splits data into partitions.
    \enumerate{
      \item Rows are shuffled.
 
-     \strong{Note} that this will only have an effect on rows that have the same value in num_col.
-     \item Rows are ordered as smallest, largest, second smallest, second largest, ...
-     \item By their pairwise sum, these are once again ordered as smallest, largest, second smallest, second largest, ...
-     \item The ordered data is partitioned.
+     \strong{Note} that this will only affect rows with the same value in \code{num_col}.
+     \item Extreme pairing 1: Rows are ordered as smallest, largest, second smallest, second largest, etc.
+     Each pair get a group identifier.
+     \item If \code{extreme_pairing_levels > 1}: The group identifiers are reordered as smallest,
+     largest, second smallest, second largest, etc., by the sum of \code{num_col} in the represented rows.
+     These pairs (of pairs) get a new set of group identifiers, and the process is repeated
+      \code{extreme_pairing_levels-2} times. Note that the group identifiers at the last level will represent
+      \code{2^extreme_pairing_levels} rows, why you should be careful when choosing that setting.
+     \item The final group identifiers are shuffled, and their order is applied to the full dataset.
+     \item The ordered dataset is split by the sizes in \code{p}.
    }
 
- N.B. In case \code{data} has an unequal number of rows,
- the row with the largest value is placed in a group by itself in (1), and the order is instead:
+ N.B. When doing extreme pairing of an unequal number of rows/groups,
+ the row/group with the largest value is placed in a group by itself, and the order is instead:
  smallest, second largest, second smallest, third largest, ... , largest.
  }
 
@@ -104,7 +123,7 @@ Splits data into partitions.
    \enumerate{
      \item Values in \code{num_col} are aggregated for each ID, using \code{id_aggregation_fn}.
      \item The IDs are partitioned, using the aggregated values as "\code{num_col}".
-     \item The partition numbers for IDs are transferred to their rows.
+     \item The partition identifiers are transferred to the rows of the IDs.
    }
  }
 
@@ -114,7 +133,7 @@ Splits data into partitions.
      \item IDs are subset by \code{cat_col}.
      \item The IDs for each subset are partitioned,
      by using the aggregated values as "\code{num_col}".
-     \item The partition numbers for IDs are transferred to their rows.
+     \item The partition identifiers are transferred to the rows of the IDs.
    }
  }
 }
@@ -158,6 +177,25 @@ partitions <- partition(df, c(0.5), cat_col = 'diagnosis',
 # Return dataframe with grouping factor
 # with list_out = FALSE
 partitions <- partition(df, c(0.5), list_out = FALSE)
+
+# Check if additional extreme_pairing_levels
+# improve the numerical balance
+set.seed(2) # try with seed 1 as well
+partitions_1 <- partition(df, c(0.5), num_col = 'score',
+                          extreme_pairing_levels = 1,
+                          list_out = FALSE)
+partitions_1 \%>\%
+  dplyr::group_by(.partitions) \%>\%
+  dplyr::summarise(sum_score = sum(score),
+                   mean_score = mean(score))
+set.seed(2) # try with seed 1 as well
+partitions_2 <- partition(df, c(0.5), num_col = 'score',
+                          extreme_pairing_levels = 2,
+                          list_out = FALSE)
+partitions_2 \%>\%
+  dplyr::group_by(.partitions) \%>\%
+  dplyr::summarise(sum_score = sum(score),
+                   mean_score = mean(score))
 
 }
 \author{
