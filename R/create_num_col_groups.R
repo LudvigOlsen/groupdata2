@@ -175,6 +175,6 @@ create_num_col_groups <- function(data, n, num_col, cat_col=NULL, id_col=NULL, c
   # replace column name
   data <- replace_col_name(data, '._new_groups_', col_name)
 
-  return(data)
+  return(dplyr::as_tibble(data))
 
 }
