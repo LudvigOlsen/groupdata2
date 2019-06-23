@@ -1,27 +1,22 @@
-# Setup
+# Platform
 
-## Platform
-
-|setting  |value                        |
+|field    |value                        |
 |:--------|:----------------------------|
-|version  |R version 3.4.2 (2017-09-28) |
+|version  |R version 3.6.0 (2019-04-26) |
+|os       |macOS Sierra 10.12.6         |
 |system   |x86_64, darwin15.6.0         |
-|ui       |RStudio (1.1.383)            |
+|ui       |X11                          |
 |language |(EN)                         |
 |collate  |en_US.UTF-8                  |
+|ctype    |en_US.UTF-8                  |
 |tz       |Europe/Copenhagen            |
-|date     |2017-10-21                   |
+|date     |2019-06-23                   |
 
-## Packages
+# Dependencies
 
-|package    |*  |version |date       |source                             |
-|:----------|:--|:-------|:----------|:----------------------------------|
-|groupdata2 |*  |1.0.0   |2017-10-21 |local (LudvigOlsen/R-splitters@NA) |
+|package    |old   |new        |Δ  |
+|:----------|:-----|:----------|:--|
+|groupdata2 |1.0.0 |1.0.0.9000 |*  |
 
-# Check results
-
-0 packages
-
-
-
+# Revdeps
 

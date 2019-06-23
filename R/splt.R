@@ -6,7 +6,7 @@
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @inheritParams group_factor
-#' @return List of splitted data
+#' @return List of the split data
 #' @family grouping functions
 #' @examples
 #' # Attach packages

@@ -112,7 +112,7 @@ For method \code{l_starts} only.
 (Logical)}
 }
 \value{
-List of splitted data
+List of the split data
 }
 \description{
 Divides data into groups by a range of methods.

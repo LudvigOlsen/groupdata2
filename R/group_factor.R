@@ -210,7 +210,7 @@ group_factor <- function(data, n, method = 'n_dist', starts_col = NULL, force_eq
                                        descending,
                                        remove_missing_starts = remove_missing_starts)
 
-    }else if (method == 'staircase'){
+    } else if (method == 'staircase'){
 
       groups <- stair_split_group_factor_(data[[1]], n, force_equal, descending)
 

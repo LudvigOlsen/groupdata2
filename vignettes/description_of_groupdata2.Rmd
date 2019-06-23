@@ -885,7 +885,7 @@ Type: logical (TRUE or FALSE)
 Whether to parallelize the fold column comparisons,
 when *unique_fold_cols_only* is TRUE.
 
-**N.B.** Requires a registered parallel backend. See **doParallel:registerDoParallel**.
+**N.B.** Requires a registered parallel backend. Like **doParallel:registerDoParallel**.
 
 &nbsp;
 
@@ -1536,7 +1536,7 @@ df_balanced %>%
 ```
 
 
-6. Using balance() for dowsampling to a specific size without id_col  
+6. Using balance() for downsampling to a specific size without id_col  
 
 ```{r}
 df_balanced <- balance(df, 3, cat_col = "diagnosis") %>% 
@@ -1820,7 +1820,7 @@ With a size of 8, we get 13 groups. The last group (13) only contains 4 elements
 
 With a size of 15, we get 7 groups. The last group (7) contains only 10 elements, but all the other groups contain 15 elements as specified.
 
-With a size of 20, we get 5 groups. As 20 is divisible with the 100 elements that the splitted vector contained, the last group also contains 20 elements, and so we have equal groups.
+With a size of 20, we get 5 groups. As 20 is divisible with the 100 elements that the split vector contained, the last group also contains 20 elements, and so we have equal groups.
 
 ```{r echo=FALSE}
 
@@ -1936,7 +1936,7 @@ staircase_plot +
 
 
 Below we will take a quick look at the cumulative sum of group elements to get an idea of what is going on under the hood.  
-Remember that the splitted vector had 1000 elements? That is why they all stop at 1000 on the y-axis. There are simply no more elements left!  
+Remember that the split vector had 1000 elements? That is why they all stop at 1000 on the y-axis. There are simply no more elements left!  
 
 
 ```{r echo=FALSE}
@@ -2019,7 +2019,7 @@ primes_plot +
 
 
 Below we will take a quick look at the cumulative sum of group elements to get an idea of what is going on under the hood.  
-Because the splitted vector had 1000 elements, it stops at 1000 on the y-axis. There are simply no more elements left!  
+Because the split vector had 1000 elements, it stops at 1000 on the y-axis. There are simply no more elements left!  
 
 
 ```{r echo=FALSE}

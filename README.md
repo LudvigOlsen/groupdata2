@@ -1,54 +1,52 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-groupdata2
-==========
 
-R package: Subsetting methods for balanced cross-validation, time series windowing, and general grouping and splitting of data.
+# groupdata2
 
-By Ludvig R. Olsen,
-Cognitive Science, Aarhus University.
-Started in Oct. 2016
+R package: Subsetting methods for balanced cross-validation, time series
+windowing, and general grouping and splitting of data.
+
+By Ludvig R. Olsen,  
+Started in Oct. 2016
 
 Contact at: <r-pkgs@ludvigolsen.dk>
 
 Main functions:
 
--   group\_factor
--   group
--   splt
--   partition
--   fold
--   balance (\*new, \*github only)
+  - group\_factor  
+  - group  
+  - splt  
+  - partition  
+  - fold  
+  - balance
 
 Other tools:
 
--   find\_starts
--   differs\_from\_previous
--   %staircase%
--   %primes%
+  - find\_starts
+  - differs\_from\_previous
+  - %staircase%  
+  - %primes%
 
-Installation
-------------
+## Installation
 
 CRAN version:
 
-> install.packages("groupdata2")
+> install.packages(“groupdata2”)
 
 Development version:
 
-> install.packages("devtools")
-> devtools::install\_github("LudvigOlsen/groupdata2")
+> install.packages(“devtools”)  
+> devtools::install\_github(“LudvigOlsen/groupdata2”)
 
-Vignettes
----------
+## Vignettes
 
-groupdata2 contains a number of vignettes with relevant use cases and descriptions.
+groupdata2 contains a number of vignettes with relevant use cases and
+descriptions.
 
-> vignette(package='groupdata2') \# for an overview
-> vignette("introduction\_to\_groupdata2") \# begin here
+> vignette(package=“groupdata2”) \# for an overview  
+> vignette(“introduction\_to\_groupdata2”) \# begin here
 
-Functions
----------
+## Functions
 
 ### group\_factor()
 
@@ -62,28 +60,41 @@ Randomize grouping factor by setting randomize = TRUE
 
 ### group()
 
-Returns the given data as a dataframe with added grouping factor made with group\_factor(). The dataframe is grouped by the grouping factor for easy use with dplyr pipelines.
+Returns the given data as a data frame with added grouping factor made
+with group\_factor(). The data frame is grouped by the grouping factor
+for easy use with dplyr pipelines.
 
 ### splt()
 
-Creates the specified groups with group\_factor() and splits the given data by the grouping factor with base::split. Returns the splits in a list.
+Creates the specified groups with group\_factor() and splits the given
+data by the grouping factor with base::split. Returns the splits in a
+list.
 
 ### partition()
 
-Creates (optionally) balanced partitions (e.g. training/test sets). Balance partitions on one categorical variable and/or one numerical variable. Make sure that all datapoints sharing an ID is in the same partition.
+Creates (optionally) balanced partitions (e.g. training/test sets).
+Balance partitions on one categorical variable and/or one numerical
+variable. Make sure that all datapoints sharing an ID is in the same
+partition.
 
 ### fold()
 
-Creates (optionally) balanced folds for use in cross-validation. Balance folds on one categorical variable and/or one numerical variable. Make sure that all datapoints sharing an ID is in the same fold.
+Creates (optionally) balanced folds for use in cross-validation. Balance
+folds on one categorical variable and/or one numerical variable. Ensure
+that all datapoints sharing an ID is in the same fold. Create multiple
+unique fold columns at once, e.g. for repeated cross-validation.
 
 ### balance()
 
-Uses up- or downsampling to fix the group size to the min, max, mean, or median group size or to a specific number of rows. Balancing can also happen on the ID level, e.g. to ensure the same number of IDs in each category.
+Uses up- or downsampling to fix the group sizes to the min, max, mean,
+or median group size or to a specific number of rows. Balancing can also
+happen on the ID level, e.g. to ensure the same number of IDs in each
+category.
 
-Grouping Methods
-----------------
+## Grouping Methods
 
-There are currently 9 methods available. They can be divided into 5 categories.
+There are currently 9 methods available. They can be divided into 5
+categories.
 
 *Examples of group sizes are based on a vector with 57 elements.*
 
@@ -99,25 +110,30 @@ E.g. group sizes: 10, 10, 10, 10, 10, 7
 
 ##### Method: n\_dist (Default)
 
-Divides the data into a specified number of groups and distributes excess data points across groups.
+Divides the data into a specified number of groups and distributes
+excess data points across groups.
 
 E.g. group sizes: 11, 11, 12, 11, 12
 
 ##### Method: n\_fill
 
-Divides the data into a specified number of groups and fills up groups with excess data points from the beginning.
+Divides the data into a specified number of groups and fills up groups
+with excess data points from the beginning.
 
 E.g. group sizes: 12, 12, 11, 11, 11
 
 ##### Method: n\_last
 
-Divides the data into a specified number of groups. The algorithm finds the most equal group sizes possible, using all data points. Only the last group is able to differ in size.
+Divides the data into a specified number of groups. The algorithm finds
+the most equal group sizes possible, using all data points. Only the
+last group is able to differ in size.
 
 E.g. group sizes: 11, 11, 11, 11, 13
 
 ##### Method: n\_rand
 
-Divides the data into a specified number of groups. Excess data points are placed randomly in groups (only 1 per group).
+Divides the data into a specified number of groups. Excess data points
+are placed randomly in groups (only 1 per group).
 
 E.g. group sizes: 12, 11, 11, 11, 12
 
@@ -125,27 +141,32 @@ E.g. group sizes: 12, 11, 11, 11, 12
 
 ##### Method: l\_sizes
 
-Uses a list / vector of group sizes to divide up the data.
+Uses a list / vector of group sizes to divide up the data.  
 Excess data points are placed in an extra group.
 
 E.g. *n = c(11, 11)* returns group sizes: 11, 11, 35
 
 ##### Method: l\_starts
 
-Uses a list of starting positions to divide up the data.
-Starting positions are values in a vector (e.g. column in dataframe). Skip to a specific nth appearance of a value by using c(value, skip\_to).
+Uses a list of starting positions to divide up the data.  
+Starting positions are values in a vector (e.g. column in data frame).
+Skip to a specific nth appearance of a value by using c(value,
+skip\_to).
 
 E.g. *n = c(11, 15, 27, 43)* returns group sizes: 10, 4, 12, 16, 15
 
-Identical to *n = list(11, 15, c(27, 1), 43)* where 1 specifies that we want the first appearance of 27 after the previous value 15.
+Identical to *n = list(11, 15, c(27, 1), 43)* where 1 specifies that we
+want the first appearance of 27 after the previous value 15.
 
-If passing *n = 'auto'* starting posititions are automatically found with find\_starts().
+If passing *n = “auto”* starting positions are automatically found with
+find\_starts().
 
 ### Specify step size
 
 ##### Method: staircase
 
-Uses step\_size to divide up the data. Group size increases with 1 step for every group, until there is no more data.
+Uses step\_size to divide up the data. Group size increases with 1 step
+for every group, until there is no more data.
 
 E.g. group sizes: 5, 10, 15, 20, 7
 
@@ -153,34 +174,41 @@ E.g. group sizes: 5, 10, 15, 20, 7
 
 ##### Method: primes
 
-Creates groups with sizes corresponding to prime numbers.
-Starts at n (prime number). Increases to the the next prime number until there is no more data.
+Creates groups with sizes corresponding to prime numbers.  
+Starts at n (prime number). Increases to the the next prime number until
+there is no more data.
 
 E.g. group sizes: 5, 7, 11, 13, 17, 4
 
-Balancing ID Methods
---------------------
+## Balancing ID Methods
 
-There are currently 4 methods for balancing on ID level.
+There are currently 4 methods for balancing on ID level in balance().
 
 ##### ID method: n\_ids
 
-Balances on ID level only. It makes sure there are the same number of IDs in each category. This might lead to a different number of rows between categories.
+Balances on ID level only. It makes sure there are the same number of
+IDs in each category. This might lead to a different number of rows
+between categories.
 
 ##### ID method: n\_rows\_c
 
-Attempts to level the number of rows per category, while only removing/adding entire IDs. This is done with repetition and by iteratively picking the ID with the number of rows closest to the lacking/excessive number of rows in the category.
+Attempts to level the number of rows per category, while only
+removing/adding entire IDs. This is done with repetition and by
+iteratively picking the ID with the number of rows closest to the
+lacking/excessive number of rows in the category.
 
 ##### ID method: distributed
 
-Distributes the lacking/excess rows equally between the IDs. If the number to distribute can not be equally divided, some IDs will have 1 row more/less than the others.
+Distributes the lacking/excess rows equally between the IDs. If the
+number to distribute can not be equally divided, some IDs will have 1
+row more/less than the others.
 
 ##### ID method: nested
 
-Balances the IDs within their categories, meaning that all IDs in a category will have the same number of rows.
+Balances the IDs within their categories, meaning that all IDs in a
+category will have the same number of rows.
 
-Examples
---------
+## Examples
 
 ``` r
 # Attach packages
@@ -190,7 +218,7 @@ library(knitr)
 ```
 
 ``` r
-# Create dataframe
+# Create data frame
 df <- data.frame("x"=c(1:12),
   "species" = rep(c('cat','pig', 'human'), 4),
   "age" = sample(c(1:100), 12))
@@ -204,20 +232,20 @@ group(df, n = 5, method = 'n_dist') %>%
   kable()
 ```
 
-|    x| species |  age| .groups |
-|----:|:--------|----:|:--------|
-|    1| cat     |   79| 1       |
-|    2| pig     |   59| 1       |
-|    3| human   |   83| 2       |
-|    4| cat     |   99| 2       |
-|    5| pig     |    2| 3       |
-|    6| human   |   42| 3       |
-|    7| cat     |   66| 3       |
-|    8| pig     |    9| 4       |
-|    9| human   |   30| 4       |
-|   10| cat     |   22| 5       |
-|   11| pig     |   16| 5       |
-|   12| human   |   80| 5       |
+|  x | species | age | .groups |
+| -: | :------ | --: | :------ |
+|  1 | cat     |  27 | 1       |
+|  2 | pig     |  94 | 1       |
+|  3 | human   |  95 | 2       |
+|  4 | cat     |  93 | 2       |
+|  5 | pig     |  71 | 3       |
+|  6 | human   |  22 | 3       |
+|  7 | cat     |  21 | 3       |
+|  8 | pig     |  14 | 4       |
+|  9 | human   |  74 | 4       |
+| 10 | cat     |  12 | 5       |
+| 11 | pig     |  40 | 5       |
+| 12 | human   |  80 | 5       |
 
 ``` r
 
@@ -228,13 +256,13 @@ df %>%
   kable()
 ```
 
-| .groups |  mean\_age|
-|:--------|----------:|
-| 1       |   69.00000|
-| 2       |   91.00000|
-| 3       |   36.66667|
-| 4       |   19.50000|
-| 5       |   39.33333|
+| .groups | mean\_age |
+| :------ | --------: |
+| 1       |      60.5 |
+| 2       |      94.0 |
+| 3       |      38.0 |
+| 4       |      44.0 |
+| 5       |      44.0 |
 
 ``` r
 
@@ -249,25 +277,25 @@ df %>%
   kable()
 ```
 
-|    x| species |  age| .groups |
-|----:|:--------|----:|:--------|
-|    1| cat     |   79| 1       |
-|    2| pig     |   59| 1       |
-|    3| human   |   83| 1       |
-|    4| cat     |   99| 1       |
-|    5| pig     |    2| 2       |
-|    6| human   |   42| 2       |
-|    7| cat     |   66| 3       |
-|    8| pig     |    9| 3       |
-|    9| human   |   30| 3       |
-|   10| cat     |   22| 3       |
-|   11| pig     |   16| 3       |
-|   12| human   |   80| 3       |
+|  x | species | age | .groups |
+| -: | :------ | --: | :------ |
+|  1 | cat     |  27 | 1       |
+|  2 | pig     |  94 | 1       |
+|  3 | human   |  95 | 1       |
+|  4 | cat     |  93 | 1       |
+|  5 | pig     |  71 | 2       |
+|  6 | human   |  22 | 2       |
+|  7 | cat     |  21 | 3       |
+|  8 | pig     |  14 | 3       |
+|  9 | human   |  74 | 3       |
+| 10 | cat     |  12 | 3       |
+| 11 | pig     |  40 | 3       |
+| 12 | human   |  80 | 3       |
 
 ### fold()
 
 ``` r
-# Create dataframe
+# Create data frame
 df <- data.frame(
   "participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
   "age" = rep(c(20,33,27,21,32,25), 3),
@@ -294,26 +322,26 @@ df_folded %>%
   kable()
 ```
 
-| participant |  age| diagnosis |  score| session | .folds |
-|:------------|----:|:----------|------:|:--------|:-------|
-| 1           |   20| a         |     10| 1       | 1      |
-| 1           |   20| a         |     24| 2       | 1      |
-| 1           |   20| a         |     45| 3       | 1      |
-| 4           |   21| b         |     35| 1       | 1      |
-| 4           |   21| b         |     50| 2       | 1      |
-| 4           |   21| b         |     78| 3       | 1      |
-| 5           |   32| b         |     24| 1       | 2      |
-| 5           |   32| b         |     54| 2       | 2      |
-| 5           |   32| b         |     62| 3       | 2      |
-| 6           |   25| a         |     14| 1       | 2      |
-| 6           |   25| a         |     25| 2       | 2      |
-| 6           |   25| a         |     30| 3       | 2      |
-| 2           |   33| b         |     24| 1       | 3      |
-| 2           |   33| b         |     40| 2       | 3      |
-| 2           |   33| b         |     67| 3       | 3      |
-| 3           |   27| a         |     15| 1       | 3      |
-| 3           |   27| a         |     30| 2       | 3      |
-| 3           |   27| a         |     40| 3       | 3      |
+| participant | age | diagnosis | score | session | .folds |
+| :---------- | --: | :-------- | ----: | :------ | :----- |
+| 1           |  20 | a         |    10 | 1       | 1      |
+| 1           |  20 | a         |    24 | 2       | 1      |
+| 1           |  20 | a         |    45 | 3       | 1      |
+| 2           |  33 | b         |    24 | 1       | 1      |
+| 2           |  33 | b         |    40 | 2       | 1      |
+| 2           |  33 | b         |    67 | 3       | 1      |
+| 5           |  32 | b         |    24 | 1       | 2      |
+| 5           |  32 | b         |    54 | 2       | 2      |
+| 5           |  32 | b         |    62 | 3       | 2      |
+| 6           |  25 | a         |    14 | 1       | 2      |
+| 6           |  25 | a         |    25 | 2       | 2      |
+| 6           |  25 | a         |    30 | 3       | 2      |
+| 3           |  27 | a         |    15 | 1       | 3      |
+| 3           |  27 | a         |    30 | 2       | 3      |
+| 3           |  27 | a         |    40 | 3       | 3      |
+| 4           |  21 | b         |    35 | 1       | 3      |
+| 4           |  21 | b         |    50 | 2       | 3      |
+| 4           |  21 | b         |    78 | 3       | 3      |
 
 ``` r
 
@@ -324,14 +352,14 @@ df_folded %>%
   kable()
 ```
 
-| .folds | diagnosis | participant |    n|
-|:-------|:----------|:------------|----:|
-| 1      | a         | 1           |    3|
-| 1      | b         | 4           |    3|
-| 2      | a         | 6           |    3|
-| 2      | b         | 5           |    3|
-| 3      | a         | 3           |    3|
-| 3      | b         | 2           |    3|
+| .folds | diagnosis | participant | n |
+| :----- | :-------- | :---------- | -: |
+| 1      | a         | 1           | 3 |
+| 1      | b         | 2           | 3 |
+| 2      | a         | 6           | 3 |
+| 2      | b         | 5           | 3 |
+| 3      | a         | 3           | 3 |
+| 3      | b         | 4           | 3 |
 
 ``` r
 
@@ -345,15 +373,18 @@ df_folded %>%
   kable()
 ```
 
-| .folds |  mean\_age|    sd\_age|
-|:-------|----------:|----------:|
-| 1      |       20.5|  0.5477226|
-| 2      |       28.5|  3.8340579|
-| 3      |       30.0|  3.2863353|
+| .folds | mean\_age |  sd\_age |
+| :----- | --------: | -------: |
+| 1      |      26.5 | 7.120393 |
+| 2      |      28.5 | 3.834058 |
+| 3      |      24.0 | 3.286335 |
 
-**Notice** that the we now have the opportunity to include the *session* variable and/or use *participant* as a random effect in our model when doing cross-validation, as any participant will only appear in one fold.
+**Notice** that the we now have the opportunity to include the *session*
+variable and/or use *participant* as a random effect in our model when
+doing cross-validation, as any participant will only appear in one fold.
 
-We also have a balance in the representation of each diagnosis, which could give us better, more consistent results.
+We also have a balance in the representation of each diagnosis, which
+could give us better, more consistent results.
 
 ### balance()
 
@@ -369,13 +400,13 @@ df_b %>%
   kable()
 ```
 
-| diagnosis | participant |    n|
-|:----------|:------------|----:|
-| a         | 1           |    3|
-| a         | 3           |    2|
-| a         | 6           |    1|
-| b         | 2           |    3|
-| b         | 4           |    1|
+| diagnosis | participant | n |
+| :-------- | :---------- | -: |
+| a         | 1           | 3 |
+| a         | 3           | 2 |
+| a         | 6           | 1 |
+| b         | 2           | 3 |
+| b         | 4           | 1 |
 
 ``` r
 
@@ -388,13 +419,13 @@ balance(df_b, size="min", cat_col = "diagnosis") %>%
   kable()
 ```
 
-| diagnosis | participant |    n|
-|:----------|:------------|----:|
-| a         | 1           |    2|
-| a         | 3           |    1|
-| a         | 6           |    1|
-| b         | 2           |    3|
-| b         | 4           |    1|
+| diagnosis | participant | n |
+| :-------- | :---------- | -: |
+| a         | 1           | 2 |
+| a         | 3           | 1 |
+| a         | 6           | 1 |
+| b         | 2           | 3 |
+| b         | 4           | 1 |
 
 ``` r
 
@@ -405,9 +436,9 @@ balance(df_b, size="min", cat_col = "diagnosis",
   kable()
 ```
 
-| diagnosis | participant |    n|
-|:----------|:------------|----:|
-| a         | 1           |    3|
-| a         | 3           |    2|
-| b         | 2           |    3|
-| b         | 4           |    1|
+| diagnosis | participant | n |
+| :-------- | :---------- | -: |
+| a         | 1           | 3 |
+| a         | 3           | 2 |
+| b         | 2           | 3 |
+| b         | 4           | 1 |

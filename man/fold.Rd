@@ -95,7 +95,7 @@ fold(data, k = 5, cat_col = NULL, num_col = NULL, id_col = NULL,
 
  \strong{Extreme pairing}: Rows/pairs are ordered as smallest, largest,
  second smallest, second largest, etc. If \code{extreme_pairing_levels > 1},
- this is done "recursively". See \code{"Details/num_col"} for more.
+ this is done "recursively" on the extreme pairs. See \code{"Details/num_col"} for more.
 
  N.B. Larger values work best with large datasets. If set too high,
  the result might not be stochastic. Always check if an increase
@@ -151,7 +151,7 @@ fold(data, k = 5, cat_col = NULL, num_col = NULL, id_col = NULL,
  when \code{unique_fold_cols_only} is \code{TRUE}.
 
  Requires a registered parallel backend.
- See \code{\link[doParallel:registerDoParallel]{doParallel::registerDoParallel}}.}
+ Like doParallel::registerDoParallel.}
 }
 \value{
 Data frame with grouping factor for subsetting in cross-validation.
@@ -279,6 +279,7 @@ df_folded <- df_folded \%>\% arrange(.folds)
 
 ## Multiple fold columns
 # Useful for repeated cross-validation
+# Note: Consider running in parallel
 df_folded <- fold(df, 3, cat_col = 'diagnosis',
  id_col = 'participant', num_fold_cols = 5,
  unique_fold_cols_only=TRUE,

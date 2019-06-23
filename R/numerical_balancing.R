@@ -10,8 +10,6 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method="n_fill"
   local_tmp_rearrange_var <- create_tmp_var(data, ".rearrange_factor_")
   local_tmp_rearrange_2_var <- create_tmp_var(data, ".rearrange_factor_2_")
 
-  # TODO Add "rearrange_factor" var name with create_tmp_var
-
   # If method is n_*, we are doing folding
   is_n_method <- substring(method, 1, 2) == "n_"
 

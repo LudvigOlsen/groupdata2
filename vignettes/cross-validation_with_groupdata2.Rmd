@@ -196,7 +196,7 @@ train_set %>%
   kable(align='c')
 ```
 
-Fold 1 contains particants 2 and 7 with 3 rows each. Participant 2 has the diagnosis 'b' and participant 7 has the diagnosis 'a'. This pattern is the same for all folds. This dataset was created for the purpose of showing these functions, so we should expect real world data to be less perfectly distributed and remember to run some checks of the created folds and partitions. Also be aware, that the maximum number of folds is restricted by the number of participants in the classes, if using the *id_col* and the *cat_col* arguments together. Remember, that the function first subsets the dataset by *cat_col* and then creates groups (folds) from the unique values in *id_col* in each subset, before merging the subsets. So if you only have 3 participants in one of the classes, this will be the maximum number of folds you can create.
+Fold 1 contains participants 2 and 7 with 3 rows each. Participant 2 has the diagnosis 'b' and participant 7 has the diagnosis 'a'. This pattern is the same for all folds. This dataset was created for the purpose of showing these functions, so we should expect real world data to be less perfectly distributed and remember to run some checks of the created folds and partitions. Also be aware, that the maximum number of folds is restricted by the number of participants in the classes, if using the *id_col* and the *cat_col* arguments together. Remember, that the function first subsets the dataset by *cat_col* and then creates groups (folds) from the unique values in *id_col* in each subset, before merging the subsets. So if you only have 3 participants in one of the classes, this will be the maximum number of folds you can create.
 
 # Cross-validation
 

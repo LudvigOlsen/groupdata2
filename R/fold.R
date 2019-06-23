@@ -165,7 +165,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'  when \code{unique_fold_cols_only} is \code{TRUE}.
 #'
 #'  Requires a registered parallel backend.
-#'  See \code{\link[doParallel:registerDoParallel]{doParallel::registerDoParallel}}.
+#'  Like doParallel::registerDoParallel.
 #' @param method \code{n_dist}, \code{n_fill}, \code{n_last},
 #'  \code{n_rand}, \code{greedy}, or \code{staircase}.
 #'
@@ -257,6 +257,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'
 #' ## Multiple fold columns
 #' # Useful for repeated cross-validation
+#' # Note: Consider running in parallel
 #' df_folded <- fold(df, 3, cat_col = 'diagnosis',
 #'  id_col = 'participant', num_fold_cols = 5,
 #'  unique_fold_cols_only=TRUE,

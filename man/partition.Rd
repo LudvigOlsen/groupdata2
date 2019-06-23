@@ -44,7 +44,7 @@ E.g. \eqn{c(0.2, 3, 0.1)}.}
 
  \strong{Extreme pairing}: Rows/pairs are ordered as smallest, largest,
  second smallest, second largest, etc. If \code{extreme_pairing_levels > 1},
- this is done "recursively". See \code{"Details/num_col"} for more.
+ this is done "recursively" on the extreme pairs. See \code{"Details/num_col"} for more.
 
  N.B. Larger values work best with large datasets. If set too high,
  the result might not be stochastic. Always check if an increase

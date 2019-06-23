@@ -45,7 +45,7 @@ options(tibble.print_min = 4L, tibble.print_max = 4L)
 
 # Introduction
 
-In this vignette, we will use the 'l_starts' method with **group**() to allow transfering of information from one dataset to another. We will use the automatic grouping function that finds group starts all by itself.
+In this vignette, we will use the 'l_starts' method with **group**() to allow transferring of information from one dataset to another. We will use the automatic grouping function that finds group starts all by itself.
 
 
 ## Attach packages

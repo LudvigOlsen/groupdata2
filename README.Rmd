@@ -18,7 +18,6 @@ R package: Subsetting methods for balanced cross-validation,
 time series windowing, and general grouping and splitting of data.  
 
 By Ludvig R. Olsen,  
-Cognitive Science, Aarhus University.  
 Started in Oct. 2016 
 
 Contact at:
@@ -31,7 +30,7 @@ Main functions:
 * splt  
 * partition  
 * fold  
-* balance (\*new, \*github only)
+* balance
 
 Other tools:  
 
@@ -53,7 +52,7 @@ Development version:
 ## Vignettes  
 groupdata2 contains a number of vignettes with relevant use cases and descriptions.  
   
-> vignette(package='groupdata2') # for an overview   
+> vignette(package="groupdata2") # for an overview   
 > vignette("introduction_to_groupdata2") # begin here   
 
 ## Functions  
@@ -76,10 +75,10 @@ Creates the specified groups with group_factor() and splits the given data by th
 Creates (optionally) balanced partitions (e.g. training/test sets). Balance partitions on one categorical variable and/or one numerical variable. Make sure that all datapoints sharing an ID is in the same partition.
 
 ### fold()  
-Creates (optionally) balanced folds for use in cross-validation. Balance folds on one categorical variable and/or one numerical variable. Make sure that all datapoints sharing an ID is in the same fold.  
+Creates (optionally) balanced folds for use in cross-validation. Balance folds on one categorical variable and/or one numerical variable. Ensure that all datapoints sharing an ID is in the same fold. Create multiple unique fold columns at once, e.g. for repeated cross-validation.  
 
 ### balance()
-Uses up- or downsampling to fix the group size to the min, max, mean, or median group size or to a specific number of rows.
+Uses up- or downsampling to fix the group sizes to the min, max, mean, or median group size or to a specific number of rows.
 Balancing can also happen on the ID level, e.g. to ensure the same number of IDs in each category.   
  
 ## Grouping Methods
@@ -136,7 +135,7 @@ E.g. *n = c(11, 15, 27, 43)* returns group sizes: 10, 4, 12, 16, 15
 Identical to *n = list(11, 15, c(27, 1), 43)* where 1 specifies that we 
 want the first appearance of 27 after the previous value 15.  
 
-If passing *n = 'auto'* starting posititions are automatically found with find_starts().  
+If passing *n = "auto"* starting positions are automatically found with find_starts().  
 
 ### Specify step size
 ##### Method: staircase
@@ -153,7 +152,7 @@ Starts at n (prime number). Increases to the the next prime number until there i
 E.g. group sizes: 5, 7, 11, 13, 17, 4  
 
 ## Balancing ID Methods
-There are currently 4 methods for balancing on ID level.
+There are currently 4 methods for balancing on ID level in balance().
 
 ##### ID method: n_ids
 Balances on ID level only. It makes sure there are the same number of IDs in each category. This might lead to a different number of rows between categories.
@@ -182,8 +181,6 @@ library(knitr)
 df <- data.frame("x"=c(1:12),
   "species" = rep(c('cat','pig', 'human'), 4),
   "age" = sample(c(1:100), 12))
-
-
 ```
 
 

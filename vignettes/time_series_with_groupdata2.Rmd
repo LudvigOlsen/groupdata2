@@ -77,7 +77,7 @@ timeSeriesFrame %>% head(12) %>% kable()
 ```
 
 &nbsp;  
-A visulisation of the data. We see that the number of residents increases quite linearly with time.  
+A visualization of the data. We see that the number of residents increases quite linearly with time.  
 
 ```{r echo=FALSE, message=FALSE}
 # Plot of time series
@@ -113,7 +113,7 @@ ts %>% kable()
 
 &nbsp;  
 &nbsp;  
-A visulisation of the data.  
+A visualization of the data.  
 
 ```{r echo=FALSE, message=FALSE}
 # Plot of time series
@@ -234,7 +234,7 @@ ts_means %>% head(9) %>% kable()
 &nbsp;  
 
 The differences in range follows the differences in number of measurements per subgroup.  
-Here is a visulisation of the means per subgroup:  
+Here is a visualization of the means per subgroup:  
 
 ```{r echo=FALSE, message=FALSE}
 # Plot of time series

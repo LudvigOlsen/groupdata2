@@ -1,7 +1,7 @@
-# groupdata2 1.0.0.9000
+# groupdata2 1.1.0.0
 
 * New main function: balance() used for up- and downsampling of data to balance sample size within categories and IDs. 
-Thanks for the request from jjesusfilho #3.
+Thanks for the request from @jjesusfilho (#3).
 
 * New wrapper function: upsample() wraps balance() with size="max".  
 
@@ -38,7 +38,7 @@ Thanks for the request from jjesusfilho #3.
 
 * New helper tool: 'find_starts' - Finds start positions in a vector. I.e. values that differ from the previous value. Get the values or indices of the values. Output can be used as n in 'l_starts' method.  
 
-* New helper tool: 'find_missing_starts' - Returns the start posititions that would be recursively removed when using the 'l_starts' with remove_missing_starts set to TRUE.
+* New helper tool: 'find_missing_starts' - Returns the start positions that would be recursively removed when using the 'l_starts' with remove_missing_starts set to TRUE.
 
 * Added argument 'remove_missing_starts' to grouping functions. Recursively remove the starting positions not found with 'l_starts' method.
 
