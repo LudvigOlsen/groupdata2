@@ -199,7 +199,9 @@ Divides data into groups by a range of methods.
    \enumerate{
      \item Data is subset by \code{cat_col}.
      \item Subsets are grouped by \code{num_col}.
-     \item Subsets are merged.
+     \item Subsets are merged such that the largest group
+     (by sum of \code{num_col}) from the first category
+     is merged with the smallest group from the second category, etc.
    }
  }
 
@@ -207,7 +209,7 @@ Divides data into groups by a range of methods.
    \enumerate{
      \item Values in \code{num_col} are aggregated for each ID, using \code{id_aggregation_fn}.
      \item The IDs are grouped, using the aggregated values as "\code{num_col}".
-     \item The group numbers for IDs are transferred to their rows.
+     \item The group numbers for the IDs are transferred to their rows.
    }
  }
 
@@ -215,9 +217,12 @@ Divides data into groups by a range of methods.
    \enumerate{
      \item Values in \code{num_col} are aggregated for each ID, using \code{id_aggregation_fn}.
      \item IDs are subset by \code{cat_col}.
-     \item The IDs for each subset are grouped,
+     \item The IDs in each subset are grouped,
      by using the aggregated values as "\code{num_col}".
-     \item The group numbers for IDs are transferred to their rows.
+     \item The subsets are merged such that the largest group
+     (by sum of the aggregated values) from the first category
+     is merged with the smallest group from the second category, etc.
+     \item The group numbers for the IDs are transferred to their rows.
    }
  }
 }
