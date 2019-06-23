@@ -56,7 +56,7 @@ id_method_n_rows_closest <- function(data, size, cat_col, id_col, mark_new_rows)
         n_to_repeat <- (to_size / current_n_rows) - 1
         if (n_to_repeat >= 1) {
           # TEST THIS
-          # repeat dataframe
+          # repeat data frame
           ids_for_cat <- ids_for_cat %>%
             dplyr::bind_rows(
               ids_for_cat[rep(seq_len(nrow(ids_for_cat)), floor(n_to_repeat)),] %>%

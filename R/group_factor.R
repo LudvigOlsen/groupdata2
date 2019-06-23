@@ -4,9 +4,9 @@
 #' @description Divides data into groups by a range of methods.
 #'  Creates and returns a grouping factor
 #'  with 1s for group 1, 2s for group 2, etc.
-#' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
-#' @param data Dataframe or Vector.
+#' @param data Data frame or vector.
 #' @param n \emph{Dependent on method.}
 #'
 #'  Number of groups (default), group size, list of group sizes,
@@ -87,12 +87,11 @@
 #'  \eqn{(e.g. 5, 7, 11, 13, 17, 4)}.
 #'
 #'  \code{n} is the prime number to start at}
-#'
 #' @param starts_col Name of column with values to match in method \code{l_starts}
-#' when data is a dataframe. Pass \code{'index'} to use row names. (Character)
+#' when data is a data frame. Pass \code{'index'} to use row names. (Character)
 #' @param force_equal Create equal groups by discarding excess data points.
 #'  Implementation varies between methods. (Logical)
-#' @param allow_zero Whether n can be passed as \code{0}. (Logical)
+#' @param allow_zero Whether \code{n} can be passed as \code{0}. (Logical)
 #' @param descending Change direction of method. (Not fully implemented)
 #'  (Logical)
 #' @param randomize Randomize the grouping factor (Logical)
@@ -109,7 +108,7 @@
 #' library(groupdata2)
 #' library(dplyr)
 #'
-#' # Create a dataframe
+#' # Create a data frame
 #' df <- data.frame("x"=c(1:12),
 #'  "species" = rep(c('cat','pig', 'human'), 4),
 #'  "age" = sample(c(1:100), 12))
@@ -136,7 +135,7 @@ group_factor <- function(data, n, method = 'n_dist', starts_col = NULL, force_eq
                          randomize = FALSE, remove_missing_starts = FALSE){
 
   #
-  # Takes dataframe or vector
+  # Takes data frame or vector
   # Returns a grouping factor
   #
 
@@ -168,13 +167,13 @@ group_factor <- function(data, n, method = 'n_dist', starts_col = NULL, force_eq
                             starts_col = starts_col)
 
   # For method l_starts
-  # If data is a dataframe and starts_col is not NULL
+  # If data is a data frame and starts_col is not NULL
   # We want to get the column with values to match
 
   starts_col <- assign_starts_col(data, starts_col)
 
   # Create grouping factors
-  # .. Check if data is a dataframe or a vector
+  # .. Check if data is a data frame or a vector
   # .. Call grouping factor function for specified method
 
   if(is.data.frame(data)){

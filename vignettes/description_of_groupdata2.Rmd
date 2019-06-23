@@ -4,9 +4,9 @@ author:
   - "Ludvig Renbo Olsen"
 date: "`r Sys.Date()`"
 abstract: |
-  groupdata2 is a set of subsetting methods for easy grouping, windowing, folding, splitting and balancing of data.  
+  groupdata2 is a set of subsetting methods for easy grouping, windowing, folding, partitioning, splitting and balancing of data.  
   Create balanced folds for cross-validation or divide a time series into windows.  
-  Balance sample sizes with up- and downsampling.  
+  Balance group sizes with up- and downsampling.  
   This vignette contains descriptions of functions and methods, along with simple examples of usage. 
   For a gentler introduction to groupdata2, please see [Introduction to groupdata2](introduction_to_groupdata2.html)
   &nbsp;  
@@ -82,7 +82,7 @@ library(knitr)
 
 
 # General information
-groupdata2 is a set of functions and methods for easy grouping, windowing, folding, splitting and balancing of data.  
+groupdata2 is a set of functions and methods for easy grouping, windowing, folding, partitioning, splitting and balancing of data.  
 
 There are 6 main functions:  
 
@@ -91,13 +91,13 @@ Returns a factor with group numbers, e.g. 111222333.
 This can be used to subset, aggregate, group_by, etc.   
 
 ### group()  
-Returns the given data as a dataframe with added grouping factor made with group_factor(). The dataframe is grouped by the grouping factor for easy use with dplyr pipelines.  
+Returns the given data as a data frame with an added grouping factor made with group_factor(). The data frame is grouped by the grouping factor for easy use with \%>\% pipelines.  
 
 ### splt()  
 Splits the given data into the specified groups made with group_factor() and returns them in a list.  
 
 ### fold()  
-Creates (optionally) balanced folds for use in cross-validation. Balance folds on one categorical variable and/or one numerical variable. Make sure that all datapoints sharing an ID is in the same fold.  
+Creates (optionally) balanced folds for use in cross-validation. Balance folds on one categorical variable and/or one numerical variable. Ensure that all datapoints sharing an ID is in the same fold. Can create multiple unique fold columns at once, e.g. for repeated cross-validation.  
 
 ### partition()
 Creates (optionally) balanced partitions (e.g. training/test sets). Balance partitions on one categorical variable and/or one numerical variable. Make sure that all datapoints sharing an ID is in the same partition.
@@ -110,6 +110,8 @@ When working with time series we would often refer to the kind of groups made by
 In this vignette, these will be referred to as groups.  
 
 fold() creates balanced groups for cross-validation by using group(). These are referred to as **folds**.  
+
+partition() creates balanced groups of (potentially) different sizes, by using group(). These are referred to as **partitions**.
 
 ## Introduction vignettes
 
@@ -124,18 +126,18 @@ In this vignette, we will use the 'l_starts' method with **group**() to allow tr
 
 ## Use of kable()
 
-In the examples we will be using knitr::kable() to visualize some of the data such as dataframes. You do not need to use kable() in any way when using the functions.  
+In the examples, we will be using knitr::kable() to visualize some of the data such as data frames. You do not need to use kable() when using the functions in groupdata2.  
 
 # Grouping Methods
 There are currently 9 methods for grouping the data.  
 
-It is possible to create groups based on *number of groups* (default), *group size*, *list of group sizes*, *list of group start positions*, *step size* or *prime number to start at*. These can be passed as whole number(s) or percentage(s), while method 'l_starts' can also be passed as 'auto'.  
+It is possible to create groups based on *number of groups* (default), *group size*, *list of group sizes*, *list of group start positions*, *step size* or *prime number to start at*. These can be passed as whole number(s) or percentage(s), while method 'l_starts' can also use 'auto'.  
 
-Here we will take a look at the different methods. 
+Here, we will take a look at the different methods. 
 
 ## Method: 'greedy'
 'greedy' uses group **size** for dividing up the data.  
-Greedy means that each group grabs as many elements as possible (up to size),
+Greedy means that each group grabs as many elements as possible (up to the specified size),
 meaning that there might be less elements available to the last group, but 
 that all other groups than the last are guaranteed to have the size specified.  
 
@@ -354,7 +356,7 @@ By setting **force_equal** to TRUE, 'l_sizes' discard any excess elements.
 
 If passing n = 'auto' the starting positions are automatically found with find_starts().
 
-If data is a dataframe, starts_col must be set to indicate the column to match starts.  
+If data is a data frame, starts_col must be set to indicate the column to match starts.  
 Set starts_col to 'index' or '.index' for matching with row names. 'index' first looks for column named 'index' in data, while '.index' completely ignores potential column in data named '.index'.  
 
 &nbsp;  
@@ -557,7 +559,7 @@ Returns 0 if the last group has the size of the associated prime number.
 
 
 # Balancing ID Methods
-There are currently 3 methods for balancing on ID level in balance().  
+There are currently 4 methods for balancing on ID level in **balance**().  
  
 ## ID method: 'n_ids'  
 Balances on ID level only. It makes sure there are the same number of IDs in each category. This might lead to a different number of rows between categories.  
@@ -585,7 +587,7 @@ These are the arguments for group_factor(), group(), splt(), fold(), partition()
 
 ### data
 
-Type: dataframe or vector  
+Type: data frame or vector  
 
 The data to process.  
 
@@ -613,7 +615,7 @@ Used in: group_factor(), group(), splt()
 Type: character  
 
 Choose which method to use when dividing up the data.  
-Available methods: greedy, n_dist, n_fill, n_last, n_rand, staircase, or primes  
+Available methods: greedy, n_dist, n_fill, n_last, n_rand, l_starts, l_sizes, staircase, or primes  
 
 &nbsp;
 
@@ -624,13 +626,13 @@ Used in: group_factor(), group(), splt(), fold()
 
 Type: character
 
-Name of column with values to match in method 'l_starts' when data is a dataframe.   
+Name of column with values to match in method 'l_starts' when data is a data frame.   
 
 Pass 'index' or '.index' to use rownames. 'index' first looks for column named 'index' in data, while '.index' completely ignores potential column in data named '.index'.  
 
 &nbsp;
 
-Used in: group_factor(), group(), splt(), fold()  
+Used in: group_factor(), group(), splt() 
 
 
 ### force_equal  
@@ -657,9 +659,9 @@ the function) you will get the following output:
 *group_factor()* will return the factor with NAs instead of numbers. It will be
 the same length as expected.  
 
-*group()* will return the expected dataframe with NAs instead of a grouping factor.  
+*group()* will return the expected data frame with NAs instead of a grouping factor.  
 
-*splt()* functions will return the given data (dataframe or vector) in the same list format as if it had been split.  
+*splt()* functions will return the given data (data frame or vector) in the same list format as if it had been split.  
 
 &nbsp;
 
@@ -694,7 +696,7 @@ N.B. fold() and partition() always uses some randomization.
 
 Type: character  
 
-Name of added grouping factor column. Allows multiple grouping factors in a dataframe.  
+Name of added grouping factor column. Allows multiple grouping factors in a data frame.  
 
 &nbsp;  
 
@@ -706,15 +708,14 @@ Type: logical (TRUE or FALSE)
 
 Recursively remove elements from the list of starts that are not found. For method 'l_starts' only.
 
-Used in: group_factor(), group(), splt(), fold()  
+Used in: group_factor(), group(), splt()
 
 ### k
 
 Type: integer or numeric  
 
-*k* represents either number of folds (default), fold size, list of fold sizes, list of fold starts, step size or prime number to start at, *depending on which method is specified*.  
-*k* can be given as a **whole number(s)** (k > 1) and/or as **percentage(s)** (0 < k < 1)
-and/or as character.  
+*k* represents either number of folds (default), fold size, or step size, *depending on which method is specified*.  
+*k* can be given as a **whole number** (k > 1) or as a **percentage** (0 < k < 1).  
 
 &nbsp;
 
@@ -725,7 +726,7 @@ Used in: fold()
 Type: integer or numeric  
 
 Size(s) of partition(s). Passed as vector if specifying multiple partitions.  
-p can be given as a **whole number(s)** (p > 1) or as **percentage(s)** (0 < p < 1).  
+p can be given as **whole number(s)** (p > 1) or as **percentage(s)** (0 < p < 1).  
 
 &nbsp;
 
@@ -736,30 +737,30 @@ Used in: partition()
 
 Type: categorical vector or factor (passed as column name)  
 
-Categorical variable to balance between folds.  
+Categorical variable to balance between the groups.  
 
-E.g. when predicting a binary variable (a or b), it is necessary to have both represented in every fold.  
-
-&nbsp;
-
-**N.B.** If also passing id_col, cat_col should be a constant within IDs.  
-E.g. a participant must always have the same diagnosis (a or b) throughout the dataset. 
-Else, the participant might be placed in multiple folds.  
+E.g. when predicting a binary variable ('a' or 'b'), we usually want both classes represented in every fold and partition.  
 
 &nbsp;
 
-Used in: fold(), partition()  
+**N.B.** If also passing *id_col*, *cat_col* should be a constant within IDs.  
+E.g. a participant must always have the same diagnosis ('a' or 'b') throughout the dataset. 
+Otherwise, the participant might be placed in multiple folds.  
+
+&nbsp;
+
+Used in: fold(), partition()
 
 ### num_col
 
 Type: numerical vector (passed as column name)  
 
-Numerical variable to balance between folds.  
+Numerical variable to balance between groups.  
 
 &nbsp;
 
-**N.B.**  When used with id_col, values for each ID are aggregated using id_aggregation_fn before being balanced.  
-**N.B.**  When passing num_col, the method parameter is not used.  
+**N.B.**  When used with *id_col*, values for each ID are aggregated using *id_aggregation_fn* before being balanced.  
+**N.B.**  When passing *num_col*, the *method* argument is not used.  
 
 &nbsp;
 
@@ -769,29 +770,132 @@ Used in: fold(), partition()
 
 Type: Factor (passed as column name)  
 
-Factor with IDs. This will be used to keep all rows with an ID in the same fold (if possible).  
+Factor with IDs. This will be used to keep all rows with an ID in the same group (if possible).  
 
-E.g. If we have measured a participant multiple times and want to see the effect of time, we want to have all observations of this participant in the same fold.  
+E.g. If we have measured a participant multiple times and want to see the effect of time, we want to have all observations of this participant in the same fold/partition.  
 
 &nbsp;
 
-Used in: fold(), partition()  
+Used in: fold(), partition()   
 
 ### id_aggregation_fn
 
 Type: Function  
 
-Function for aggregating values in num_col for each ID, before balancing num_col.  
+Function for aggregating values in *num_col* for each ID, before balancing by *num_col*.  
 
-**N.B.** Only used when num_col and id_col are both specified.   
+**N.B.** Only used when *num_col* and *id_col* are both specified.   
 
 &nbsp;
 
 Used in: fold(), partition()  
 
+### extreme_pairing_levels
+
+Type: integer or numeric  
+
+How many levels of extreme pairing to do when balancing groups by *num_col*.
+
+**Extreme pairing**: Rows/pairs are ordered as smallest, largest, second smallest, second largest, etc. If *extreme_pairing_levels* > 1, this is done "recursively" on the extreme pairs. 
+
+**N.B.** Values greater than 1 works best with large datasets. Always check if an increase actually makes the groups more balanced. There are examples of how to do this, and more detailed descriptions of the implementations, in the functions' help files (*?fold* and *?partition*).  
+
+&nbsp;
+
+Used in: fold(), partition()  
+
+### num_fold_cols
+
+Type: integer or numeric 
+
+Number of fold columns to create. This is useful for repeated cross-validation.
+If *num_fold_cols* > 1, columns will be named "*.folds_1*", "*.folds_2*", etc.
+Otherwise simply "*.folds*".
+
+**N.B.** If *unique_fold_cols_only* is TRUE, we can end up with fewer columns than specified, see *max_iters*.
+
+**N.B.** If *data* has existing fold columns, see *handle_existing_fold_cols*.
+
+&nbsp;
+
+Used in: fold()
+
+### unique_fold_cols_only
+
+Type: logical (TRUE or FALSE)
+
+Check if the fold columns are identical and keep only the unique columns.
+
+**N.B.** As the number of column comparisons can be time consuming,
+we can run this part in parallel. See *parallel*.
+
+**N.B.** We can end up with fewer columns than specified in
+*num_fold_cols*, see *max_iters*.
+
+**N.B.** Only used when *num_fold_cols* > 1 or *data* has existing fold columns.
+
+&nbsp;
+
+Used in: fold()
+
+### max_iters
+
+Type: logical (TRUE or FALSE)  
+
+Maximum number of attempts at reaching 
+*num_fold_cols* **unique** fold columns.  
+
+When only keeping the unique fold columns, we risk having fewer columns than expected.
+Hence, we repeatedly create the missing columns and remove those that are not unique.
+This is done until we have *num_fold_cols* unique fold columns,
+or we have attempted *max_iters* times.
+In some cases, it is not possible to create *num_fold_cols*
+unique combinations of the dataset, e.g.
+when specifying *cat_col*, *id_col* and *num_col*.  
+*max_iters* specifies when to stop trying.
+
+**N.B.** We can end up with fewer columns than specified in *num_fold_cols*.    
+
+**N.B.** Only used *num_fold_cols* > 1.  
+
+&nbsp;
+
+Used in: fold()
+
+### handle_existing_fold_cols
+
+Type: Character  
+
+How to handle existing fold columns.
+Either "*keep_warn*", "*keep*", or "*remove*".
+
+To add extra fold columns, use "*keep*" or "*keep_warn*".
+Note that existing fold columns might be renamed.
+
+To replace the existing fold columns, use "*remove*".
+
+&nbsp;
+
+Used in: fold()
+
+### parallel
+
+Type: logical (TRUE or FALSE)  
+
+Whether to parallelize the fold column comparisons,
+when *unique_fold_cols_only* is TRUE.
+
+**N.B.** Requires a registered parallel backend. See **doParallel:registerDoParallel**.
+
+&nbsp;
+
+Used in: fold()
+
 ### list_out
 
-Return list of partitions (TRUE) or a grouped dataframe (FALSE).  
+Type: logical (TRUE or FALSE)
+
+Return list of partitions (TRUE) or a grouped data frame (FALSE).  
 
 &nbsp;
 
@@ -804,7 +908,7 @@ These are the arguments for balance(), upsample(), downsample()
 
 ### data
 
-Type: dataframe  
+Type: data frame  
 
 The data to process.   
 
@@ -836,7 +940,7 @@ Used in: balance(), upsample(), downsample()
 
 ### id_col
 
-Type: Factor (passed as column name)  
+Type: factor (passed as column name)  
 
 Factor with IDs. IDs are considered entities, e.g. allowing us to add or remove all rows for an ID. How this is used is up to the id_method.  
 
@@ -882,13 +986,13 @@ Used in: balance(), upsample(), downsample()
 
 # Using Functions
 
-We will be using the method 'n_dist' on a dataframe to showcase the functions. Afterwards we will use and compare the methods.  
-Notice that you can also use vectors as data with all the functions.  
+We will be using the method 'n_dist' on a data frame to showcase the functions. Afterwards we will use and compare the methods.  
+Note, that you can also use vectors as data with all the functions.  
 See the necessary attached packages for running the examples under [Attach Packages].
 
 ## group_factor()  
 
-1. We create a dataframe  
+1. We create a data frame  
 
 ```{r}
 df <- data.frame("x"=c(1:12), 
@@ -925,9 +1029,9 @@ df %>%
 Getting an equal number of elements per group with group_factor().  
 
 Notice that we discard the excess values so all groups contain the same amount of elements.
-Since the grouping factor is shorter than the dataframe, we can't combine them as they are. A way to do so would be to shorten the dataframe to be the same length as the grouping factor. 
+Since the grouping factor is shorter than the data frame, we can't combine them as they are. A way to do so would be to shorten the data frame to be the same length as the grouping factor. 
 
-1. We create a dataframe  
+1. We create a data frame  
 
 ```{r}
 df <- data.frame("x"=c(1:12), 
@@ -949,9 +1053,9 @@ plyr::count(groups) %>%
 
 ```
 
-3. Combining dataframe and grouping factor  
+3. Combining data frame and grouping factor  
 
-First we make the dataframe the same size as the grouping factor. Then we add the grouping factor to the dataframe.  
+First we make the data frame the same size as the grouping factor. Then we add the grouping factor to the data frame.  
 
 ```{r}
 df <- head(df, length(groups)) %>%
@@ -966,7 +1070,7 @@ df %>% kable(align = 'c')
  
 ## group()  
 
-1. We create a dataframe  
+1. We create a data frame  
 
 ```{r}
 df <- data.frame("x"=c(1:12), 
@@ -1004,7 +1108,7 @@ Getting an equal number of elements per group with group().
 Notice that we discard the excess rows/elements so all groups contain the same amount of elements.
 
 
-1. We create a dataframe  
+1. We create a data frame  
 
 ```{r}
 df <- data.frame("x"=c(1:12), 
@@ -1030,7 +1134,7 @@ df_grouped %>% kable(align = 'c')
 
 ## splt()  
 
-1. We create a dataframe  
+1. We create a data frame  
 
 ```{r}
 df <- data.frame("x"=c(1:12), 
@@ -1068,7 +1172,7 @@ Getting an equal number of elements per group with splt().
 Notice that we discard the excess rows/elements so all groups contain the same amount of elements.
 
 
-1. We create a dataframe  
+1. We create a data frame  
 
 ```{r}
 df <- data.frame("x"=c(1:12), 
@@ -1091,7 +1195,7 @@ df_list %>% kable(align = 'c')
  
 ## fold()  
 
-1. We create a dataframe  
+1. We create a data frame  
 
 ```{r}
 df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
@@ -1175,7 +1279,7 @@ df_folded %>%
 
 5. Using fold() with balancing and with id_col  
 
-fold() first divides up the dataframe by cat_col and then create n folds for both diagnoses. As there are only 3 participants per diagnosis, we can maximally create 3 folds in this scenario.  
+fold() first divides up the data frame by cat_col and then create n folds for both diagnoses. As there are only 3 participants per diagnosis, we can maximally create 3 folds in this scenario.  
 
 ```{r}
 df_folded <- fold(df, 3, cat_col = 'diagnosis', id_col = 'participant', method = 'n_dist')
@@ -1202,7 +1306,7 @@ df_folded %>%
 
 ## partition()  
 
-1. We create a dataframe  
+1. We create a data frame  
 
 ```{r}
 df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
@@ -1287,7 +1391,7 @@ df_partitioned %>%
 
 5. Using partition() with cat_col and with id_col  
 
-partition() first divides up the dataframe by cat_col and then create n partitions for both diagnoses.  
+partition() first divides up the data frame by cat_col and then create n partitions for both diagnoses.  
 
 ```{r}
 df_partitioned <- partition(df, 0.5, cat_col = 'diagnosis', id_col = 'participant', 
@@ -1315,7 +1419,7 @@ df_partitioned %>%
 
 ## balance()  
 
-1. We create a dataframe  
+1. We create a data frame  
 
 ```{r echo=FALSE}
 set.seed(2)
@@ -1488,7 +1592,7 @@ df_balanced %>%
 
 ### randomize
 
-1. We create a dataframe  
+1. We create a data frame  
 
 ```{r}
 df <- data.frame("x"=c(1:12), 
@@ -1519,7 +1623,7 @@ df_list %>% kable(align = 'c')
  
 # Examples of method differences
 
-In this section we will take a look at the outputs we get from the different methods.
+In this section, we will take a look at the outputs we get from the different methods.
 
 
 ## n_ methods
@@ -1527,7 +1631,7 @@ In this section we will take a look at the outputs we get from the different met
 
 ### Vector with 57 elements divided into 6 groups
 
-Below you'll see a dataframe with counts of group elements when dividing up the same data with the different n_ methods. 
+Below you'll see a data frame with counts of group elements when dividing up the same data with the different n_ methods. 
 The forced_equal column is simply with the force_equal set to TRUE.   
 
 forced_equal: Since this is a setting to make sure that all groups are of the same size, 
@@ -1584,7 +1688,7 @@ n_meth_v57n6$forced_equal <- forced_equal$freq
 n_meth_v57n6 <- n_meth_v57n6[ , !duplicated(colnames(n_meth_v57n6))]
 
 
-# gather() dataframe for plotting
+# gather() data frame for plotting
 
 data_plot <- n_meth_v57n6 %>%
   gather(method, group_size,-1)
@@ -1599,7 +1703,7 @@ v57n6_plot <- ggplot(data_plot, aes(x, group_size))
 
 ## Output
 
-# Dataframe
+# Data frame
 n_meth_v57n6
 
 # Plot
@@ -1667,7 +1771,7 @@ n_meth_v117n11 <- n_meth_v117n11[ , !duplicated(colnames(n_meth_v117n11))]
 
 
 
-# gather() dataframe for plotting
+# gather() data frame for plotting
 
 data_plot <- n_meth_v117n11 %>%
   gather(method, group_size,-1)
@@ -1680,8 +1784,8 @@ lower_limit <- min(data_plot$group_size)-1
 
 
 ## Output
-
-# Dataframe
+ 
+# Data frame
 n_meth_v117n11
 
 # Plot

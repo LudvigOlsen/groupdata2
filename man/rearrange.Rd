@@ -9,7 +9,7 @@ rearrange(data, method = "pair_extremes", unequal_method = "middle",
   rearrange_factor_name = ".rearrange_factor")
 }
 \arguments{
-\item{data}{Dataframe or Vector.}
+\item{data}{Data frame or Vector.}
 
 \item{method}{Name of method used to create rearrange factor.
 Currently only \code{pair_extremes}.
@@ -47,3 +47,7 @@ E.g. 1,2,3,4,4,3,2,1,\strong{5}.
 \strong{Internal}: Creates a rearrange factor and sorts the data by it.
  A rearrange factor is simply a vector of integers to sort by.
 }
+\author{
+Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
+}
+\keyword{internal}

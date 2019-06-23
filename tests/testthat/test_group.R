@@ -3,7 +3,7 @@ context("group()")
 
 # Needs testing of vector and factor as input
 
-test_that("dimensions of dataframe with group()", {
+test_that("dimensions of data frame with group()", {
 
   df <- data.frame("x"=c(1:12),
                    "species" = rep(c('cat','pig', 'human'), 4),

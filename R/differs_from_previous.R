@@ -11,9 +11,9 @@
 #'    \item less than or equal to the negative threshold.
 #'  }
 #'
-#' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
-#' @param data Dataframe or Vector
+#' @param data Data frame or Vector
 #'
 #' N.B. If checking a factor, it is converted to a character vector.
 #' This means that factors can only be used when \code{threshold} is \code{NULL}.
@@ -68,7 +68,7 @@
 #'  }
 #' @param return_index Return indices of values that differ. (Logical)
 #' @param col Name of column to find values that differ in. Used when data is
-#'  dataframe. (Character)
+#'  data frame. (Character)
 #' @param include_first Whether to include first element in vector in output. (Logical)
 #' @param factor_conversion_warning Generate warning when converting factor to character. (Logical)
 #' @return Vector with either differing values or indices of differing values.
@@ -78,7 +78,7 @@
 #' # Attach packages
 #' library(groupdata2)
 #'
-#' # Create a dataframe
+#' # Create a data frame
 #' df <- data.frame('a' = c('a','a','b','b','c','c'),
 #'                  'n' = c(1,3,6,2,2,4))
 #'
@@ -106,19 +106,19 @@ differs_from_previous <- function(data,
                                   include_first = FALSE,
                                   factor_conversion_warning=TRUE) {
     #
-    # Run find_different_from_previous_vec_ for either a vector or dataframe
+    # Run find_different_from_previous_vec_ for either a vector or data frame
     #
 
-    # If data is a dataframe
+    # If data is a data frame
     if (is.data.frame(data)) {
       # Check if col is specified
       if (is.null(col)) {
         # If not, raise error
-        stop("col must be specified when data is dataframe.")
+        stop("col must be specified when data is data frame.")
 
       }
       if (col %ni% colnames(data)){
-        stop("col was not found in dataframe.")
+        stop("col was not found in data frame.")
       }
 
       # If col is a factor
@@ -154,7 +154,7 @@ differs_from_previous <- function(data,
       # Check if col is specified.
       if (!is.null(col)) {
         # If it is, warn the user that it won't be used
-        warning("col not used as data is not a dataframe")
+        warning("col not used as data is not a data frame")
 
       }
 
@@ -219,7 +219,7 @@ find_different_from_previous_vec_ <-
     # .. .. less than or equal to the negative threshold
 
 
-    # Adds vector to dataframe
+    # Adds vector to data frame
     # Creates a new column shifted (what is called???)
     # down one row.
     # Checks if the current value is the same as the previous.
@@ -229,7 +229,7 @@ find_different_from_previous_vec_ <-
     # to get same length as v
     v2 <- c(v[1], v[1:length(v) - 1])
 
-    # Create dataframe with v, v2 and
+    # Create data frame with v, v2 and
     # a logical column stating whether
     # v is new or not.
     if (!is.null(threshold)) {

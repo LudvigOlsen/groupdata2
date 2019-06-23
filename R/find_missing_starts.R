@@ -4,16 +4,16 @@
 #' @description Tells you which values and (optionally) skip_to numbers that are
 #'  recursively removed when using the \code{l_starts} method with remove_missing_starts
 #'  set to TRUE.
-#' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
-#' @param data Dataframe or Vector
+#' @param data Data frame or Vector
 #' @param n List of starting positions.
 #'
 #' Skip values by c(value, skip_to_number) where skip_to_number is the nth appearance of the value in the vector.
 #'
 #' See \link{group_factor} for explanations and examples of using the \code{l_starts} method.
 #' @param starts_col Name of column with values to match
-#'  when data is a dataframe. Pass 'index' to use row names. (Character)
+#'  when data is a data frame. Pass 'index' to use row names. (Character)
 #' @param return_skip_numbers Return skip_to numbers along with values (Logical).
 #' @return List of start values and skip_to numbers or vector of the start values.
 #'  Returns NULL if no values found.
@@ -22,7 +22,7 @@
 #' # Attach packages
 #' library(groupdata2)
 #'
-#' # Create a dataframe
+#' # Create a data frame
 #' df <- data.frame('a' = c('a','a','b',
 #'                          'b','c','c'))
 #'

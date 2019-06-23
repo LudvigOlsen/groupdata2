@@ -3,7 +3,7 @@ context("balance()")
 
 test_that("all size settings work in balance()",{
 
-  # Create dataframe
+  # Create data frame
   df <- data.frame(
     "participant" = factor(c(1, 1, 2, 3, 3, 3, 3)),
     "trial" = c(1,2,1,1,2,3,4),
@@ -59,7 +59,7 @@ test_that("all size settings work in balance()",{
 
 
 test_that("mark_new_rows works in balance()",{
-  # Create dataframe
+  # Create data frame
   df <- data.frame(
     "participant" = factor(c(1, 1, 2, 3, 3, 3, 3)),
     "trial" = c(1,2,1,1,2,3,4),
@@ -77,7 +77,7 @@ test_that("mark_new_rows works in balance()",{
 
 test_that("both wrapper functions, upsample() and downsample() work",{
 
-  # Create dataframe
+  # Create data frame
   df <- data.frame(
     "participant" = factor(c(1, 1, 2, 3, 3, 3, 3)),
     "trial" = c(1,2,1,1,2,3,4),
@@ -101,7 +101,7 @@ test_that("both wrapper functions, upsample() and downsample() work",{
 
 test_that("balance() works in dplyr pipeline",{
   library(dplyr)
-  # Create dataframe
+  # Create data frame
   set.seed(1)
   df <- data.frame(
     "participant" = factor(c(1, 1, 2, 3, 3, 3, 3)),

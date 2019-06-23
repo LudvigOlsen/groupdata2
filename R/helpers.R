@@ -184,7 +184,7 @@ check_arguments_ <- function(data, n, method, force_equal,
   # Checks if the given arguments live up to certain rules,
   # which allow them to be used in the function
 
-  # "data" can be both a dataframe or a vector
+  # "data" can be both a data frame or a vector
 
   stopifnot(method %in% c('greedy',
                           'n_dist',
@@ -211,8 +211,6 @@ check_arguments_ <- function(data, n, method, force_equal,
 
     stopifnot(is.list(n) || is.vector(n) && !is.character(n))
   }
-
-
 
   # Stop execution if input variables aren't what we expect / can handle
   stopifnot((!is.null(n)),
@@ -371,7 +369,7 @@ group_uniques_ <- function(data, n, id_col, method, starts_col = NULL,
 
   #
   # Creates groups of unique IDs (e.g. subjects)
-  # Returns dataframe with grouping factor
+  # Returns data frame with grouping factor
   #
 
   # Get list of unique IDs in id_col
@@ -385,6 +383,7 @@ group_uniques_ <- function(data, n, id_col, method, starts_col = NULL,
                      remove_missing_starts = remove_missing_starts)
 
   # Add grouping factor to data
+  # TODO replace with dplyr join
   data <- merge(data, id_groups, by.x=c(id_col), by.y=c(colnames(id_groups)[1]))
 
   # Return data
@@ -397,7 +396,7 @@ group_uniques_ <- function(data, n, id_col, method, starts_col = NULL,
 replace_col_name <- function(data, old_name, new_name){
 
   #
-  # Replaces name of column in dataframe
+  # Replaces name of column in data frame
   #
   colnames(data)[names(data) == old_name] <- new_name
   return(data)
@@ -407,7 +406,7 @@ replace_col_name <- function(data, old_name, new_name){
 get_column_index <- function(data, col){
 
   #
-  # Finds column index in dataframe given column name
+  # Finds column index in data frame given column name
   # Currently not in use
   #
 
@@ -484,7 +483,7 @@ assign_starts_col <- function(data, starts_col) {
     # If starts_col is 'index', create column with row names for matching values
     if (starts_col == 'index'){
 
-      # Check if there is a column in dataframe
+      # Check if there is a column in data frame
       # called 'index'
       # If so, throw warning that the index column in
       # data will be used.
@@ -509,7 +508,7 @@ assign_starts_col <- function(data, starts_col) {
       # in data
     } else if (starts_col == '.index') {
 
-      # Check if .index exists as column in dataframe
+      # Check if .index exists as column in data frame
       # If so, warn that it will not be used.
       if ('.index' %in% colnames(data)){
 
@@ -677,7 +676,8 @@ add_rows_with_sampling <- function(data, to_size){
     dplyr::bind_rows(extra_rows)
 }
 
-select_rows_from_ids <- function(data, balanced_ids, cat_col, id_col, mark_new_rows, join_fn=dplyr::inner_join){
+select_rows_from_ids <- function(data, balanced_ids, cat_col, id_col,
+                                 mark_new_rows, join_fn=dplyr::inner_join){
   # select the chosen ids in data and return
   balanced_data <- join_fn(data, balanced_ids,
                            by = c(cat_col, id_col)) %>%
@@ -691,6 +691,8 @@ select_rows_from_ids <- function(data, balanced_ids, cat_col, id_col, mark_new_r
 
 # TODO Add description of this function.
 # I've forgotten what it's for and it's very specific ;)
+# (used in select_rows_from_ids above, which is used in sampling_methods.R)
+# TODO use create_tmp_var in sampling methods to create unique tmp var instead
 update_TempNewRow_from_ids_method <- function(data){
   data %>%
     dplyr::mutate(.TempNewRow = dplyr::if_else(.data$.TempNewRow + .data$.ids_balanced_new_rows > 0, 1, 0)) %>%
@@ -739,7 +741,7 @@ find_identical_cols <- function(data, cols=NULL, exclude_comparisons=NULL,
 
   # Print statements for checking the effect of running in parallel
   if (FALSE){
-    print(paste0("Rows in dataframe: ", nrow(data)))
+    print(paste0("Rows in data frame: ", nrow(data)))
     print(paste0("Number of combinations: ", nrow(column_combinations)))
     print(paste0("Parallel heuristic (do parallel?): ", parallel_heuristics))
   }
@@ -811,7 +813,7 @@ remove_identical_cols <- function(data, cols=NULL, exclude_comparisons=NULL,
   }
 
   if (isTRUE(return_all_comparisons)){
-    return(list(data, comparisons))
+    return(list("updated_data"=data, "comparisons"=comparisons, "removed_cols"=to_remove))
   } else {
     return(data)
   }
@@ -832,4 +834,45 @@ rename_with_consecutive_numbering <- function(data, cols, base_name){
   data %>%
     dplyr::rename_at(dplyr::vars(cols), ~ new_names)
 
+}
+
+# Add underscore until var name is unique
+create_tmp_var <- function(data, tmp_var = ".tmp_index_"){
+  while (tmp_var %in% colnames(data)){
+    tmp_var <- paste0(tmp_var, "_")
+  }
+  tmp_var
+}
+
+# Used in create_num_col_groups
+rename_levels_by_reverse_rank_summary <- function(data, rank_summary, levels_col, num_col){
+
+  current_rank_summary <- create_rank_summary(data, levels_col, num_col)
+
+  reverse_rank_bind <- rank_summary %>%
+    dplyr::arrange(dplyr::desc(.data$sum_)) %>%
+    dplyr::bind_cols(current_rank_summary)
+
+  pattern_and_replacement <- reverse_rank_bind %>%
+    dplyr::select(c(!!as.name(levels_col),
+                    !!as.name(paste0(levels_col,"1"))))
+
+  data <- data %>%
+    dplyr::left_join(pattern_and_replacement, by=levels_col) %>%
+    dplyr::select(-!!as.name(levels_col)) %>%
+    dplyr::rename_at(paste0(levels_col,"1"), ~c(levels_col))
+
+  updated_rank_summary <- reverse_rank_bind %>%
+    dplyr::mutate(sum_ = .data$sum_ + .data$sum_1) %>%
+    dplyr::select(!!as.name(levels_col), .data$sum_)
+
+  list("updated_rank_summary"=updated_rank_summary, "updated_data"=data)
+
+}
+
+create_rank_summary <- function(data, levels_col, num_col){
+  data %>%
+    dplyr::group_by(!!as.name(levels_col)) %>%
+    dplyr::summarize(sum_ = sum(!!as.name(num_col))) %>%
+    dplyr::arrange(.data$sum_)
 }

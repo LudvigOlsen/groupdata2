@@ -25,14 +25,20 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'    \enumerate{
 #'      \item Rows are shuffled.
 #'
-#'      \strong{Note} that this will only have an effect on rows that have the same value in num_col.
-#'      \item Rows are ordered as smallest, largest, second smallest, second largest, ...
-#'      \item By their pairwise sum, these are once again ordered as smallest, largest, second smallest, second largest, ...
-#'      \item The ordered data is partitioned.
+#'      \strong{Note} that this will only affect rows with the same value in \code{num_col}.
+#'      \item Extreme pairing 1: Rows are ordered as smallest, largest, second smallest, second largest, etc.
+#'      Each pair get a group identifier.
+#'      \item If \code{extreme_pairing_levels > 1}: The group identifiers are reordered as smallest,
+#'      largest, second smallest, second largest, etc., by the sum of \code{num_col} in the represented rows.
+#'      These pairs (of pairs) get a new set of group identifiers, and the process is repeated
+#'       \code{extreme_pairing_levels-2} times. Note that the group identifiers at the last level will represent
+#'       \code{2^extreme_pairing_levels} rows, why you should be careful when choosing that setting.
+#'      \item The final group identifiers are shuffled, and their order is applied to the full dataset.
+#'      \item The ordered dataset is split by the sizes in \code{p}.
 #'    }
 #'
-#'  N.B. In case \code{data} has an unequal number of rows,
-#'  the row with the largest value is placed in a group by itself in (1), and the order is instead:
+#'  N.B. When doing extreme pairing of an unequal number of rows,
+#'  the row with the largest value is placed in a group by itself, and the order is instead:
 #'  smallest, second largest, second smallest, third largest, ... , largest.
 #'  }
 #'
@@ -56,7 +62,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'    \enumerate{
 #'      \item Values in \code{num_col} are aggregated for each ID, using \code{id_aggregation_fn}.
 #'      \item The IDs are partitioned, using the aggregated values as "\code{num_col}".
-#'      \item The partition numbers for IDs are transferred to their rows.
+#'      \item The partition identifiers are transferred to the rows of the IDs.
 #'    }
 #'  }
 #'
@@ -66,49 +72,62 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'      \item IDs are subset by \code{cat_col}.
 #'      \item The IDs for each subset are partitioned,
 #'      by using the aggregated values as "\code{num_col}".
-#'      \item The partition numbers for IDs are transferred to their rows.
+#'      \item The partition identifiers are transferred to the rows of the IDs.
 #'    }
 #'  }
 #'
-#' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
+#' @family grouping functions
 #' @inheritParams group_factor
-#' @param p List / vector of partition sizes.
+#' @param p List or vector of partition sizes.
 #'  Given as whole number(s) and/or percentage(s) (\code{0} < \code{n} < \code{1}).
 #'  E.g. \eqn{c(0.2, 3, 0.1)}.
 #' @param cat_col Name of categorical variable to balance between partitions.
 #'
-#'  E.g. when training/testing a model for predicting a binary variable (a or b),
-#'  it is necessary to have both represented in both the training set and the test set.
+#'  E.g. when training and testing a model for predicting a binary variable (a or b),
+#'  we usually want both classes represented in both the training set and the test set.
 #'
-#'  N.B. If also passing an id_col, cat_col should be constant within each ID.
+#'  N.B. If also passing an \code{id_col}, \code{cat_col} should be constant within each ID.
 #' @param num_col Name of numerical variable to balance between partitions.
 #'
-#'  N.B. When used with \code{id_col}, values in \code{num_col} for each ID are aggregated using \code{id_aggregation_fn} before being balanced.
+#'  N.B. When used with \code{id_col}, values in \code{num_col} for each ID are
+#'  aggregated using \code{id_aggregation_fn} before being balanced.
 #' @param id_col Name of factor with IDs. Used to keep all rows that share an ID in
 #'  the same partition (if possible).
 #'
 #'  E.g. If we have measured a participant multiple times and want to see the
 #'  effect of time, we want to have all observations of this participant in
 #'  the same partition.
-#' @param id_aggregation_fn Function for aggregating values in \code{num_col} for each ID, before balancing \code{num_col}.
+#' @param id_aggregation_fn Function for aggregating values in \code{num_col} for each ID,
+#'  before balancing \code{num_col}.
 #'
 #'  N.B. Only used when \code{num_col} and \code{id_col} are both specified.
+#' @param extreme_pairing_levels How many levels of extreme pairing to do
+#'  when balancing partitions by a numerical column (i.e. \code{num_col} is specified).
+#'
+#'  \strong{Extreme pairing}: Rows/pairs are ordered as smallest, largest,
+#'  second smallest, second largest, etc. If \code{extreme_pairing_levels > 1},
+#'  this is done "recursively" on the extreme pairs. See \code{"Details/num_col"} for more.
+#'
+#'  N.B. Larger values work best with large datasets. If set too high,
+#'  the result might not be stochastic. Always check if an increase
+#'  actually makes the partitions more balanced. See example.
 #' @param list_out Return partitions in a list. (Logical)
 #' @param force_equal Discard excess data. (Logical)
 #' @return If \code{list_out is TRUE}:
 #'
-#' A list of partitions where partitions are dataframes.
+#' A list of partitions where partitions are data frames.
 #'
 #' If \code{list_out is FALSE}:
 #'
-#' A dataframe with grouping factor for subsetting.
+#' A data frame with grouping factor for subsetting.
 #' @examples
 #' # Attach packages
 #' library(groupdata2)
 #' library(dplyr)
 #'
-#' # Create dataframe
+#' # Create data frame
 #' df <- data.frame(
 #'  "participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
 #'  "age" = rep(sample(c(1:100), 6), 3),
@@ -140,38 +159,67 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'                         num_col = "score",
 #'                         id_col = 'participant')
 #'
-#' # Return dataframe with grouping factor
+#' # Return data frame with grouping factor
 #' # with list_out = FALSE
 #' partitions <- partition(df, c(0.5), list_out = FALSE)
 #'
+#' # Check if additional extreme_pairing_levels
+#' # improve the numerical balance
+#' set.seed(2) # try with seed 1 as well
+#' partitions_1 <- partition(df, c(0.5), num_col = 'score',
+#'                           extreme_pairing_levels = 1,
+#'                           list_out = FALSE)
+#' partitions_1 %>%
+#'   dplyr::group_by(.partitions) %>%
+#'   dplyr::summarise(sum_score = sum(score),
+#'                    mean_score = mean(score))
+#' set.seed(2) # try with seed 1 as well
+#' partitions_2 <- partition(df, c(0.5), num_col = 'score',
+#'                           extreme_pairing_levels = 2,
+#'                           list_out = FALSE)
+#' partitions_2 %>%
+#'   dplyr::group_by(.partitions) %>%
+#'   dplyr::summarise(sum_score = sum(score),
+#'                    mean_score = mean(score))
+#'
 #' @importFrom dplyr group_by do %>%
-partition <- function(data, p = 0.2, cat_col = NULL,
-                      num_col = NULL, id_col = NULL,
+partition <- function(data, p=0.2, cat_col=NULL,
+                      num_col=NULL, id_col=NULL,
                       id_aggregation_fn=sum,
-                      force_equal = FALSE,
-                      list_out = TRUE) {
+                      extreme_pairing_levels=1,
+                      force_equal=FALSE,
+                      list_out=TRUE) {
 
   #
   # Balanced partitioning
-  # data: dataframe or vector
+  # data: data frame or vector
   # p: list of partitions given as percentage (0-1) or group sizes (wholenumber)
   # cat_col: Categorical variable to balance by
   # num_col: Numerical variable to balance by
   # id_col: ID column to keep rows with shared IDs in the same partition
   # force_equal: Whether you only want the inputted partitions or the exceeding values gets a partition (logical)
-  #        FALSE allows you to pass "p = 0.2" and get 2 partions - 0.2 and 0.8
+  #        FALSE allows you to pass "p = 0.2" and get 2 partitions - 0.2 and 0.8
   #
 
+  if (!is.null(cat_col) && cat_col %ni% colnames(data)){
+    stop(paste0("cat_col: '", cat_col, "' is not in data"))}
+  if (!is.null(id_col) && id_col %ni% colnames(data)){
+    stop(paste0("id_col: '", id_col, "' is not in data"))}
+  if (!is.null(num_col) && num_col %ni% colnames(data)){
+    stop(paste0("num_col: '", num_col, "' is not in data"))}
 
 
   # If num_col is not NULL
   if (!is.null(num_col)){
+
     data <- create_num_col_groups(data, n=p, num_col=num_col, cat_col=cat_col,
                                   id_col=id_col, col_name=".partitions",
                                   id_aggregation_fn = id_aggregation_fn,
+                                  extreme_pairing_levels=extreme_pairing_levels,
                                   method="l_sizes", unequal_method="last",
                                   force_equal=force_equal,
-                                  pre_randomize = TRUE)
+                                  pre_randomize = TRUE
+                                  )
 
   } else {
 
@@ -246,8 +294,11 @@ partition <- function(data, p = 0.2, cat_col = NULL,
 
       stop("NA in .partitions column.")
 
-    } else {
+    } else if (is.null(data[['.partitions']])){
 
+      stop("Column .partitions does not exist")
+
+    } else {
       plyr::llply(c(1:max(as.integer(data[['.partitions']]))), function(part){
 
         temp_data <- data[data$.partitions == part,]

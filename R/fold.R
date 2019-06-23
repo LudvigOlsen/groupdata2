@@ -25,16 +25,20 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'    \enumerate{
 #'      \item Rows are shuffled.
 #'
-#'      \strong{Note} that this will only have an effect on rows that have the same value in num_col.
-#'      \item Rows are ordered as smallest, largest, second smallest, second largest, ...
-#'      \item By their pairwise sum, these are once again ordered as smallest, largest, second smallest, second largest, ...
-#'      \item The ordered data is grouped using method "n_fill".
+#'      \strong{Note} that this will only affect rows with the same value in \code{num_col}.
+#'      \item Extreme pairing 1: Rows are ordered as smallest, largest, second smallest, second largest, etc.
+#'      Each pair get a group identifier.
+#'      \item If \code{extreme_pairing_levels > 1}: The group identifiers are reordered as smallest,
+#'      largest, second smallest, second largest, etc., by the sum of \code{num_col} in the represented rows.
+#'      These pairs (of pairs) get a new set of group identifiers, and the process is repeated
+#'       \code{extreme_pairing_levels-2} times. Note that the group identifiers at the last level will represent
+#'       \code{2^extreme_pairing_levels} rows, why you should be careful when choosing that setting.
+#'      \item The final group identifiers are folded, and the fold identifiers are transferred to the rows.
 #'    }
 #'
-#'  N.B. In case \code{data} has an unequal number of rows,
-#'  the row with the smallest value becomes the first group by itself in (1) and (2), and the order is instead:
-#'  smallest, second smallest, largest, third smallest, second largest, ...
-#'  This row will end up in the first fold.
+#'  N.B. When doing extreme pairing of an unequal number of rows,
+#'  the row with the smallest value is placed in a group by itself, and the order is instead:
+#'  smallest, second smallest, largest, third smallest, second largest, etc.
 #'  }
 #'
 #'  \subsection{cat_col AND id_col}{
@@ -49,7 +53,9 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'    \enumerate{
 #'      \item Data is subset by \code{cat_col}.
 #'      \item Subsets are grouped by \code{num_col}.
-#'      \item Subsets are merged.
+#'      \item Subsets are merged such that the largest group
+#'      (by sum of \code{num_col}) from the first category
+#'      is merged with the smallest group from the second category, etc.
 #'    }
 #'  }
 #'
@@ -57,7 +63,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'    \enumerate{
 #'      \item Values in \code{num_col} are aggregated for each ID, using \code{id_aggregation_fn}.
 #'      \item The IDs are grouped, using the aggregated values as "\code{num_col}".
-#'      \item The group numbers for IDs are transferred to their rows.
+#'      \item The groups of the IDs are transferred to the rows.
 #'    }
 #'  }
 #'
@@ -65,27 +71,31 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'    \enumerate{
 #'      \item Values in \code{num_col} are aggregated for each ID, using \code{id_aggregation_fn}.
 #'      \item IDs are subset by \code{cat_col}.
-#'      \item The IDs for each subset are grouped,
+#'      \item The IDs in each subset are grouped,
 #'      by using the aggregated values as "\code{num_col}".
-#'      \item The group numbers for IDs are transferred to their rows.
+#'      \item The subsets are merged such that the largest group
+#'      (by sum of the aggregated values) from the first category
+#'      is merged with the smallest group from the second category, etc.
+#'      \item The groups of the IDs are transferred to the rows.
 #'    }
 #'  }
-#' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @param k \emph{Dependent on method.}
 #'
 #'  Number of folds (default), fold size, with more (see \code{method}).
 #'
-#'  Given as whole number(s) and/or percentage(s) (0 < n < 1).
+#'  Given as whole number or percentage (0 < n < 1).
 #' @param cat_col Name of categorical variable to balance between folds.
 #'
-#'  E.g. when predicting a binary variable (a or b), it is necessary to have
-#'  both represented in every fold.
+#'  E.g. when predicting a binary variable (a or b), we usually want
+#'  both classes represented in every fold.
 #'
 #'  N.B. If also passing an \code{id_col}, \code{cat_col} should be constant within each ID.
 #' @param num_col Name of numerical variable to balance between folds.
 #'
-#'  N.B. When used with \code{id_col}, values for each ID are aggregated using \code{id_aggregation_fn} before being balanced.
+#'  N.B. When used with \code{id_col}, values for each ID are aggregated using
+#'  \code{id_aggregation_fn} before being balanced.
 #'
 #'  N.B. When passing \code{num_col}, the \code{method} parameter is not used.
 #' @param id_col Name of factor with IDs.
@@ -95,33 +105,50 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'  E.g. If we have measured a participant multiple times and want to see the
 #'  effect of time, we want to have all observations of this participant in
 #'  the same fold.
-#' @param id_aggregation_fn Function for aggregating values in \code{num_col} for each ID, before balancing \code{num_col}.
+#' @param id_aggregation_fn Function for aggregating values in \code{num_col}
+#'  for each ID, before balancing \code{num_col}.
 #'
 #'  N.B. Only used when \code{num_col} and \code{id_col} are both specified.
+#' @param extreme_pairing_levels How many levels of extreme pairing to do
+#'  when balancing folds by a numerical column (i.e. \code{num_col} is specified).
+#'
+#'  \strong{Extreme pairing}: Rows/pairs are ordered as smallest, largest,
+#'  second smallest, second largest, etc. If \code{extreme_pairing_levels > 1},
+#'  this is done "recursively" on the extreme pairs. See \code{"Details/num_col"} for more.
+#'
+#'  N.B. Larger values work best with large datasets. If set too high,
+#'  the result might not be stochastic. Always check if an increase
+#'  actually makes the folds more balanced. See example.
 #' @param num_fold_cols Number of fold columns to create.
 #'  Useful for repeated cross-validation.
 #'
-#'  If \code{num_fold_cols > 1}, columns will be named \eqn{".folds_1"}, \eqn{".folds_2"}, etc.
+#'  If \code{num_fold_cols > 1}, columns will be named
+#'  \eqn{".folds_1"}, \eqn{".folds_2"}, etc.
 #'  Otherwise simply \eqn{".folds"}.
 #'
 #'  N.B. If \code{unique_fold_cols_only} is \code{TRUE},
 #'  we can end up with fewer columns than specified, see \code{max_iters}.
 #'
 #'  N.B. If \code{data} has existing fold columns, see \code{handle_existing_fold_cols}.
-#' @param unique_fold_cols_only Check if fold columns are identical and keep only unique columns.
+#' @param unique_fold_cols_only Check if fold columns are identical and
+#'  keep only unique columns.
 #'
 #'  As the number of column comparisons can be time consuming,
 #'  we can run this part in parallel. See \code{parallel}.
 #'
-#'  N.B. We can end up with fewer columns than specified in \code{num_fold_cols}, see \code{max_iters}.
+#'  N.B. We can end up with fewer columns than specified in
+#'  \code{num_fold_cols}, see \code{max_iters}.
 #'
 #'  N.B. Only used when \code{num_fold_cols > 1} or \code{data} has existing fold columns.
-#' @param max_iters Maximum number of attempts at reaching \code{num_fold_cols} \emph{unique} fold columns.
+#' @param max_iters Maximum number of attempts at reaching
+#'  \code{num_fold_cols} \emph{unique} fold columns.
 #'
 #'  When only keeping unique fold columns, we risk having fewer columns than expected.
-#'  Hence, we repeatedly create the missing columns and remove those that are not unique. This is done until
-#'  we have \code{num_fold_cols} unique fold columns or we have attempted \code{max_iters} times.
-#'  In some cases, it is not possible to create \code{num_fold_cols} unique combinations of our dataset, e.g.
+#'  Hence, we repeatedly create the missing columns and remove those that are not unique.
+#'  This is done until we have \code{num_fold_cols} unique fold columns
+#'  or we have attempted \code{max_iters} times.
+#'  In some cases, it is not possible to create \code{num_fold_cols}
+#'  unique combinations of the dataset, e.g.
 #'  when specifying \code{cat_col}, \code{id_col} and \code{num_col}.
 #'  \code{max_iters} specifies when to stop trying.
 #'  Note that we can end up with fewer columns than specified in \code{num_fold_cols}.
@@ -130,7 +157,8 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #' @param handle_existing_fold_cols How to handle existing fold columns.
 #'  Either "keep_warn", "keep", or "remove".
 #'
-#'  To add extra fold columns, use "keep" or "keep_warn". Note that existing fold columns might be renamed.
+#'  To add extra fold columns, use "keep" or "keep_warn".
+#'  Note that existing fold columns might be renamed.
 #'
 #'  To replace the existing fold columns, use "remove".
 #' @param parallel Whether to parallelize the fold column comparisons,
@@ -138,15 +166,59 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'
 #'  Requires a registered parallel backend.
 #'  See \code{\link[doParallel:registerDoParallel]{doParallel::registerDoParallel}}.
+#' @param method \code{n_dist}, \code{n_fill}, \code{n_last},
+#'  \code{n_rand}, \code{greedy}, or \code{staircase}.
+#'
+#'  \strong{Notice}: examples are sizes of the generated groups
+#'  based on a vector with 57 elements.
+#'
+#'  \subsection{n_dist (default)}{Divides the data into a specified number of groups and
+#'  distributes excess data points across groups
+#'  \eqn{(e.g. 11, 11, 12, 11, 12)}.
+#'
+#'  \code{n} is number of groups}
+#'
+#'  \subsection{n_fill}{Divides the data into a specified number of groups and
+#'  fills up groups with excess data points from the beginning
+#'  \eqn{(e.g. 12, 12, 11, 11, 11)}.
+#'
+#'  \code{n} is number of groups}
+#'
+#'  \subsection{n_last}{Divides the data into a specified number of groups.
+#'  It finds the most equal group sizes possible,
+#'  using all data points. Only the last group is able to differ in size
+#'  \eqn{(e.g. 11, 11, 11, 11, 13)}.
+#'
+#'  \code{n} is number of groups}
+#'
+#'  \subsection{n_rand}{Divides the data into a specified number of groups.
+#'  Excess data points are placed randomly in groups (only 1 per group)
+#'  \eqn{(e.g. 12, 11, 11, 11, 12)}.
+#'
+#'  \code{n} is number of groups}
+#'
+#'  \subsection{greedy}{Divides up the data greedily given a specified group size
+#'  \eqn{(e.g. 10, 10, 10, 10, 10, 7)}.
+#'
+#'  \code{n} is group size}
+#'
+#'  \subsection{staircase}{Uses step size to divide up the data.
+#'  Group size increases with 1 step for every group,
+#'  until there is no more data
+#'  \eqn{(e.g. 5, 10, 15, 20, 7)}.
+#'
+#'  \code{n} is step size}
 #' @inheritParams group_factor
 #' @aliases create_balanced_groups
-#' @return Dataframe with grouping factor for subsetting in cross-validation.
+#' @family grouping functions
+#' @return Data frame with grouping factor for subsetting in cross-validation.
+#' @seealso \code{\link{partition}} for balanced partitions
 #' @examples
 #' # Attach packages
 #' library(groupdata2)
 #' library(dplyr)
 #'
-#' # Create dataframe
+#' # Create data frame
 #' df <- data.frame(
 #'  "participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
 #'  "age" = rep(sample(c(1:100), 6), 3),
@@ -190,20 +262,38 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'  unique_fold_cols_only=TRUE,
 #'  max_iters=4)
 #'
+#' ## Check if additional extreme_pairing_levels
+#' ## improve the numerical balance
+#' set.seed(2) # try with seed 1 as well
+#' df_folded_1 <- fold(df, 3, num_col = 'score',
+#'                      extreme_pairing_levels = 1)
+#' df_folded_1 %>%
+#'   dplyr::group_by(.folds) %>%
+#'   dplyr::summarise(sum_score = sum(score),
+#'                    mean_score = mean(score))
+#'
+#' set.seed(2) # try with seed 1 as well
+#' df_folded_2 <- fold(df, 3, num_col = 'score',
+#'                      extreme_pairing_levels = 2)
+#' df_folded_2 %>%
+#'   dplyr::group_by(.folds) %>%
+#'   dplyr::summarise(sum_score = sum(score),
+#'                    mean_score = mean(score))
+#'
 #' @importFrom dplyr group_by_ do %>%
 #' @importFrom utils combn
 #' @importFrom rlang .data
 fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
-                 id_col = NULL, starts_col = NULL,
-                 method = 'n_dist', id_aggregation_fn = sum,
-                 remove_missing_starts = FALSE,
+                 id_col = NULL, method = 'n_dist',
+                 id_aggregation_fn = sum,
+                 extreme_pairing_levels=1,
                  num_fold_cols = 1, unique_fold_cols_only = TRUE,
                  max_iters = 5, handle_existing_fold_cols = "keep_warn",
                  parallel = FALSE){
 
   #
   # Takes:
-  # .. dataframe
+  # .. data frame
   # .. number of folds
   # .. a categorical variable to balance in folds
   # .... e.g. to predict between 2 diagnoses,
@@ -213,22 +303,38 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
   # .. method for creating grouping factor
   #
   # Returns:
-  # .. dataframe with grouping factor (folds)
+  # .. data frame with grouping factor (folds)
   #
+
+  if (method %in% c("l_sizes", "l_starts", "primes")){
+    stop(paste0("method '",method,"' is not supported by fold()"))
+  }
+
+  if (length(k) > 1){
+    stop("k must be numeric scalar.")
+  }
 
   # Convert k to wholenumber if given as percentage
   if(!arg_is_wholenumber_(k) && is_between_(k,0,1)){
-
-    k = convert_percentage_(k, data)
-
+    rows_per_fold = convert_percentage_(k, data)
+    k = ceiling(nrow(data)/rows_per_fold)
   }
 
   # Stop if k is not a wholenumber
   stopifnot(arg_is_wholenumber_(k))
 
+  # Check if *_cols are in data
+  if (!is.null(cat_col) && cat_col %ni% colnames(data)){
+    stop(paste0("cat_col: '", cat_col, "' is not in data"))}
+  if (!is.null(id_col) && id_col %ni% colnames(data)){
+    stop(paste0("id_col: '", id_col, "' is not in data"))}
+  if (!is.null(num_col) && num_col %ni% colnames(data)){
+    stop(paste0("num_col: '", num_col, "' is not in data"))}
+
   # If num_col is specified, warn that method is ignored
   if (!is.null(num_col) & method != "n_dist"){
-    warning("'method' is ignored when 'num_col' is not NULL. This message occurs, because 'method' is not the default value.")
+    warning(paste0("'method' is ignored when 'num_col' is not NULL. ",
+                   "This warning occurs, because 'method' is not the default value."))
   }
 
   # If method is either greedy or staircase and cat_col is not NULL
@@ -289,6 +395,7 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
                                                                     max_existing_number = max_fold_cols_number,
                                                                     current = r),
                                        id_aggregation_fn = id_aggregation_fn,
+                                       extreme_pairing_levels=extreme_pairing_levels,
                                        method="n_fill",
                                        pre_randomize = TRUE) %>%
           dplyr::ungroup()
@@ -317,9 +424,7 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
                                 col_name = name_new_fold_col(num_to_create = num_fold_cols,
                                                              num_existing = num_existing_fold_colnames,
                                                              max_existing_number = max_fold_cols_number,
-                                                             current = r),
-                                starts_col = starts_col,
-                                remove_missing_starts = remove_missing_starts)) %>%
+                                                             current = r))) %>%
               dplyr::ungroup()
           })
 
@@ -339,9 +444,7 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
                        col_name = name_new_fold_col(num_to_create = num_fold_cols,
                                                     num_existing = num_existing_fold_colnames,
                                                     max_existing_number = max_fold_cols_number,
-                                                    current = r),
-                       starts_col = starts_col,
-                       remove_missing_starts = remove_missing_starts)) %>%
+                                                    current = r))) %>%
               dplyr::ungroup()
           })
         }
@@ -362,9 +465,7 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
                              col_name = name_new_fold_col(num_to_create = num_fold_cols,
                                                           num_existing = num_existing_fold_colnames,
                                                           max_existing_number = max_fold_cols_number,
-                                                          current = r),
-                             starts_col = starts_col,
-                             remove_missing_starts = remove_missing_starts) %>%
+                                                          current = r)) %>%
               dplyr::ungroup()
 
           })
@@ -383,9 +484,7 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
                           col_name = name_new_fold_col(num_to_create = num_fold_cols,
                                                        num_existing = num_existing_fold_colnames,
                                                        max_existing_number = max_fold_cols_number,
-                                                       current = r),
-                          starts_col = starts_col,
-                          remove_missing_starts = remove_missing_starts) %>%
+                                                       current = r)) %>%
               dplyr::ungroup()
           })
 
@@ -399,19 +498,23 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
     # Remove identical .folds columns or break out of while loop
     if (expected_total_num_fold_cols > 1 && isTRUE(unique_fold_cols_only)){
       folds_colnames <- extract_fold_colnames(data)
+
       data_and_comparisons <- remove_identical_cols(data, folds_colnames,
                                                     exclude_comparisons = completed_comparisons,
                                                     return_all_comparisons=TRUE,
                                                     group_wise = TRUE, parallel=parallel)
 
-      data <- data_and_comparisons[[1]]
+      data <- data_and_comparisons[["updated_data"]]
+      removed_cols <- data_and_comparisons[["removed_cols"]]
       completed_comparisons <- completed_comparisons %>%
         dplyr::bind_rows(
-          data_and_comparisons[[2]] %>%
+          data_and_comparisons[["comparisons"]] %>%
             # If they were identical,
             # we removed one and the comparison isn't useful to save
-            filter(!identical)
+            filter(!identical,
+                   .data$V2 %ni% removed_cols)
           )
+
       folds_colnames <- extract_fold_colnames(data)
 
       if (length(folds_colnames) < expected_total_num_fold_cols){

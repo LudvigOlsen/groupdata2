@@ -67,7 +67,7 @@ Create equally sized groups by setting force_equal = TRUE
 Randomize grouping factor by setting randomize = TRUE  
 
 ### group()  
-Returns the given data as a dataframe with added grouping factor made with group_factor(). The dataframe is grouped by the grouping factor for easy use with dplyr pipelines.  
+Returns the given data as a data frame with added grouping factor made with group_factor(). The data frame is grouped by the grouping factor for easy use with dplyr pipelines.  
 
 ### splt()  
 Creates the specified groups with group_factor() and splits the given data by the grouping factor with base::split. Returns the splits in a list.  
@@ -128,7 +128,7 @@ E.g. *n = c(11, 11)* returns group sizes: 11, 11, 35
 
 ##### Method: l_starts
 Uses a list of starting positions to divide up the data.  
-Starting positions are values in a vector (e.g. column in dataframe). 
+Starting positions are values in a vector (e.g. column in data frame). 
 Skip to a specific nth appearance of a value by using c(value, skip_to).  
 
 E.g. *n = c(11, 15, 27, 43)* returns group sizes: 10, 4, 12, 16, 15  
@@ -178,7 +178,7 @@ library(knitr)
 ```
 
 ```{r}
-# Create dataframe
+# Create data frame
 df <- data.frame("x"=c(1:12),
   "species" = rep(c('cat','pig', 'human'), 4),
   "age" = sample(c(1:100), 12))
@@ -215,7 +215,7 @@ df %>%
 ### fold()
 
 ```{r}
-# Create dataframe
+# Create data frame
 df <- data.frame(
   "participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
   "age" = rep(c(20,33,27,21,32,25), 3),

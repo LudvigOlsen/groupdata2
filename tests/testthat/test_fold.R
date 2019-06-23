@@ -6,7 +6,7 @@ context("fold()")
 # quirky behavior
 # Add tests for other methods
 
-test_that("dimensions of dataframe with fold()",{
+test_that("dimensions of data frame with fold()",{
 
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
@@ -55,11 +55,12 @@ test_that(".folds is correct in fold()",{
 
   group_counts <- function(df, n, cat_col = NULL, num_col = NULL,
                            id_col = NULL, method, num_fold_cols=1,
-                           folds_col=".folds"){
+                           folds_col=".folds", seed=1){
 
-    set.seed(1)
+    set.seed(seed)
     folded_df <- fold(df, n, cat_col=cat_col, num_col = num_col, id_col=id_col,
                       method = method, num_fold_cols=num_fold_cols)
+    #print(folded_df)
     counts <- plyr::count(folded_df[[folds_col]])
     return(counts$freq)
 
@@ -88,7 +89,7 @@ test_that(".folds is correct in fold()",{
 
   expect_equal(group_counts(df, 5, method = 'n_dist'), c(3,4,3,4,4))
 
-  expect_equal(group_counts(df, 0.2, method = 'n_dist'), c(6,6,6))
+  expect_equal(group_counts(df, 0.2, method = 'n_dist'), c(3,3,3,3,3,3))
 
   expect_equal(group_counts(df, 5, cat_col = 'diagnosis',
                             method = 'n_dist'), c(2,4,4,4,4))
@@ -114,21 +115,21 @@ test_that(".folds is correct in fold()",{
                             method = 'n_dist'), c(9,9))
 
   expect_equal(group_counts(df, 2, cat_col = 'diagnosis', num_col = 'score', id_col = 'participant',
-                            method = 'n_dist'), c(12,6))
+                            method = 'n_dist'), c(9,9))
 
   expect_equal(group_counts(df, 2, num_col=NULL, id_col = 'participant',
                             method = 'n_dist', num_fold_cols = 5, folds_col = ".folds_2"), c(9,9))
   expect_equal(group_counts(df, 2, cat_col = 'diagnosis', num_col = 'score', id_col = 'participant',
-                            method = 'n_dist', num_fold_cols = 2, folds_col = ".folds_1"), c(12,6))
+                            method = 'n_dist', num_fold_cols = 2, folds_col = ".folds_1"), c(9,9))
 
 
-  # Unequal number of rows in dataframe
+  # Unequal number of rows in data frame
 
   expect_equal(group_counts(df_unequal, 5, method = 'greedy'), c(5,5,5,2))
 
   expect_equal(group_counts(df_unequal, 5, method = 'n_dist'), c(3,3,4,3,4))
 
-  expect_equal(group_counts(df_unequal, 0.2, method = 'n_dist'), c(5,6,6))
+  expect_equal(group_counts(df_unequal, 0.2, method = 'n_dist'), c(2,3,3,3,3,3))
 
   expect_equal(group_counts(df_unequal, 5, cat_col = 'diagnosis',
                             method = 'n_dist'), c(2,4,3,4,4))
@@ -154,13 +155,13 @@ test_that(".folds is correct in fold()",{
                             method = 'n_dist'), c(8,9))
 
   expect_equal(group_counts(df_unequal, 2, cat_col = 'diagnosis', num_col = 'score', id_col = 'participant',
-                            method = 'n_dist'), c(11,6))
+                            method = 'n_dist'), c(9,8))
 
 
   # warning
   expect_warning(group_counts(df, 2, num_col = 'score',
                             method = 'n_rand'),
-                 "'method' is ignored when 'num_col' is not NULL. This message occurs, because 'method' is not the default value.")
+                 "'method' is ignored when 'num_col' is not NULL. This warning occurs, because 'method' is not the default value.")
 
   # Staircase
   expect_equal(group_counts(df, 2,
@@ -195,7 +196,7 @@ test_that("values are decently balanced in num_col in fold()",{
     dplyr::group_by(.folds) %>%
     dplyr::summarize(group_sums = sum(score))
 
-  expect_equal(aggregated_scores$group_sums, c(257, 277, 283))
+  expect_equal(aggregated_scores$group_sums, c(267, 273, 277))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
   df_folded <- fold(df, 4, num_col = 'score')
@@ -203,7 +204,7 @@ test_that("values are decently balanced in num_col in fold()",{
     dplyr::group_by(.folds) %>%
     dplyr::summarize(group_sums = sum(score))
 
-  expect_equal(aggregated_scores$group_sums, c(181,263,187, 186))
+  expect_equal(aggregated_scores$group_sums, c(234,207,189, 187))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
   df_folded <- fold(df, 1, num_col = 'score')
@@ -227,7 +228,7 @@ test_that("values are decently balanced in num_col in fold()",{
     dplyr::group_by(.folds) %>%
     dplyr::summarize(group_sums = sum(score))
 
-  expect_equal(aggregated_scores$group_sums, c(246, 288, 283))
+  expect_equal(aggregated_scores$group_sums, c(283, 246, 288))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
   df_folded <- fold(df, 4, num_col = 'score', id_col="participant")
@@ -238,13 +239,15 @@ test_that("values are decently balanced in num_col in fold()",{
   expect_equal(aggregated_scores$group_sums, c(246,288,141,142))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
+  set.seed(1)
+
   # With num_col and cat_col
   df_folded <- fold(df, 3, num_col = 'score', cat_col="diagnosis")
   aggregated_scores <- df_folded %>%
     dplyr::group_by(.folds) %>%
     dplyr::summarize(group_sums = sum(score))
 
-  expect_equal(aggregated_scores$group_sums, c(215, 250, 352)) # FLAG
+  expect_equal(aggregated_scores$group_sums, c(286, 246, 285))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
   df_folded <- fold(df, 4, num_col = 'score', cat_col="diagnosis")
@@ -252,7 +255,7 @@ test_that("values are decently balanced in num_col in fold()",{
     dplyr::group_by(.folds) %>%
     dplyr::summarize(group_sums = sum(score))
 
-  expect_equal(aggregated_scores$group_sums, c(215, 204, 198, 200))
+  expect_equal(aggregated_scores$group_sums, c(222, 189, 188, 218))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
   # With num_col, cat_col and id_col
@@ -261,15 +264,16 @@ test_that("values are decently balanced in num_col in fold()",{
     dplyr::group_by(.folds) %>%
     dplyr::summarize(group_sums = sum(score))
 
-  expect_equal(aggregated_scores$group_sums, c(215, 283, 319))
+  expect_equal(aggregated_scores$group_sums, c(237, 283, 297))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
+  set.seed(1)
   df_folded <- fold(df, 2, num_col = 'score', cat_col="diagnosis", id_col="participant")
   aggregated_scores <- df_folded %>%
     dplyr::group_by(.folds) %>%
     dplyr::summarize(group_sums = sum(score))
 
-  expect_equal(aggregated_scores$group_sums, c(498, 319))
+  expect_equal(aggregated_scores$group_sums, c(378, 439))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
 
@@ -304,14 +308,17 @@ test_that("repeated folding works in fold()",{
   expected_aggregated_folds_col <- expected_aggregated_folds_col[order(expected_aggregated_folds_col)]
   expect_equal(aggregated_scores$folds_col, expected_aggregated_folds_col)
 
+  set.seed(1)
   # We set num_fold_cols to a larger number than is possible to create unique .folds columns
   # Hence it will only create a smaller number of columns!
-  df_folded_5reps <- fold(df, 2, num_col = 'score', num_fold_cols=5)
-  expect_equal(length(extract_fold_colnames(df_folded_5reps)), 1)
+  df_folded_5reps <- fold(head(df,7), 2, num_col = 'score', num_fold_cols=10,
+                          handle_existing_fold_cols = "remove")
+  expect_equal(length(extract_fold_colnames(df_folded_5reps)), 5)
 
   # Test 10 cols
-  # Also test whether all fold cols are unique
-  df_folded_10 <- fold(df, 3, num_col = 'score', num_fold_cols=10)
+  # Also test whether all fold cols are unique (only value-wise, not group-wise (ADD group-wise test))
+  df_folded_10 <- fold(df, 3, num_col = 'score', num_fold_cols=10,
+                       handle_existing_fold_cols = "remove")
   folds_colnames <- extract_fold_colnames(df_folded_10)
   expect_equal(folds_colnames, paste0(".folds_",1:10))
   expect_equal(colnames(unique(as.matrix(df_folded_10), MARGIN=2)),
@@ -325,84 +332,150 @@ test_that("repeated folding works in fold()",{
   #
   # })
 
-  # df_folded_5reps <- fold(df, 3, num_col = 'score', num_fold_cols=20)
+})
 
-  # expect_equal(aggregated_scores$group_sums, c(257, 277, 283))
-  # expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
-  #
-  # df_folded <- fold(df, 4, num_col = 'score')
-  # aggregated_scores <- df_folded %>%
-  #   dplyr::group_by(.folds) %>%
-  #   dplyr::summarize(group_sums = sum(score))
-  #
-  # expect_equal(aggregated_scores$group_sums, c(181,263,187, 186))
-  # expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
-  #
-  # df_folded <- fold(df, 1, num_col = 'score')
-  # aggregated_scores <- df_folded %>%
-  #   dplyr::group_by(.folds) %>%
-  #   dplyr::summarize(group_sums = sum(score))
-  #
-  # expect_equal(aggregated_scores$group_sums, sum(df_folded$score))
-  #
-  # df_folded <- fold(df, 18, num_col = 'score')
-  # aggregated_scores <- df_folded %>%
-  #   dplyr::group_by(participant, .folds) %>%
-  #   dplyr::summarize(group_sums = sum(score)) %>%
-  #   dplyr::arrange(participant, group_sums)
-  #
-  # expect_equal(aggregated_scores$group_sums, df_folded$score)
-  #
-  # # With num_col and id_col
-  # df_folded <- fold(df, 3, num_col = 'score', id_col="participant")
-  # aggregated_scores <- df_folded %>%
-  #   dplyr::group_by(.folds) %>%
-  #   dplyr::summarize(group_sums = sum(score))
-  #
-  # expect_equal(aggregated_scores$group_sums, c(246, 288, 283))
-  # expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
-  #
-  # df_folded <- fold(df, 4, num_col = 'score', id_col="participant")
-  # aggregated_scores <- df_folded %>%
-  #   dplyr::group_by(.folds) %>%
-  #   dplyr::summarize(group_sums = sum(score))
-  #
-  # expect_equal(aggregated_scores$group_sums, c(246,288,141,142))
-  # expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
-  #
-  # # With num_col and cat_col
-  # df_folded <- fold(df, 3, num_col = 'score', cat_col="diagnosis")
-  # aggregated_scores <- df_folded %>%
-  #   dplyr::group_by(.folds) %>%
-  #   dplyr::summarize(group_sums = sum(score))
-  #
-  # expect_equal(aggregated_scores$group_sums, c(215, 250, 352)) # FLAG
-  # expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
-  #
-  # df_folded <- fold(df, 4, num_col = 'score', cat_col="diagnosis")
-  # aggregated_scores <- df_folded %>%
-  #   dplyr::group_by(.folds) %>%
-  #   dplyr::summarize(group_sums = sum(score))
-  #
-  # expect_equal(aggregated_scores$group_sums, c(215, 204, 198, 200))
-  # expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
-  #
-  # # With num_col, cat_col and id_col
-  # df_folded <- fold(df, 3, num_col = 'score', cat_col="diagnosis", id_col="participant")
-  # aggregated_scores <- df_folded %>%
-  #   dplyr::group_by(.folds) %>%
-  #   dplyr::summarize(group_sums = sum(score))
-  #
-  # expect_equal(aggregated_scores$group_sums, c(215, 283, 319))
-  # expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
-  #
-  # df_folded <- fold(df, 2, num_col = 'score', cat_col="diagnosis", id_col="participant")
-  # aggregated_scores <- df_folded %>%
-  #   dplyr::group_by(.folds) %>%
-  #   dplyr::summarize(group_sums = sum(score))
-  #
-  # expect_equal(aggregated_scores$group_sums, c(498, 319))
-  # expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
+test_that("bootstrap test of num_col works",{
+
+  # Takes 4 seconds, so we disable it for now.
+  testthat::skip(message = "Skipping bootstrapped numerical balancing test in fold()")
+
+  df <- data.frame("participant"=factor(rep(1:100, 100)),
+                   "diagnosis"=factor(rep(c("a","b","c","d","e"), 2000)),
+                   "age"=rep(sample(100),100))
+
+  # Single
+  set.seed(1)
+  df_folded <- fold(df, 3, num_col="age")
+
+  for (i in 1:10){
+
+    set.seed(i)
+    df_folded <- fold(df, 0.5, cat_col="diagnosis", num_col="age",
+                      id_col="participant")
+
+    age_distribution <- df_folded %>% group_by(.folds) %>%
+      dplyr::summarise(mean_age = mean(age),
+                       sd_age = sd(age))
+
+    expect_true(is_between_(age_distribution$mean_age[1], 50, 52))
+    expect_true(is_between_(age_distribution$mean_age[2], 49, 51))
+
+  }
+
+  for (i in 1:10){
+
+    set.seed(i)
+    df_folded <- fold(df, 5, cat_col="diagnosis", num_col="age",
+                      id_col="participant")
+
+    age_distribution <- df_folded %>% group_by(.folds) %>%
+      dplyr::summarise(mean_age = mean(age),
+                       sd_age = sd(age))
+
+    expect_true(is_between_(age_distribution$mean_age[1], 47.5, 53.5))
+    expect_true(is_between_(age_distribution$mean_age[2], 47.5, 53.5))
+    expect_true(is_between_(age_distribution$mean_age[3], 47.5, 53.5))
+    expect_true(is_between_(age_distribution$mean_age[4], 47.5, 53.5))
+    expect_true(is_between_(age_distribution$mean_age[5], 47.5, 53.5))
+
+  }
+
+  # With two levels of extreme pairing
+
+  for (i in 1:10){
+
+    set.seed(i)
+    df_folded <- fold(df, 5,
+                      cat_col="diagnosis", num_col="age",
+                      id_col="participant", extreme_pairing_levels = 2)
+
+    age_distribution <- df_folded %>% group_by(.folds) %>%
+      dplyr::summarise(mean_age = mean(age),
+                       sd_age = sd(age))
+
+    expect_true(is_between_(age_distribution$mean_age[1], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[2], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[3], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[4], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[5], 49, 51.5))
+
+  }
+
+  # With three levels of extreme pairing
+
+  for (i in 1:10){
+
+    set.seed(i)
+    expect_error(fold(df, 5,
+                      cat_col="diagnosis", num_col="age",
+                      id_col="participant", extreme_pairing_levels = 3),
+                 "data is too small to perform 3 levels of extreme pairing")
+
+    df_folded <- fold(df, 5,
+                      cat_col="diagnosis", num_col="age", extreme_pairing_levels = 3)
+
+    age_distribution <- df_folded %>% group_by(.folds) %>%
+      dplyr::summarise(mean_age = mean(age),
+                       sd_age = sd(age))
+
+    expect_true(is_between_(age_distribution$mean_age[1], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[2], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[3], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[4], 49, 51.5))
+    expect_true(is_between_(age_distribution$mean_age[5], 49, 51.5))
+
+  }
+
+  for (i in 1:10){
+
+    set.seed(i)
+    df_folded <- fold(df, i,
+                      cat_col="diagnosis", num_col="age", extreme_pairing_levels = 1)
+
+    age_distribution <- df_folded %>% group_by(.folds) %>%
+      dplyr::summarise(mean_age = mean(age),
+                       sd_age = sd(age))
+
+    expect_true(is_between_(min(age_distribution$mean_age), 49, 51.5))
+    expect_true(is_between_(max(age_distribution$mean_age), 49, 51.5))
+
+    set.seed(i)
+    df_folded <- fold(df, i,
+                      cat_col="diagnosis", num_col="age", extreme_pairing_levels = 2)
+
+    age_distribution <- df_folded %>% group_by(.folds) %>%
+      dplyr::summarise(mean_age = mean(age),
+                       sd_age = sd(age))
+
+    expect_true(is_between_(min(age_distribution$mean_age), 49, 51.5))
+    expect_true(is_between_(max(age_distribution$mean_age), 49, 51.5))
+
+    set.seed(i)
+    df_folded <- fold(df, i,
+                      cat_col="diagnosis", num_col="age", extreme_pairing_levels = 3)
+
+    age_distribution <- df_folded %>% group_by(.folds) %>%
+      dplyr::summarise(mean_age = mean(age),
+                       sd_age = sd(age))
+
+    expect_true(is_between_(min(age_distribution$mean_age), 49, 51.5))
+    expect_true(is_between_(max(age_distribution$mean_age), 49, 51.5))
+
+  }
+
+
+
+  # set.seed(47)
+  # # With four levels of extreme pairing
+  # df_folded <- fold(df, 5,
+  #                   cat_col="diagnosis", num_col="age",
+  #                   extreme_pairing_levels = 4)
+  #
+  # age_distribution <- df_folded %>% group_by(.folds) %>%
+  #   dplyr::summarise(mean_age = mean(age),
+  #                    sd_age = sd(age))
 
 })
+
+
