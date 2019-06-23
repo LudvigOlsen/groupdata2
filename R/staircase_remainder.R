@@ -51,7 +51,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("groups", "n_elements"))
   # Get the number of groups with no staircasing
   n_groups <- ceiling(size/step_size)
 
-  # Create a dataframe with 1 column containing a group index
+  # Create a data frame with 1 column containing a group index
   group_data <- data.frame('groups' = c(1:n_groups))
 
   # Create a column with number of elements (group number times step size)

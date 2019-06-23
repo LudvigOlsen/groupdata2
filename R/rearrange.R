@@ -4,7 +4,7 @@
 #'  A rearrange factor is simply a vector of integers to sort by.
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @keywords internal
-#' @param data Dataframe or Vector.
+#' @param data Data frame or Vector.
 #' @param method Name of method used to create rearrange factor.
 #' Currently only \code{pair_extremes}.
 #' \subsection{pair_extremes}{
@@ -44,7 +44,7 @@ rearrange <- function(data, method="pair_extremes",
   local_tmp_rearrange_var <- create_tmp_var(data, ".rearrange_factor_")
 
   # Check data
-  # Potentially convert vector to dataframe
+  # Potentially convert vector to data frame
   if (is.vector(data)){
     data <- data %>% tibble::enframe(name = NULL)
   }

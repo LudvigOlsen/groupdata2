@@ -2,14 +2,15 @@
 ## group
 #' @title Create groups from your data.
 #' @description Divides data into groups by a range of methods.
-#'  Creates a grouping factor with 1s for group 1, 2s for group 2, etc.
-#'  Returns a dataframe grouped by the grouping factor for easy use in dplyr pipelines.
+#'  Creates a grouping factor with \code{1}s for group 1, \code{2}s for group 2, etc.
+#'  Returns a data frame grouped by the grouping factor for easy use in
+#'  \code{\link[magrittr]{\%>\%}} pipelines.
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @inheritParams group_factor
-#' @param return_factor Return only grouping factor (Logical)
+#' @param return_factor Return only grouping factor. (Logical)
 #' @param col_name Name of added grouping factor
-#' @return Dataframe grouped by new grouping factor
+#' @return Data frame grouped by new grouping factor
 #' @family grouping functions
 #' @family staircase tools
 #' @family l_starts tools
@@ -19,7 +20,7 @@
 #' library(groupdata2)
 #' library(dplyr)
 #'
-#' # Create dataframe
+#' # Create data frame
 #' df <- data.frame("x"=c(1:12),
 #'  "species" = rep(c('cat','pig', 'human'), 4),
 #'  "age" = sample(c(1:100), 12))
@@ -47,13 +48,13 @@ group <- function(data, n, method = 'n_dist', starts_col = NULL,
                   remove_missing_starts = FALSE){
 
   #
-  # Takes dataframe or vector
+  # Takes data frame or vector
   # Creates a grouping factor
   # If data is a vector
-  # .. Return dataframe with vector and grouping factor
+  # .. Return data frame with vector and grouping factor
   # .. grouped by grouping factor
-  # If data is a dataframe:
-  # .. Return dataframe grouped by grouping factor
+  # If data is a data frame:
+  # .. Return data frame grouped by grouping factor
   #
 
   # Create grouping factor
@@ -73,7 +74,7 @@ group <- function(data, n, method = 'n_dist', starts_col = NULL,
   }
 
 
-  # If data is a dataframe
+  # If data is a data frame
   # .. Check if force_equal is TRUE
   # .... if so, shorten data to the length of the
   # .... grouping factor
@@ -83,14 +84,14 @@ group <- function(data, n, method = 'n_dist', starts_col = NULL,
   # .. Check if force_equal is TRUE
   # .... if so, shorten data to the length of the
   # .... grouping factor
-  # .. Create a dataframe
+  # .. Create a data frame
   # .... with data and the grouping factor
   # .. Group by grouping factor and return data
 
   # Create local tmp variable name
   local_tmp_var <- create_tmp_var(data, ".TempGroupsName")
 
-  # If data is dataframe
+  # If data is data frame
   if(is.data.frame(data)){
 
     # If force_equal is TRUE
@@ -122,7 +123,7 @@ group <- function(data, n, method = 'n_dist', starts_col = NULL,
 
     }
 
-    # Create dataframe with data and the grouping factor
+    # Create data frame with data and the grouping factor
     data <- data.frame(data)
     data[[local_tmp_var]] <- grouping_factor
 

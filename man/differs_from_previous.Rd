@@ -10,14 +10,14 @@ differs_from_previous(data, col = NULL, threshold = NULL,
   factor_conversion_warning = TRUE)
 }
 \arguments{
-\item{data}{Dataframe or Vector
+\item{data}{Data frame or Vector
 
 N.B. If checking a factor, it is converted to a character vector.
 This means that factors can only be used when \code{threshold} is \code{NULL}.
 Conversion will generate a warning, which can be turned off by setting \code{factor_conversion_warning} to \code{FALSE}.}
 
 \item{col}{Name of column to find values that differ in. Used when data is
-dataframe. (Character)}
+data frame. (Character)}
 
 \item{threshold}{Threshold to check difference to previous value to.
 
@@ -89,7 +89,7 @@ Finds values, or indices of values, that differ from the previous value by some 
 # Attach packages
 library(groupdata2)
 
-# Create a dataframe
+# Create a data frame
 df <- data.frame('a' = c('a','a','b','b','c','c'),
                  'n' = c(1,3,6,2,2,4))
 

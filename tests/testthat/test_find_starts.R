@@ -33,11 +33,11 @@ test_that("find_starts() find the right starts", {
                  "col is factor. Using as character.", fixed = TRUE)
 
   expect_error(find_starts(df),
-               "col must be specified when data is dataframe",
+               "col must be specified when data is data frame",
                fixed = TRUE)
 
   expect_warning(find_starts(v, col = 'a'),
-                 "col not used as data is not a dataframe",
+                 "col not used as data is not a data frame",
                  fixed = TRUE)
 
   expect_warning(find_starts(factor(v)),

@@ -2,13 +2,13 @@
 % Please edit documentation in R/sampling.R
 \name{upsample}
 \alias{upsample}
-\title{Upsampling of rows in a dataframe.}
+\title{Upsampling of rows in a data frame.}
 \usage{
 upsample(data, cat_col, id_col = NULL, id_method = "n_ids",
   mark_new_rows = FALSE, new_rows_col_name = ".new_row")
 }
 \arguments{
-\item{data}{Dataframe.}
+\item{data}{Data frame.}
 
 \item{cat_col}{Name of categorical variable to balance by. (Character)}
 
@@ -56,7 +56,7 @@ upsample(data, cat_col, id_col = NULL, id_method = "n_ids",
 \item{new_rows_col_name}{Name of column marking new rows. Defaults to \code{".new_row"}.}
 }
 \value{
-Dataframe with added rows. Ordered by \code{cat_col} and (potentially) \code{id_col}.
+Data frame with added rows. Ordered by \code{cat_col} and (potentially) \code{id_col}.
 }
 \description{
 Uses random upsampling to fix the group sizes to the
@@ -73,7 +73,7 @@ Upsampling is done with replacement for added rows, while the original data rema
 # Attach packages
 library(groupdata2)
 
-# Create dataframe
+# Create data frame
 df <- data.frame(
   "participant" = factor(c(1, 1, 2, 3, 3, 3, 3, 4, 4, 5, 5, 5, 5)),
   "diagnosis" = factor(c(0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0)),

@@ -9,7 +9,7 @@ rearrange(data, method = "pair_extremes", unequal_method = "middle",
   rearrange_factor_name = ".rearrange_factor")
 }
 \arguments{
-\item{data}{Dataframe or Vector.}
+\item{data}{Data frame or Vector.}
 
 \item{method}{Name of method used to create rearrange factor.
 Currently only \code{pair_extremes}.

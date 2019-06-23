@@ -45,7 +45,7 @@ options(tibble.print_min = 4L, tibble.print_max = 4L)
 
 # Introduction
 
-In this vignette we will use the 'l_starts' method with **group**() to allow transferring of information from one dataset to another. We will use the automatic grouping function that finds group starts all by itself.
+In this vignette, we will use the 'l_starts' method with **group**() to allow transfering of information from one dataset to another. We will use the automatic grouping function that finds group starts all by itself.
 
 
 ## Attach packages
@@ -58,7 +58,7 @@ library(knitr) # kable
 
 ## Data
 
-3 participants were asked to solve a task. They had to take turns but could go for multiple runs of the task before taking a break and letting the next participant take over. They had 2 turns each. Let's call each turn a session, i.e. there was 6 sessions.  A team of experts would rate how well the participant did throughout the entire session, meaning that if the participant had some bad runs, he/she would have to make a choice of whether to save energy for the other session or whether to try and correct the rating of the current session.
+3 participants were asked to solve a task. They had to take turns but could go for multiple runs of the task before taking a break and letting the next participant take over. They had 2 turns each. Let's call each turn a session, i.e. there was 6 sessions.  A team of experts would rate how well the participant did throughout the entire session, meaning that if the participant had some bad runs, they would have to make a choice whether to save energy for the other session or whether to try and correct the rating of the current session.
 For each run of the task, we recorded how many errors the participant made. 
 
 
@@ -82,7 +82,7 @@ df_observations <- data.frame(
   
 )
 
-# Show the first 20 rows of dataframe
+# Show the first 20 rows of data frame
 df_observations %>% head(20) %>%  kable()
 
 df_ratings <- data.frame(
@@ -96,7 +96,7 @@ df_ratings %>% kable()
 
 ```
 
-We would like to get the ratings into the dataframes with observations. For this we will first create a session column, and then get the ratings for the sessions.
+We would like to get the ratings into the data frame with observations. For this we will first create a session column, and then get the ratings for the sessions.
 To do this we will use **group**() with the 'l_starts' method. This methods takes group start values, finds those values in a specified column, and creates groups that begin at the start values. To show this, let's try it out with some start values before having **group**() find them automatically.
 
 ```{r}
@@ -124,7 +124,7 @@ df_observations %>%
 And it works! :)   
 If you just want the group starts, you can use the function **find_starts**().
 
-Now that we have the session information, we can transfer the ratings from the ratings dataframe.
+Now that we have the session information, we can transfer the ratings from the ratings data frame.
 
 ```{r}
 df_merged <- merge(df_observations, df_ratings, by = 'session')
@@ -134,7 +134,7 @@ df_merged %>% head(15) %>% kable()
 
 ```
 
-Now we can find the average number of errors per session and see if they correlate with the experts' ratings.
+Now, we can find the average number of errors per session and see if they correlate with the experts' ratings.
 
 ```{r}
 avg_errors <- df_merged %>% 
@@ -145,7 +145,7 @@ avg_errors %>% kable()
 
 ```
 
-Let's transfer the averages to the merged dataframe. Once again, we just use merge().
+Let's transfer the averages to the merged data frame. Once again, we just use merge().
 Since we have just one rating per session, we will get only the first row of each session.
 
 ```{r}
@@ -162,10 +162,10 @@ We have 1 row per session with the participant, the rating and the average error
 Now let's check if there's a correlation between ratings and average errors.
 
 ```{r}
-summary(lm(rating~avg_errors, df_summarized))
+cor(df_summarized$rating, df_summarized$avg_errors)
 ```
 
-It seems like they follow each other pretty neatly. 
+It seems they are highly negatively correlated, so participants with fewer errors have higher ratings and vice versa.
 
 
 

@@ -8,13 +8,13 @@
 #' Wraps \code{\link{differs_from_previous}()}.
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
-#' @param data Dataframe or Vector
+#' @param data Data frame or Vector
 #'
 #' N.B. If checking a factor, it is converted to a character vector.
 #' Conversion will generate a warning, which can be turned off by setting \code{factor_conversion_warning} to \code{FALSE}.
 #' @param return_index Return indices of starts. (Logical)
 #' @param col Name of column to find starts in. Used when data is
-#'  dataframe. (Character)
+#'  data frame. (Character)
 #' @param factor_conversion_warning Generate warning when converting factor to character. (Logical)
 #' @return Vector with either start values or indices of start values.
 #' @family l_starts tools
@@ -22,7 +22,7 @@
 #' # Attach packages
 #' library(groupdata2)
 #'
-#' # Create a dataframe
+#' # Create a data frame
 #' df <- data.frame('a' = c('a','a','b',
 #'                          'b','c','c'))
 #'

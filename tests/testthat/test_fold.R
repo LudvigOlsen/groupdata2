@@ -6,7 +6,7 @@ context("fold()")
 # quirky behavior
 # Add tests for other methods
 
-test_that("dimensions of dataframe with fold()",{
+test_that("dimensions of data frame with fold()",{
 
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
@@ -123,7 +123,7 @@ test_that(".folds is correct in fold()",{
                             method = 'n_dist', num_fold_cols = 2, folds_col = ".folds_1"), c(9,9))
 
 
-  # Unequal number of rows in dataframe
+  # Unequal number of rows in data frame
 
   expect_equal(group_counts(df_unequal, 5, method = 'greedy'), c(5,5,5,2))
 

@@ -53,11 +53,11 @@ test_that("differs_from_previous() find the right values and indices", {
                  "col is factor. Using as character.", fixed = TRUE)
 
   expect_error(differs_from_previous(df),
-               "col must be specified when data is dataframe",
+               "col must be specified when data is data frame",
                fixed = TRUE)
 
   expect_warning(differs_from_previous(v, col = 'a'),
-                 "col not used as data is not a dataframe",
+                 "col not used as data is not a data frame",
                  fixed = TRUE)
 
   expect_warning(differs_from_previous(factor(v)),
@@ -89,7 +89,7 @@ test_that("differs_from_previous() find the right values and indices", {
                "When 'threshold' is a vector of length 2, the second element must be positive.",
                fixed = TRUE)
   expect_error(differs_from_previous(df, col="lol", threshold = c(-1,2)),
-               "col was not found in dataframe.",
+               "col was not found in data frame.",
                fixed = TRUE)
   expect_error(differs_from_previous(df, col="v2", threshold = 10, direction="greater"),
                "'direction' must be one of 'both', 'negative', and 'positive'.",

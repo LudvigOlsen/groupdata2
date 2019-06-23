@@ -3,7 +3,7 @@ context("numerically_balanced_group_factor_()")
 
 test_that("numerically_balanced_group_factor_() work with n=2", {
 
-  # Create dataframe
+  # Create data frame
   set.seed(1)
   df <- data.frame(
     "participant" = factor(c(1, 3, 5, 6, 7, 8)),
@@ -23,7 +23,7 @@ test_that("numerically_balanced_group_factor_() work with n=2", {
 
 test_that("numerically_balanced_group_factor_() works with n=3", {
 
-  # Create dataframe
+  # Create data frame
   set.seed(1)
   df <- data.frame(
     "participant" = factor(c(1, 1, 2, 3, 3, 3, 3)),
@@ -32,7 +32,7 @@ test_that("numerically_balanced_group_factor_() works with n=3", {
     dplyr::mutate(neg_score = score-200,
                   neg_pos_score = score-50)
 
-  # numerically_balanced_group_factor_ on unequal number of dataframe rows
+  # numerically_balanced_group_factor_ on unequal number of data frame rows
   set.seed(1)
   expect_equal(numerically_balanced_group_factor_(df, 3, num_col="score"),
                factor(c(2,3,3,2,1,3,1)))
@@ -56,7 +56,7 @@ test_that("numerically_balanced_group_factor_() works with n=3", {
 
   expect_equal(group_sums$group_sum, c(101,102,83))
 
-  # numerically_balanced_group_factor_ on equal number of dataframe rows
+  # numerically_balanced_group_factor_ on equal number of data frame rows
 
   df <- df %>% dplyr::filter(dplyr::row_number() != 7)
   set.seed(1)
@@ -227,7 +227,7 @@ test_that("numerically_balanced_group_factor_() unequal method on small datasets
 
 test_that("numerically_balanced_group_factor_() work method='l_sizes'", {
 
-  # Create dataframe
+  # Create data frame
   set.seed(1)
   df <- data.frame(
     "participant" = factor(c(1, 3, 5, 6, 7, 8)),
@@ -275,7 +275,7 @@ test_that("numerically_balanced_group_factor_() on large datasets", {
 
   # testthat::skip(message = "Skipping numerical balancing of a large dataset")
 
-  # Create dataframe
+  # Create data frame
   set.seed(1)
   df <- data.frame(
     "participant" = factor(rep(1:10, 100)),

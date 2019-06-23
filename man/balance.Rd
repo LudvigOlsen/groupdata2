@@ -8,7 +8,7 @@ balance(data, size, cat_col, id_col = NULL, id_method = "n_ids",
   mark_new_rows = FALSE, new_rows_col_name = ".new_row")
 }
 \arguments{
-\item{data}{Dataframe.}
+\item{data}{Data frame.}
 
 \item{size}{Size to fix group sizes to.
  Can be a specific number, given as a whole number, or one of the following strings:
@@ -81,7 +81,7 @@ balance(data, size, cat_col, id_col = NULL, id_method = "n_ids",
 \item{new_rows_col_name}{Name of column marking new rows. Defaults to \code{".new_row"}.}
 }
 \value{
-Dataframe with added and/or deleted rows.
+Data frame with added and/or deleted rows.
  Ordered by \code{cat_col} and (potentially) \code{id_col}.
 }
 \description{
@@ -100,7 +100,7 @@ Uses up- or downsampling to fix the group size to the
 # Attach packages
 library(groupdata2)
 
-# Create dataframe
+# Create data frame
 df <- data.frame(
   "participant" = factor(c(1, 1, 2, 3, 3, 3, 3, 4, 4, 5, 5, 5, 5)),
   "diagnosis" = factor(c(0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0)),

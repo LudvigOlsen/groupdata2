@@ -3,7 +3,7 @@
 
 
 ## downsample
-#' @title Downsampling of rows in a dataframe.
+#' @title Downsampling of rows in a data frame.
 #' @description Uses random downsampling to fix the group sizes to the
 #'  smallest group in the data frame.
 #'
@@ -16,12 +16,12 @@
 #' @export
 #' @inheritParams balance
 #' @family sampling functions
-#' @return Dataframe with some rows removed. Ordered by \code{cat_col} and (potentially) \code{id_col}.
+#' @return Data frame with some rows removed. Ordered by \code{cat_col} and (potentially) \code{id_col}.
 #' @examples
 #' # Attach packages
 #' library(groupdata2)
 #'
-#' # Create dataframe
+#' # Create data frame
 #' df <- data.frame(
 #'   "participant" = factor(c(1, 1, 2, 3, 3, 3, 3, 4, 4, 5, 5, 5, 5)),
 #'   "diagnosis" = factor(c(0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0)),
@@ -65,7 +65,7 @@ downsample <- function(data,
 }
 
 ## upsample
-#' @title Upsampling of rows in a dataframe.
+#' @title Upsampling of rows in a data frame.
 #' @description Uses random upsampling to fix the group sizes to the
 #'  largest group in the data frame.
 #'
@@ -78,12 +78,12 @@ downsample <- function(data,
 #' @export
 #' @inheritParams balance
 #' @family sampling functions
-#' @return Dataframe with added rows. Ordered by \code{cat_col} and (potentially) \code{id_col}.
+#' @return Data frame with added rows. Ordered by \code{cat_col} and (potentially) \code{id_col}.
 #' @examples
 #' # Attach packages
 #' library(groupdata2)
 #'
-#' # Create dataframe
+#' # Create data frame
 #' df <- data.frame(
 #'   "participant" = factor(c(1, 1, 2, 3, 3, 3, 3, 4, 4, 5, 5, 5, 5)),
 #'   "diagnosis" = factor(c(0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0)),
@@ -145,7 +145,7 @@ upsample <- function(data,
 #' \subsection{With \code{id_col}}{See \code{id_method} description.}
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
-#' @param data Dataframe.
+#' @param data Data frame.
 #' @param size Size to fix group sizes to.
 #'  Can be a specific number, given as a whole number, or one of the following strings:
 #'  \code{"min"}, \code{"max"}, \code{"mean"}, \code{"median"}.
@@ -211,13 +211,13 @@ upsample <- function(data,
 #' @param mark_new_rows Add column with 1s for added rows, and 0s for original rows. (Logical)
 #' @param new_rows_col_name Name of column marking new rows. Defaults to \code{".new_row"}.
 #' @family sampling functions
-#' @return Dataframe with added and/or deleted rows.
+#' @return Data frame with added and/or deleted rows.
 #'  Ordered by \code{cat_col} and (potentially) \code{id_col}.
 #' @examples
 #' # Attach packages
 #' library(groupdata2)
 #'
-#' # Create dataframe
+#' # Create data frame
 #' df <- data.frame(
 #'   "participant" = factor(c(1, 1, 2, 3, 3, 3, 3, 4, 4, 5, 5, 5, 5)),
 #'   "diagnosis" = factor(c(0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0)),

@@ -8,7 +8,7 @@ find_missing_starts(data, n, starts_col = NULL,
   return_skip_numbers = TRUE)
 }
 \arguments{
-\item{data}{Dataframe or Vector}
+\item{data}{Data frame or Vector}
 
 \item{n}{List of starting positions.
 
@@ -17,7 +17,7 @@ Skip values by c(value, skip_to_number) where skip_to_number is the nth appearan
 See \link{group_factor} for explanations and examples of using the \code{l_starts} method.}
 
 \item{starts_col}{Name of column with values to match
-when data is a dataframe. Pass 'index' to use row names. (Character)}
+when data is a data frame. Pass 'index' to use row names. (Character)}
 
 \item{return_skip_numbers}{Return skip_to numbers along with values (Logical).}
 }
@@ -34,7 +34,7 @@ Tells you which values and (optionally) skip_to numbers that are
 # Attach packages
 library(groupdata2)
 
-# Create a dataframe
+# Create a data frame
 df <- data.frame('a' = c('a','a','b',
                          'b','c','c'))
 

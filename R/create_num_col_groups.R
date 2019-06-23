@@ -18,7 +18,7 @@ create_num_col_groups <- function(data, n, num_col, cat_col=NULL, id_col=NULL, c
   # If method is n_*, we are doing folding
   is_n_method <- substring(method, 1, 2) == "n_"
 
-  # Sample dataframe before use.
+  # Sample data frame before use.
   if (isTRUE(pre_randomize)){
 
     # Create unique local temporary index

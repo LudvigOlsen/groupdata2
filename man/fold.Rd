@@ -12,24 +12,25 @@ fold(data, k = 5, cat_col = NULL, num_col = NULL, id_col = NULL,
   handle_existing_fold_cols = "keep_warn", parallel = FALSE)
 }
 \arguments{
-\item{data}{Dataframe or Vector.}
+\item{data}{Data frame or vector.}
 
 \item{k}{\emph{Dependent on method.}
 
  Number of folds (default), fold size, with more (see \code{method}).
 
- Given as whole number and/or percentage (0 < n < 1).}
+ Given as whole number or percentage (0 < n < 1).}
 
 \item{cat_col}{Name of categorical variable to balance between folds.
 
- E.g. when predicting a binary variable (a or b), it is necessary to have
- both represented in every fold.
+ E.g. when predicting a binary variable (a or b), we usually want
+ both classes represented in every fold.
 
  N.B. If also passing an \code{id_col}, \code{cat_col} should be constant within each ID.}
 
 \item{num_col}{Name of numerical variable to balance between folds.
 
- N.B. When used with \code{id_col}, values for each ID are aggregated using \code{id_aggregation_fn} before being balanced.
+ N.B. When used with \code{id_col}, values for each ID are aggregated using
+ \code{id_aggregation_fn} before being balanced.
 
  N.B. When passing \code{num_col}, the \code{method} parameter is not used.}
 
@@ -84,25 +85,27 @@ fold(data, k = 5, cat_col = NULL, num_col = NULL, id_col = NULL,
 
  \code{n} is step size}}
 
-\item{id_aggregation_fn}{Function for aggregating values in \code{num_col} for each ID, before balancing \code{num_col}.
+\item{id_aggregation_fn}{Function for aggregating values in \code{num_col}
+ for each ID, before balancing \code{num_col}.
 
  N.B. Only used when \code{num_col} and \code{id_col} are both specified.}
 
 \item{extreme_pairing_levels}{How many levels of extreme pairing to do
- when \code{num_col} is not \code{NULL}.
+ when balancing folds by a numerical column (i.e. \code{num_col} is specified).
 
  \strong{Extreme pairing}: Rows/pairs are ordered as smallest, largest,
  second smallest, second largest, etc. If \code{extreme_pairing_levels > 1},
  this is done "recursively". See \code{"Details/num_col"} for more.
 
- N.B. Works best with large datasets. If set too high,
+ N.B. Larger values work best with large datasets. If set too high,
  the result might not be stochastic. Always check if an increase
  actually makes the folds more balanced. See example.}
 
 \item{num_fold_cols}{Number of fold columns to create.
  Useful for repeated cross-validation.
 
- If \code{num_fold_cols > 1}, columns will be named \eqn{".folds_1"}, \eqn{".folds_2"}, etc.
+ If \code{num_fold_cols > 1}, columns will be named
+ \eqn{".folds_1"}, \eqn{".folds_2"}, etc.
  Otherwise simply \eqn{".folds"}.
 
  N.B. If \code{unique_fold_cols_only} is \code{TRUE},
@@ -110,21 +113,26 @@ fold(data, k = 5, cat_col = NULL, num_col = NULL, id_col = NULL,
 
  N.B. If \code{data} has existing fold columns, see \code{handle_existing_fold_cols}.}
 
-\item{unique_fold_cols_only}{Check if fold columns are identical and keep only unique columns.
+\item{unique_fold_cols_only}{Check if fold columns are identical and
+ keep only unique columns.
 
  As the number of column comparisons can be time consuming,
  we can run this part in parallel. See \code{parallel}.
 
- N.B. We can end up with fewer columns than specified in \code{num_fold_cols}, see \code{max_iters}.
+ N.B. We can end up with fewer columns than specified in
+ \code{num_fold_cols}, see \code{max_iters}.
 
  N.B. Only used when \code{num_fold_cols > 1} or \code{data} has existing fold columns.}
 
-\item{max_iters}{Maximum number of attempts at reaching \code{num_fold_cols} \emph{unique} fold columns.
+\item{max_iters}{Maximum number of attempts at reaching
+ \code{num_fold_cols} \emph{unique} fold columns.
 
  When only keeping unique fold columns, we risk having fewer columns than expected.
- Hence, we repeatedly create the missing columns and remove those that are not unique. This is done until
- we have \code{num_fold_cols} unique fold columns or we have attempted \code{max_iters} times.
- In some cases, it is not possible to create \code{num_fold_cols} unique combinations of our dataset, e.g.
+ Hence, we repeatedly create the missing columns and remove those that are not unique.
+ This is done until we have \code{num_fold_cols} unique fold columns
+ or we have attempted \code{max_iters} times.
+ In some cases, it is not possible to create \code{num_fold_cols}
+ unique combinations of the dataset, e.g.
  when specifying \code{cat_col}, \code{id_col} and \code{num_col}.
  \code{max_iters} specifies when to stop trying.
  Note that we can end up with fewer columns than specified in \code{num_fold_cols}.
@@ -134,7 +142,8 @@ fold(data, k = 5, cat_col = NULL, num_col = NULL, id_col = NULL,
 \item{handle_existing_fold_cols}{How to handle existing fold columns.
  Either "keep_warn", "keep", or "remove".
 
- To add extra fold columns, use "keep" or "keep_warn". Note that existing fold columns might be renamed.
+ To add extra fold columns, use "keep" or "keep_warn".
+ Note that existing fold columns might be renamed.
 
  To replace the existing fold columns, use "remove".}
 
@@ -145,7 +154,7 @@ fold(data, k = 5, cat_col = NULL, num_col = NULL, id_col = NULL,
  See \code{\link[doParallel:registerDoParallel]{doParallel::registerDoParallel}}.}
 }
 \value{
-Dataframe with grouping factor for subsetting in cross-validation.
+Data frame with grouping factor for subsetting in cross-validation.
 }
 \description{
 Divides data into groups by a range of methods.
@@ -182,8 +191,8 @@ Divides data into groups by a range of methods.
      \item The final group identifiers are folded, and the fold identifiers are transferred to the rows.
    }
 
- N.B. When doing extreme pairing of an unequal number of rows/groups,
- the row/group with the smallest value is placed in a group by itself, and the order is instead:
+ N.B. When doing extreme pairing of an unequal number of rows,
+ the row with the smallest value is placed in a group by itself, and the order is instead:
  smallest, second smallest, largest, third smallest, second largest, etc.
  }
 
@@ -209,7 +218,7 @@ Divides data into groups by a range of methods.
    \enumerate{
      \item Values in \code{num_col} are aggregated for each ID, using \code{id_aggregation_fn}.
      \item The IDs are grouped, using the aggregated values as "\code{num_col}".
-     \item The group numbers for the IDs are transferred to their rows.
+     \item The groups of the IDs are transferred to the rows.
    }
  }
 
@@ -222,7 +231,7 @@ Divides data into groups by a range of methods.
      \item The subsets are merged such that the largest group
      (by sum of the aggregated values) from the first category
      is merged with the smallest group from the second category, etc.
-     \item The group numbers for the IDs are transferred to their rows.
+     \item The groups of the IDs are transferred to the rows.
    }
  }
 }
@@ -231,7 +240,7 @@ Divides data into groups by a range of methods.
 library(groupdata2)
 library(dplyr)
 
-# Create dataframe
+# Create data frame
 df <- data.frame(
  "participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
  "age" = rep(sample(c(1:100), 6), 3),
@@ -296,7 +305,12 @@ df_folded_2 \%>\%
 }
 \seealso{
 \code{\link{partition}} for balanced partitions
+
+Other grouping functions: \code{\link{group_factor}},
+  \code{\link{group}}, \code{\link{partition}},
+  \code{\link{splt}}
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 }
+\concept{grouping functions}

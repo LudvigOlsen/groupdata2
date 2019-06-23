@@ -2,12 +2,12 @@
 % Please edit documentation in R/sampling.R
 \name{downsample}
 \alias{downsample}
-\title{Downsampling of rows in a dataframe.}
+\title{Downsampling of rows in a data frame.}
 \usage{
 downsample(data, cat_col, id_col = NULL, id_method = "n_ids")
 }
 \arguments{
-\item{data}{Dataframe.}
+\item{data}{Data frame.}
 
 \item{cat_col}{Name of categorical variable to balance by. (Character)}
 
@@ -51,7 +51,7 @@ downsample(data, cat_col, id_col = NULL, id_method = "n_ids")
  }}
 }
 \value{
-Dataframe with some rows removed. Ordered by \code{cat_col} and (potentially) \code{id_col}.
+Data frame with some rows removed. Ordered by \code{cat_col} and (potentially) \code{id_col}.
 }
 \description{
 Uses random downsampling to fix the group sizes to the
@@ -68,7 +68,7 @@ Downsampling is done without replacement, meaning that rows are not duplicated b
 # Attach packages
 library(groupdata2)
 
-# Create dataframe
+# Create data frame
 df <- data.frame(
   "participant" = factor(c(1, 1, 2, 3, 3, 3, 3, 4, 4, 5, 5, 5, 5)),
   "diagnosis" = factor(c(0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0)),

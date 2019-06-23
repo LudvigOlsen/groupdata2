@@ -37,8 +37,8 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'      \item The ordered dataset is split by the sizes in \code{p}.
 #'    }
 #'
-#'  N.B. When doing extreme pairing of an unequal number of rows/groups,
-#'  the row/group with the largest value is placed in a group by itself, and the order is instead:
+#'  N.B. When doing extreme pairing of an unequal number of rows,
+#'  the row with the largest value is placed in a group by itself, and the order is instead:
 #'  smallest, second largest, second smallest, third largest, ... , largest.
 #'  }
 #'
@@ -78,16 +78,17 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
+#' @family grouping functions
 #' @inheritParams group_factor
-#' @param p List / vector of partition sizes.
+#' @param p List or vector of partition sizes.
 #'  Given as whole number(s) and/or percentage(s) (\code{0} < \code{n} < \code{1}).
 #'  E.g. \eqn{c(0.2, 3, 0.1)}.
 #' @param cat_col Name of categorical variable to balance between partitions.
 #'
-#'  E.g. when training/testing a model for predicting a binary variable (a or b),
-#'  it is necessary to have both represented in both the training set and the test set.
+#'  E.g. when training and testing a model for predicting a binary variable (a or b),
+#'  we usually want both classes represented in both the training set and the test set.
 #'
-#'  N.B. If also passing an id_col, cat_col should be constant within each ID.
+#'  N.B. If also passing an \code{id_col}, \code{cat_col} should be constant within each ID.
 #' @param num_col Name of numerical variable to balance between partitions.
 #'
 #'  N.B. When used with \code{id_col}, values in \code{num_col} for each ID are
@@ -103,30 +104,30 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'
 #'  N.B. Only used when \code{num_col} and \code{id_col} are both specified.
 #' @param extreme_pairing_levels How many levels of extreme pairing to do
-#'  when \code{num_col} is not \code{NULL}.
+#'  when balancing partitions by a numerical column (i.e. \code{num_col} is specified).
 #'
 #'  \strong{Extreme pairing}: Rows/pairs are ordered as smallest, largest,
 #'  second smallest, second largest, etc. If \code{extreme_pairing_levels > 1},
-#'  this is done "recursively". See \code{"Details/num_col"} for more.
+#'  this is done "recursively" on the extreme pairs. See \code{"Details/num_col"} for more.
 #'
-#'  N.B. Works best with large datasets. If set too high,
+#'  N.B. Larger values work best with large datasets. If set too high,
 #'  the result might not be stochastic. Always check if an increase
 #'  actually makes the partitions more balanced. See example.
 #' @param list_out Return partitions in a list. (Logical)
 #' @param force_equal Discard excess data. (Logical)
 #' @return If \code{list_out is TRUE}:
 #'
-#' A list of partitions where partitions are dataframes.
+#' A list of partitions where partitions are data frames.
 #'
 #' If \code{list_out is FALSE}:
 #'
-#' A dataframe with grouping factor for subsetting.
+#' A data frame with grouping factor for subsetting.
 #' @examples
 #' # Attach packages
 #' library(groupdata2)
 #' library(dplyr)
 #'
-#' # Create dataframe
+#' # Create data frame
 #' df <- data.frame(
 #'  "participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
 #'  "age" = rep(sample(c(1:100), 6), 3),
@@ -158,7 +159,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'                         num_col = "score",
 #'                         id_col = 'participant')
 #'
-#' # Return dataframe with grouping factor
+#' # Return data frame with grouping factor
 #' # with list_out = FALSE
 #' partitions <- partition(df, c(0.5), list_out = FALSE)
 #'
@@ -191,7 +192,7 @@ partition <- function(data, p=0.2, cat_col=NULL,
 
   #
   # Balanced partitioning
-  # data: dataframe or vector
+  # data: data frame or vector
   # p: list of partitions given as percentage (0-1) or group sizes (wholenumber)
   # cat_col: Categorical variable to balance by
   # num_col: Numerical variable to balance by

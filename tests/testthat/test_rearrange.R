@@ -3,7 +3,7 @@ context("rearrange()")
 
 test_that("rearrange() works", {
 
-  # Create dataframe
+  # Create data frame
   set.seed(1)
   df <- data.frame(
     "participant" = factor(c(1, 3, 5, 6, 7, 8, 9)),

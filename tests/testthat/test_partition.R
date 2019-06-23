@@ -1,7 +1,7 @@
 library(groupdata2)
 context("partition()")
 
-test_that("dimensions of dataframe with partition()",{
+test_that("dimensions of data frame with partition()",{
 
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),

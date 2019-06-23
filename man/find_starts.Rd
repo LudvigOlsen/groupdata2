@@ -8,13 +8,13 @@ find_starts(data, col = NULL, return_index = FALSE,
   factor_conversion_warning = TRUE)
 }
 \arguments{
-\item{data}{Dataframe or Vector
+\item{data}{Data frame or Vector
 
 N.B. If checking a factor, it is converted to a character vector.
 Conversion will generate a warning, which can be turned off by setting \code{factor_conversion_warning} to \code{FALSE}.}
 
 \item{col}{Name of column to find starts in. Used when data is
-dataframe. (Character)}
+data frame. (Character)}
 
 \item{return_index}{Return indices of starts. (Logical)}
 
@@ -35,7 +35,7 @@ Wraps \code{\link{differs_from_previous}()}.
 # Attach packages
 library(groupdata2)
 
-# Create a dataframe
+# Create a data frame
 df <- data.frame('a' = c('a','a','b',
                          'b','c','c'))
 

@@ -13,7 +13,7 @@
 #' library(groupdata2)
 #' library(dplyr)
 #'
-#' # Create dataframe
+#' # Create data frame
 #' df <- data.frame("x"=c(1:12),
 #'  "species" = rep(c('cat','pig', 'human'), 4),
 #'  "age" = sample(c(1:100), 12))
@@ -26,9 +26,9 @@ splt <- function(data, n, method = 'n_dist', starts_col = NULL, force_equal = FA
                  remove_missing_starts = FALSE){
 
   #
-  # Takes dataframe or vector
+  # Takes data frame or vector
   # Splits into the specified windows
-  # Returns list with the windows (dataframes or vectors)
+  # Returns list with the windows (data frames or vectors)
   #
 
   # If allow_zero is TRUE, and n is 0
@@ -94,7 +94,7 @@ splt <- function(data, n, method = 'n_dist', starts_col = NULL, force_equal = FA
 
 
   # Split the data
-  # .. Checks if data is dataframe or vector
+  # .. Checks if data is data frame or vector
   # .. Calls the right splitter
 
   if (is.data.frame(data)){

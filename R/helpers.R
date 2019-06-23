@@ -184,7 +184,7 @@ check_arguments_ <- function(data, n, method, force_equal,
   # Checks if the given arguments live up to certain rules,
   # which allow them to be used in the function
 
-  # "data" can be both a dataframe or a vector
+  # "data" can be both a data frame or a vector
 
   stopifnot(method %in% c('greedy',
                           'n_dist',
@@ -369,7 +369,7 @@ group_uniques_ <- function(data, n, id_col, method, starts_col = NULL,
 
   #
   # Creates groups of unique IDs (e.g. subjects)
-  # Returns dataframe with grouping factor
+  # Returns data frame with grouping factor
   #
 
   # Get list of unique IDs in id_col
@@ -396,7 +396,7 @@ group_uniques_ <- function(data, n, id_col, method, starts_col = NULL,
 replace_col_name <- function(data, old_name, new_name){
 
   #
-  # Replaces name of column in dataframe
+  # Replaces name of column in data frame
   #
   colnames(data)[names(data) == old_name] <- new_name
   return(data)
@@ -406,7 +406,7 @@ replace_col_name <- function(data, old_name, new_name){
 get_column_index <- function(data, col){
 
   #
-  # Finds column index in dataframe given column name
+  # Finds column index in data frame given column name
   # Currently not in use
   #
 
@@ -483,7 +483,7 @@ assign_starts_col <- function(data, starts_col) {
     # If starts_col is 'index', create column with row names for matching values
     if (starts_col == 'index'){
 
-      # Check if there is a column in dataframe
+      # Check if there is a column in data frame
       # called 'index'
       # If so, throw warning that the index column in
       # data will be used.
@@ -508,7 +508,7 @@ assign_starts_col <- function(data, starts_col) {
       # in data
     } else if (starts_col == '.index') {
 
-      # Check if .index exists as column in dataframe
+      # Check if .index exists as column in data frame
       # If so, warn that it will not be used.
       if ('.index' %in% colnames(data)){
 
@@ -741,7 +741,7 @@ find_identical_cols <- function(data, cols=NULL, exclude_comparisons=NULL,
 
   # Print statements for checking the effect of running in parallel
   if (FALSE){
-    print(paste0("Rows in dataframe: ", nrow(data)))
+    print(paste0("Rows in data frame: ", nrow(data)))
     print(paste0("Number of combinations: ", nrow(column_combinations)))
     print(paste0("Parallel heuristic (do parallel?): ", parallel_heuristics))
   }

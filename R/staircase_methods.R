@@ -11,7 +11,7 @@ stair_split_group_factor_ <- function(v, step_size, force_equal = FALSE, descend
   # Get the number of groups with no staircasing
   n_groups <- ceiling(length(v)/step_size)
 
-  # Create a dataframe with 1 column containing a group index
+  # Create a data frame with 1 column containing a group index
   group_data <- data.frame('groups' = c(1:n_groups))
 
 
@@ -105,7 +105,7 @@ primes_split_group_factor_ <- function(v, start_at=2, force_equal = FALSE, desce
   # Get a number of groups sure to be >= than the final number of groups
   n_groups <- ceiling(length(v)/start_at)
 
-  # Create a dataframe with 1 column containing a group index
+  # Create a data frame with 1 column containing a group index
   group_data <- data.frame('groups' = c(1:n_groups))
 
   # Create a column with number of elements (group number times step size)

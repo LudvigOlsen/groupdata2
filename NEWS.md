@@ -15,7 +15,7 @@ Thanks for the request from jjesusfilho #3.
 
 * Adds parameter "num_fold_cols" to fold(). Useful for creating multiple fold columns for repeated cross-validation.
 
-* Adds parameter "unique_fold_cols_only" to fold(). Whether to only include unique fold columns or not.
+* Adds parameter "unique_fold_cols_only" to fold(). Whether to only include unique fold columns or not.   
 
 * Adds parameter "max_iters" to fold(). How many times to attempt creating unique fold columns. Note that it is possible to get fewer fold columns than specified in "num_fold_cols".
 
@@ -23,7 +23,7 @@ Thanks for the request from jjesusfilho #3.
 
 * Adds parameter "handle_existing_fold_cols" to fold(). When calling fold() on a data frame that already contains columns with names starting with ".folds", we can either keep them and add more, or replace them.
 
-* Fixed behavior in fold() when k is a percentage (between 0-1). Now k is interpreted as the approximate size of each fold.
+* Fixed behavior in fold() when k is a percentage (between 0-1). It is now interpreted as the approximate size of each fold and used to calculate the number of folds. E.g. k=0.2 will lead to 5 folds.  
 
 
 # groupdata2 1.0.0

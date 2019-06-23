@@ -9,7 +9,7 @@ group_factor(data, n, method = "n_dist", starts_col = NULL,
   randomize = FALSE, remove_missing_starts = FALSE)
 }
 \arguments{
-\item{data}{Dataframe or Vector.}
+\item{data}{Data frame or vector.}
 
 \item{n}{\emph{Dependent on method.}
 
@@ -94,12 +94,12 @@ group_factor(data, n, method = "n_dist", starts_col = NULL,
  \code{n} is the prime number to start at}}
 
 \item{starts_col}{Name of column with values to match in method \code{l_starts}
-when data is a dataframe. Pass \code{'index'} to use row names. (Character)}
+when data is a data frame. Pass \code{'index'} to use row names. (Character)}
 
 \item{force_equal}{Create equal groups by discarding excess data points.
 Implementation varies between methods. (Logical)}
 
-\item{allow_zero}{Whether n can be passed as \code{0}. (Logical)}
+\item{allow_zero}{Whether \code{n} can be passed as \code{0}. (Logical)}
 
 \item{descending}{Change direction of method. (Not fully implemented)
 (Logical)}
@@ -124,7 +124,7 @@ Divides data into groups by a range of methods.
 library(groupdata2)
 library(dplyr)
 
-# Create a dataframe
+# Create a data frame
 df <- data.frame("x"=c(1:12),
  "species" = rep(c('cat','pig', 'human'), 4),
  "age" = sample(c(1:100), 12))
@@ -148,7 +148,8 @@ df$groups <- groups
 
 }
 \seealso{
-Other grouping functions: \code{\link{group}},
+Other grouping functions: \code{\link{fold}},
+  \code{\link{group}}, \code{\link{partition}},
   \code{\link{splt}}
 
 Other staircase tools: \code{\link{\%primes\%}},

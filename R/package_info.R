@@ -11,7 +11,7 @@
 #'
 #' Divides data into groups by a range of methods.
 #' Creates a grouping factor with 1s for group 1, 2s for group 2, etc.
-#' Returns a dataframe grouped by the grouping factor for easy use in dplyr pipelines.
+#' Returns a data frame grouped by the grouping factor for easy use in dplyr pipelines.
 #'
 #' Go to \code{\link{group}}
 #'
