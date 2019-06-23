@@ -6,9 +6,9 @@
 \title{Create balanced folds for cross-validation.}
 \usage{
 fold(data, k = 5, cat_col = NULL, num_col = NULL, id_col = NULL,
-  starts_col = NULL, method = "n_dist", id_aggregation_fn = sum,
-  extreme_pairing_levels = 1, remove_missing_starts = FALSE,
-  num_fold_cols = 1, unique_fold_cols_only = TRUE, max_iters = 5,
+  method = "n_dist", id_aggregation_fn = sum,
+  extreme_pairing_levels = 1, num_fold_cols = 1,
+  unique_fold_cols_only = TRUE, max_iters = 5,
   handle_existing_fold_cols = "keep_warn", parallel = FALSE)
 }
 \arguments{
@@ -41,20 +41,11 @@ fold(data, k = 5, cat_col = NULL, num_col = NULL, id_col = NULL,
  effect of time, we want to have all observations of this participant in
  the same fold.}
 
-\item{starts_col}{Name of column with values to match in method \code{l_starts}
-when data is a dataframe. Pass \code{'index'} to use row names. (Character)}
-
-\item{method}{\code{greedy}, \code{n_dist}, \code{n_fill}, \code{n_last},
- \code{n_rand}, \code{l_sizes}, \code{l_starts}, \code{staircase}, or
- \code{primes}.
+\item{method}{\code{n_dist}, \code{n_fill}, \code{n_last},
+ \code{n_rand}, \code{greedy}, or \code{staircase}.
 
  \strong{Notice}: examples are sizes of the generated groups
  based on a vector with 57 elements.
-
- \subsection{greedy}{Divides up the data greedily given a specified group size
- \eqn{(e.g. 10, 10, 10, 10, 10, 7)}.
-
- \code{n} is group size}
 
  \subsection{n_dist (default)}{Divides the data into a specified number of groups and
  distributes excess data points across groups
@@ -81,40 +72,17 @@ when data is a dataframe. Pass \code{'index'} to use row names. (Character)}
 
  \code{n} is number of groups}
 
- \subsection{l_sizes}{Divides up the data by a list of group sizes.
- Excess data points are placed in an extra group at the end.
- \eqn{(e.g. n = list(0.2,0.3) outputs groups with sizes (11,17,29))}.
+ \subsection{greedy}{Divides up the data greedily given a specified group size
+ \eqn{(e.g. 10, 10, 10, 10, 10, 7)}.
 
- \code{n} is a list of group sizes}
-
- \subsection{l_starts}{Starts new groups at specified values of vector.
-
- \code{n} is a list of starting positions.
- Skip values by c(value, skip_to_number) where skip_to_number is the nth appearance of the value
- in the vector.
- Groups automatically start from first data point.
-
- \eqn{E.g. n = c(1,3,7,25,50) outputs groups with sizes (2,4,18,25,8)}.
-
- To skip: \eqn{given vector c("a", "e", "o", "a", "e", "o"), n = list("a", "e", c("o", 2))
- outputs groups with sizes (1,4,1)}.}
-
- If passing \eqn{n = 'auto'}  the starting positions are automatically found with
- \code{\link{find_starts}()}.
+ \code{n} is group size}
 
  \subsection{staircase}{Uses step size to divide up the data.
  Group size increases with 1 step for every group,
  until there is no more data
  \eqn{(e.g. 5, 10, 15, 20, 7)}.
 
- \code{n} is step size}
-
- \subsection{primes}{Uses prime numbers as group sizes.
- Group size increases to the next prime number
- until there is no more data.
- \eqn{(e.g. 5, 7, 11, 13, 17, 4)}.
-
- \code{n} is the prime number to start at}}
+ \code{n} is step size}}
 
 \item{id_aggregation_fn}{Function for aggregating values in \code{num_col} for each ID, before balancing \code{num_col}.
 
@@ -130,11 +98,6 @@ when data is a dataframe. Pass \code{'index'} to use row names. (Character)}
  N.B. Works best with large datasets. If set too high,
  the result might not be stochastic. Always check if an increase
  actually makes the folds more balanced. See example.}
-
-\item{remove_missing_starts}{Recursively remove elements from the
-list of starts that are not found.
-For method \code{l_starts} only.
-(Logical)}
 
 \item{num_fold_cols}{Number of fold columns to create.
  Useful for repeated cross-validation.
@@ -325,6 +288,9 @@ df_folded_2 \%>\%
   dplyr::summarise(sum_score = sum(score),
                    mean_score = mean(score))
 
+}
+\seealso{
+\code{\link{partition}} for balanced partitions
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}

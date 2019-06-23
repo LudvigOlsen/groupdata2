@@ -2,6 +2,8 @@
 #' @title Rearrange data by a set of methods.
 #' @description \strong{Internal}: Creates a rearrange factor and sorts the data by it.
 #'  A rearrange factor is simply a vector of integers to sort by.
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
+#' @keywords internal
 #' @param data Dataframe or Vector.
 #' @param method Name of method used to create rearrange factor.
 #' Currently only \code{pair_extremes}.

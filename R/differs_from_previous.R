@@ -11,7 +11,7 @@
 #'    \item less than or equal to the negative threshold.
 #'  }
 #'
-#' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @param data Dataframe or Vector
 #'

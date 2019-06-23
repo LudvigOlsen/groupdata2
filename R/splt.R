@@ -3,7 +3,7 @@
 #' @title Split data by a range of methods.
 #' @description Divides data into groups by a range of methods.
 #'  Splits data by these groups.
-#' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @inheritParams group_factor
 #' @return List of splitted data

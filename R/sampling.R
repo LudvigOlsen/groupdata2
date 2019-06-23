@@ -12,7 +12,7 @@
 #' \subsection{Without id_col}{
 #' Downsampling is done without replacement, meaning that rows are not duplicated but only removed.}
 #' \subsection{With id_col}{See id_method description.}
-#' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @inheritParams balance
 #' @family sampling functions
@@ -74,7 +74,7 @@ downsample <- function(data,
 #' \subsection{Without id_col}{
 #' Upsampling is done with replacement for added rows, while the original data remains intact.}
 #' \subsection{With id_col}{See id_method description.}
-#' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @inheritParams balance
 #' @family sampling functions
@@ -129,7 +129,7 @@ upsample <- function(data,
           id_col=id_col,
           id_method=id_method,
           mark_new_rows=mark_new_rows,
-          new_rows_col_name=)
+          new_rows_col_name=new_rows_col_name)
 }
 
 ## balance
@@ -140,7 +140,7 @@ upsample <- function(data,
 #' \subsection{Without id_col}{Upsampling is done with replacement for added rows, while the original data remains intact.
 #' Downsampling is done without replacement, meaning that rows are not duplicated but only removed.}
 #' \subsection{With id_col}{See id_method description.}
-#' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @param data Dataframe.
 #' @param size Size to fix group sizes to.

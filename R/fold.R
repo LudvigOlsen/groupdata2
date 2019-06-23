@@ -74,7 +74,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'      \item The group numbers for IDs are transferred to their rows.
 #'    }
 #'  }
-#' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @param k \emph{Dependent on method.}
 #'
@@ -152,9 +152,52 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'
 #'  Requires a registered parallel backend.
 #'  See \code{\link[doParallel:registerDoParallel]{doParallel::registerDoParallel}}.
+#' @param method \code{n_dist}, \code{n_fill}, \code{n_last},
+#'  \code{n_rand}, \code{greedy}, or \code{staircase}.
+#'
+#'  \strong{Notice}: examples are sizes of the generated groups
+#'  based on a vector with 57 elements.
+#'
+#'  \subsection{n_dist (default)}{Divides the data into a specified number of groups and
+#'  distributes excess data points across groups
+#'  \eqn{(e.g. 11, 11, 12, 11, 12)}.
+#'
+#'  \code{n} is number of groups}
+#'
+#'  \subsection{n_fill}{Divides the data into a specified number of groups and
+#'  fills up groups with excess data points from the beginning
+#'  \eqn{(e.g. 12, 12, 11, 11, 11)}.
+#'
+#'  \code{n} is number of groups}
+#'
+#'  \subsection{n_last}{Divides the data into a specified number of groups.
+#'  It finds the most equal group sizes possible,
+#'  using all data points. Only the last group is able to differ in size
+#'  \eqn{(e.g. 11, 11, 11, 11, 13)}.
+#'
+#'  \code{n} is number of groups}
+#'
+#'  \subsection{n_rand}{Divides the data into a specified number of groups.
+#'  Excess data points are placed randomly in groups (only 1 per group)
+#'  \eqn{(e.g. 12, 11, 11, 11, 12)}.
+#'
+#'  \code{n} is number of groups}
+#'
+#'  \subsection{greedy}{Divides up the data greedily given a specified group size
+#'  \eqn{(e.g. 10, 10, 10, 10, 10, 7)}.
+#'
+#'  \code{n} is group size}
+#'
+#'  \subsection{staircase}{Uses step size to divide up the data.
+#'  Group size increases with 1 step for every group,
+#'  until there is no more data
+#'  \eqn{(e.g. 5, 10, 15, 20, 7)}.
+#'
+#'  \code{n} is step size}
 #' @inheritParams group_factor
 #' @aliases create_balanced_groups
 #' @return Dataframe with grouping factor for subsetting in cross-validation.
+#' @seealso \code{\link{partition}} for balanced partitions
 #' @examples
 #' # Attach packages
 #' library(groupdata2)
@@ -226,10 +269,9 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #' @importFrom utils combn
 #' @importFrom rlang .data
 fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
-                 id_col = NULL, starts_col = NULL,
-                 method = 'n_dist', id_aggregation_fn = sum,
+                 id_col = NULL, method = 'n_dist',
+                 id_aggregation_fn = sum,
                  extreme_pairing_levels=1,
-                 remove_missing_starts = FALSE,
                  num_fold_cols = 1, unique_fold_cols_only = TRUE,
                  max_iters = 5, handle_existing_fold_cols = "keep_warn",
                  parallel = FALSE){
@@ -248,6 +290,10 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
   # Returns:
   # .. dataframe with grouping factor (folds)
   #
+
+  if (method %in% c("l_sizes", "l_starts", "primes")){
+    stop(paste0("method '",method,"' is not supported by fold()"))
+  }
 
   if (length(k) > 1){
     stop("k must be numeric scalar.")
@@ -273,7 +319,7 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
   # If num_col is specified, warn that method is ignored
   if (!is.null(num_col) & method != "n_dist"){
     warning(paste0("'method' is ignored when 'num_col' is not NULL. ",
-                   "This message occurs, because 'method' is not the default value."))
+                   "This warning occurs, because 'method' is not the default value."))
   }
 
   # If method is either greedy or staircase and cat_col is not NULL
@@ -363,9 +409,7 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
                                 col_name = name_new_fold_col(num_to_create = num_fold_cols,
                                                              num_existing = num_existing_fold_colnames,
                                                              max_existing_number = max_fold_cols_number,
-                                                             current = r),
-                                starts_col = starts_col,
-                                remove_missing_starts = remove_missing_starts)) %>%
+                                                             current = r))) %>%
               dplyr::ungroup()
           })
 
@@ -385,9 +429,7 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
                        col_name = name_new_fold_col(num_to_create = num_fold_cols,
                                                     num_existing = num_existing_fold_colnames,
                                                     max_existing_number = max_fold_cols_number,
-                                                    current = r),
-                       starts_col = starts_col,
-                       remove_missing_starts = remove_missing_starts)) %>%
+                                                    current = r))) %>%
               dplyr::ungroup()
           })
         }
@@ -408,9 +450,7 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
                              col_name = name_new_fold_col(num_to_create = num_fold_cols,
                                                           num_existing = num_existing_fold_colnames,
                                                           max_existing_number = max_fold_cols_number,
-                                                          current = r),
-                             starts_col = starts_col,
-                             remove_missing_starts = remove_missing_starts) %>%
+                                                          current = r)) %>%
               dplyr::ungroup()
 
           })
@@ -429,9 +469,7 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
                           col_name = name_new_fold_col(num_to_create = num_fold_cols,
                                                        num_existing = num_existing_fold_colnames,
                                                        max_existing_number = max_fold_cols_number,
-                                                       current = r),
-                          starts_col = starts_col,
-                          remove_missing_starts = remove_missing_starts) %>%
+                                                       current = r)) %>%
               dplyr::ungroup()
           })
 

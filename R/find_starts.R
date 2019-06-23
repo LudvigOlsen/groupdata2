@@ -6,7 +6,7 @@
 #' E.g. to use with the \code{l_starts} method.
 #'
 #' Wraps \code{\link{differs_from_previous}()}.
-#' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @param data Dataframe or Vector
 #'

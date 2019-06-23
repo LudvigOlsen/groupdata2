@@ -161,7 +161,7 @@ test_that(".folds is correct in fold()",{
   # warning
   expect_warning(group_counts(df, 2, num_col = 'score',
                             method = 'n_rand'),
-                 "'method' is ignored when 'num_col' is not NULL. This message occurs, because 'method' is not the default value.")
+                 "'method' is ignored when 'num_col' is not NULL. This warning occurs, because 'method' is not the default value.")
 
   # Staircase
   expect_equal(group_counts(df, 2,

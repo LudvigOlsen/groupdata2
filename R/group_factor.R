@@ -4,7 +4,7 @@
 #' @description Divides data into groups by a range of methods.
 #'  Creates and returns a grouping factor
 #'  with 1s for group 1, 2s for group 2, etc.
-#' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @param data Dataframe or Vector.
 #' @param n \emph{Dependent on method.}
@@ -87,7 +87,6 @@
 #'  \eqn{(e.g. 5, 7, 11, 13, 17, 4)}.
 #'
 #'  \code{n} is the prime number to start at}
-#'
 #' @param starts_col Name of column with values to match in method \code{l_starts}
 #' when data is a dataframe. Pass \code{'index'} to use row names. (Character)
 #' @param force_equal Create equal groups by discarding excess data points.

@@ -4,7 +4,7 @@
 #' @description Tells you which values and (optionally) skip_to numbers that are
 #'  recursively removed when using the \code{l_starts} method with remove_missing_starts
 #'  set to TRUE.
-#' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @param data Dataframe or Vector
 #' @param n List of starting positions.

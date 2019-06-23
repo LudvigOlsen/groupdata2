@@ -76,7 +76,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'    }
 #'  }
 #'
-#' @author Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @inheritParams group_factor
 #' @param p List / vector of partition sizes.
