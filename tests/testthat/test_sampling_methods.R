@@ -255,3 +255,4 @@ test_that("balance() works with method nested", {
 })
 
 
+

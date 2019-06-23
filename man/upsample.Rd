@@ -25,7 +25,7 @@ upsample(data, cat_col, id_col = NULL, id_method = "n_ids",
 \item{id_method}{Method for balancing the IDs. (Character)
 
  \code{n_ids}, \code{n_rows_c}, \code{distributed}, or \code{nested}.
- \subsection{n_ids}{
+ \subsection{n_ids (default)}{
  Balances on ID level only. It makes sure there are the same number of IDs for each category.
  This might lead to a different number of rows between categories.
  }
@@ -46,17 +46,17 @@ upsample(data, cat_col, id_col = NULL, id_method = "n_ids",
  If the number to distribute can not be equally divided, some IDs will have 1 row more/less than the others.
  }
  \subsection{nested}{
- Calls balance() on each category with IDs as cat_col.
+ Calls \code{balance()} on each category with IDs as cat_col.
 
  I.e. if size is "min", IDs will have the size of the smallest ID in their category.
  }}
 
 \item{mark_new_rows}{Add column with 1s for added rows, and 0s for original rows. (Logical)}
 
-\item{new_rows_col_name}{Name of column marking new rows. Defaults to ".new_row".}
+\item{new_rows_col_name}{Name of column marking new rows. Defaults to \code{".new_row"}.}
 }
 \value{
-Dataframe with added rows. Ordered by cat_col and (potentially) id_col.
+Dataframe with added rows. Ordered by \code{cat_col} and (potentially) \code{id_col}.
 }
 \description{
 Uses random upsampling to fix the group sizes to the
@@ -65,9 +65,9 @@ Uses random upsampling to fix the group sizes to the
  Wraps \code{\link{balance}()}.
 }
 \details{
-\subsection{Without id_col}{
+\subsection{Without \code{id_col}}{
 Upsampling is done with replacement for added rows, while the original data remains intact.}
-\subsection{With id_col}{See id_method description.}
+\subsection{With \code{id_col}}{See \code{id_method} description.}
 }
 \examples{
 # Attach packages
