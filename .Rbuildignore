@@ -7,3 +7,4 @@
 ^README-.*\.png$
 ^vignettes/the_fake_party\.Rmd$
 ^vignettes/l_methods_showcase\.Rmd$
+^CRAN-RELEASE$
