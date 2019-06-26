@@ -359,7 +359,8 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
 
     # Handle existing fold cols as specified
     if (handle_existing_fold_cols == "remove"){
-      data <- data %>% dplyr::select(-dplyr::one_of(existing_fold_colnames))
+      # We need to ungroup the dataset, or it will be automatically included again.
+      data <- data %>% dplyr::ungroup() %>% dplyr::select(-dplyr::one_of(existing_fold_colnames))
       existing_fold_colnames <- character()
       num_existing_fold_colnames <- 0
 
