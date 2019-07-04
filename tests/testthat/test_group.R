@@ -5,6 +5,8 @@ context("group()")
 
 test_that("dimensions of data frame with group()", {
 
+  skip_test_if_old_R_version()
+
   df <- data.frame("x"=c(1:12),
                    "species" = rep(c('cat','pig', 'human'), 4),
                    "age" = c(5,65,34,54,32,54,23,65,23,65,87,98))
@@ -23,6 +25,8 @@ test_that("dimensions of data frame with group()", {
 })
 
 test_that("mean age of groups made with group()", {
+
+  skip_test_if_old_R_version()
 
   # Create df 3x12
   df <- data.frame("x"=c(1:12),
@@ -56,6 +60,8 @@ test_that("mean age of groups made with group()", {
 
 test_that("error messages work in group()", {
 
+  skip_test_if_old_R_version()
+
   # Create df 3x12
   df <- data.frame("x"=c(1:12),
                    "species" = rep(c('cat','pig', 'human'), 4),
@@ -67,6 +73,8 @@ test_that("error messages work in group()", {
 })
 
 test_that("allow_zero works in group()", {
+
+  skip_test_if_old_R_version()
 
   # Create df 3x12
   df <- data.frame("x"=c(1:12),
@@ -106,6 +114,8 @@ test_that("allow_zero works in group()", {
 
 test_that("col_name can be set correctly in group()",{
 
+  skip_test_if_old_R_version()
+
   # Create df 3x12
   df <- data.frame("x"=c(1:12),
                    "species" = rep(c('cat','pig', 'human'), 4),
@@ -125,6 +135,8 @@ test_that("col_name can be set correctly in group()",{
 
 test_that("l_starts can take n = auto", {
 
+  skip_test_if_old_R_version()
+
   df <- data.frame("x"=c(1:12),
                    "species" = rep(c('cat','cat', 'human', 'human'), 3),
                    "age" = c(5,65,34,54,32,54,23,65,23,65,87,98),
@@ -143,6 +155,8 @@ test_that("l_starts can take n = auto", {
 })
 
 test_that("l_starts can take starts_col = index / .index", {
+
+  skip_test_if_old_R_version()
 
   df <- data.frame("x"=c(1:12))
 

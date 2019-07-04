@@ -3,6 +3,8 @@ context("numerically_balanced_group_factor_()")
 
 test_that("numerically_balanced_group_factor_() work with n=2", {
 
+  skip_test_if_old_R_version()
+
   # Create data frame
   set.seed(1)
   df <- data.frame(
@@ -22,6 +24,8 @@ test_that("numerically_balanced_group_factor_() work with n=2", {
 })
 
 test_that("numerically_balanced_group_factor_() works with n=3", {
+
+  skip_test_if_old_R_version()
 
   # Create data frame
   set.seed(1)
@@ -227,6 +231,8 @@ test_that("numerically_balanced_group_factor_() unequal method on small datasets
 
 test_that("numerically_balanced_group_factor_() work method='l_sizes'", {
 
+  skip_test_if_old_R_version()
+
   # Create data frame
   set.seed(1)
   df <- data.frame(
@@ -272,6 +278,8 @@ test_that("numerically_balanced_group_factor_() work method='l_sizes'", {
 
 
 test_that("numerically_balanced_group_factor_() on large datasets", {
+
+  skip_test_if_old_R_version()
 
   # testthat::skip(message = "Skipping numerical balancing of a large dataset")
 

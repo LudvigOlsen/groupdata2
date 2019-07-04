@@ -4,6 +4,8 @@ context("create_n_primes")
 
 test_that("create_n_primes returns the right primes",{
 
+  skip_test_if_old_R_version()
+
   expect_equal(groupdata2:::create_n_primes(10,5), c(5,7,11,13,17,19,23,29,31,37))
   expect_equal(groupdata2:::create_n_primes(10,13), c(13,17,19,23,29,31,37,41,43,47))
   expect_equal(groupdata2:::create_n_primes(10,47), c(47,53,59,61,67,71,73,79,83,89))

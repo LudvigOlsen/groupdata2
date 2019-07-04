@@ -8,6 +8,8 @@ context("fold()")
 
 test_that("dimensions of data frame with fold()",{
 
+  skip_test_if_old_R_version()
+
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
                    "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
@@ -28,6 +30,8 @@ test_that("dimensions of data frame with fold()",{
 })
 
 test_that(".folds is correct in fold()",{
+
+  skip_test_if_old_R_version()
 
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
@@ -182,6 +186,8 @@ test_that(".folds is correct in fold()",{
 
 test_that("values are decently balanced in num_col in fold()",{
 
+  skip_test_if_old_R_version()
+
   set.seed(1)
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
@@ -282,6 +288,8 @@ test_that("values are decently balanced in num_col in fold()",{
 
 
 test_that("repeated folding works in fold()",{
+
+  skip_test_if_old_R_version()
 
   set.seed(1)
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),

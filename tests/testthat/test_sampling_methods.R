@@ -13,6 +13,8 @@ context("sampling_methods()")
 
 test_that("balance() works with method n_ids()", {
 
+  skip_test_if_old_R_version()
+
   df <- data.frame(
     "participant" = factor(c(1, 1, 2, 3, 3, 3, 3, 4, 4, 5, 5, 5, 5)),
     "diagnosis" = factor(c(0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0)),
@@ -47,6 +49,8 @@ test_that("balance() works with method n_ids()", {
 })
 
 test_that("balance() works with method n_rows_c", {
+
+  skip_test_if_old_R_version()
 
   df <- data.frame(
     "participant" = factor(c(1, 1, 2, 3, 3, 3, 3, 4, 4, 5, 5, 5, 5)),
@@ -136,6 +140,8 @@ test_that("balance() works with method n_rows_c", {
 
 test_that("balance() works with method distributed", {
 
+  skip_test_if_old_R_version()
+
   df <- data.frame(
     "participant" = factor(c(1, 1, 2, 3, 3, 3, 3, 4, 4, 5, 5, 5, 5)),
     "diagnosis" = factor(c(0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0)),
@@ -220,6 +226,8 @@ test_that("balance() works with method distributed", {
 
 
 test_that("balance() works with method nested", {
+
+  skip_test_if_old_R_version()
 
   df <- data.frame(
     "participant" = factor(c(1, 1, 2, 3, 3, 3, 3, 4, 4, 5, 5, 5, 5)),

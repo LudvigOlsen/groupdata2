@@ -4,6 +4,8 @@ context("group_factor()")
 
 test_that("group sizes works with group_factor with method greedy", {
 
+  skip_test_if_old_R_version()
+
   group_counts <- function(v, n){
 
     gf <- group_factor(v, n, method = 'greedy')
@@ -39,6 +41,8 @@ test_that("group sizes works with group_factor with method greedy", {
 
 test_that("group sizes works with group_factor with method n_dist", {
 
+  skip_test_if_old_R_version()
+
   group_counts <- function(v, n){
 
     gf <- group_factor(v, n, method = 'n_dist')
@@ -73,6 +77,8 @@ test_that("group sizes works with group_factor with method n_dist", {
 })
 
 test_that("group sizes works with group_factor with method n_fill", {
+
+  skip_test_if_old_R_version()
 
   group_counts <- function(v, n){
 
@@ -110,6 +116,8 @@ test_that("group sizes works with group_factor with method n_fill", {
 })
 
 test_that("group sizes works with group_factor with method n_rand", {
+
+  skip_test_if_old_R_version()
 
   count_groups <- function(v, n){
 
@@ -158,6 +166,8 @@ test_that("group sizes works with group_factor with method n_rand", {
 })
 
 test_that("group sizes works with group_factor with method staircase", {
+
+  skip_test_if_old_R_version()
 
   group_counts <- function(v, n){
 
@@ -225,6 +235,8 @@ test_that("group sizes works with group_factor with method staircase", {
 
 test_that("group sizes works with group_factor with method primes", {
 
+  skip_test_if_old_R_version()
+
   group_counts <- function(v, n){
 
     gf <- group_factor(v, n, method = 'primes')
@@ -281,6 +293,8 @@ test_that("group sizes works with group_factor with method primes", {
 
 test_that("group sizes works with group_factor with method l_sizes", {
 
+  skip_test_if_old_R_version()
+
   group_f <- function(v, n){
 
     return(group_factor(v, n, method='l_sizes'))
@@ -310,6 +324,8 @@ test_that("group sizes works with group_factor with method l_sizes", {
 })
 
 test_that("group sizes works with group_factor with method l_starts", {
+
+  skip_test_if_old_R_version()
 
   group_f <- function(v, n){
 
@@ -384,6 +400,8 @@ test_that("group sizes works with group_factor with method l_starts", {
 
 test_that("l_starts raises error correctly when value is not found", {
 
+  skip_test_if_old_R_version()
+
   expect_error(group(c(1:5), c(1,3,6), method = 'l_starts'),
                "Start value \"6\" not found in vector", fixed = TRUE)
 
@@ -406,6 +424,8 @@ test_that("l_starts raises error correctly when value is not found", {
 })
 
 test_that("force_equal works with group_factor with all methods",{
+
+  skip_test_if_old_R_version()
 
   group_counts <- function(v, n, method){
 
@@ -488,6 +508,8 @@ test_that("force_equal works with group_factor with all methods",{
 
 test_that("allow_zero works with group_factor", {
 
+  skip_test_if_old_R_version()
+
   v = c(1:3)
 
   expect_equal(group_factor(v, 0, allow_zero = TRUE), c(NA,NA,NA))
@@ -497,6 +519,8 @@ test_that("allow_zero works with group_factor", {
 })
 
 test_that("l_sizes works with no groups",{
+
+  skip_test_if_old_R_version()
 
   expect_equal(group_factor(c(1:3), 0.2, method = 'l_sizes'), factor(c(2,2,2)))
   expect_warning(group_factor(c(1:3), 0.2, method = 'l_sizes', force_equal = TRUE), "No groups. Returned NA.", fixed = TRUE)

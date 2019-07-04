@@ -3,6 +3,8 @@ context("differs_from_previous()")
 
 test_that("differs_from_previous() find the right values and indices", {
 
+  skip_test_if_old_R_version()
+
   v <- c('a','a','b','c','c','d','d')
   df <- data.frame(v = v,
                    v2 = c(1,1,1,2,2,2,3),

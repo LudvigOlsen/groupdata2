@@ -3,6 +3,8 @@ context("partition()")
 
 test_that("dimensions of data frame with partition()",{
 
+  skip_test_if_old_R_version()
+
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
                    "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
@@ -25,6 +27,8 @@ test_that("dimensions of data frame with partition()",{
 })
 
 test_that(".partitions is correct in partition() with list_out == FALSE",{
+
+  skip_test_if_old_R_version()
 
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
@@ -160,6 +164,8 @@ test_that(".partitions is correct in partition() with list_out == FALSE",{
 
 test_that(".partitions is correct in partition() with list_out == TRUE",{
 
+  skip_test_if_old_R_version()
+
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
                    "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
@@ -210,6 +216,8 @@ test_that(".partitions is correct in partition() with list_out == TRUE",{
 
 test_that("partition() outputs correct error messages",{
 
+  skip_test_if_old_R_version()
+
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
                    "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
@@ -233,6 +241,8 @@ test_that("partition() outputs correct error messages",{
 
 
 test_that("bootstrap test of num_col works",{
+
+  skip_test_if_old_R_version()
 
   # Takes 4 seconds, so we disable it for now.
   testthat::skip(message = "Skipping bootstrapped numerical balancing test in partition()")
