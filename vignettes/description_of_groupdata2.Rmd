@@ -4,7 +4,7 @@ author:
   - "Ludvig Renbo Olsen"
 date: "`r Sys.Date()`"
 abstract: |
-  groupdata2 is a set of subsetting methods for easy grouping, windowing, folding, partitioning, splitting and balancing of data.  
+  groupdata2 is a set of methods for easy grouping, windowing, folding, partitioning, splitting and balancing of data.  
   Create balanced folds for cross-validation or divide a time series into windows.  
   Balance group sizes with up- and downsampling.  
   This vignette contains descriptions of functions and methods, along with simple examples of usage. 
@@ -40,7 +40,6 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "man/figures/README-",
   fig.align='center',
   dpi = 92,
   fig.retina = 2
@@ -1566,7 +1565,7 @@ df_balanced %>%
 ```
 
 
-7. Using balance() for dowsampling to a specific size with id_col and id_method 'n_rows_c'  
+7. Using balance() for downsampling to a specific size with id_col and id_method 'n_rows_c'  
 
 ```{r}
 df_balanced <- balance(df, 3, cat_col = "diagnosis", 

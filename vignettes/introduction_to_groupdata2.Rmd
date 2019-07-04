@@ -39,7 +39,6 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "man/figures/README-",
   fig.align='center',
   dpi = 92,
   fig.retina = 2
