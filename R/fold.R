@@ -97,7 +97,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'  N.B. When used with \code{id_col}, values for each ID are aggregated using
 #'  \code{id_aggregation_fn} before being balanced.
 #'
-#'  N.B. When passing \code{num_col}, the \code{method} parameter is not used.
+#'  N.B. When passing \code{num_col}, the \code{method} parameter is ignored.
 #' @param id_col Name of factor with IDs.
 #'  This will be used to keep all rows that share an ID in the same fold
 #'  (if possible).

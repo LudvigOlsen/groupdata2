@@ -881,7 +881,7 @@ create_rank_summary <- function(data, levels_col, num_col){
 
 # Extracts the major and minor version numbers. E.g. 3.5.
 check_R_version <- function(){
-  as.numeric(substring(getRversion(),1,3))
+  as.numeric(substring(getRversion(), 1, 3))
 }
 
 # Skips testthat test, if the R version is below 3.6.0
@@ -892,6 +892,6 @@ check_R_version <- function(){
 # and most likely the code works the same on v3.5
 skip_test_if_old_R_version <- function(min_R_version = 3.6){
   if(check_R_version() < min_R_version){
-    testthat::skip(message = paste0("Skipping test as R version is < ",min_R_version,"."))
+    testthat::skip(message = paste0("Skipping test as R version is < ", min_R_version, "."))
   }
 }
