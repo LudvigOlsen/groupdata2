@@ -28,6 +28,5 @@ Suggests: ggplot2,
     broom,
     testthat,
     lmerTest,
-    hydroGOF,
-    cvms
+    hydroGOF
 VignetteBuilder: knitr
