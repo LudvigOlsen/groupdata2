@@ -1,7 +1,9 @@
 #' groupdata2: A package for creating groups from data
 #'
-#' Subsetting methods for balanced cross-validation, time series windowing,
-#' and general grouping and splitting of data.
+#' Methods for dividing data into groups.
+#' Create balanced partitions and cross-validation folds.
+#' Perform time series windowing and general grouping and splitting of data.
+#' Balance existing groups with up- and downsampling.
 #'
 #' The groupdata2 package provides six main functions:
 #' \code{group}, \code{group_factor}, \code{splt}, \code{partition}, \code{fold}, and \code{balance}.

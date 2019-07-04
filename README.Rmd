@@ -12,12 +12,14 @@ knitr::opts_chunk$set(
   dpi = 92,
   fig.retina = 2
 )
+
+set.seed(1)
 ```
 
 # groupdata2
 
-R package: Subsetting methods for balanced cross-validation, 
-time series windowing, and general grouping and splitting of data.  
+R package: Methods for dividing data into groups. Create balanced partitions and cross-validation folds. 
+Perform time series windowing and general grouping and splitting of data. Balance existing groups with up- and downsampling.
 
 By Ludvig R. Olsen,  
 Started in Oct. 2016 
@@ -80,7 +82,7 @@ Creates (optionally) balanced partitions (e.g. training/test sets). Balance part
 Creates (optionally) balanced folds for use in cross-validation. Balance folds on one categorical variable and/or one numerical variable. Ensure that all datapoints sharing an ID is in the same fold. Create multiple unique fold columns at once, e.g. for repeated cross-validation.  
 
 ### balance()
-Uses up- or downsampling to fix the group sizes to the min, max, mean, or median group size or to a specific number of rows.
+Uses up- and/or downsampling to fix the group sizes to the min, max, mean, or median group size or to a specific number of rows.
 Balancing can also happen on the ID level, e.g. to ensure the same number of IDs in each category.   
  
 ## Grouping Methods
@@ -258,7 +260,7 @@ df_folded %>%
 
 ```
 
-**Notice** that the we now have the opportunity to include the *session* variable and/or use *participant* as a random effect in our model when doing cross-validation, as any participant will only appear in one fold.  
+**Notice**, that the we now have the opportunity to include the *session* variable and/or use *participant* as a random effect in our model when doing cross-validation, as any participant will only appear in one fold.  
 
 We also have a balance in the representation of each diagnosis, which could give us better, more consistent results.  
 

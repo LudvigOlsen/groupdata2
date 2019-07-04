@@ -85,7 +85,7 @@ Data frame with added and/or deleted rows.
  Ordered by \code{cat_col} and (potentially) \code{id_col}.
 }
 \description{
-Uses up- or downsampling to fix the group size to the
+Uses up- and/or downsampling to fix the group sizes to the
  \code{min}, \code{max}, \code{mean}, or \code{median} group size or
  to a specific number of rows. Has a range of methods for balancing on
  ID level.

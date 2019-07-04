@@ -134,7 +134,7 @@ upsample <- function(data,
 
 ## balance
 #' @title Balance groups by up- and downsampling.
-#' @description Uses up- or downsampling to fix the group size to the
+#' @description Uses up- and/or downsampling to fix the group sizes to the
 #'  \code{min}, \code{max}, \code{mean}, or \code{median} group size or
 #'  to a specific number of rows. Has a range of methods for balancing on
 #'  ID level.

@@ -5,7 +5,7 @@ author:
 date: "`r Sys.Date()`"
 abstract: |
   This vignette is an introduction to the package groupdata2.  
-  groupdata2 is a set of subsetting methods for easy grouping, windowing, folding and splitting of data.
+  groupdata2 is a set of methods for easy grouping, windowing, folding, partitioning, splitting and balancing of data.  
   &nbsp;  
   For a more extensive description of groupdata2, please see [Description of groupdata2](description_of_groupdata2.html)
   &nbsp;  

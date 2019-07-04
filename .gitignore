@@ -7,3 +7,5 @@ vignettes_in_progress
 revdep/checks
 revdep/library
 revdep/library\.noindex
+revdep/checks\.noindex
+
