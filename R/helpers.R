@@ -895,3 +895,16 @@ skip_test_if_old_R_version <- function(min_R_version = 3.6){
     testthat::skip(message = paste0("Skipping test as R version is < ", min_R_version, "."))
   }
 }
+
+# Wrapper for setting seed with the sample generator for R versions <3.6
+# Used for unittests
+# Contributed by R. Mark Sharp
+set_seed_for_R_compatibility <- function(seed = 1) {
+  version <- as.integer(R.Version()$major) + (as.numeric(R.Version()$minor) / 10.0)
+  if (version >= 3.6) {
+    args <- list(seed, sample.kind = "Rounding")
+  } else {
+    args <- list(seed)
+  }
+  suppressWarnings(do.call(set.seed, args))
+}
