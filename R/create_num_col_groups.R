@@ -1,8 +1,8 @@
 
 #' @importFrom dplyr n
 create_num_col_groups <- function(data, n, num_col, cat_col=NULL, id_col=NULL, col_name,
-                                  id_aggregation_fn = sum,
-                                  extreme_pairing_levels=extreme_pairing_levels,
+                                  id_aggregation_fn=sum,
+                                  extreme_pairing_levels=1,
                                   method="n_fill",
                                   unequal_method="first", force_equal=FALSE,
                                   pre_randomize=TRUE

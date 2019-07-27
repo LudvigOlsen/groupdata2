@@ -751,19 +751,7 @@ find_identical_cols <- function(data, cols=NULL, exclude_comparisons=NULL,
     col_1 <- data[[column_combinations[r, 1]]]
     col_2 <- data[[column_combinations[r, 2]]]
     if (isTRUE(group_wise)){
-      d <- tibble::tibble("col_1" = as.character(col_1),
-                          "col_2" = as.character(col_2)) %>%
-        dplyr::arrange(.data$col_1) %>%
-        group(n = "auto", method = "l_starts", col_name = ".groups_1",
-              starts_col = "col_2") %>% dplyr::ungroup()
-      if (nlevels(d[[".groups_1"]]) != length(unique(d[["col_1"]]))){
-        return(FALSE)
-      } else {
-        d <- d %>%
-          group(n = "auto", method = "l_starts", col_name = ".groups_2",
-                starts_col = "col_1") %>% dplyr::ungroup()
-      return(isTRUE(dplyr::all_equal(d[[".groups_1"]], d[[".groups_2"]], ignore_row_order = FALSE)))
-      }
+      return(all_groups_identical(col_1, col_2))
     } else {
       return(isTRUE(dplyr::all_equal(col_1, col_2, ignore_row_order = FALSE)))
     }
@@ -879,9 +867,11 @@ create_rank_summary <- function(data, levels_col, num_col){
 
 
 
-# Extracts the major and minor version numbers. E.g. 3.5.
+# Extracts the major and minor version numbers.
 check_R_version <- function(){
-  as.numeric(substring(getRversion(), 1, 3))
+  major <- as.integer(R.Version()$major)
+  minor <- as.numeric(strsplit(R.Version()$minor, ".", fixed = TRUE)[[1]][[1]])
+  list("major"=major, "minor"=minor)
 }
 
 # Skips testthat test, if the R version is below 3.6.0
@@ -890,18 +880,18 @@ check_R_version <- function(){
 # It is possible to fix this by using the old generator for
 # unit tests, but that would take a long time to convert,
 # and most likely the code works the same on v3.5
-skip_test_if_old_R_version <- function(min_R_version = 3.6){
-  if(check_R_version() < min_R_version){
+skip_test_if_old_R_version <- function(min_R_version = "3.6"){
+  if(check_R_version()[["minor"]] < strsplit(min_R_version, ".", fixed = TRUE)[[1]][[2]]){
     testthat::skip(message = paste0("Skipping test as R version is < ", min_R_version, "."))
   }
 }
 
 # Wrapper for setting seed with the sample generator for R versions <3.6
 # Used for unittests
-# Contributed by R. Mark Sharp
+# Partly contributed by R. Mark Sharp
 set_seed_for_R_compatibility <- function(seed = 1) {
-  version <- as.integer(R.Version()$major) + (as.numeric(R.Version()$minor) / 10.0)
-  if (version >= 3.6) {
+  version <- check_R_version()
+  if ((version[["major"]] == 3 && version[["minor"]] >= 6) || version[["major"]] > 3) {
     args <- list(seed, sample.kind = "Rounding")
   } else {
     args <- list(seed)

@@ -1,7 +1,4 @@
 
-
-
-
 ## downsample
 #' @title Downsampling of rows in a data frame.
 #' @description Uses random downsampling to fix the group sizes to the

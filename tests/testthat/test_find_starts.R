@@ -3,7 +3,7 @@ context("find_starts()")
 
 test_that("find_starts() find the right starts", {
 
-  skip_test_if_old_R_version()
+  set_seed_for_R_compatibility(1)
 
   v <- c('a','a','b','c','c','d','d')
   df <- data.frame(v = v,

@@ -156,9 +156,9 @@ df_grouped <- group(df,
 
 }
 \seealso{
-Other grouping functions: \code{\link{fold}},
-  \code{\link{group_factor}}, \code{\link{partition}},
-  \code{\link{splt}}
+Other grouping functions: \code{\link{all_groups_identical}},
+  \code{\link{fold}}, \code{\link{group_factor}},
+  \code{\link{partition}}, \code{\link{splt}}
 
 Other staircase tools: \code{\link{\%primes\%}},
   \code{\link{\%staircase\%}}, \code{\link{group_factor}}

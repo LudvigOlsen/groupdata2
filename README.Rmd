@@ -40,6 +40,7 @@ Other tools:
 
 * find_starts
 * differs_from_previous
+* all_groups_identical
 * %staircase%  
 * %primes% 
 

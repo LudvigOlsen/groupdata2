@@ -199,9 +199,9 @@ partitions_2 \%>\%
 
 }
 \seealso{
-Other grouping functions: \code{\link{fold}},
-  \code{\link{group_factor}}, \code{\link{group}},
-  \code{\link{splt}}
+Other grouping functions: \code{\link{all_groups_identical}},
+  \code{\link{fold}}, \code{\link{group_factor}},
+  \code{\link{group}}, \code{\link{splt}}
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}

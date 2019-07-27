@@ -13,7 +13,7 @@ context("sampling_methods()")
 
 test_that("balance() works with method n_ids()", {
 
-  skip_test_if_old_R_version()
+  set_seed_for_R_compatibility(1)
 
   df <- data.frame(
     "participant" = factor(c(1, 1, 2, 3, 3, 3, 3, 4, 4, 5, 5, 5, 5)),
@@ -23,7 +23,7 @@ test_that("balance() works with method n_ids()", {
   )
 
   # Max
-  set.seed(1)
+  set_seed_for_R_compatibility(1)
   balanced_by_n_ids <- balance(df, size="max", cat_col = "diagnosis",
                               id_col = "participant",
                               id_method = "n_ids", mark_new_rows = FALSE)
@@ -33,7 +33,7 @@ test_that("balance() works with method n_ids()", {
   expect_equal(counts$diagnosis, factor(c(0, 0, 0, 1, 1)))
 
   # Test mark_new_rows = TRUE
-  set.seed(1)
+  set_seed_for_R_compatibility(1)
   balanced_by_n_ids <- balance(df, size="max", cat_col = "diagnosis",
                                id_col = "participant",
                                id_method = "n_ids", mark_new_rows = TRUE)
@@ -50,7 +50,7 @@ test_that("balance() works with method n_ids()", {
 
 test_that("balance() works with method n_rows_c", {
 
-  skip_test_if_old_R_version()
+  set_seed_for_R_compatibility(1)
 
   df <- data.frame(
     "participant" = factor(c(1, 1, 2, 3, 3, 3, 3, 4, 4, 5, 5, 5, 5)),
@@ -60,7 +60,7 @@ test_that("balance() works with method n_rows_c", {
   )
 
   # Max
-  set.seed(1)
+  set_seed_for_R_compatibility(1)
   balanced_by_n_rows <- balance(df, size="max", cat_col = "diagnosis",
                                id_col = "participant",
                                id_method = "n_rows_c", mark_new_rows = FALSE)
@@ -70,7 +70,7 @@ test_that("balance() works with method n_rows_c", {
   expect_equal(counts$diagnosis, factor(c(0, 0, 0, 1, 1)))
 
   # Test mark_new_rows = TRUE
-  set.seed(1)
+  set_seed_for_R_compatibility(1)
   balanced_by_n_rows <- balance(df, size="max", cat_col = "diagnosis",
                                id_col = "participant",
                                id_method = "n_rows_c", mark_new_rows = TRUE)
@@ -84,7 +84,7 @@ test_that("balance() works with method n_rows_c", {
   expect_equal(cat_count$n, c(10,10))
 
   # Min
-  set.seed(1)
+  set_seed_for_R_compatibility(1)
   balanced_by_n_rows <- balance(df, size="min", cat_col = "diagnosis",
                                 id_col = "participant",
                                 id_method = "n_rows_c", mark_new_rows = FALSE)
@@ -94,7 +94,7 @@ test_that("balance() works with method n_rows_c", {
   expect_equal(counts$diagnosis, factor(c(0, 1, 1)))
 
   # Test mark_new_rows = TRUE
-  set.seed(1)
+  set_seed_for_R_compatibility(1)
   balanced_by_n_rows <- balance(df, size="min", cat_col = "diagnosis",
                                 id_col = "participant",
                                 id_method = "n_rows_c", mark_new_rows = TRUE)
@@ -109,7 +109,7 @@ test_that("balance() works with method n_rows_c", {
 
 
   # Specific n
-  set.seed(1)
+  set_seed_for_R_compatibility(1)
   balanced_by_n_rows <- balance(df, size=5, cat_col = "diagnosis",
                                 id_col = "participant",
                                 id_method = "n_rows_c", mark_new_rows = FALSE)
@@ -119,7 +119,7 @@ test_that("balance() works with method n_rows_c", {
   expect_equal(counts$diagnosis, factor(c(0, 0, 1, 1)))
 
   # Test mark_new_rows = TRUE
-  set.seed(1)
+  set_seed_for_R_compatibility(1)
   balanced_by_n_rows <- balance(df, size=5, cat_col = "diagnosis",
                                 id_col = "participant",
                                 id_method = "n_rows_c", mark_new_rows = TRUE)
@@ -140,7 +140,7 @@ test_that("balance() works with method n_rows_c", {
 
 test_that("balance() works with method distributed", {
 
-  skip_test_if_old_R_version()
+  set_seed_for_R_compatibility(1)
 
   df <- data.frame(
     "participant" = factor(c(1, 1, 2, 3, 3, 3, 3, 4, 4, 5, 5, 5, 5)),
@@ -150,7 +150,7 @@ test_that("balance() works with method distributed", {
   )
 
   # Max
-  set.seed(4)
+  set_seed_for_R_compatibility(4)
   balanced_by_n_rows <- balance(df, size="max", cat_col = "diagnosis",
                                 id_col = "participant",
                                 id_method = "distributed", mark_new_rows = FALSE)
@@ -160,7 +160,7 @@ test_that("balance() works with method distributed", {
   expect_equal(counts$diagnosis, factor(c(0, 0, 0, 1, 1)))
 
   # Test mark_new_rows = TRUE
-  set.seed(4)
+  set_seed_for_R_compatibility(4)
   balanced_by_n_rows <- balance(df, size="max", cat_col = "diagnosis",
                                 id_col = "participant",
                                 id_method = "distributed", mark_new_rows = TRUE)
@@ -174,7 +174,7 @@ test_that("balance() works with method distributed", {
   expect_equal(cat_count$n, c(10,10))
 
   # Min
-  set.seed(1)
+  set_seed_for_R_compatibility(1)
   balanced_by_n_rows <- balance(df, size="min", cat_col = "diagnosis",
                                 id_col = "participant",
                                 id_method = "distributed", mark_new_rows = FALSE)
@@ -184,8 +184,8 @@ test_that("balance() works with method distributed", {
   expect_equal(counts$diagnosis, factor(c(0, 0, 1, 1)))
 
   # Test mark_new_rows = TRUE
-  set.seed(1)
-  balanced_by_n_rows <- balance(df, size="min", cat_col = "diagnosis",
+  set_seed_for_R_compatibility(1)
+  balanced_by_n_rows <- balance(df, size = "min", cat_col = "diagnosis",
                                 id_col = "participant",
                                 id_method = "distributed", mark_new_rows = TRUE)
   expect_equal(balanced_by_n_rows$.new_row, c(0,0,0,0,0,0))
@@ -199,24 +199,24 @@ test_that("balance() works with method distributed", {
 
 
   # Specific n
-  set.seed(2)
+  set_seed_for_R_compatibility(2)
   balanced_by_n_rows <- balance(df, size=5, cat_col = "diagnosis",
                                 id_col = "participant",
                                 id_method = "distributed", mark_new_rows = FALSE)
   counts <- balanced_by_n_rows %>%
     dplyr::count(diagnosis, participant)
-  expect_equal(counts$n, c(3,2,2,3))
+  expect_equal(counts$n, c(2,3,2,3))
   expect_equal(counts$diagnosis, factor(c(0, 0, 1, 1)))
 
   # Test mark_new_rows = TRUE
-  set.seed(2)
+  set_seed_for_R_compatibility(2)
   balanced_by_n_rows <- balance(df, size=5, cat_col = "diagnosis",
                                 id_col = "participant",
                                 id_method = "distributed", mark_new_rows = TRUE)
   expect_equal(balanced_by_n_rows$.new_row, c(0,0,0,0,0,0,1,0,0,1))
   counts <- balanced_by_n_rows %>%
     dplyr::count(diagnosis, participant)
-  expect_equal(counts$n, c(3,2,2,3))
+  expect_equal(counts$n, c(2,3,2,3))
   expect_equal(counts$diagnosis, factor(c(0, 0, 1, 1)))
   cat_count <- balanced_by_n_rows %>%
     dplyr::count(diagnosis)
@@ -227,7 +227,7 @@ test_that("balance() works with method distributed", {
 
 test_that("balance() works with method nested", {
 
-  skip_test_if_old_R_version()
+  set_seed_for_R_compatibility(1)
 
   df <- data.frame(
     "participant" = factor(c(1, 1, 2, 3, 3, 3, 3, 4, 4, 5, 5, 5, 5)),
@@ -237,7 +237,7 @@ test_that("balance() works with method nested", {
   )
 
   # Max
-  set.seed(1)
+  set_seed_for_R_compatibility(1)
   balanced_by_nested <- balance(df, size="max", cat_col = "diagnosis",
                                 id_col = "participant",
                                 id_method = "nested", mark_new_rows = FALSE)
@@ -247,7 +247,7 @@ test_that("balance() works with method nested", {
   expect_equal(counts$diagnosis, factor(c(0, 0, 0, 1, 1)))
 
   # Test mark_new_rows = TRUE
-  set.seed(1)
+  set_seed_for_R_compatibility(1)
   balanced_by_nested <- balance(df, size="max", cat_col = "diagnosis",
                                 id_col = "participant",
                                 id_method = "nested", mark_new_rows = TRUE)

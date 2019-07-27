@@ -1,7 +1,6 @@
 # R CMD check NOTE handling
 if(getRversion() >= "2.15.1")  utils::globalVariables(c("groups", "n_elements"))
 
-
 ## %primes%
 #' @title Find remainder from primes method.
 #' @description When using the primes method,

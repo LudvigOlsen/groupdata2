@@ -3,7 +3,7 @@ context("differs_from_previous()")
 
 test_that("differs_from_previous() find the right values and indices", {
 
-  skip_test_if_old_R_version()
+  set_seed_for_R_compatibility(1)
 
   v <- c('a','a','b','c','c','d','d')
   df <- data.frame(v = v,
@@ -104,3 +104,4 @@ test_that("differs_from_previous() find the right values and indices", {
                fixed = TRUE)
 
 })
+

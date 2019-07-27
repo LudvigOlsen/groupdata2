@@ -4,7 +4,7 @@ context("rearrange()")
 test_that("rearrange() works", {
 
   # Create data frame
-  set.seed(1)
+  set_seed_for_R_compatibility(1)
   df <- data.frame(
     "participant" = factor(c(1, 3, 5, 6, 7, 8, 9)),
     "score" = c(79,85,140,69,87,92,87))

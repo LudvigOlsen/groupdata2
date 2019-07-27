@@ -8,7 +8,7 @@ context("fold()")
 
 test_that("dimensions of data frame with fold()",{
 
-  skip_test_if_old_R_version()
+  set_seed_for_R_compatibility(1)
 
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
@@ -31,7 +31,7 @@ test_that("dimensions of data frame with fold()",{
 
 test_that(".folds is correct in fold()",{
 
-  skip_test_if_old_R_version()
+  set_seed_for_R_compatibility(1)
 
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
@@ -49,7 +49,7 @@ test_that(".folds is correct in fold()",{
   col_is_factor <- function(df, n, cat_col = NULL, num_col = NULL,
                             id_col = NULL, col, num_fold_cols=1){
 
-    set.seed(1)
+    set_seed_for_R_compatibility(1)
     folded_df <- fold(df, n, cat_col=cat_col, num_col=num_col,
                       id_col=id_col, num_fold_cols = num_fold_cols)
     # print(folded_df)
@@ -61,7 +61,7 @@ test_that(".folds is correct in fold()",{
                            id_col = NULL, method, num_fold_cols=1,
                            folds_col=".folds", seed=1){
 
-    set.seed(seed)
+    set_seed_for_R_compatibility(seed)
     folded_df <- fold(df, n, cat_col=cat_col, num_col = num_col, id_col=id_col,
                       method = method, num_fold_cols=num_fold_cols)
     #print(folded_df)
@@ -140,7 +140,7 @@ test_that(".folds is correct in fold()",{
 
   expect_equal(group_counts(df_unequal, 3, cat_col = 'diagnosis',
                             id_col = 'participant',
-                            method = 'n_dist'), c(6,6,5))
+                            method = 'n_dist'), c(6,5,6))
 
   expect_equal(group_counts(df_unequal, 2, cat_col = 'diagnosis',
                             id_col = 'participant',
@@ -186,9 +186,9 @@ test_that(".folds is correct in fold()",{
 
 test_that("values are decently balanced in num_col in fold()",{
 
-  skip_test_if_old_R_version()
+  set_seed_for_R_compatibility(1)
 
-  set.seed(1)
+  set_seed_for_R_compatibility(1)
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
                    "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
@@ -202,7 +202,7 @@ test_that("values are decently balanced in num_col in fold()",{
     dplyr::group_by(.folds) %>%
     dplyr::summarize(group_sums = sum(score))
 
-  expect_equal(aggregated_scores$group_sums, c(267, 273, 277))
+  expect_equal(aggregated_scores$group_sums, c(285, 264, 268))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
   df_folded <- fold(df, 4, num_col = 'score')
@@ -210,7 +210,7 @@ test_that("values are decently balanced in num_col in fold()",{
     dplyr::group_by(.folds) %>%
     dplyr::summarize(group_sums = sum(score))
 
-  expect_equal(aggregated_scores$group_sums, c(234,207,189, 187))
+  expect_equal(aggregated_scores$group_sums, c(207,225,196, 189))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
   df_folded <- fold(df, 1, num_col = 'score')
@@ -234,7 +234,7 @@ test_that("values are decently balanced in num_col in fold()",{
     dplyr::group_by(.folds) %>%
     dplyr::summarize(group_sums = sum(score))
 
-  expect_equal(aggregated_scores$group_sums, c(283, 246, 288))
+  expect_equal(aggregated_scores$group_sums, c(288, 246, 283))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
   df_folded <- fold(df, 4, num_col = 'score', id_col="participant")
@@ -242,10 +242,10 @@ test_that("values are decently balanced in num_col in fold()",{
     dplyr::group_by(.folds) %>%
     dplyr::summarize(group_sums = sum(score))
 
-  expect_equal(aggregated_scores$group_sums, c(246,288,141,142))
+  expect_equal(aggregated_scores$group_sums, c(283,246,133,155))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
-  set.seed(1)
+  set_seed_for_R_compatibility(1)
 
   # With num_col and cat_col
   df_folded <- fold(df, 3, num_col = 'score', cat_col="diagnosis")
@@ -253,7 +253,7 @@ test_that("values are decently balanced in num_col in fold()",{
     dplyr::group_by(.folds) %>%
     dplyr::summarize(group_sums = sum(score))
 
-  expect_equal(aggregated_scores$group_sums, c(286, 246, 285))
+  expect_equal(aggregated_scores$group_sums, c(268, 285, 264))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
   df_folded <- fold(df, 4, num_col = 'score', cat_col="diagnosis")
@@ -261,7 +261,7 @@ test_that("values are decently balanced in num_col in fold()",{
     dplyr::group_by(.folds) %>%
     dplyr::summarize(group_sums = sum(score))
 
-  expect_equal(aggregated_scores$group_sums, c(222, 189, 188, 218))
+  expect_equal(aggregated_scores$group_sums, c(207, 202, 199, 209))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
   # With num_col, cat_col and id_col
@@ -273,7 +273,7 @@ test_that("values are decently balanced in num_col in fold()",{
   expect_equal(aggregated_scores$group_sums, c(237, 283, 297))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
-  set.seed(1)
+  set_seed_for_R_compatibility(1)
   df_folded <- fold(df, 2, num_col = 'score', cat_col="diagnosis", id_col="participant")
   aggregated_scores <- df_folded %>%
     dplyr::group_by(.folds) %>%
@@ -289,9 +289,7 @@ test_that("values are decently balanced in num_col in fold()",{
 
 test_that("repeated folding works in fold()",{
 
-  skip_test_if_old_R_version()
-
-  set.seed(1)
+  set_seed_for_R_compatibility(1)
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
                    "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
@@ -316,7 +314,7 @@ test_that("repeated folding works in fold()",{
   expected_aggregated_folds_col <- expected_aggregated_folds_col[order(expected_aggregated_folds_col)]
   expect_equal(aggregated_scores$folds_col, expected_aggregated_folds_col)
 
-  set.seed(1)
+  set_seed_for_R_compatibility(1)
   # We set num_fold_cols to a larger number than is possible to create unique .folds columns
   # Hence it will only create a smaller number of columns!
   df_folded_5reps <- fold(head(df,7), 2, num_col = 'score', num_fold_cols=10,
@@ -324,13 +322,23 @@ test_that("repeated folding works in fold()",{
   expect_equal(length(extract_fold_colnames(df_folded_5reps)), 5)
 
   # Test 10 cols
-  # Also test whether all fold cols are unique (only value-wise, not group-wise (ADD group-wise test))
+  # Also test whether all fold cols are unique
   df_folded_10 <- fold(df, 3, num_col = 'score', num_fold_cols=10,
                        handle_existing_fold_cols = "remove")
   folds_colnames <- extract_fold_colnames(df_folded_10)
   expect_equal(folds_colnames, paste0(".folds_",1:10))
   expect_equal(colnames(unique(as.matrix(df_folded_10), MARGIN=2)),
                c("participant","age","diagnosis","score", paste0(".folds_",1:10)))
+  expect_equal(colnames(unique(as.matrix(df_folded_10), MARGIN=2)),
+               c("participant","age","diagnosis","score", paste0(".folds_",1:10)))
+  # Test group-wise uniqueness
+  column_combinations <- as.data.frame(t(combn(paste0(".folds_",1:10), 2)), stringsAsFactors=FALSE)
+  column_combinations[["identical"]] <- plyr::llply(1:nrow(column_combinations), function(r){
+    col_1 <- df_folded_10[[column_combinations[r, 1]]]
+    col_2 <- df_folded_10[[column_combinations[r, 2]]]
+    return(all_groups_identical(col_1, col_2))
+  }) %>% unlist()
+  expect_true(all(!column_combinations$identical))
 
 
   # system.time({
@@ -353,12 +361,12 @@ test_that("bootstrap test of num_col works",{
                    "age"=rep(sample(100),100))
 
   # Single
-  set.seed(1)
+  set_seed_for_R_compatibility(1)
   df_folded <- fold(df, 3, num_col="age")
 
   for (i in 1:10){
 
-    set.seed(i)
+    set_seed_for_R_compatibility(i)
     df_folded <- fold(df, 0.5, cat_col="diagnosis", num_col="age",
                       id_col="participant")
 
@@ -373,7 +381,7 @@ test_that("bootstrap test of num_col works",{
 
   for (i in 1:10){
 
-    set.seed(i)
+    set_seed_for_R_compatibility(i)
     df_folded <- fold(df, 5, cat_col="diagnosis", num_col="age",
                       id_col="participant")
 
@@ -393,7 +401,7 @@ test_that("bootstrap test of num_col works",{
 
   for (i in 1:10){
 
-    set.seed(i)
+    set_seed_for_R_compatibility(i)
     df_folded <- fold(df, 5,
                       cat_col="diagnosis", num_col="age",
                       id_col="participant", extreme_pairing_levels = 2)
@@ -414,7 +422,7 @@ test_that("bootstrap test of num_col works",{
 
   for (i in 1:10){
 
-    set.seed(i)
+    set_seed_for_R_compatibility(i)
     expect_error(fold(df, 5,
                       cat_col="diagnosis", num_col="age",
                       id_col="participant", extreme_pairing_levels = 3),
@@ -437,7 +445,7 @@ test_that("bootstrap test of num_col works",{
 
   for (i in 1:10){
 
-    set.seed(i)
+    set_seed_for_R_compatibility(i)
     df_folded <- fold(df, i,
                       cat_col="diagnosis", num_col="age", extreme_pairing_levels = 1)
 
@@ -448,7 +456,7 @@ test_that("bootstrap test of num_col works",{
     expect_true(is_between_(min(age_distribution$mean_age), 49, 51.5))
     expect_true(is_between_(max(age_distribution$mean_age), 49, 51.5))
 
-    set.seed(i)
+    set_seed_for_R_compatibility(i)
     df_folded <- fold(df, i,
                       cat_col="diagnosis", num_col="age", extreme_pairing_levels = 2)
 
@@ -459,7 +467,7 @@ test_that("bootstrap test of num_col works",{
     expect_true(is_between_(min(age_distribution$mean_age), 49, 51.5))
     expect_true(is_between_(max(age_distribution$mean_age), 49, 51.5))
 
-    set.seed(i)
+    set_seed_for_R_compatibility(i)
     df_folded <- fold(df, i,
                       cat_col="diagnosis", num_col="age", extreme_pairing_levels = 3)
 
@@ -474,7 +482,7 @@ test_that("bootstrap test of num_col works",{
 
 
 
-  # set.seed(47)
+  # set_seed_for_R_compatibility(47)
   # # With four levels of extreme pairing
   # df_folded <- fold(df, 5,
   #                   cat_col="diagnosis", num_col="age",

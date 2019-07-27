@@ -3,7 +3,7 @@ context("splt()")
 
 test_that("dimensions of output with splt()", {
 
-  skip_test_if_old_R_version()
+  set_seed_for_R_compatibility(1)
 
   df <- data.frame("x"=c(1:12),
                    "species" = rep(c('cat','pig', 'human'), 4),
@@ -35,7 +35,7 @@ test_that("dimensions of output with splt()", {
 
 test_that("splt() works with force_equal on vector", {
 
-  skip_test_if_old_R_version()
+  set_seed_for_R_compatibility(1)
 
   splt_equal <- function(data, n, method){
 
@@ -76,7 +76,7 @@ test_that("splt() works with force_equal on vector", {
 
 test_that("splt() works with force_equal on vector", {
 
-  skip_test_if_old_R_version()
+  set_seed_for_R_compatibility(1)
 
   splt_equal <- function(data, n, method, starts_col = NULL){
 

@@ -1,5 +1,4 @@
 
-
 ## differs_from_previous
 #' @title Find values in a vector that differ from the previous value.
 #' @description Finds values, or indices of values, that differ from the previous value by some threshold(s).

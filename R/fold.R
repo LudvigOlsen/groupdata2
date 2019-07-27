@@ -360,7 +360,9 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
     # Handle existing fold cols as specified
     if (handle_existing_fold_cols == "remove"){
       # We need to ungroup the dataset, or it will be automatically included again.
-      data <- data %>% dplyr::ungroup() %>% dplyr::select(-dplyr::one_of(existing_fold_colnames))
+      data <- data %>%
+        dplyr::ungroup() %>%
+        dplyr::select(-dplyr::one_of(existing_fold_colnames))
       existing_fold_colnames <- character()
       num_existing_fold_colnames <- 0
 
@@ -495,7 +497,7 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
     }
 
     # Add to repetition counter
-    times_repeated = times_repeated + 1
+    times_repeated <- times_repeated + 1
 
     # Remove identical .folds columns or break out of while loop
     if (expected_total_num_fold_cols > 1 && isTRUE(unique_fold_cols_only)){

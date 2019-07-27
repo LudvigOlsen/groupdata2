@@ -133,9 +133,9 @@ df_list <- splt(df, 5, method = 'n_dist')
 
 }
 \seealso{
-Other grouping functions: \code{\link{fold}},
-  \code{\link{group_factor}}, \code{\link{group}},
-  \code{\link{partition}}
+Other grouping functions: \code{\link{all_groups_identical}},
+  \code{\link{fold}}, \code{\link{group_factor}},
+  \code{\link{group}}, \code{\link{partition}}
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}

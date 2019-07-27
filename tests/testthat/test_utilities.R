@@ -3,9 +3,7 @@ context("utilities")
 
 test_that("seed 1 returns same numbers with runif()",{
 
-  skip_test_if_old_R_version()
-
-  set.seed(1)
+  set_seed_for_R_compatibility(1)
 
   # In R 3.6.0 the random sampling generator was changed
   # So a lot of tests were ... wrong ...

@@ -2,6 +2,7 @@
 
 export("%primes%")
 export("%staircase%")
+export(all_groups_identical)
 export(balance)
 export(differs_from_previous)
 export(downsample)

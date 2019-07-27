@@ -307,9 +307,9 @@ df_folded_2 \%>\%
 \seealso{
 \code{\link{partition}} for balanced partitions
 
-Other grouping functions: \code{\link{group_factor}},
-  \code{\link{group}}, \code{\link{partition}},
-  \code{\link{splt}}
+Other grouping functions: \code{\link{all_groups_identical}},
+  \code{\link{group_factor}}, \code{\link{group}},
+  \code{\link{partition}}, \code{\link{splt}}
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
