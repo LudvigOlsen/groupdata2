@@ -26,6 +26,7 @@ Other tools:
 
   - find\_starts
   - differs\_from\_previous
+  - all\_groups\_identical
   - %staircase%  
   - %primes%
 
