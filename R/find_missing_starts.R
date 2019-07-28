@@ -39,10 +39,18 @@ find_missing_starts <- function(data, n, starts_col = NULL,
                                 return_skip_numbers = TRUE){
 
   # Check arguments
-  stopifnot(is.data.frame(data) && !is.null(starts_col) ||
-            !is.data.frame(data) && is.null(starts_col))
-  stopifnot(is.list(n) || is.vector(n))
-  stopifnot(is.logical(return_skip_numbers))
+  if(is.data.frame(data) && is.null(starts_col)){
+    stop("When 'data' is a data frame, 'starts_col' must be specified.")
+  }
+  if(!is.data.frame(data) && !is.null(starts_col)){
+    stop("'starts_col' should only be specified when 'data' is a data frame.")
+  }
+  if ((!is.list(n) && !is.vector(n)) || is.data.frame(n)){
+    stop("'n' must be either a list or a vector.")
+  }
+  if (!is.logical(return_skip_numbers)){
+    stop("'return_skip_numbers' must be logical (TRUE/FALSE).")
+  }
 
   starts_col <- assign_starts_col(data, starts_col)
 

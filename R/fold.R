@@ -284,13 +284,19 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #' @importFrom dplyr group_by_ do %>%
 #' @importFrom utils combn
 #' @importFrom rlang .data
-fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
-                 id_col = NULL, method = 'n_dist',
+fold <- function(data,
+                 k = 5,
+                 cat_col = NULL,
+                 num_col = NULL,
+                 id_col = NULL,
+                 method = 'n_dist',
                  id_aggregation_fn = sum,
-                 extreme_pairing_levels=1,
-                 num_fold_cols = 1, unique_fold_cols_only = TRUE,
-                 max_iters = 5, handle_existing_fold_cols = "keep_warn",
-                 parallel = FALSE){
+                 extreme_pairing_levels = 1,
+                 num_fold_cols = 1,
+                 unique_fold_cols_only = TRUE,
+                 max_iters = 5,
+                 handle_existing_fold_cols = "keep_warn",
+                 parallel = FALSE) {
 
   #
   # Takes:
@@ -308,11 +314,14 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
   #
 
   if (method %in% c("l_sizes", "l_starts", "primes")){
-    stop(paste0("method '",method,"' is not supported by fold()"))
+    stop(paste0("method '",method,"' is not supported by fold()."))
   }
 
   if (length(k) > 1){
-    stop("k must be numeric scalar.")
+    stop("'k' must be numeric scalar.")
+  }
+  if (k < 0){
+    stop("'k' must be positive.")
   }
 
   # Convert k to wholenumber if given as percentage
@@ -348,7 +357,11 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
 
   }
 
-  if (handle_existing_fold_cols %ni% c("keep_warn","keep","remove")){
+  if (!is.character(handle_existing_fold_cols) ||
+      length(handle_existing_fold_cols) != 1 ||
+      is.na(handle_existing_fold_cols) ||
+      is.null(handle_existing_fold_cols) ||
+      handle_existing_fold_cols %ni% c("keep_warn","keep","remove")){
     stop("Please specify handle_existing_fold_cols as either 'keep_warn','keep', or 'remove'.")
   }
 
@@ -392,15 +405,17 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
     # If num_col is not NULL
     if (!is.null(num_col)){
       plyr::l_ply(1:fold_cols_to_generate, function(r){
-        data <<- create_num_col_groups(data, n = k, num_col = num_col, cat_col = cat_col,
+        data <<- create_num_col_groups(data, n = k,
+                                       num_col = num_col,
+                                       cat_col = cat_col,
                                        id_col = id_col,
                                        col_name = name_new_fold_col(num_to_create = num_fold_cols,
                                                                     num_existing = num_existing_fold_colnames,
                                                                     max_existing_number = max_fold_cols_number,
                                                                     current = r),
                                        id_aggregation_fn = id_aggregation_fn,
-                                       extreme_pairing_levels=extreme_pairing_levels,
-                                       method="n_fill",
+                                       extreme_pairing_levels = extreme_pairing_levels,
+                                       method = "n_fill",
                                        pre_randomize = TRUE) %>%
           dplyr::ungroup()
 
@@ -550,8 +565,7 @@ fold <- function(data, k = 5, cat_col = NULL, num_col = NULL,
     }
   }
 
-
-  if (num_fold_cols == 1){
+  if (num_fold_cols == 1 && expected_total_num_fold_cols == 1){
     # Group by .folds
     data <- data %>%
       group_by(!! as.name('.folds'))

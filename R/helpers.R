@@ -478,7 +478,7 @@ extract_start_values_ <- function(nested_list){
 
 assign_starts_col <- function(data, starts_col) {
 
-  if(is.data.frame(data) && !is.null(starts_col)){
+  if (is.data.frame(data) && !is.null(starts_col)){
 
     # If starts_col is 'index', create column with row names for matching values
     if (starts_col == 'index'){

@@ -54,6 +54,11 @@ test_that("differs_from_previous() find the right values and indices", {
                               c(4,7)),
                  "col is factor. Using as character.", fixed = TRUE)
 
+  expect_error(
+    check_differs_from_previous('v3', threshold=2, return_index = TRUE,
+                                factor_conversion_warning = TRUE),
+                 "col is factor. 'threshold' must be NULL. Alternatively, convert factor to numeric vector.", fixed = TRUE)
+
   expect_error(differs_from_previous(df),
                "col must be specified when data is data frame",
                fixed = TRUE)
@@ -81,6 +86,9 @@ test_that("differs_from_previous() find the right values and indices", {
   expect_error(differs_from_previous(df, col="v", threshold = c(1,2,3)),
                "'threshold' must be numeric scalar, a numeric vector of length 2, or NULL.",
                fixed = TRUE)
+  expect_error(differs_from_previous(df, col="v", threshold = c("a","b","c")),
+               "'threshold' must be numeric scalar, a numeric vector of length 2, or NULL.",
+               fixed = TRUE)
   expect_error(differs_from_previous(df, col="v", threshold = -2),
                "When 'threshold' is a scalar it must be a positive number.",
                fixed = TRUE)
@@ -102,6 +110,11 @@ test_that("differs_from_previous() find the right values and indices", {
   expect_error(differs_from_previous(df, col="v2", threshold = c(-10,10), direction="positive"),
                "When 'threshold' is a vector of length 2, 'direction' must be 'both'.",
                fixed = TRUE)
+
+  expect_equal(differs_from_previous(df, col="v2", threshold = c(1), direction="positive"),
+               c(2,3))
+  expect_equal(differs_from_previous(df, col="v2", threshold = c(1), direction="negative"),
+               numeric())
 
 })
 

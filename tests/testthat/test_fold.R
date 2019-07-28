@@ -29,6 +29,47 @@ test_that("dimensions of data frame with fold()",{
 
 })
 
+
+test_that("errors and warnings are correct with fold()",{
+
+  set_seed_for_R_compatibility(1)
+
+  df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
+                   "age" = rep(c(25,65,34), 3),
+                   "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
+                   "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
+
+  df <- df[order(df$participant),]
+
+  # Add session info
+  df$session <- rep(c('1','2', '3'), 6)
+
+  # methods
+  expect_error(fold(df, 5, method="l_sizes"), "method 'l_sizes' is not supported by fold().", fixed=TRUE)
+  expect_error(fold(df, 5, method="l_starts"), "method 'l_starts' is not supported by fold().", fixed=TRUE)
+  expect_error(fold(df, 5, method="primes"), "method 'primes' is not supported by fold().", fixed=TRUE)
+
+  # k
+  expect_error(fold(df,k = c(5,4)), "'k' must be numeric scalar.", fixed=TRUE)
+  expect_error(fold(df,k = c(-3,4)), "'k' must be numeric scalar.", fixed=TRUE)
+  expect_error(fold(df,k = -3), "'k' must be positive.", fixed=TRUE)
+
+  # handle_existing_fold_cols
+  expect_error(fold(df,k = 5, handle_existing_fold_cols = "naa"),
+               "Please specify handle_existing_fold_cols as either 'keep_warn','keep', or 'remove'.", fixed=TRUE)
+  expect_error(fold(df,k = 5, handle_existing_fold_cols = NULL),
+               "Please specify handle_existing_fold_cols as either 'keep_warn','keep', or 'remove'.", fixed=TRUE)
+  expect_error(fold(df,k = 5, handle_existing_fold_cols = NA),
+               "Please specify handle_existing_fold_cols as either 'keep_warn','keep', or 'remove'.", fixed=TRUE)
+  expect_error(fold(df,k = 5, handle_existing_fold_cols = character()),
+               "Please specify handle_existing_fold_cols as either 'keep_warn','keep', or 'remove'.", fixed=TRUE)
+  df$.folds_1 <- 1
+  df$.folds_2 <- 1
+  expect_warning(fold(df,k = 5, handle_existing_fold_cols = "keep_warn"),
+               "Found 2 existing fold columns. These will NOT be replaced. Change 'handle_existing_fold_cols' to 'remove' if you want to replace them.", fixed=TRUE)
+
+})
+
 test_that(".folds is correct in fold()",{
 
   set_seed_for_R_compatibility(1)

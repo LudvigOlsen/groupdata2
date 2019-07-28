@@ -23,3 +23,5 @@ test_that("seed 1 returns same numbers with runif()",{
 
 
 })
+
+# TODO test assign_starts_col() helper

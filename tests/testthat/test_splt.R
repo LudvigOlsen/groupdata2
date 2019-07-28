@@ -29,6 +29,9 @@ test_that("dimensions of output with splt()", {
   # Check that there are the right amount of rows in list elements
   expect_equal(get_element_sizes(df, 3), c(4,4,4))
 
+  # There should be n elements in the list
+  expect_equal(length(splt(df, 0, allow_zero = T)), 1)
+  expect_equal(nrow(splt(df, 0, allow_zero = T)[[1]]), 12)
 
 })
 
