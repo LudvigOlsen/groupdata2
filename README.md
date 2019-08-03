@@ -25,20 +25,20 @@ Contact at: <r-pkgs@ludvigolsen.dk>
 
 Main functions:
 
-  - group\_factor  
-  - group  
-  - splt  
-  - partition  
-  - fold  
-  - balance
+  - `group_factor()`  
+  - `group()`  
+  - `splt()`  
+  - `partition()`  
+  - `fold()`  
+  - `balance()`
 
 Other tools:
 
-  - find\_starts
-  - differs\_from\_previous
-  - all\_groups\_identical
-  - %staircase%  
-  - %primes%
+  - `find_starts()`
+  - `differs_from_previous()`
+  - `all_groups_identical()`
+  - `%staircase%`  
+  - `%primes%`
 
 ## Installation
 
@@ -61,43 +61,43 @@ descriptions.
 
 ## Functions
 
-### group\_factor()
+### `group_factor()`
 
 Returns a factor with group numbers, e.g. (1,1,1,2,2,2,3,3,3).
 
 This can be used to subset, aggregate, group\_by, etc.
 
-Create equally sized groups by setting force\_equal = TRUE
+Create equally sized groups by setting `force_equal = TRUE`
 
-Randomize grouping factor by setting randomize = TRUE
+Randomize grouping factor by setting `randomize = TRUE`
 
-### group()
+### `group()`
 
 Returns the given data as a data frame with added grouping factor made
-with group\_factor(). The data frame is grouped by the grouping factor
+with `group_factor()`. The data frame is grouped by the grouping factor
 for easy use with dplyr pipelines.
 
-### splt()
+### `splt()`
 
-Creates the specified groups with group\_factor() and splits the given
-data by the grouping factor with base::split. Returns the splits in a
+Creates the specified groups with `group_factor()` and splits the given
+data by the grouping factor with `base::split`. Returns the splits in a
 list.
 
-### partition()
+### `partition()`
 
 Creates (optionally) balanced partitions (e.g. training/test sets).
 Balance partitions on one categorical variable and/or one numerical
 variable. Make sure that all datapoints sharing an ID is in the same
 partition.
 
-### fold()
+### `fold()`
 
 Creates (optionally) balanced folds for use in cross-validation. Balance
 folds on one categorical variable and/or one numerical variable. Ensure
 that all datapoints sharing an ID is in the same fold. Create multiple
 unique fold columns at once, e.g. for repeated cross-validation.
 
-### balance()
+### `balance()`
 
 Uses up- and/or downsampling to fix the group sizes to the min, max,
 mean, or median group size or to a specific number of rows. Balancing
@@ -237,7 +237,7 @@ df <- data.frame("x"=c(1:12),
   "age" = sample(c(1:100), 12))
 ```
 
-### group()
+### `group()`
 
 ``` r
 # Using group()
@@ -305,7 +305,7 @@ df %>%
 | 11 | pig     |  85 | 3       |
 | 12 | human   |  21 | 3       |
 
-### fold()
+### `fold()`
 
 ``` r
 # Create data frame
@@ -400,7 +400,7 @@ in one fold.
 We also have a balance in the representation of each diagnosis, which
 could give us better, more consistent results.
 
-### balance()
+### `balance()`
 
 ``` r
 # Lets first unbalance the dataset by removing some rows

@@ -42,20 +42,20 @@ r-pkgs@ludvigolsen.dk
 
 Main functions:   
 
-* group_factor  
-* group  
-* splt  
-* partition  
-* fold  
-* balance
+* `group_factor()`  
+* `group()`  
+* `splt()`  
+* `partition()`  
+* `fold()`  
+* `balance()`
 
 Other tools:  
 
-* find_starts
-* differs_from_previous
-* all_groups_identical
-* %staircase%  
-* %primes% 
+* `find_starts()`
+* `differs_from_previous()`
+* `all_groups_identical()`
+* `%staircase%`  
+* `%primes%` 
 
 ## Installation  
 CRAN version:
@@ -74,28 +74,28 @@ groupdata2 contains a number of vignettes with relevant use cases and descriptio
 > vignette("introduction_to_groupdata2") # begin here   
 
 ## Functions  
-### group_factor()  
+### `group_factor()`  
 Returns a factor with group numbers, e.g. (1,1,1,2,2,2,3,3,3).  
 
 This can be used to subset, aggregate, group_by, etc.   
 
-Create equally sized groups by setting force_equal = TRUE  
+Create equally sized groups by setting `force_equal = TRUE`  
 
-Randomize grouping factor by setting randomize = TRUE  
+Randomize grouping factor by setting `randomize = TRUE`  
 
-### group()  
-Returns the given data as a data frame with added grouping factor made with group_factor(). The data frame is grouped by the grouping factor for easy use with dplyr pipelines.  
+### `group()`  
+Returns the given data as a data frame with added grouping factor made with `group_factor()`. The data frame is grouped by the grouping factor for easy use with dplyr pipelines.  
 
-### splt()  
-Creates the specified groups with group_factor() and splits the given data by the grouping factor with base::split. Returns the splits in a list.  
+### `splt()`  
+Creates the specified groups with `group_factor()` and splits the given data by the grouping factor with `base::split`. Returns the splits in a list.  
 
-### partition()  
+### `partition()`  
 Creates (optionally) balanced partitions (e.g. training/test sets). Balance partitions on one categorical variable and/or one numerical variable. Make sure that all datapoints sharing an ID is in the same partition.
 
-### fold()  
+### `fold()`  
 Creates (optionally) balanced folds for use in cross-validation. Balance folds on one categorical variable and/or one numerical variable. Ensure that all datapoints sharing an ID is in the same fold. Create multiple unique fold columns at once, e.g. for repeated cross-validation.  
 
-### balance()
+### `balance()`
 Uses up- and/or downsampling to fix the group sizes to the min, max, mean, or median group size or to a specific number of rows.
 Balancing can also happen on the ID level, e.g. to ensure the same number of IDs in each category.   
  
@@ -202,7 +202,7 @@ df <- data.frame("x"=c(1:12),
 ```
 
 
-### group()
+### `group()`
 
 ```{r}
 # Using group()
@@ -227,7 +227,7 @@ df %>%
 
 ```
 
-### fold()
+### `fold()`
 
 ```{r}
 # Create data frame
@@ -278,7 +278,7 @@ df_folded %>%
 
 We also have a balance in the representation of each diagnosis, which could give us better, more consistent results.  
 
-### balance()
+### `balance()`
 
 ```{r}
 # Lets first unbalance the dataset by removing some rows
