@@ -3,7 +3,7 @@
 language: R
 cache: packages
 
-#Define multiple R-versions, one from bioconductor
+#Define multiple R-versions
 r:
   - oldrel
   - release
