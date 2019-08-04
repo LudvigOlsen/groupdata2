@@ -3,6 +3,11 @@
 
 # groupdata2
 
+**Author:** [Ludvig R. Olsen](http://ludvigolsen.dk/) (
+<r-pkgs@ludvigolsen.dk> ) <br/> **License:**
+[MIT](https://opensource.org/licenses/MIT) <br/> **Started:** October
+2016
+
 [![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/groupdata2)](https://cran.r-project.org/package=groupdata2)
 [![metacran
 downloads](https://cranlogs.r-pkg.org/badges/groupdata2)](https://cran.r-project.org/package=groupdata2)
@@ -19,11 +24,6 @@ R package: Methods for dividing data into groups. Create balanced
 partitions and cross-validation folds. Perform time series windowing and
 general grouping and splitting of data. Balance existing groups with up-
 and downsampling.
-
-By Ludvig R. Olsen,  
-Started in Oct. 2016
-
-Contact at: <r-pkgs@ludvigolsen.dk>
 
 Main functions:
 
