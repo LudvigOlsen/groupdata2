@@ -13,10 +13,12 @@
 downloads](https://cranlogs.r-pkg.org/badges/groupdata2)](https://cran.r-project.org/package=groupdata2)
 [![minimal R
 version](https://img.shields.io/badge/R%3E%3D-3.5-6666ff.svg)](https://cran.r-project.org/)
-[![Travis build
-status](https://travis-ci.org/LudvigOlsen/groupdata2.svg?branch=master)](https://travis-ci.org/LudvigOlsen/groupdata2)
 [![Codecov test
 coverage](https://codecov.io/gh/ludvigolsen/groupdata2/branch/master/graph/badge.svg)](https://codecov.io/gh/ludvigolsen/groupdata2?branch=master)
+[![Travis build
+status](https://travis-ci.org/LudvigOlsen/groupdata2.svg?branch=master)](https://travis-ci.org/LudvigOlsen/groupdata2)
+[![AppVeyor build
+status](https://ci.appveyor.com/api/projects/status/github/LudvigOlsen/groupdata2?branch=master&svg=true)](https://ci.appveyor.com/project/LudvigOlsen/groupdata2)
 
 ## Overview
 

@@ -9,3 +9,4 @@
 ^vignettes/l_methods_showcase\.Rmd$
 ^CRAN-RELEASE$
 ^\.travis\.yml$
+^appveyor\.yml$
