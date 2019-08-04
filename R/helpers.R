@@ -398,6 +398,24 @@ replace_col_name <- function(data, old_name, new_name){
   #
   # Replaces name of column in data frame
   #
+
+  # Check names
+  if (!is.character(old_name) || !is.character(new_name)){
+    stop("'old_name' and 'new_name' must both be of type character.")
+  }
+  if (length(old_name) != 1 || length(old_name) != 1){
+    stop("'old_name' and 'new_name' must both have length 1.")
+  }
+
+  if (old_name == new_name){
+    message("'old_name' and 'new_name' were identical.")
+    return(data)
+  }
+  # If new_name is already a column in data
+  # remove it, so we don't have duplicate column names
+  if (new_name %in% colnames(data)){
+    data[[new_name]] <- NULL
+  }
   colnames(data)[names(data) == old_name] <- new_name
   return(data)
 
@@ -668,20 +686,22 @@ get_target_size <- function(data, size, cat_col){
   to_size
 }
 
-add_rows_with_sampling <- function(data, to_size){
+add_rows_with_sampling <- function(data, to_size, new_rows_col_name){
   extra_rows <- data %>%
-    dplyr::sample_n(size=to_size-nrow(.), replace = TRUE) %>%
-    dplyr::mutate(.TempNewRow = 1)
+    dplyr::sample_n(size=to_size-nrow(.), replace = TRUE)
+  extra_rows[[new_rows_col_name]] <- 1
   data %>%
     dplyr::bind_rows(extra_rows)
 }
 
 select_rows_from_ids <- function(data, balanced_ids, cat_col, id_col,
-                                 mark_new_rows, join_fn=dplyr::inner_join){
+                                 mark_new_rows, join_fn=dplyr::inner_join,
+                                 new_rows_col_name, ids_new_rows_col_name){
   # select the chosen ids in data and return
   balanced_data <- join_fn(data, balanced_ids,
                            by = c(cat_col, id_col)) %>%
-    update_TempNewRow_from_ids_method()
+    update_TempNewRow_from_ids_method(new_rows_col_name=new_rows_col_name,
+                                      ids_new_rows_col_name=ids_new_rows_col_name)
 
   # if (!isTRUE(mark_new_rows)) {
   #   balanced_data$.TempNewRow <- NULL
@@ -690,13 +710,12 @@ select_rows_from_ids <- function(data, balanced_ids, cat_col, id_col,
 }
 
 # TODO Add description of this function.
-# I've forgotten what it's for and it's very specific ;)
-# (used in select_rows_from_ids above, which is used in sampling_methods.R)
 # TODO use create_tmp_var in sampling methods to create unique tmp var instead
-update_TempNewRow_from_ids_method <- function(data){
-  data %>%
-    dplyr::mutate(.TempNewRow = dplyr::if_else(.data$.TempNewRow + .data$.ids_balanced_new_rows > 0, 1, 0)) %>%
-    dplyr::select(-c(.data$.ids_balanced_new_rows))
+update_TempNewRow_from_ids_method <- function(data, new_rows_col_name, ids_new_rows_col_name){
+  data[[new_rows_col_name]] <- dplyr::if_else(
+    data[[new_rows_col_name]] + data[[ids_new_rows_col_name]] > 0, 1, 0)
+  data[[ids_new_rows_col_name]] <- NULL
+  data
 }
 
 ## Finding and removing identical columns

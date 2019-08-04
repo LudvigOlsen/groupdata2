@@ -237,25 +237,25 @@ test_that("group sizes works with group_factor with method primes", {
 
   set_seed_for_R_compatibility(1)
 
-  group_counts <- function(v, n){
+  group_counts <- function(v, n, force_equal=FALSE){
 
-    gf <- group_factor(v, n, method = 'primes')
+    gf <- group_factor(v, n, method = 'primes', force_equal=force_equal)
     counts <- plyr::count(gf)
     return(counts$freq)
 
   }
 
-  count_groups <- function(v, n){
+  count_groups <- function(v, n, force_equal=FALSE){
 
-    gf <- group_factor(v, n, method = 'primes')
+    gf <- group_factor(v, n, method = 'primes', force_equal=force_equal)
     counts <- plyr::count(gf)
     return(length(counts$freq))
 
   }
 
-  group_counts_sum <- function(v, n){
+  group_counts_sum <- function(v, n, force_equal=FALSE){
 
-    gf <- group_factor(v, n, method = 'primes')
+    gf <- group_factor(v, n, method = 'primes', force_equal=force_equal)
     counts <- plyr::count(gf)
     return(sum(counts$freq))
 
@@ -287,6 +287,19 @@ test_that("group sizes works with group_factor with method primes", {
   expect_error(group_counts(v, 0), "n > 0 is not TRUE", fixed=TRUE)
   expect_equal(group_counts(v, 2), c(2,1))
   expect_equal(group_counts(v, 0.67), c(2,1))
+
+  # force_equal
+
+  v <- c(1:83)
+
+  # Note: 83 %primes% 11 == 0, so tests force equal when no excessive elements to cut
+  expect_equal(group_counts(v, 11, force_equal = TRUE),
+               group_counts(v, 11, force_equal = FALSE))
+
+  # When excessive elements
+  expect_equal(group_counts(v, 17, force_equal = FALSE), c(17,19,23,24))
+  expect_equal(group_counts(v, 17, force_equal = TRUE), c(17,19,23))
+
 
 
 })

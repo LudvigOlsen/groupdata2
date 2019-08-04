@@ -57,6 +57,36 @@ test_that("all size settings work in balance()",{
   expect_equal(df_median$trial, c(1,2,1,1,2,4))
   expect_equal(ncol(df_median), 3)
 
+  # Errors
+  set_seed_for_R_compatibility(19)
+  # Size arg
+  expect_error(balance(df, "moon", "participant"),
+               "'size' must be one of 'min','max','mean','median' or a whole number.", fixed=TRUE)
+  expect_error(balance(df, -3, "participant"),
+               "'size' must be positive when specified as a whole number.", fixed=TRUE)
+  expect_error(balance(df, NULL, "participant"),
+               "'size' must be one of 'min','max','mean','median' or a whole number.", fixed=TRUE)
+  # id_col arg
+  expect_error(balance(df, "max", "participant", id_col = "hej"),
+               "'id_col' was not found in data.", fixed=TRUE)
+  expect_error(balance(df %>% dplyr::mutate(participant = as.character(participant)),
+                       "max", "trial", id_col = "participant"),
+               "'id_col' must be a factor.", fixed=TRUE)
+  expect_error(balance(df, "max", "participant", id_method = "hej"),
+               "'id_method' must be one of 'n_ids', 'n_rows_c', 'distributed', and 'nested'.", fixed=TRUE)
+  expect_error(balance(df, "max", "participant", mark_new_rows = NULL),
+               "'mark_new_rows' must be logical (TRUE/FALSE).", fixed=TRUE)
+  expect_error(balance(df, "max", "participant", mark_new_rows = NA),
+               "'mark_new_rows' was NA. Must be either TRUE or FALSE.", fixed=TRUE)
+  expect_error(balance(df, "max", "participant", mark_new_rows = "TRUE"),
+               "'mark_new_rows' must be logical (TRUE/FALSE).", fixed=TRUE)
+  expect_error(balance(df, "max", 3, mark_new_rows = TRUE),
+               "'cat_col' must be the name of a column in 'data'.", fixed=TRUE)
+  expect_error(balance(df, "max", NULL, mark_new_rows = TRUE),
+               "'cat_col' must be the name of a column in 'data'.", fixed=TRUE)
+  expect_error(balance(df, "max", NA, mark_new_rows = TRUE),
+               "'cat_col' must be the name of a column in 'data'.", fixed=TRUE)
+
 })
 
 

@@ -1,13 +1,15 @@
 # Sampling methods
 
-id_method_n_ids_ <- function(data, size, cat_col, id_col, mark_new_rows) {
+id_method_n_ids_ <- function(data, size, cat_col, id_col, mark_new_rows, new_rows_col_name) {
   #
   # Makes sure there is the same number of IDs in each category
   #
 
+  local_tmp_ids_new_rows_var <- create_tmp_var(data, ".ids_balanced_new_rows")
+
   # Count ids per group
   rows_per_id_per_category <- data %>%
-    dplyr::count(!!as.name(cat_col),!!as.name(id_col)) %>%
+    dplyr::count(!!as.name(cat_col), !!as.name(id_col)) %>%
     dplyr::select(-c(n))
 
   # balance the number of ids per category
@@ -16,18 +18,23 @@ id_method_n_ids_ <- function(data, size, cat_col, id_col, mark_new_rows) {
     size,
     cat_col = cat_col,
     mark_new_rows = TRUE,
-    new_rows_col_name = ".ids_balanced_new_rows"
+    new_rows_col_name = local_tmp_ids_new_rows_var
   )
 
-  select_rows_from_ids(data, balanced_ids, cat_col, id_col, mark_new_rows)
+  select_rows_from_ids(data=data, balanced_ids=balanced_ids, cat_col=cat_col,
+                       id_col=id_col, mark_new_rows=mark_new_rows,
+                       new_rows_col_name=new_rows_col_name,
+                       ids_new_rows_col_name=local_tmp_ids_new_rows_var)
 
 }
 
-id_method_n_rows_closest <- function(data, size, cat_col, id_col, mark_new_rows) {
+id_method_n_rows_closest <- function(data, size, cat_col, id_col, mark_new_rows, new_rows_col_name) {
   #
   # Tries to make the number of rows in each cat_col as equal as possible
   # While still respecting the IDs.
   #
+
+  local_tmp_ids_new_rows_var <- create_tmp_var(data, ".ids_balanced_new_rows")
 
   # Count ids per group
   rows_per_id_per_category <- data %>%
@@ -40,7 +47,7 @@ id_method_n_rows_closest <- function(data, size, cat_col, id_col, mark_new_rows)
       # Subset data with current category
       ids_for_cat <- rows_per_id_per_category %>%
         dplyr::filter(!!as.name(cat_col) == category) %>%
-        dplyr::mutate(.ids_balanced_new_rows = 0)
+        dplyr::mutate(!!local_tmp_ids_new_rows_var := 0)
 
       # Get stats on subset
       current_n_rows <- sum(ids_for_cat$n)
@@ -60,7 +67,7 @@ id_method_n_rows_closest <- function(data, size, cat_col, id_col, mark_new_rows)
           ids_for_cat <- ids_for_cat %>%
             dplyr::bind_rows(
               ids_for_cat[rep(seq_len(nrow(ids_for_cat)), floor(n_to_repeat)),] %>%
-              dplyr::mutate(.ids_balanced_new_rows = 1))
+              dplyr::mutate(!!local_tmp_ids_new_rows_var := 1))
           current_n_rows <- sum(ids_for_cat$n)
           difference <- current_n_rows - to_size
           if (difference == 0)
@@ -85,7 +92,7 @@ id_method_n_rows_closest <- function(data, size, cat_col, id_col, mark_new_rows)
                              by = c(cat_col,
                                     id_col,
                                     "n",
-                                    ".ids_balanced_new_rows"
+                                    local_tmp_ids_new_rows_var
                              ))
           # Only add the new row if the difference will be closer to zero afterwards
           if (closest_n[["n"]] > abs(difference)) {
@@ -93,7 +100,7 @@ id_method_n_rows_closest <- function(data, size, cat_col, id_col, mark_new_rows)
           } else {
             ids_for_cat <- ids_for_cat %>%
               dplyr::bind_rows(closest_n  %>%
-                                 dplyr::mutate(.ids_balanced_new_rows = 1))
+                                 dplyr::mutate(!!local_tmp_ids_new_rows_var := 1))
             # Update stats
             current_n_rows <- sum(ids_for_cat$n)
             difference <- current_n_rows - to_size
@@ -129,7 +136,11 @@ id_method_n_rows_closest <- function(data, size, cat_col, id_col, mark_new_rows)
       }
     }) %>% dplyr::select(-c(n))
 
-  select_rows_from_ids(data, balanced_ids, cat_col, id_col, mark_new_rows)
+  select_rows_from_ids(data=data, balanced_ids=balanced_ids, cat_col=cat_col,
+                       id_col=id_col, mark_new_rows=mark_new_rows,
+                       new_rows_col_name=new_rows_col_name,
+                       ids_new_rows_col_name=local_tmp_ids_new_rows_var)
+
 
 }
 
@@ -143,20 +154,24 @@ id_method_n_rows_optimal <- function(data, size, cat_col, id_col, mark_new_rows)
 
 }
 
-id_method_nested <- function(data, size, cat_col, id_col, mark_new_rows){
+id_method_nested <- function(data, size, cat_col, id_col, mark_new_rows, new_rows_col_name){
 
   # nested balancing
   # calls balance on each category with id as cat_col
 
-  plyr::ldply(unique(data[[cat_col]]), function(category) {
+  local_tmp_nested_new_rows_var <- create_tmp_var(data, paste0(new_rows_col_name,"Cat"))
+
+  balanced <- plyr::ldply(unique(data[[cat_col]]), function(category) {
       data %>%
         dplyr::filter(!!as.name(cat_col) == category) %>%
-        balance(size=size, cat_col=id_col, mark_new_rows=mark_new_rows)
+        balance(size=size, cat_col=id_col, mark_new_rows=TRUE,
+                new_rows_col_name=local_tmp_nested_new_rows_var)
     })
-
+  replace_col_name(balanced, old_name = local_tmp_nested_new_rows_var,
+                   new_name = new_rows_col_name)
 }
 
-id_method_distributed <- function(data, size, cat_col, id_col, mark_new_rows){
+id_method_distributed <- function(data, size, cat_col, id_col, mark_new_rows, new_rows_col_name){
 
   # Count of rows
   rows_per_id_per_category <- data %>%
@@ -278,7 +293,8 @@ id_method_distributed <- function(data, size, cat_col, id_col, mark_new_rows){
 
     # Call balance on the subset, to get the balanced (up-/downsampled) ID
     data_for_id %>%
-      balance(size = to_keep, cat_col = id_col, mark_new_rows = TRUE, new_rows_col_name = ".TempNewRow")
+      balance(size = to_keep, cat_col = id_col, mark_new_rows = TRUE,
+              new_rows_col_name = new_rows_col_name)
 
   })
 }

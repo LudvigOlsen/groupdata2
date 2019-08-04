@@ -264,6 +264,7 @@ balance <- function(data,
                     # replace = TRUE, # TODO Some times we want to choose between replacement or repetition
                     mark_new_rows = FALSE,
                     new_rows_col_name = ".new_row") {
+
   if (is.character(size)) {
     if (size %ni% c("min", "max", "mean", "median")) {
       stop("'size' must be one of 'min','max','mean','median' or a whole number.")
@@ -272,30 +273,46 @@ balance <- function(data,
     if (!arg_is_wholenumber_(size)) {
       stop("'size' must be one of 'min','max','mean','median' or a whole number.")
     }
+    if (size < 0){
+      stop("'size' must be positive when specified as a whole number.")
+    }
   }
   if (!is.character(cat_col)) {
-    stop("'cat_col' must be the name of a column in data.")
+    stop("'cat_col' must be the name of a column in 'data'.")
   }
   if (!is.null(id_col)){
+    if (is.null(data[[id_col]])){
+      stop("'id_col' was not found in data.")
+    }
     if (! is.factor(data[[id_col]])){
       stop("'id_col' must be a factor.")
     }
   }
 
-  stopifnot(id_method %in% c("n_ids",
-                             "n_rows_c",
-                             # TODO "n_rows_o"
-                             # Should find the optimal combinations of IDs.
-                             # E.g. using dynamic programming.
-                             # "n_rows_o",
-                             "distributed",
-                             "nested")) # find more
+  if (id_method %ni% c("n_ids",
+                       "n_rows_c",
+                       # TODO "n_rows_o"
+                       # Should find the optimal combinations of IDs.
+                       # E.g. using dynamic programming.
+                       # "n_rows_o",
+                       "distributed",
+                       "nested")){ # find more
+    stop("'id_method' must be one of 'n_ids', 'n_rows_c', 'distributed', and 'nested'.")
+  }
+
+  if (!is.logical(mark_new_rows)){
+    stop("'mark_new_rows' must be logical (TRUE/FALSE).")
+  }
+  if (is.na(mark_new_rows)){
+    stop("'mark_new_rows' was NA. Must be either TRUE or FALSE.")
+  }
 
   # mark_new_rows : should add a binary column with 1 for the additions,
   # so people can manipulate them separately
 
-  # Add .new_row column
-  data$.TempNewRow <- 0
+  # Add new row flag column
+  local_tmp_new_row_var <- create_tmp_var(data, ".TmpNewRow")
+  data[[local_tmp_new_row_var]] <- 0
 
   if (!is.null(id_col)) {
 
@@ -305,7 +322,8 @@ balance <- function(data,
         size = size,
         cat_col = cat_col,
         id_col = id_col,
-        mark_new_rows = mark_new_rows
+        mark_new_rows = mark_new_rows,
+        new_rows_col_name = local_tmp_new_row_var
       )}
     else if (id_method == "n_rows_c") {
         balanced <- id_method_n_rows_closest(
@@ -313,7 +331,8 @@ balance <- function(data,
           size = size,
           cat_col = cat_col,
           id_col = id_col,
-          mark_new_rows = mark_new_rows
+          mark_new_rows = mark_new_rows,
+          new_rows_col_name = local_tmp_new_row_var
         )}
     else if (id_method == "distributed") {
       balanced <- id_method_distributed(
@@ -321,7 +340,8 @@ balance <- function(data,
         size = size,
         cat_col = cat_col,
         id_col = id_col,
-        mark_new_rows = mark_new_rows
+        mark_new_rows = mark_new_rows,
+        new_rows_col_name = local_tmp_new_row_var
       )}
     else if (id_method == "nested") {
       balanced <- id_method_nested(
@@ -329,7 +349,8 @@ balance <- function(data,
         size = size,
         cat_col = cat_col,
         id_col = id_col,
-        mark_new_rows = mark_new_rows
+        mark_new_rows = mark_new_rows,
+        new_rows_col_name = local_tmp_new_row_var
       )}
   } else {
 
@@ -343,7 +364,8 @@ balance <- function(data,
         if (n_rows == to_size) {
           return(data_for_cat)
         } else if (n_rows < to_size) {
-          return(add_rows_with_sampling(data_for_cat, to_size = to_size))
+          return(add_rows_with_sampling(data_for_cat, to_size=to_size,
+                                        new_rows_col_name=local_tmp_new_row_var))
         } else {
           data_for_cat %>%
             sample_n(size = to_size, replace = FALSE)
@@ -353,11 +375,13 @@ balance <- function(data,
   }
 
   if (!isTRUE(mark_new_rows)) {
-    balanced$.TempNewRow <- NULL
+    balanced <- balanced %>%
+      dplyr::select(-!!as.name(local_tmp_new_row_var))
+
   } else {
     # Replace temporary column name with passed column name
     # e.g. '.new_row'
-    balanced <- replace_col_name(balanced, '.TempNewRow', new_rows_col_name)
+    balanced <- replace_col_name(balanced, local_tmp_new_row_var, new_rows_col_name)
   }
 
   if (!is.null(id_col)) {

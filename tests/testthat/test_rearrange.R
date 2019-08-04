@@ -59,6 +59,19 @@ test_that("rearrange() works", {
   expect_equal(df_rearranged$score, c(69,140,79,92,85,87))
 
 })
+test_that("rearrange() throws expected errors", {
+  expect_error(rearrange(df, method="pair_lols",
+                             unequal_method = "first",
+                             drop_rearrange_factor = FALSE),
+               "'method' must be name of one of the existing methods.",
+               fixed=T)
+  expect_error(rearrange(df, method="pair_extremes",
+                         unequal_method = "none",
+                         drop_rearrange_factor = FALSE),
+               "'unequal_method' must be name of one of the existing methods for dealing with an unequal number of rows/elements.",
+               fixed=T)
+
+})
 
 test_that("create_rearrange_factor_pair_extremes_() works", {
 
@@ -92,3 +105,59 @@ test_that("create_rearrange_factor_pair_extremes_() works", {
   expect_equal(create_rearrange_factor_pair_extremes_(41, unequal_method = "last"), c(c(c(1:20), rev(c(1:20))),21))
   expect_equal(create_rearrange_factor_pair_extremes_(201, unequal_method = "last"), c(c(c(1:100), rev(c(1:100))), 101))
 })
+
+test_that("rearrange() works on vectors", {
+
+  # Create data frame
+  set_seed_for_R_compatibility(1)
+  score <- sort(c(79,85,140,69,87,92,87))
+
+  # with unequal number of rows
+  df_rearranged <- rearrange(score, method="pair_extremes",
+                             unequal_method = "first",
+                             drop_rearrange_factor = FALSE) %>%
+    dplyr::rename(score = value)
+  expect_equal(df_rearranged$.rearrange_factor, c(1,2,2,3,3,4,4))
+  expect_equal(df_rearranged$score, c(69,79,140,85,92,87,87))
+
+  df_rearranged <- rearrange(score, method="pair_extremes",
+                             unequal_method = "middle",
+                             drop_rearrange_factor = FALSE) %>%
+    dplyr::rename(score = value)
+  expect_equal(df_rearranged$.rearrange_factor, c(1,1,2,2,3,4,4))
+  expect_equal(df_rearranged$score, c(69,140,79,92,87,85,87))
+
+  df_rearranged <- rearrange(score, method="pair_extremes",
+                             unequal_method = "last",
+                             drop_rearrange_factor = FALSE) %>%
+    dplyr::rename(score = value)
+  expect_equal(df_rearranged$.rearrange_factor, c(1,1,2,2,3,3,4))
+  expect_equal(df_rearranged$score, c(69,92,79,87,85,87,140))
+
+
+  # with equal number of rows
+  score <- c(head(score, 4), tail(score, 2))
+
+  df_rearranged <- rearrange(score, method="pair_extremes",
+                             unequal_method = "first",
+                             drop_rearrange_factor = FALSE) %>%
+    dplyr::rename(score = value)
+  expect_equal(df_rearranged$.rearrange_factor, c(1,1,2,2,3,3))
+  expect_equal(df_rearranged$score, c(69,140,79,92,85,87))
+
+  df_rearranged <- rearrange(score, method="pair_extremes",
+                             unequal_method = "middle",
+                             drop_rearrange_factor = FALSE) %>%
+    dplyr::rename(score = value)
+  expect_equal(df_rearranged$.rearrange_factor, c(1,1,2,2,3,3))
+  expect_equal(df_rearranged$score, c(69,140,79,92,85,87))
+
+  df_rearranged <- rearrange(score, method="pair_extremes",
+                             unequal_method = "last",
+                             drop_rearrange_factor = FALSE) %>%
+    dplyr::rename(score = value)
+  expect_equal(df_rearranged$.rearrange_factor, c(1,1,2,2,3,3))
+  expect_equal(df_rearranged$score, c(69,140,79,92,85,87))
+
+})
+
