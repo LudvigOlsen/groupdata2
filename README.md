@@ -1,6 +1,8 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+# groupdata2
+
 [![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/groupdata2)](https://cran.r-project.org/package=groupdata2)
 [![metacran
 downloads](https://cranlogs.r-pkg.org/badges/groupdata2)](https://cran.r-project.org/package=groupdata2)
@@ -11,7 +13,7 @@ status](https://travis-ci.org/LudvigOlsen/groupdata2.svg?branch=master)](https:/
 [![Codecov test
 coverage](https://codecov.io/gh/ludvigolsen/groupdata2/branch/master/graph/badge.svg)](https://codecov.io/gh/ludvigolsen/groupdata2?branch=master)
 
-# groupdata2
+## Overview
 
 R package: Methods for dividing data into groups. Create balanced
 partitions and cross-validation folds. Perform time series windowing and
@@ -328,6 +330,8 @@ set.seed(1)
 df_folded <- fold(df, k = 3, cat_col = 'diagnosis',
                   num_col = "age", 
                   id_col = 'participant')
+#> 'old_name' and 'new_name' were identical.
+#> 'old_name' and 'new_name' were identical.
 
 # Show df_folded ordered by folds
 df_folded %>% 

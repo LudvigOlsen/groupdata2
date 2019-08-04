@@ -256,6 +256,7 @@ upsample <- function(data,
 #'         mark_new_rows = TRUE)
 #'
 #' @importFrom dplyr filter sample_n %>%
+#' @importFrom rlang :=
 balance <- function(data,
                     size,
                     cat_col,

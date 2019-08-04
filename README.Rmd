@@ -23,13 +23,15 @@ rvers <- substring(dep, 7, nchar(dep)-1)
 # rvers <- gsub('.*(\\\\d+.\\\\d+.\\\\d+).*', '\\\\1', dep)
 ```
 
+# groupdata2
+
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/groupdata2)](https://cran.r-project.org/package=groupdata2)
 [![metacran downloads](https://cranlogs.r-pkg.org/badges/groupdata2)](https://cran.r-project.org/package=groupdata2)
 [![minimal R version](https://img.shields.io/badge/R%3E%3D-`r rvers`-6666ff.svg)](https://cran.r-project.org/)
 [![Travis build status](https://travis-ci.org/LudvigOlsen/groupdata2.svg?branch=master)](https://travis-ci.org/LudvigOlsen/groupdata2)
 [![Codecov test coverage](https://codecov.io/gh/ludvigolsen/groupdata2/branch/master/graph/badge.svg)](https://codecov.io/gh/ludvigolsen/groupdata2?branch=master)
 
-# groupdata2
+## Overview
 
 R package: Methods for dividing data into groups. Create balanced partitions and cross-validation folds. 
 Perform time series windowing and general grouping and splitting of data. Balance existing groups with up- and downsampling.
