@@ -1,3 +1,7 @@
+# groupdata2 1.1.2.9000
+
+* Adds Zenodo DOI for easier citation.
+
 # groupdata2 1.1.2
 
 * Adds all_groups_identical() for testing if two grouping factors contain the same groups,

@@ -19,6 +19,7 @@ coverage](https://codecov.io/gh/ludvigolsen/groupdata2/branch/master/graph/badge
 status](https://travis-ci.org/LudvigOlsen/groupdata2.svg?branch=master)](https://travis-ci.org/LudvigOlsen/groupdata2)
 [![AppVeyor build
 status](https://ci.appveyor.com/api/projects/status/github/LudvigOlsen/groupdata2?branch=master&svg=true)](https://ci.appveyor.com/project/LudvigOlsen/groupdata2)
+[![DOI](https://zenodo.org/badge/72371128.svg)](https://zenodo.org/badge/latestdoi/72371128)
 
 ## Overview
 
