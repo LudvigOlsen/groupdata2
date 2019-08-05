@@ -10,14 +10,13 @@
 |collate  |en_US.UTF-8                  |
 |ctype    |en_US.UTF-8                  |
 |tz       |Europe/Copenhagen            |
-|date     |2019-07-05                   |
+|date     |2019-08-05                   |
 
 # Dependencies
 
-|package    |old   |new   |Δ  |
-|:----------|:-----|:-----|:--|
-|groupdata2 |1.1.0 |1.1.1 |*  |
-|dplyr      |NA    |0.8.3 |*  |
+|package    |old   |new        |Δ  |
+|:----------|:-----|:----------|:--|
+|groupdata2 |1.1.1 |1.1.1.9000 |*  |
 
 # Revdeps
 
