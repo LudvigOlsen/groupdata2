@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# groupdata2
+# groupdata2 <a href='https://github.com/LudvigOlsen/groupdata2'><img src='man/figures/groupdata2_logo_242x280_250dpi.png' align="right" height="140" /></a>
 
 **Author:** [Ludvig R. Olsen](http://ludvigolsen.dk/) (
 <r-pkgs@ludvigolsen.dk> ) <br/> **License:**
