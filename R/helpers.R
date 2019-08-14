@@ -844,8 +844,13 @@ rename_with_consecutive_numbering <- function(data, cols, base_name){
 }
 
 # Add underscore until var name is unique
-create_tmp_var <- function(data, tmp_var = ".tmp_index_"){
-  while (tmp_var %in% colnames(data)){
+# arg disallowed can add extra things not to be named as
+create_tmp_var <- function(data, tmp_var = ".tmp_index_", disallowed = NULL){
+
+  # Extract the disallowed names
+  disallowed <- c(colnames(data), disallowed)
+
+  while (tmp_var %in% disallowed){
     tmp_var <- paste0(tmp_var, "_")
   }
   tmp_var
