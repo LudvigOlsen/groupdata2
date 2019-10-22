@@ -320,10 +320,10 @@ test_that("experiment: numerically_balanced_group_factor_() optimizes for sd", {
   # Create data frame
   set_seed_for_R_compatibility(5)
 
-  library(ggplot2)
-  library(dplyr)
-  library(doParallel)
-  registerDoParallel(7)
+  # library(ggplot2)
+  # library(dplyr)
+  # library(doParallel)
+  # registerDoParallel(7)
 
   # TODO Probably run this in parallel ;)
   group_sums <- plyr::ldply(seq_len(1000), .parallel = TRUE, function(i){
