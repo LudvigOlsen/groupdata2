@@ -1,7 +1,10 @@
 
-numerically_balanced_group_factor_ <- function(data, n, num_col, method="n_fill",
-                                               unequal_method="first", extreme_pairing_levels=1,
-                                               force_equal=FALSE) {
+numerically_balanced_group_factor_ <- function(data, n, num_col, method = "n_fill",
+                                               unequal_method = "first",
+                                               # Internal for now ("mean" or "sd" or (alternating) list)
+                                               optimize_for = "mean",
+                                               extreme_pairing_levels = 1,
+                                               force_equal = FALSE) {
 
   # Create unique local temporary index variable name
   local_tmp_index_var <- create_tmp_var(data, ".tmp_index_")
@@ -45,6 +48,7 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method="n_fill"
                 extreme_pairing_levels,
                 " levels of extreme pairing. Decrease 'extreme_pairing_levels'."))
   }
+
   # If method="l_sizes" for instance, we want the last pairing to have at least one pair (two sub pairs)
   if (!group_by_rearrange_id && extreme_pairing_levels > 1 &&
       nrow(data) < 2 * 2 ^ extreme_pairing_levels){
@@ -77,22 +81,43 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method="n_fill"
     #              " num rearrange factor levels: ", nlevels(data_sorted$rearrange_factor)))
 
 
-    plyr::l_ply(1:(extreme_pairing_levels-1), function(i){
+    plyr::l_ply(seq_len(extreme_pairing_levels-1), function(i){
 
-      tmp_group_scores <- data_sorted %>%
-        dplyr::group_by(!!as.name(local_tmp_rearrange_var)) %>%
-        dplyr::summarize(group_aggr = sum(!!as.name(num_col)))
+      if (length(optimize_for) > 1){
+        current_optimize_for <- optimize_for[[i]]
+      } else {
+        current_optimize_for <- optimize_for
+      }
+
+      if (current_optimize_for == "mean") {
+
+        tmp_group_scores <- data_sorted %>%
+          dplyr::group_by(!!as.name(local_tmp_rearrange_var)) %>%
+          dplyr::summarize(group_aggr = sum(!!as.name(num_col)))
+
+      } else if (current_optimize_for == "sd") {
+
+        # Note: Only works for pairs, right?
+        tmp_group_scores <- data_sorted %>%
+          dplyr::group_by(!!as.name(local_tmp_rearrange_var)) %>%
+          dplyr::summarize(group_aggr = sum(abs(diff(!!as.name(num_col)))))
+
+      }
 
       if (!equal_nrows & unequal_method == "first") {
+
         # Reorder with first group always first (otherwise doesn't work with negative numbers)
         tmp_group_scores_sorted <- tmp_group_scores %>%
           dplyr::filter(dplyr::row_number() == 1) %>%
           dplyr::bind_rows(tmp_group_scores %>%
                              dplyr::filter(dplyr::row_number() != 1) %>%
                              dplyr::arrange(.data$group_aggr))
+
       } else {
+
         tmp_group_scores_sorted <- tmp_group_scores %>%
           dplyr::arrange(.data$group_aggr)
+
       }
 
       # Rearrange again
@@ -244,8 +269,12 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method="n_fill"
 
     # Create the groups and get original order
     data_sorted <- data_sorted %>%
-      group(n=n, method = method, col_name = local_tmp_groups_var,
-            force_equal = force_equal) %>%
+      group(
+        n = n,
+        method = method,
+        col_name = local_tmp_groups_var,
+        force_equal = force_equal
+      ) %>%
       dplyr::ungroup() %>%
       dplyr::arrange(!!as.name(local_tmp_index_var))
 

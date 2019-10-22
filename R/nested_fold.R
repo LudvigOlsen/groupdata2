@@ -23,6 +23,13 @@ nested_fold <- function(data,
   ## ...
   ## The last level may have multiple, unique fold columns
 
+  # Method cv
+  ## 'fold col 1' (outer): fold dataset
+  ## 'fold col 2' (inner): for each k-1 training set, create folds, rest is test set
+  ## 'fold col 3' (inner lv2): for each k-1 training set, create folds, rest is test set
+  ## ...
+  ## The last level may have multiple, unique fold columns
+
   if (nesting_method == "x") {
 
     nested <- internal_nested_fold_method_x(

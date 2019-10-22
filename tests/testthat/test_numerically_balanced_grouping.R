@@ -312,3 +312,91 @@ test_that("numerically_balanced_group_factor_() on large datasets", {
 
 
 })
+
+
+test_that("experiment: numerically_balanced_group_factor_() optimizes for sd", {
+
+  testthat::skip("Simulation that runs for a long time")
+  # Create data frame
+  set_seed_for_R_compatibility(5)
+
+  library(ggplot2)
+  library(dplyr)
+  library(doParallel)
+  registerDoParallel(7)
+
+  # TODO Probably run this in parallel ;)
+  group_sums <- plyr::ldply(seq_len(1000), .parallel = TRUE, function(i){
+
+    df <- data.frame(
+      "participant" = factor(1:600),
+      "score" = c(runif(200, 0, 30), rnorm(200, 70, 110), runif(200, -70, -30)))
+
+    df_with_grouping_factors <- plyr::ldply(1:10, function(g){
+
+      dplyr::bind_cols(list(
+        df,
+        numerically_balanced_group_factor_(df, 2, num_col = "score",
+                                           optimize_for = c("mean", "mean", "mean"),
+                                           extreme_pairing_levels = 3) %>%
+          tibble::enframe(name = NULL, value = "mmm"),
+        numerically_balanced_group_factor_(df, 2, num_col = "score",
+                                           optimize_for = c("mean", "mean", "sd"),
+                                           extreme_pairing_levels = 3) %>%
+          tibble::enframe(name = NULL, value = "mms"),
+        numerically_balanced_group_factor_(df, 2, num_col = "score",
+                                           optimize_for = c("mean", "sd", "sd"),
+                                           extreme_pairing_levels = 3) %>%
+          tibble::enframe(name = NULL, value = "mss"),
+        numerically_balanced_group_factor_(df, 2, num_col = "score",
+                                           optimize_for = c("mean", "sd", "mean"),
+                                           extreme_pairing_levels = 3) %>%
+          tibble::enframe(name = NULL, value = "msm"))) %>%
+        dplyr::mutate(sim = g)
+
+    })
+
+    group_sums <- df_with_grouping_factors %>%
+      tidyr::gather(key = "opt_for", value = ".groups", 3:6) %>%
+      dplyr::group_by(sim, opt_for, .groups) %>%
+      dplyr::summarize(group_sum = sum(score),
+                       group_sd = sd(score))
+
+    group_sums
+
+  })
+
+  group_sums <- group_sums %>%
+    dplyr::mutate(sampling = rep(1:1000, each = 80))
+  # write.csv(group_sums, "numerical_balancing_simulation_scores.csv")
+
+  sim_wise_summaries <- group_sums %>%
+    dplyr::group_by(sampling, sim, opt_for) %>%
+    dplyr::summarise(diff_sum = abs(diff(group_sum)),
+                     diff_sd = abs(diff(group_sd)))
+
+  # tiff("DiffGroupSums.tiff", units="in", width=5, height=6, res=300)
+  sim_wise_summaries %>%
+    ggplot(aes(x = opt_for, y = diff_sum)) +
+    geom_boxplot() +
+    labs(x = "Optimize for (m = mean, s = sd)",
+         y = "Absolute Difference between Group Sums") +
+    theme_light()
+  # dev.off()
+
+  # tiff("DiffGroupSDs.tiff", units="in", width=5, height=6, res=300)
+  sim_wise_summaries %>%
+    ggplot(aes(x = opt_for, y = diff_sd)) +
+    geom_boxplot() +
+    labs(x = "Optimize for (m = mean, s = sd)",
+         y = "Absolute Difference between Group SDs") +
+    theme_light()
+  # dev.off()
+
+  # 'sampling' is the random dataset
+  summary(lmerTest::lmer(diff_sum ~ opt_for + (1|sampling), data = sim_wise_summaries))
+  summary(lmerTest::lmer(diff_sd ~ opt_for + (1|sampling), data = sim_wise_summaries))
+
+
+})
+
