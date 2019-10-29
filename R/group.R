@@ -108,7 +108,7 @@ group <- function(data, n, method = 'n_dist', starts_col = NULL,
 
     # Replace temporary column name with passed column name
     # e.g. '.groups'
-    data <- replace_col_name(data, local_tmp_var, col_name)
+    data <- base_rename(data, before = local_tmp_var, after = col_name)
 
     # Return data grouped by the grouping factor
     return(dplyr::group_by(data, !! as.name(col_name)))
@@ -129,7 +129,7 @@ group <- function(data, n, method = 'n_dist', starts_col = NULL,
 
     # Replace temporary column name with passed column name
     # e.g. '.groups'
-    data <- replace_col_name(data, local_tmp_var, col_name)
+    data <- base_rename(data, before = local_tmp_var, after = col_name)
 
     # Return data grouped by the grouping factor
     return(dplyr::group_by(data, !! as.name(col_name)))

@@ -125,15 +125,16 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method = "n_fil
         rearrange(method = "pair_extremes", unequal_method = unequal_method,
                   drop_rearrange_factor = FALSE,
                   rearrange_factor_name = local_tmp_rearrange_2_var) %>%
-        dplyr::select(!!as.name(local_tmp_rearrange_var), !!as.name(local_tmp_rearrange_2_var))
+        base_select(cols = c(local_tmp_rearrange_var, local_tmp_rearrange_2_var))
 
       data_sorted <<- data_sorted %>%
         dplyr::left_join(tmp_rearrange, by = local_tmp_rearrange_var) %>%
         dplyr::arrange(!!as.name(local_tmp_rearrange_2_var),
                        !!as.name(local_tmp_rearrange_var),
                        !!as.name(num_col)) %>%
-        dplyr::select(-!!as.name(local_tmp_rearrange_var)) %>%
-        dplyr::rename_at(dplyr::vars(local_tmp_rearrange_2_var), ~ c(local_tmp_rearrange_var))
+        base_deselect(cols = local_tmp_rearrange_var) %>%
+        base_rename(before = local_tmp_rearrange_2_var,
+                    after = local_tmp_rearrange_var)
 
     })
 
@@ -164,21 +165,22 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method = "n_fil
                                       num_excessive_rearrange_levels)
       }
 
-      rows_to_distribute <- data_sorted %>%
-        dplyr::filter(!!as.name(local_tmp_rearrange_var) %in% groups_to_distribute) %>%
+      rows_to_distribute <- data_sorted[
+        data_sorted[[local_tmp_rearrange_var]] %in% groups_to_distribute
+      ,] %>%
         dplyr::arrange(!! as.name(num_col))
 
-      data_sorted <- data_sorted %>%
-        dplyr::filter(!!as.name(local_tmp_rearrange_var) %ni% groups_to_distribute)
-
+      data_sorted <- data_sorted[
+        data_sorted[[local_tmp_rearrange_var]] %ni% groups_to_distribute
+        ,]
     }
 
     # Create groups
     data_sorted <- data_sorted %>%
-      group_uniques_(n=n,
-                     id_col=local_tmp_rearrange_var,
-                     method=method,
-                     col_name=local_tmp_groups_var)
+      group_uniques_(n = n,
+                     id_col = local_tmp_rearrange_var,
+                     method = method,
+                     col_name = local_tmp_groups_var)
 
     if (has_excessive_rearrange_levels){
       # Calculate sums of the other pairs
@@ -230,16 +232,26 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method = "n_fil
     # So we remove the excess row and insert first/last after
     # we have reordered the pairs
     if (is_n_method && !equal_nrows){
+
       if (unequal_method == "last"){
-        excessive_row <- data_sorted %>%
-          dplyr::filter(!!as.name(local_tmp_rearrange_var) == max(!!as.name(local_tmp_rearrange_var)))
-        data_sorted <- data_sorted %>%
-          dplyr::filter(!!as.name(local_tmp_rearrange_var) != max(!!as.name(local_tmp_rearrange_var)))
+        excessive_row <- data_sorted[
+          data_sorted[[local_tmp_rearrange_var]] ==
+            max(data_sorted[[local_tmp_rearrange_var]])
+        ,]
+        data_sorted <- data_sorted[
+          data_sorted[[local_tmp_rearrange_var]] !=
+            max(data_sorted[[local_tmp_rearrange_var]])
+        ,]
+
       } else if (unequal_method == "first"){
-        excessive_row <- data_sorted %>%
-          dplyr::filter(!!as.name(local_tmp_rearrange_var) == min(!!as.name(local_tmp_rearrange_var)))
-        data_sorted <- data_sorted %>%
-          dplyr::filter(!!as.name(local_tmp_rearrange_var) != min(!!as.name(local_tmp_rearrange_var)))
+        excessive_row <- data_sorted[
+          data_sorted[[local_tmp_rearrange_var]] ==
+            min(data_sorted[[local_tmp_rearrange_var]])
+        ,]
+        data_sorted <- data_sorted[
+          data_sorted[[local_tmp_rearrange_var]] !=
+            min(data_sorted[[local_tmp_rearrange_var]])
+        ,]
       }
     }
 
@@ -247,7 +259,7 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method = "n_fil
     # Order pairs by this shuffled order
     rearrange_factor_levels <- tibble::enframe(
         unique(data_sorted[[local_tmp_rearrange_var]]),
-        name=NULL, value=local_tmp_rearrange_var) %>%
+        name = NULL, value = local_tmp_rearrange_var) %>%
         dplyr::ungroup() %>%
         dplyr::sample_frac()
     rearrange_factor_levels[[local_tmp_index_2_var]] <- 1:nrow(rearrange_factor_levels)

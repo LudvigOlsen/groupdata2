@@ -61,7 +61,7 @@ nested_fold <- function(data,
     }
 
     fold_columns <- folded_data %>%
-      dplyr::select(dplyr::one_of(fold_col_names))
+      base_select(cols = fold_col_names)
 
     # Rename new columns meaningfully
     meaningful_names <- create_nested_fold_cols_names(num_fold_cols = num_fold_cols,
@@ -275,7 +275,7 @@ fold_rename_wrapper <- function(data, k, cat_col, num_col, id_col,
   # return the original grouping variables
   if (!is.null(cols_to_remove_post_fold)){
     data <- data %>%
-      dplyr::select(-dplyr::one_of(cols_to_remove_post_fold))
+      base_deselect(cols = cols_to_remove_post_fold)
   }
 
   data %>%

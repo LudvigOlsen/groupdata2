@@ -61,7 +61,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("groups", "n_elements"))
                   cumsum = cumsum(n_elements))
 
   # Get the first row where cumsum is larger or equal to 'size'
-  last_group_row <- dplyr::filter(group_data, cumsum >= size)[1,]
+  last_group_row <- group_data[group_data[["cumsum"]] >= size ,][1 ,]
 
   # Get the cumulative sum for that group
   # This can be used to calculate excess elements

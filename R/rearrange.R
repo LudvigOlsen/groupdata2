@@ -69,9 +69,10 @@ rearrange <- function(data, method="pair_extremes",
   # Remove rearrange factor if it shouldn't be returned
   if (isTRUE(drop_rearrange_factor)){
     data <- data %>%
-      dplyr::select(-c(!!as.name(local_tmp_rearrange_var)))
+      base_deselect(cols = local_tmp_rearrange_var)
   } else {
-    data <- replace_col_name(data, local_tmp_rearrange_var, rearrange_factor_name)
+    data <- base_rename(data, before = local_tmp_rearrange_var,
+                        after = rearrange_factor_name)
   }
 
   data

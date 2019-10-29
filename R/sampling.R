@@ -377,12 +377,13 @@ balance <- function(data,
 
   if (!isTRUE(mark_new_rows)) {
     balanced <- balanced %>%
-      dplyr::select(-!!as.name(local_tmp_new_row_var))
+      base_deselect(cols = local_tmp_new_row_var)
 
   } else {
     # Replace temporary column name with passed column name
     # e.g. '.new_row'
-    balanced <- replace_col_name(balanced, local_tmp_new_row_var, new_rows_col_name)
+    balanced <- base_rename(balanced, before = local_tmp_new_row_var,
+                            after = new_rows_col_name)
   }
 
   if (!is.null(id_col)) {

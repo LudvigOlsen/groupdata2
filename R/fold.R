@@ -375,7 +375,7 @@ fold <- function(data,
       # We need to ungroup the dataset, or it will be automatically included again.
       data <- data %>%
         dplyr::ungroup() %>%
-        dplyr::select(-dplyr::one_of(existing_fold_colnames))
+        base_deselect(cols = existing_fold_colnames)
       existing_fold_colnames <- character()
       num_existing_fold_colnames <- 0
 
@@ -545,7 +545,7 @@ fold <- function(data,
       # Remove some
       if (length(folds_colnames) > expected_total_num_fold_cols){
         cols_to_remove <- folds_colnames[(expected_total_num_fold_cols + 1) : length(folds_colnames)]
-        data <- data %>% dplyr::select(-cols_to_remove)
+        data <- data %>% base_deselect(cols = cols_to_remove)
         continue_repeating <- FALSE
 
       } else if (length(folds_colnames) == expected_total_num_fold_cols || times_repeated == max_iters){

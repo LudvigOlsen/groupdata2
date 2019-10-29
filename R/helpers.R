@@ -392,35 +392,6 @@ group_uniques_ <- function(data, n, id_col, method, starts_col = NULL,
 }
 
 
-
-replace_col_name <- function(data, old_name, new_name){
-
-  #
-  # Replaces name of column in data frame
-  #
-
-  # Check names
-  if (!is.character(old_name) || !is.character(new_name)){
-    stop("'old_name' and 'new_name' must both be of type character.")
-  }
-  if (length(old_name) != 1 || length(old_name) != 1){
-    stop("'old_name' and 'new_name' must both have length 1.")
-  }
-
-  if (old_name == new_name){
-    message("'old_name' and 'new_name' were identical.")
-    return(data)
-  }
-  # If new_name is already a column in data
-  # remove it, so we don't have duplicate column names
-  if (new_name %in% colnames(data)){
-    data[[new_name]] <- NULL
-  }
-  colnames(data)[names(data) == old_name] <- new_name
-  return(data)
-
-}
-
 get_column_index <- function(data, col){
 
   #
@@ -725,9 +696,10 @@ update_TempNewRow_from_ids_method <- function(data, new_rows_col_name, ids_new_r
 # Exclude comparisons by passing data frame with cols V1 and V2 - e.g. to avoid comparing columns multiple times.
 # if return_all_comparisons is TRUE, it returns a list with 1. identical cols, 2. all comparisons
 # If group_wise: 1,1,2,2 == 2,2,1,1 (identical groups with different names)
-find_identical_cols <- function(data, cols=NULL, exclude_comparisons=NULL,
-                                return_all_comparisons=FALSE, group_wise=FALSE,
-                                parallel=FALSE){
+find_identical_cols <- function(data, cols = NULL, exclude_comparisons = NULL,
+                                return_all_comparisons = FALSE,
+                                group_wise = FALSE, parallel = FALSE) {
+
 
   if (is.null(cols)){
     cols <- colnames(data)
@@ -744,7 +716,7 @@ find_identical_cols <- function(data, cols=NULL, exclude_comparisons=NULL,
               "V2" %in% colnames(exclude_comparisons))
 
     column_combinations <- column_combinations %>%
-      dplyr::anti_join(exclude_comparisons, by=c("V1", "V2"))
+      dplyr::anti_join(exclude_comparisons, by = c("V1", "V2"))
   }
 
   # To avoid starting parallel processes when they are unnecessary
@@ -777,9 +749,13 @@ find_identical_cols <- function(data, cols=NULL, exclude_comparisons=NULL,
 
   }) %>% unlist()
 
-  identicals <- column_combinations %>%
-    dplyr::filter(identical) %>%
-    dplyr::select(c(.data$V1,.data$V2))
+  # Convert column combinations to tibble
+  column_combinations <- dplyr::as_tibble(column_combinations)
+
+  # Extract V1 and V2 where 'identical' is TRUE
+  identicals <- column_combinations[
+    column_combinations[["identical"]]
+  , c("V1", "V2")]
 
   if (isTRUE(return_all_comparisons)){
     return(list(identicals, column_combinations))
@@ -793,18 +769,26 @@ find_identical_cols <- function(data, cols=NULL, exclude_comparisons=NULL,
 # Remove all but one of these identical columns
 # If return_all_comparisons is TRUE, return list with 1. data, 2. all comparisons
 # If group_wise: 1,1,2,2 == 2,2,1,1 (identical groups with different names)
-remove_identical_cols <- function(data, cols=NULL, exclude_comparisons=NULL,
-                                  return_all_comparisons=FALSE,
-                                  group_wise=FALSE, parallel=FALSE){
+remove_identical_cols <- function(data, cols = NULL, exclude_comparisons = NULL,
+                                  return_all_comparisons = FALSE,
+                                  group_wise = FALSE, parallel = FALSE) {
 
   if (is.null(cols)){
     cols <- colnames(data)
   }
 
+  # Convert to tibble
+  data <- dplyr::as_tibble(data)
+
   # Find identicals
-  identicals_and_comparisons <- find_identical_cols(data, cols, exclude_comparisons = exclude_comparisons,
-                                                    return_all_comparisons = TRUE, group_wise=group_wise,
-                                                    parallel=parallel)
+  identicals_and_comparisons <- find_identical_cols(
+    data,
+    cols,
+    exclude_comparisons = exclude_comparisons,
+    return_all_comparisons = TRUE,
+    group_wise = group_wise,
+    parallel = parallel
+  )
 
   identicals <- identicals_and_comparisons[[1]]
   comparisons <- identicals_and_comparisons[[2]]
@@ -814,13 +798,17 @@ remove_identical_cols <- function(data, cols=NULL, exclude_comparisons=NULL,
 
   # Remove
   if (is.character(to_remove)){
-    data <- data %>% dplyr::select(-dplyr::one_of(to_remove))
+    data <- data %>% base_deselect(cols = to_remove)
   } else if (is.integer(to_remove)){
     data <- data %>% dplyr::select(-to_remove)
   }
 
   if (isTRUE(return_all_comparisons)){
-    return(list("updated_data"=data, "comparisons"=comparisons, "removed_cols"=to_remove))
+    return(list(
+      "updated_data" = data,
+      "comparisons" = comparisons,
+      "removed_cols" = to_remove
+    ))
   } else {
     return(data)
   }
@@ -866,19 +854,19 @@ rename_levels_by_reverse_rank_summary <- function(data, rank_summary, levels_col
     dplyr::bind_cols(current_rank_summary)
 
   pattern_and_replacement <- reverse_rank_bind %>%
-    dplyr::select(c(!!as.name(levels_col),
-                    !!as.name(paste0(levels_col,"1"))))
+    base_select(cols = c(levels_col, paste0(levels_col, "1")))
 
   data <- data %>%
-    dplyr::left_join(pattern_and_replacement, by=levels_col) %>%
-    dplyr::select(-!!as.name(levels_col)) %>%
-    dplyr::rename_at(paste0(levels_col,"1"), ~c(levels_col))
+    dplyr::left_join(pattern_and_replacement, by = levels_col) %>%
+    base_deselect(cols = levels_col) %>%
+    base_rename(before = paste0(levels_col, "1"), after = levels_col)
 
   updated_rank_summary <- reverse_rank_bind %>%
     dplyr::mutate(sum_ = .data$sum_ + .data$sum_1) %>%
-    dplyr::select(!!as.name(levels_col), .data$sum_)
+    base_select(cols = c(levels_col, "sum_"))
 
-  list("updated_rank_summary"=updated_rank_summary, "updated_data"=data)
+  list("updated_rank_summary" = updated_rank_summary,
+       "updated_data" = data)
 
 }
 
@@ -895,7 +883,7 @@ create_rank_summary <- function(data, levels_col, num_col){
 check_R_version <- function(){
   major <- as.integer(R.Version()$major)
   minor <- as.numeric(strsplit(R.Version()$minor, ".", fixed = TRUE)[[1]][[1]])
-  list("major"=major, "minor"=minor)
+  list("major" = major, "minor" = minor)
 }
 
 # Skips testthat test, if the R version is below 3.6.0
@@ -921,4 +909,66 @@ set_seed_for_R_compatibility <- function(seed = 1) {
     args <- list(seed)
   }
   suppressWarnings(do.call(set.seed, args))
+}
+
+base_rename <- function(data, before, after, warn_at_overwrite = FALSE){
+
+  #
+  # Replaces name of column in data frame
+  #
+
+  # Check names
+  if (!is.character(before) || !is.character(after)){
+    stop("'before' and 'after' must both be of type character.")
+  }
+  if (length(before) != 1 || length(before) != 1){
+    stop("'before' and 'after' must both have length 1.")
+  }
+
+  if (before == after){
+    message("'before' and 'after' were identical.")
+    return(data)
+  }
+  # If after is already a column in data
+  # remove it, so we don't have duplicate column names
+  if (after %in% colnames(data)){
+    if (isTRUE(warn_at_overwrite)){
+      warning("'after' already existed in 'data' and will be replaced.")
+    }
+    data[[after]] <- NULL
+  }
+  colnames(data)[names(data) == before] <- after
+  return(data)
+
+}
+
+# Cols should be col names
+base_select <- function(data, cols){
+  if (is.numeric(cols)) stop("cols must be names")
+  if (length(cols) == 1 && !tibble::is_tibble(data)){
+    warning("Selecting a single column with base_select on a data frame (not tibble) might not keep the data frame structure.")
+  }
+  # if(is.data.table(data)){
+  #   return(data[, cols, with = FALSE])
+  # }
+  data[,cols]
+}
+
+# Cols should be col names
+base_deselect <- function(data, cols){
+  if (is.numeric(cols)) stop("cols must be names")
+  # if(is.data.table(data)){
+  #   return(data[, setdiff(names(data), cols), with = FALSE])
+  # }
+  base_select(data = data, cols = setdiff(names(data), cols))
+}
+
+# Col should be col name
+position_first <- function(data, col){
+  if (is.numeric(col)) stop("col must be name")
+  # if(is.data.table(data)){
+  #   return(data[, c(col, setdiff(names(data), col)), with = FALSE])
+  # }
+
+  base_select(data = data, cols = c(col, setdiff(names(data), col)))
 }

@@ -53,8 +53,9 @@ create_num_col_groups <- function(data, n, num_col,
 
       # Find groups for each category
       ids_grouped <- plyr::ldply(unique(ids_aggregated[[cat_col]]), function(category){
-        ids_for_cat <- ids_aggregated %>%
-          dplyr::filter(!!as.name(cat_col) == category)
+        ids_for_cat <- ids_aggregated[
+          ids_aggregated[[cat_col]] == category
+        ,]
         ids_for_cat$._new_groups_ <-
           numerically_balanced_group_factor_(
             ids_for_cat,
@@ -85,12 +86,12 @@ create_num_col_groups <- function(data, n, num_col,
         }
 
         ids_for_cat %>%
-          dplyr::select(-c(.data$aggr_val))
+          base_deselect(cols = "aggr_val")
       })
 
       # Transfer groups to data
       data <- data %>%
-        dplyr::inner_join(ids_grouped, by=c(cat_col, id_col))
+        dplyr::inner_join(ids_grouped, by = c(cat_col, id_col))
 
     # If id_col is NULL
     } else {
@@ -100,8 +101,9 @@ create_num_col_groups <- function(data, n, num_col,
 
       # Find groups for each category
       data <- plyr::ldply(unique(data[[cat_col]]), function(category){
-        data_for_cat <- data %>%
-          dplyr::filter(!!as.name(cat_col) == category)
+        data_for_cat <- data[
+          data[[cat_col]] == category
+        ,]
         data_for_cat$._new_groups_ <- numerically_balanced_group_factor_(
           data = data_for_cat,
           n = n,
@@ -181,8 +183,8 @@ create_num_col_groups <- function(data, n, num_col,
   # Reorder if pre-randomized
   if(isTRUE(pre_randomize)){
     data <- data %>%
-      dplyr::arrange(!! as.name(local_tmp_index_var)) %>%
-      dplyr::select(-dplyr::one_of(local_tmp_index_var))
+      dplyr::arrange(!! as.name(local_tmp_index_var))
+    data[[local_tmp_index_var]] <- NULL
   }
 
 
@@ -193,13 +195,14 @@ create_num_col_groups <- function(data, n, num_col,
 
     number_of_groups_specified <- length(n)
 
-    data <- data %>%
-      dplyr::filter(factor_to_num(.data$._new_groups_) <= number_of_groups_specified)
+    data <- data[
+      factor_to_num(data[["._new_groups_"]]) <= number_of_groups_specified
+    ,]
 
   }
 
   # replace column name
-  data <- replace_col_name(data, '._new_groups_', col_name)
+  data <- base_rename(data, before = '._new_groups_', after = col_name)
 
   return(dplyr::as_tibble(data))
 
