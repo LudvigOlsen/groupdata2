@@ -159,7 +159,8 @@ test_that("numerically_balanced_group_factor_() unequal method on small datasets
       dplyr::mutate(combination = 1:dplyr::n()) # %>% head(5)
 
     # We rank models by size and summarize by rank
-    size_ranked_summaries <- plyr::ldply(1:nrow(hparams_grid), .parallel=parallel, function(comb){
+    size_ranked_summaries <- plyr::ldply(seq_len(nrow(hparams_grid)),
+                                         .parallel=parallel, function(comb){
       current_hparams <- hparams_grid %>% dplyr::filter(dplyr::row_number() == comb)
       check_groups(n_rows=current_hparams[["n_rows"]],
                    n_folds=current_hparams[["n_folds"]],

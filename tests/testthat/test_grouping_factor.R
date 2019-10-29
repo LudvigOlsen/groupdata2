@@ -523,7 +523,7 @@ test_that("allow_zero works with group_factor", {
 
   set_seed_for_R_compatibility(1)
 
-  v = c(1:3)
+  v <- c(1:3)
 
   expect_equal(group_factor(v, 0, allow_zero = TRUE), c(NA,NA,NA))
   expect_is(group_factor(v, 0, allow_zero = TRUE), 'logical')

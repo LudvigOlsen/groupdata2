@@ -94,19 +94,19 @@ create_nested_fold_cols_names <- function(num_fold_cols, ks, fold_col_names, nes
       # Note: This part should currently not be used,
       # as we only allow multiple fold cols in the last level
       meaningful_names <-
-        plyr::llply(1:length(num_fold_cols),
+        plyr::llply(seq_along(num_fold_cols),
                     function(nm_ind) {
-                      paste0(".nested_folds_", nm_ind, "_", 1:num_fold_cols[[nm_ind]])
+                      paste0(".nested_folds_", nm_ind, "_", seq_len(num_fold_cols[[nm_ind]]))
                     }) %>% unlist()
     } else if (num_fold_cols > 1){
       first_levels_names <- paste0(".nested_folds_",
-                                   1:(length(ks)-1))
+                                   seq_len(length(ks)-1))
       last_level_names <- paste0(".nested_folds_",
                                  length(ks), "_",
-                                 1:num_fold_cols)
+                                 seq_len(num_fold_cols))
       meaningful_names <- c(first_levels_names, last_level_names)
     } else {
-      meaningful_names <- paste0(".nested_folds_", 1:length(fold_col_names))
+      meaningful_names <- paste0(".nested_folds_", seq_along(fold_col_names))
     }
   }
   meaningful_names

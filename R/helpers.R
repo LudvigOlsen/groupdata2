@@ -570,7 +570,7 @@ l_starts_find_indices_ <- function(v, n_list, remove_missing_starts){
   tryCatch({
 
     # We iterate through n and find the index for each value
-    indices <- plyr::llply(1:length(n_list), function(i){
+    indices <- plyr::llply(seq_along(n_list), function(i){
 
       # Get all indices of v where it has the current value of n
       indices <- which(v == n_list[[i]][1])
@@ -580,7 +580,7 @@ l_starts_find_indices_ <- function(v, n_list, remove_missing_starts){
       indices_larger_than_prev <- indices[which(indices > ind_prev)]
 
       # Get the wanted index
-      ind_next = indices_larger_than_prev[as.integer(n_list[[i]][2])]
+      ind_next <- indices_larger_than_prev[as.integer(n_list[[i]][2])]
 
       # Set ind_prev to the index we just found for use in the
       # next iteration
@@ -737,7 +737,7 @@ find_identical_cols <- function(data, cols = NULL, exclude_comparisons = NULL,
     print(paste0("Parallel heuristic (do parallel?): ", parallel_heuristics))
   }
 
-  column_combinations[["identical"]] <- plyr::llply(1:nrow(column_combinations),
+  column_combinations[["identical"]] <- plyr::llply(seq_len(nrow(column_combinations)),
                                                     .parallel = parallel, function(r){
     col_1 <- data[[column_combinations[r, 1]]]
     col_2 <- data[[column_combinations[r, 2]]]

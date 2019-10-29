@@ -326,8 +326,8 @@ fold <- function(data,
 
   # Convert k to wholenumber if given as percentage
   if(!arg_is_wholenumber_(k) && is_between_(k,0,1)){
-    rows_per_fold = convert_percentage_(k, data)
-    k = ceiling(nrow(data)/rows_per_fold)
+    rows_per_fold <- convert_percentage_(k, data)
+    k <- ceiling(nrow(data)/rows_per_fold)
   }
 
   # Stop if k is not a wholenumber
@@ -352,8 +352,8 @@ fold <- function(data,
   # so we divide k by the number of levels in cat_col
   if(method %in% c('greedy', 'staircase') && !is.null(cat_col)){
 
-    n_levels_cat_col = length(unique(data[[cat_col]]))
-    k = ceiling(k/n_levels_cat_col)
+    n_levels_cat_col <- length(unique(data[[cat_col]]))
+    k <- ceiling(k/n_levels_cat_col)
 
   }
 

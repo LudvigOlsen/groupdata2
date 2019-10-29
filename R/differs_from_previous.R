@@ -226,7 +226,7 @@ find_different_from_previous_vec_ <-
     # Shift / offset v one row down
     # Insert v[1] at beginning and remove last element of v
     # to get same length as v
-    v2 <- c(v[1], v[1:length(v) - 1])
+    v2 <- c(v[1], v[seq_along(v) - 1])
 
     # Create data frame with v, v2 and
     # a logical column stating whether
@@ -277,7 +277,7 @@ find_different_from_previous_vec_ <-
 
     if (isTRUE(include_first)){
       # Set first value to TRUE
-      df$new[1] = TRUE
+      df$new[1] <- TRUE
     }
 
     # Get indices where v contains a new value

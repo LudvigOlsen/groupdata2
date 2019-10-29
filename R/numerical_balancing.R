@@ -60,7 +60,7 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method = "n_fil
   # If the number of rows is unequal, the row with the smallest value is alone
   # This is done, as it is the one with the least effect on sum of values in a group
   data_sorted <- data # TODO is this renaming necessary?
-  data_sorted[[local_tmp_index_var]] <- 1:nrow(data_sorted)
+  data_sorted[[local_tmp_index_var]] <- seq_len(nrow(data_sorted))
   data_sorted <- data_sorted %>%
     dplyr::arrange(!!as.name(num_col)) %>%
     rearrange(method = "pair_extremes",
@@ -194,7 +194,7 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method = "n_fil
 
       if(nrow(data_sorted_rank_summary) >= nrow(rows_to_distribute)){
         rows_to_distribute[[local_tmp_groups_var]] <- data_sorted_rank_summary %>%
-          dplyr::filter(dplyr::row_number() %in% 1:nrow(rows_to_distribute)) %>%
+          dplyr::filter(dplyr::row_number() %in% seq_len(nrow(rows_to_distribute))) %>%
           dplyr::pull(!!as.name(local_tmp_groups_var))
       } else {
         # Given that this will mostly happen with a few excess datapoints
@@ -262,7 +262,7 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method = "n_fil
         name = NULL, value = local_tmp_rearrange_var) %>%
         dplyr::ungroup() %>%
         dplyr::sample_frac()
-    rearrange_factor_levels[[local_tmp_index_2_var]] <- 1:nrow(rearrange_factor_levels)
+    rearrange_factor_levels[[local_tmp_index_2_var]] <- seq_len(nrow(rearrange_factor_levels))
     data_sorted <- data_sorted %>%
       dplyr::left_join(rearrange_factor_levels,
                        by=local_tmp_rearrange_var) %>%

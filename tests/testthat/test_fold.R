@@ -373,8 +373,10 @@ test_that("repeated folding works in fold()",{
   expect_equal(colnames(unique(as.matrix(df_folded_10), MARGIN=2)),
                c("participant","age","diagnosis","score", paste0(".folds_",1:10)))
   # Test group-wise uniqueness
-  column_combinations <- as.data.frame(t(combn(paste0(".folds_",1:10), 2)), stringsAsFactors=FALSE)
-  column_combinations[["identical"]] <- plyr::llply(1:nrow(column_combinations), function(r){
+  column_combinations <- as.data.frame(t(combn(paste0(".folds_", 1:10), 2)),
+                                       stringsAsFactors=FALSE)
+  column_combinations[["identical"]] <- plyr::llply(seq_len(nrow(column_combinations)),
+                                                    function(r){
     col_1 <- df_folded_10[[column_combinations[r, 1]]]
     col_2 <- df_folded_10[[column_combinations[r, 2]]]
     return(all_groups_identical(col_1, col_2))

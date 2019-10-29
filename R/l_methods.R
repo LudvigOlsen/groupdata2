@@ -58,7 +58,7 @@ l_sizes_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE)
   if (any(n_perc)){
 
     # Make a copy of n where all elements are in percentage (0-1)
-    n_all_perc <- plyr::llply(1:length(n), function(element){
+    n_all_perc <- plyr::llply(seq_along(n), function(element){
 
       ifelse(isTRUE(n_perc[element]),
              n[element],
@@ -99,7 +99,7 @@ l_sizes_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE)
     # For each of the other percentages we create new percentages reflecting
     # that we have removed a percentage of the total vector elements
 
-    sum_n_integers <- plyr::llply(1:length(n), function(element){
+    sum_n_integers <- plyr::llply(seq_along(n), function(element){
 
       ifelse(!isTRUE(n_perc[element]),
              n[element],
@@ -116,7 +116,7 @@ l_sizes_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE)
     elements_for_perc <- length(v) - sum_n_integers
 
     # Find group_sizes
-    group_sizes <- plyr::llply(1:length(n), function(element){
+    group_sizes <- plyr::llply(seq_along(n), function(element){
 
       if (isTRUE(n_perc[element])){
 
@@ -143,7 +143,7 @@ l_sizes_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE)
 
   # n: vector or list of group sizes
 
-  elements <- plyr::llply(1:length(group_sizes), function(s){
+  elements <- plyr::llply(seq_along(group_sizes), function(s){
 
     #print(group_sizes[s])
     return(rep(s, group_sizes[s]))
@@ -261,7 +261,7 @@ l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE
   # .. Else if it has length 2, return element
   # .. Else raise error, as it has too many values
 
-  n_list <- plyr::llply(1:length(n), function(element){
+  n_list <- plyr::llply(seq_along(n), function(element){
 
     if (length(n[[element]]) == 1){
 

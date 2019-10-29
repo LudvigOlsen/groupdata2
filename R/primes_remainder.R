@@ -72,7 +72,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("groups", "n_elements"))
   # and the remainder is 0
   if (excess_elements == 0){
 
-    remainder = 0
+    remainder <- 0
 
   } else {
 

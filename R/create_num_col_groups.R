@@ -28,7 +28,7 @@ create_num_col_groups <- function(data, n, num_col,
 
     # Create unique local temporary index
     local_tmp_index_var <- create_tmp_var(data)
-    data[[local_tmp_index_var]] <- 1:nrow(data)
+    data[[local_tmp_index_var]] <- seq_len(nrow(data))
 
     # Reorder randomly
     data <- data %>%
