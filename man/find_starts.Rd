@@ -5,7 +5,7 @@
 \title{Find start positions of groups in data.}
 \usage{
 find_starts(data, col = NULL, return_index = FALSE,
-  factor_conversion_warning = TRUE)
+  handle_na = "ignore", factor_conversion_warning = TRUE)
 }
 \arguments{
 \item{data}{Data frame or Vector
@@ -17,6 +17,23 @@ Conversion will generate a warning, which can be turned off by setting \code{fac
 data frame. (Character)}
 
 \item{return_index}{Return indices of starts. (Logical)}
+
+\item{handle_na}{How to handle \code{NA}s in the column.
+
+ \subsection{"ignore"}{
+ Removes the \code{NA}s before finding the differing values, ensuring
+ that the first value after an \code{NA} will be correctly identified as new,
+ if it differs from the value before the \code{NA}(s).
+ }
+
+ \subsection{"as_element"}{
+ Treats all \code{NA}s as the string \code{"NA"}.
+ This means, that \code{threshold} must be \code{NULL} when using this method.
+ }
+
+ \subsection{Numeric scalar}{
+ A numeric value to replace \code{NA}s with.
+ }}
 
 \item{factor_conversion_warning}{Generate warning when converting factor to character. (Logical)}
 }

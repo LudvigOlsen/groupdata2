@@ -138,6 +138,7 @@ test_that("l_starts can take n = auto", {
   set_seed_for_R_compatibility(1)
 
   df <- data.frame("x"=c(1:12),
+                   "x2" = c(1,1,1,2,NA,2,2,3,NA,NA,6,6),
                    "species" = rep(c('cat','cat', 'human', 'human'), 3),
                    "age" = c(5,65,34,54,32,54,23,65,23,65,87,98),
                    stringsAsFactors = FALSE)
@@ -145,6 +146,9 @@ test_that("l_starts can take n = auto", {
   expect_equal(group(df, n = 'auto', method = 'l_starts',
                      starts_col = 'species')$.groups,
                factor(c(1,1,2,2,3,3,4,4,5,5,6,6)))
+  expect_equal(group(df, n = 'auto', method = 'l_starts',
+                     starts_col = 'x2')$.groups,
+               factor(c(1, 1, 1, 2, 3, 4, 4, 5, 6, 6, 7, 7)))
 
   expect_error(group(df, n = 'auto', method = 'l_sizes',
                      starts_col = 'species')$.groups,

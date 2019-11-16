@@ -71,8 +71,9 @@
 #'  To skip: \eqn{given vector c("a", "e", "o", "a", "e", "o"), n = list("a", "e", c("o", 2))
 #'  outputs groups with sizes (1,4,1)}.}
 #'
-#'  If passing \eqn{n = 'auto'}  the starting positions are automatically found with
-#'  \code{\link{find_starts}()}.
+#'  If passing \eqn{n = 'auto'} the starting positions are automatically found with
+#'  \code{\link{find_starts}()}. Note that all \code{NA}s are first replaced by a single unique value,
+#'  meaning that they will also cause group starts.
 #'
 #'  \subsection{staircase}{Uses step size to divide up the data.
 #'  Group size increases with 1 step for every group,

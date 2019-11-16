@@ -844,6 +844,19 @@ create_tmp_var <- function(data, tmp_var = ".tmp_index_", disallowed = NULL){
   tmp_var
 }
 
+# Add underscore until value is unique in the vector
+# arg disallowed can add extra things not to be named as
+create_tmp_val <- function(v, tmp_val = ".tmp_val_", disallowed = NULL){
+
+  # Extract the disallowed names
+  disallowed <- c(unique(v), disallowed)
+
+  while (tmp_val %in% disallowed){
+    tmp_val <- paste0(tmp_val, "_")
+  }
+  tmp_val
+}
+
 # Used in create_num_col_groups
 rename_levels_by_reverse_rank_summary <- function(data, rank_summary, levels_col, num_col){
 
@@ -972,3 +985,4 @@ position_first <- function(data, col){
 
   base_select(data = data, cols = c(col, setdiff(names(data), col)))
 }
+

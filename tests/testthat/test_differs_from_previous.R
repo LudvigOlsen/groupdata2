@@ -118,3 +118,71 @@ test_that("differs_from_previous() find the right values and indices", {
 
 })
 
+test_that("differs_from_previous() work with NAs", {
+
+  set_seed_for_R_compatibility(1)
+
+  v <- c('a','a','b','c',NA,'d','d',NA,"e","e")
+  df <- data.frame(v = v,
+                   v2 = c(1,1,1,2,NA,2,3,NA,4,4),
+                   v3 = factor(c(1,1,1,2,NA,2,3,NA,4,4)),
+                   stringsAsFactors = FALSE)
+
+  check_differs_from_previous <- function(col,
+                                          threshold=NULL,
+                                          direction="both",
+                                          return_index = FALSE,
+                                          include_first = FALSE,
+                                          handle_na = "remove",
+                                          factor_conversion_warning=FALSE){
+
+    return(differs_from_previous(df, col = col,
+                                 threshold=threshold,
+                                 direction=direction,
+                                 return_index = return_index,
+                                 include_first=include_first,
+                                 handle_na=handle_na,
+                                 factor_conversion_warning=factor_conversion_warning))
+
+  }
+
+  # return start vals
+  expect_equal(find_different_from_previous_vec_(df$v, handle_na = "ignore"), c('b','c','d','e'))
+  # Ensure that 1,NA,1 with 'ignore' does not create two group starts
+  expect_equal(find_different_from_previous_vec_(c(0,1,NA,1,2,NA,3), handle_na = "ignore"), c(1,2,3))
+  expect_equal(find_different_from_previous_vec_(df$v, handle_na = "as_element"),
+               c('b','c',NA,'d',NA,'e'))
+  expect_equal(find_different_from_previous_vec_(df$v, handle_na = -1),
+               c('b','c',"-1",'d',"-1",'e'))
+  expect_equal(find_different_from_previous_vec_(df$v2, handle_na = -1),
+               c(2, -1, 2, 3, -1, 4))
+  expect_equal(check_differs_from_previous('v3', handle_na = -1),
+               as.character(c(2, -1, 2, 3, -1, 4)))
+
+  # return start indices
+  expect_equal(find_different_from_previous_vec_(df$v, handle_na = "ignore",
+                                                 return_index = TRUE), c(3,4,6,9))
+  expect_equal(find_different_from_previous_vec_(c(0,1,NA,1,2,NA,3), handle_na = "ignore",
+                                                 return_index = TRUE), c(2,5,7))
+  expect_equal(find_different_from_previous_vec_(df$v, handle_na = "as_element",
+                                                 return_index = TRUE),
+               c(3,4,5,6,8,9))
+  expect_equal(find_different_from_previous_vec_(df$v, handle_na = -1,
+                                                 return_index = TRUE),
+               c(3,4,5,6,8,9))
+  expect_equal(find_different_from_previous_vec_(df$v2, handle_na = -1,
+                                                 return_index = TRUE),
+               c(4,5,6,7,8,9))
+  expect_equal(check_differs_from_previous('v3', handle_na = -1,
+                                           return_index = TRUE),
+               c(4,5,6,7,8,9))
+
+  # error
+  expect_error(find_different_from_previous_vec_(df$v, handle_na = "leave"),
+               "'handle_na' must be either a method ('ignore' or 'convert') or a value to replace NAs with.",
+               fixed=TRUE)
+
+
+
+})
+

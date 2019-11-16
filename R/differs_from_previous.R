@@ -20,28 +20,28 @@
 #'
 #' @param threshold Threshold to check difference to previous value to.
 #'
-#'  \code{NULL}, numerical scalar or numerical vector with length 2.
+#'  \code{NULL}, numeric scalar or numeric vector with length 2.
 #'
 #'  \subsection{NULL}{
 #'  Checks if the value is different from the previous value.
 #'
 #'  Ignores \code{direction}.
 #'
-#'  N.B. Works for both numerical and character vectors.
+#'  N.B. Works for both numeric and character vectors.
 #'  }
-#'  \subsection{Numerical scalar}{
+#'  \subsection{Numeric scalar}{
 #'  Positive number.
 #'
 #'  Negative threshold is the negated number.
 #'
-#'  N.B. Only works for numerical vectors.
+#'  N.B. Only works for numeric vectors.
 #'  }
-#'  \subsection{Numerical vector with length 2}{
+#'  \subsection{Numeric vector with length 2}{
 #'  Given as \code{c(negative threshold, positive threshold)}.
 #'
 #'  Negative threshold must be a negative number and positive threshold must be a positive number.
 #'
-#'  N.B. Only works for numerical vectors.
+#'  N.B. Only works for numeric vectors.
 #'  }
 #'
 #' @param direction
@@ -69,6 +69,22 @@
 #' @param col Name of column to find values that differ in. Used when data is
 #'  data frame. (Character)
 #' @param include_first Whether to include first element in vector in output. (Logical)
+#' @param handle_na How to handle \code{NA}s in the column.
+#'
+#'  \subsection{"ignore"}{
+#'  Removes the \code{NA}s before finding the differing values, ensuring
+#'  that the first value after an \code{NA} will be correctly identified as new,
+#'  if it differs from the value before the \code{NA}(s).
+#'  }
+#'
+#'  \subsection{"as_element"}{
+#'  Treats all \code{NA}s as the string \code{"NA"}.
+#'  This means, that \code{threshold} must be \code{NULL} when using this method.
+#'  }
+#'
+#'  \subsection{Numeric scalar}{
+#'  A numeric value to replace \code{NA}s with.
+#'  }
 #' @param factor_conversion_warning Generate warning when converting factor to character. (Logical)
 #' @return Vector with either differing values or indices of differing values.
 #' @aliases not_previous
@@ -103,6 +119,7 @@ differs_from_previous <- function(data,
                                   direction = "both",
                                   return_index = FALSE,
                                   include_first = FALSE,
+                                  handle_na = "ignore",
                                   factor_conversion_warning=TRUE) {
     #
     # Run find_different_from_previous_vec_ for either a vector or data frame
@@ -168,11 +185,13 @@ differs_from_previous <- function(data,
         threshold = threshold,
         direction = direction,
         return_index = return_index,
-        include_first = include_first
+        include_first = include_first,
+        handle_na = handle_na
       )
     )
 
-  }
+}
+
 
 
 
@@ -182,6 +201,7 @@ find_different_from_previous_vec_ <-
            threshold = NULL,
            direction = "both",
            return_index = FALSE,
+           handle_na = "ignore",
            include_first = FALSE) {
     #
     # Find values or index at which
@@ -191,15 +211,15 @@ find_different_from_previous_vec_ <-
     # Uses a kind of rolling windows to determine
     # if a value is the same as the previous or new
 
-    # Threshold can be a numerical scalar, a numerical vector of length 2, or NULL.
+    # Threshold can be a numeric scalar, a numeric vector of length 2, or NULL.
     # Threshold is inclusive. I.e. if threshold is 2 and the difference is 2, it's a match.
     # If threshold is NULL
     # .. TRUE if value is different than previous value.
-    # .. .. Works for both numerical and character vectors.
-    # If threshold is numerical scalar
+    # .. .. Works for both numeric and character vectors.
+    # If threshold is numeric scalar
     # .. Depending on direction, the difference between the value
     # .. and the previous value is checked against the threshold.
-    # If threshold is a numerical vector of length 2
+    # If threshold is a numeric vector of length 2
     # .. The first element is the negative threshold (and must be a negative number).
     # .. .. Returns TRUE if the difference from the previous value is negative and below or equal to this threshold.
     # .. The second element is the positive threshold (and must be a positive number).
@@ -217,10 +237,32 @@ find_different_from_previous_vec_ <-
     # .. Check whether the difference to the previous value is
     # .. .. less than or equal to the negative threshold
 
+    v_orig <- v
+
+    contains_na <- anyNA(v)
+    if (length(handle_na) > 1)
+      stop("'handle_na' had length > 1.")
+    if (handle_na == "as_element" &&
+        !is.null(threshold))
+      stop("when 'handle_na' is 'as_element', 'threshold' must be NULL.")
+
+    ## Handle NAs
+    if (isTRUE(contains_na)){
+      if (handle_na == "ignore"){
+        not_na_indices <- which(!is.na(v))
+        v <- v[!is.na(v)]
+      } else if (handle_na == "as_element"){
+        v[is.na(v)] <- "NA"
+      }  else if (is.numeric(handle_na)){
+        v[is.na(v)] <- handle_na
+        v_orig <- v
+      } else {
+        stop("'handle_na' must be either a method ('ignore' or 'convert') or a value to replace NAs with.")
+      }
+    }
 
     # Adds vector to data frame
-    # Creates a new column shifted (what is called???)
-    # down one row.
+    # Creates a new column shifted down one row.
     # Checks if the current value is the same as the previous.
 
     # Shift / offset v one row down
@@ -260,8 +302,8 @@ find_different_from_previous_vec_ <-
       }
 
       if (direction == "both") {
-        df <-
-          data.frame(v, v2, new = !is_between_(v - v2, neg_threshold, threshold))
+        df <- data.frame(v, v2,
+                         new = !is_between_(v - v2, neg_threshold, threshold))
       } else if (direction == "positive") {
         df <- data.frame(v, v2, new = v - v2 >= threshold)
       } else if (direction == "negative") {
@@ -274,14 +316,20 @@ find_different_from_previous_vec_ <-
       df <- data.frame(v, v2, new = v != v2)
     }
 
-
     if (isTRUE(include_first)){
       # Set first value to TRUE
       df$new[1] <- TRUE
     }
 
-    # Get indices where v contains a new value
-    new_indices <- which(df$new)
+    # Add back NA rows
+    if (isTRUE(contains_na) && handle_na == "ignore"){
+      df$orig_indices <- not_na_indices
+      # Get indices where v contains a new value
+      new_indices <- df$orig_indices[df$new]
+    } else {
+      # Get indices where v contains a new value
+      new_indices <- which(df$new)
+    }
 
     # If return_index is TRUE
     if (isTRUE(return_index)) {
@@ -291,7 +339,7 @@ find_different_from_previous_vec_ <-
 
     } else {
       # Return values at the indices
-      return(v[new_indices])
+      return(v_orig[new_indices])
     }
 
 

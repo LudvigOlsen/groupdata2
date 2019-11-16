@@ -250,6 +250,10 @@ l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE
     # And n is 'auto'
     if (n[1] == 'auto'){
 
+      # Replace NAs
+      tmp_na_val <- create_tmp_val(v)
+      v[is.na(v)] <- tmp_na_val
+
       # Find starts
       n <- find_starts(v)
 

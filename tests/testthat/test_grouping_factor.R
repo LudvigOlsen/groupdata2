@@ -374,6 +374,14 @@ test_that("group sizes works with group_factor with method l_starts", {
   expect_equal(group_f(c('a','a','b','b','c','3','4','4','c'),'auto'),
                factor(c(1,1,2,2,3,4,5,5,6)))
 
+  # with NAs
+  expect_equal(group_f(c('a','a','b','b',NA, NA,'c','3','4',NA,'4','c'),'auto'),
+               factor(c(1,1,2,2,3,3,4,5,6,7,8,9)))
+  expect_equal(group_f(c(NA, NA, 'a','a','b','b','c','3','4',NA,'4','c'),'auto'),
+               factor(c(1,1,2,2,3,3,4,5,6,7,8,9)))
+  expect_equal(group_f(c(NA,'a','a','b','b','c','3','4',NA,'4','c',NA, NA),'auto'),
+               factor(c(1,2,2,3,3,4,5,6,7,8,9,10,10)))
+
 
   # If factor
   expect_equal(group_f(factor(c(1:10)),

@@ -7,7 +7,7 @@
 \usage{
 differs_from_previous(data, col = NULL, threshold = NULL,
   direction = "both", return_index = FALSE, include_first = FALSE,
-  factor_conversion_warning = TRUE)
+  handle_na = "ignore", factor_conversion_warning = TRUE)
 }
 \arguments{
 \item{data}{Data frame or Vector
@@ -21,28 +21,28 @@ data frame. (Character)}
 
 \item{threshold}{Threshold to check difference to previous value to.
 
- \code{NULL}, numerical scalar or numerical vector with length 2.
+ \code{NULL}, numeric scalar or numeric vector with length 2.
 
  \subsection{NULL}{
  Checks if the value is different from the previous value.
 
  Ignores \code{direction}.
 
- N.B. Works for both numerical and character vectors.
+ N.B. Works for both numeric and character vectors.
  }
- \subsection{Numerical scalar}{
+ \subsection{Numeric scalar}{
  Positive number.
 
  Negative threshold is the negated number.
 
- N.B. Only works for numerical vectors.
+ N.B. Only works for numeric vectors.
  }
- \subsection{Numerical vector with length 2}{
+ \subsection{Numeric vector with length 2}{
  Given as \code{c(negative threshold, positive threshold)}.
 
  Negative threshold must be a negative number and positive threshold must be a positive number.
 
- N.B. Only works for numerical vectors.
+ N.B. Only works for numeric vectors.
  }}
 
 \item{direction}{\code{both}, \code{positive} or \code{negative}. (character)
@@ -69,6 +69,23 @@ Checks whether the difference to the previous value is
 \item{return_index}{Return indices of values that differ. (Logical)}
 
 \item{include_first}{Whether to include first element in vector in output. (Logical)}
+
+\item{handle_na}{How to handle \code{NA}s in the column.
+
+ \subsection{"ignore"}{
+ Removes the \code{NA}s before finding the differing values, ensuring
+ that the first value after an \code{NA} will be correctly identified as new,
+ if it differs from the value before the \code{NA}(s).
+ }
+
+ \subsection{"as_element"}{
+ Treats all \code{NA}s as the string \code{"NA"}.
+ This means, that \code{threshold} must be \code{NULL} when using this method.
+ }
+
+ \subsection{Numeric scalar}{
+ A numeric value to replace \code{NA}s with.
+ }}
 
 \item{factor_conversion_warning}{Generate warning when converting factor to character. (Logical)}
 }

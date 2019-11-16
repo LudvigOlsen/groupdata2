@@ -15,6 +15,7 @@
 #' @param return_index Return indices of starts. (Logical)
 #' @param col Name of column to find starts in. Used when data is
 #'  data frame. (Character)
+#' @inheritParams differs_from_previous
 #' @param factor_conversion_warning Generate warning when converting factor to character. (Logical)
 #' @return Vector with either start values or indices of start values.
 #' @family l_starts tools
@@ -57,12 +58,21 @@
 #'       starts_col = 'index')
 #'
 #'
-find_starts <- function(data, col = NULL, return_index = FALSE, factor_conversion_warning=TRUE){
+find_starts <- function(data,
+                        col = NULL,
+                        return_index = FALSE,
+                        handle_na = "ignore",
+                        factor_conversion_warning=TRUE){
 
-  differs_from_previous(data, col=col, threshold=NULL,
-                        return_index=return_index,
-                        include_first=TRUE,
-                        factor_conversion_warning=factor_conversion_warning)
+  differs_from_previous(
+    data = data,
+    col = col,
+    threshold = NULL,
+    return_index = return_index,
+    include_first = TRUE,
+    handle_na = handle_na,
+    factor_conversion_warning = factor_conversion_warning
+  )
 
 }
 
