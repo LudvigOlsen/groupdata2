@@ -337,6 +337,10 @@ id_method_distributed <- function(data,
     ][[".to_keep_"]]
 
     # Call balance on the subset, to get the balanced (up-/downsampled) ID
+    if (to_keep == 0){
+      # balance() don't accept 0
+      return(data_for_id[0, ])
+    }
     data_for_id %>%
       balance(
         size = to_keep,

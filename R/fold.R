@@ -84,6 +84,7 @@ if (getRversion() >= "2.15.1") utils::globalVariables(c("."))
 #'  }
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
+#' @param data Data frame.
 #' @param k \emph{Dependent on method.}
 #'
 #'  Number of folds (default), fold size, with more (see \code{method}).
@@ -334,41 +335,86 @@ fold <- function(data,
   # .. data frame with grouping factor (folds)
   #
 
-  if (method %in% c("l_sizes", "l_starts", "primes")) {
-    stop(paste0("method '", method, "' is not supported by fold()."))
-  }
 
-  if (length(k) > 1) {
-    stop("'k' must be numeric scalar.")
-  }
-  if (k < 0) {
-    stop("'k' must be positive.")
-  }
-
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+  checkmate::assert_data_frame(x = data, min.rows = 1, add = assert_collection)
+  checkmate::reportAssertions(assert_collection)
+  checkmate::assert_number(x = k, lower = 0, upper = nrow(data), finite = TRUE, add = assert_collection)
+  checkmate::assert_count(x = extreme_pairing_levels, positive = TRUE, add = assert_collection)
+  checkmate::assert_count(x = num_fold_cols, positive = TRUE, add = assert_collection)
+  checkmate::assert_count(x = max_iters, positive = TRUE, add = assert_collection)
+  checkmate::assert_flag(x = unique_fold_cols_only, add = assert_collection)
+  checkmate::assert_flag(x = parallel, add = assert_collection)
+  checkmate::assert_character(x = cat_col, min.len = 1, any.missing = FALSE,
+                              null.ok = TRUE, unique = TRUE,
+                              names = "unnamed", add = assert_collection)
+  checkmate::assert_string(x = num_col, na.ok = FALSE, min.chars = 1,
+                           null.ok = TRUE,  add = assert_collection)
+  checkmate::assert_string(x = id_col, na.ok = FALSE, min.chars = 1,
+                           null.ok = TRUE,  add = assert_collection)
+  checkmate::assert_string(x = method, min.chars = 1, add = assert_collection)
+  checkmate::assert_function(x = id_aggregation_fn, add = assert_collection)
+  checkmate::assert_string(x = handle_existing_fold_cols,
+                           add = assert_collection)
+  checkmate::reportAssertions(assert_collection)
   # Convert k to wholenumber if given as percentage
   if (!arg_is_wholenumber_(k) && is_between_(k, 0, 1)) {
     rows_per_fold <- convert_percentage_(k, data)
     k <- ceiling(nrow(data) / rows_per_fold)
   }
-
-  # Stop if k is not a wholenumber
-  stopifnot(arg_is_wholenumber_(k))
-
-  # Check if *_cols are in data
-  if (!is.null(cat_col) && cat_col %ni% colnames(data)) {
-    stop(paste0("cat_col: '", cat_col, "' is not in data"))
+  checkmate::assert_count(x = k, positive = TRUE, add = assert_collection)
+  # TODO Could have a helper for adding this kind of message:
+  if (!is.null(cat_col) && length(setdiff(cat_col, colnames(data))) != 0){
+    assert_collection$push(paste0("'cat_col' column(s), '",
+                                  paste0(setdiff(cat_col, colnames(data)), collapse = ", "),
+                                  "', not found in 'data'."))
+  }
+  if (!is.null(num_col)){
+    if (num_col %ni% colnames(data)){
+      assert_collection$push(paste0("'num_col' column, '", num_col, "', not found in 'data'."))
+    }
+    checkmate::reportAssertions(assert_collection)
+    if (!checkmate::test_numeric(data[[num_col]])){
+      assert_collection$push(paste0("'num_col' column must be numeric."))
+    }
   }
   if (!is.null(id_col) && id_col %ni% colnames(data)) {
-    stop(paste0("id_col: '", id_col, "' is not in data"))
+    assert_collection$push(paste0("'id_col' column, '", id_col, "', not found in 'data'."))
   }
-  if (!is.null(num_col) && num_col %ni% colnames(data)) {
-    stop(paste0("num_col: '", num_col, "' is not in data"))
+  checkmate::assert_names(
+    x = method,
+    subset.of = c("n_dist", "n_fill", "n_last", "n_rand", "greedy", "staircase"),
+    add = assert_collection
+  )
+  checkmate::assert_names(
+    x = handle_existing_fold_cols,
+    subset.of = c("keep_warn", "keep", "remove"),
+    add = assert_collection
+  )
+  checkmate::reportAssertions(assert_collection)
+  if (!is.null(id_col)) {
+    checkmate::assert_factor(x = data[[id_col]], add = assert_collection)
+    if (!is.null(cat_col)) {
+      if (id_col %in% cat_col) {
+        assert_collection$push("'id_col' and 'cat_col' cannot contain the same column name.")
+      }
+      # Check that cat_col is constant within each ID
+      # TODO Perhaps faster with group_keys()? We don't care about the counts just the combos
+      counts <-
+        dplyr::count(data,!!as.name(id_col),!!as.name(cat_col))
+      if (nrow(counts) != length(unique(counts[[id_col]]))) {
+        assert_collection$push("The value in 'data[[cat_col]]' must be constant within each ID.")
+      }
+    }
   }
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
 
   # If num_col is specified, warn that method is ignored
   if (!is.null(num_col) & method != "n_dist") {
     warning(paste0(
-      "'method' is ignored when 'num_col' is not NULL. ",
+      "'method' is ignored when 'num_col' is not 'NULL'. ",
       "This warning occurs, because 'method' is not the default value."
     ))
   }
@@ -379,14 +425,6 @@ fold <- function(data,
   if (method %in% c("greedy", "staircase") && !is.null(cat_col)) {
     n_levels_cat_col <- length(unique(data[[cat_col]]))
     k <- ceiling(k / n_levels_cat_col)
-  }
-
-  if (!is.character(handle_existing_fold_cols) ||
-    length(handle_existing_fold_cols) != 1 ||
-    is.na(handle_existing_fold_cols) ||
-    is.null(handle_existing_fold_cols) ||
-    handle_existing_fold_cols %ni% c("keep_warn", "keep", "remove")) {
-    stop("Please specify handle_existing_fold_cols as either 'keep_warn', 'keep', or 'remove'.")
   }
 
   # Check for existing fold columns
@@ -520,7 +558,10 @@ fold <- function(data,
           # for (r in 1:fold_cols_to_generate){
           plyr::l_ply(1:fold_cols_to_generate, function(r) {
             data <<- data %>%
-              group_uniques_(k, id_col, method,
+              group_uniques_(
+                n = k,
+                id_col = id_col,
+                method = method,
                 col_name = name_new_fold_col(
                   num_to_create = num_fold_cols,
                   num_existing = num_existing_fold_colnames,
@@ -539,7 +580,9 @@ fold <- function(data,
 
           plyr::l_ply(1:fold_cols_to_generate, function(r) {
             # for (r in 1:fold_cols_to_generate){
-            data <<- group(data, k,
+            data <<- group(
+              data = data,
+              n = k,
               method = method,
               randomize = TRUE,
               col_name = name_new_fold_col(
@@ -620,5 +663,5 @@ fold <- function(data,
   }
 
   # Return data
-  return(data)
+  data
 }

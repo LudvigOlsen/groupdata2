@@ -7,6 +7,10 @@
 * Bug fix: In grouping functions with method `l_starts` and `n = "auto"`, `NA`s are now replaced by a unique value 
 before finding group starts. E.g. c(1,1,1,2,2,NA,NA,4,4) yields 4 groups.
 
+* The `data` argument in `fold()` takes a data frame, not vectors.
+
+* Adds `checkmate` input checks.
+
 # groupdata2 1.1.2
 
 * Adds `all_groups_identical()` for testing if two grouping factors contain the same groups,
