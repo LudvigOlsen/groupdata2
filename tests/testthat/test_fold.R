@@ -664,10 +664,10 @@ test_that("arg check fuzz tests for fold()", {
 
   df <- data.frame(
     "participant" = factor(rep(c("1", "2", "3", "4", "5", "6"), 3)),
-    "shuffled_participant" = sample(factor(rep(c("1", "2", "3", "4", "5", "6"), 3))),
+    "shuffled_participant" = factor(sample(rep(c("1", "2", "3", "4", "5", "6"), 3))),
     "age" = rep(c(25, 65, 34), 3),
-    "diagnosis" = rep(c("a", "b", "a", "a", "b", "b"), 3),
-    "subdiagnosis" = rep(c("x", "x", "x", "y", "y", "y"), 3),
+    "diagnosis" = factor(rep(c("a", "b", "a", "a", "b", "b"), 3)),
+    "subdiagnosis" = factor(rep(c("x", "x", "x", "y", "y", "y"), 3)),
     "score" = c(34, 23, 54, 23, 56, 76, 43, 56, 76, 42, 54, 1, 5, 76, 34, 76, 23, 65)
   )
 
