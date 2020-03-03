@@ -4,9 +4,13 @@
 \alias{rearrange}
 \title{Rearrange data by a set of methods.}
 \usage{
-rearrange(data, method = "pair_extremes", unequal_method = "middle",
+rearrange(
+  data,
+  method = "pair_extremes",
+  unequal_method = "middle",
   drop_rearrange_factor = TRUE,
-  rearrange_factor_name = ".rearrange_factor")
+  rearrange_factor_name = ".rearrange_factor"
+)
 }
 \arguments{
 \item{data}{Data frame or Vector.}

@@ -5,9 +5,16 @@
 \alias{not_previous}
 \title{Find values in a vector that differ from the previous value.}
 \usage{
-differs_from_previous(data, col = NULL, threshold = NULL,
-  direction = "both", return_index = FALSE, include_first = FALSE,
-  handle_na = "ignore", factor_conversion_warning = TRUE)
+differs_from_previous(
+  data,
+  col = NULL,
+  threshold = NULL,
+  direction = "both",
+  return_index = FALSE,
+  include_first = FALSE,
+  handle_na = "ignore",
+  factor_conversion_warning = TRUE
+)
 }
 \arguments{
 \item{data}{Data frame or Vector
@@ -107,30 +114,34 @@ Finds values, or indices of values, that differ from the previous value by some 
 library(groupdata2)
 
 # Create a data frame
-df <- data.frame('a' = c('a','a','b','b','c','c'),
-                 'n' = c(1,3,6,2,2,4))
+df <- data.frame(
+  "a" = factor(c("a", "a", "b", "b", "c", "c")),
+  "n" = c(1, 3, 6, 2, 2, 4)
+)
 
 # Get differing values in column 'a' with no threshold.
 # This will simply check, if it is different to the previous value or not.
-differs_from_previous(df, col = 'a')
+differs_from_previous(df, col = "a")
 
 # Get indices of differing values in column 'a' with no threshold.
-differs_from_previous(df, col = 'a', return_index = TRUE)
+differs_from_previous(df, col = "a", return_index = TRUE)
 
 # Get values, that are 2 or more greater than the previous value
-differs_from_previous(df, col = 'n', threshold=2, direction="positive")
+differs_from_previous(df, col = "n", threshold = 2, direction = "positive")
 
 # Get values, that are 4 or more less than the previous value
-differs_from_previous(df, col = 'n', threshold=4, direction="negative")
+differs_from_previous(df, col = "n", threshold = 4, direction = "negative")
 
 # Get values, that are either 2 or more greater than the previous value
 # or 4 or more less than the previous value
-differs_from_previous(df, col = 'n', threshold=c(-4,2), direction="both")
+differs_from_previous(df, col = "n", threshold = c(-4, 2), direction = "both")
 }
 \seealso{
-Other l_starts tools: \code{\link{find_missing_starts}},
-  \code{\link{find_starts}}, \code{\link{group_factor}},
-  \code{\link{group}}
+Other l_starts tools: 
+\code{\link{find_missing_starts}()},
+\code{\link{find_starts}()},
+\code{\link{group_factor}()},
+\code{\link{group}()}
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}

@@ -77,32 +77,42 @@ df <- data.frame(
 )
 
 # Using downsample()
-downsample(df, cat_col="diagnosis")
+downsample(df, cat_col = "diagnosis")
 
 # Using downsample() with id_method "n_ids"
 # With column specifying added rows
-downsample(df, cat_col="diagnosis",
-        id_col="participant", id_method="n_ids")
+downsample(df,
+  cat_col = "diagnosis",
+  id_col = "participant",
+  id_method = "n_ids"
+)
 
 # Using downsample() with id_method "n_rows_c"
 # With column specifying added rows
-downsample(df, cat_col="diagnosis",
-        id_col="participant", id_method="n_rows_c")
+downsample(df,
+  cat_col = "diagnosis",
+  id_col = "participant",
+  id_method = "n_rows_c"
+)
 
 # Using downsample() with id_method "distributed"
-downsample(df, cat_col="diagnosis",
-        id_col="participant",
-        id_method="distributed")
+downsample(df,
+  cat_col = "diagnosis",
+  id_col = "participant",
+  id_method = "distributed"
+)
 
 # Using downsample() with id_method "nested"
-downsample(df, cat_col="diagnosis",
-        id_col="participant",
-        id_method="nested")
-
+downsample(df,
+  cat_col = "diagnosis",
+  id_col = "participant",
+  id_method = "nested"
+)
 }
 \seealso{
-Other sampling functions: \code{\link{balance}},
-  \code{\link{upsample}}
+Other sampling functions: 
+\code{\link{balance}()},
+\code{\link{upsample}()}
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}

@@ -110,30 +110,32 @@
 #' library(dplyr)
 #'
 #' # Create a data frame
-#' df <- data.frame("x"=c(1:12),
-#'  "species" = factor(rep(c('cat','pig', 'human'), 4)),
-#'  "age" = sample(c(1:100), 12))
+#' df <- data.frame(
+#'   "x" = c(1:12),
+#'   "species" = factor(rep(c("cat", "pig", "human"), 4)),
+#'   "age" = sample(c(1:100), 12)
+#' )
 #'
 #' # Using group_factor() with n_dist
-#' groups <- group_factor(df, 5, method = 'n_dist')
+#' groups <- group_factor(df, 5, method = "n_dist")
 #' df$groups <- groups
 #'
 #' # Using group_factor() with greedy
-#' groups <- group_factor(df, 5, method = 'greedy')
+#' groups <- group_factor(df, 5, method = "greedy")
 #' df$groups <- groups
 #'
 #' # Using group_factor() with l_sizes
-#' groups <- group_factor(df, list(0.2, 0.3), method = 'l_sizes')
+#' groups <- group_factor(df, list(0.2, 0.3), method = "l_sizes")
 #' df$groups <- groups
 #'
-#'# Using group_factor() with l_starts
-#' groups <- group_factor(df, list('cat', c('pig',2), 'human'),
-#'                        method = 'l_starts', starts_col = 'species')
+#' # Using group_factor() with l_starts
+#' groups <- group_factor(df, list("cat", c("pig", 2), "human"),
+#'   method = "l_starts", starts_col = "species"
+#' )
 #' df$groups <- groups
-#'
-group_factor <- function(data, n, method = 'n_dist', starts_col = NULL, force_equal = FALSE,
+group_factor <- function(data, n, method = "n_dist", starts_col = NULL, force_equal = FALSE,
                          allow_zero = FALSE, descending = FALSE,
-                         randomize = FALSE, remove_missing_starts = FALSE){
+                         randomize = FALSE, remove_missing_starts = FALSE) {
 
   #
   # Takes data frame or vector
@@ -144,136 +146,183 @@ group_factor <- function(data, n, method = 'n_dist', starts_col = NULL, force_eq
 
   # If allow_zero is TRUE and n is 0
   # return NAs instead of giving an error
-  if (isTRUE(allow_zero) && n == 0){
-
-    if(is.data.frame(data)){
-
+  if (isTRUE(allow_zero) && n == 0) {
+    if (is.data.frame(data)) {
       return(rep(NA, each = nrow(data)))
-
     } else {
-
       return(rep(NA, each = length(data)))
-
     }
-
-
   }
 
   # Check arguments
   # Convert n if given as percentage
   # Check more arguments
-  n <- check_convert_check_(data, n, method, force_equal,
-                            allow_zero, descending,
-                            remove_missing_starts = remove_missing_starts,
-                            starts_col = starts_col)
+  n <- check_convert_check_(
+    data = data,
+    n = n,
+    method = method,
+    force_equal = force_equal,
+    allow_zero = allow_zero,
+    descending = descending,
+    remove_missing_starts = remove_missing_starts,
+    starts_col = starts_col
+  )
 
   # For method l_starts
   # If data is a data frame and starts_col is not NULL
   # We want to get the column with values to match
 
-  starts_col <- assign_starts_col(data, starts_col)
+  starts_col <- assign_starts_col(data = data, starts_col = starts_col)
 
   # Create grouping factors
   # .. Check if data is a data frame or a vector
   # .. Call grouping factor function for specified method
 
-  if(is.data.frame(data)){
-
-    if(method == 'greedy'){
-
-      groups <- greedy_group_factor_(data[[1]], n, force_equal, descending)
-
-    } else if (method == 'n_dist'){
-
-      groups <- n_dist_group_factor_(data[[1]], n, force_equal, descending)
-
-    } else if (method == 'n_last'){
-
-      groups <- n_last_group_factor_(data[[1]], n, force_equal, descending)
-
-    } else if (method == 'n_fill'){
-
-      groups <- n_fill_group_factor_(data[[1]], n, force_equal, descending)
-
-    } else if (method == 'n_rand'){
-
-      groups <- n_rand_group_factor_(data[[1]], n, force_equal, descending)
-
-    } else if (method == 'l_sizes'){
-
-      groups <- l_sizes_group_factor_(data[[1]], n, force_equal, descending)
-
-    } else if (method == 'l_starts'){
+  if (is.data.frame(data)) {
+    if (method == "greedy") {
+      groups <-
+        greedy_group_factor_(
+          v = data[[1]],
+          size = n,
+          force_equal = force_equal,
+          descending = descending
+        )
+    } else if (method == "n_dist") {
+      groups <- n_dist_group_factor_(
+        v = data[[1]],
+        n_windows = n,
+        force_equal = force_equal,
+        descending = descending
+      )
+    } else if (method == "n_last") {
+      groups <- n_last_group_factor_(
+        v = data[[1]],
+        n_windows = n,
+        force_equal = force_equal,
+        descending = descending
+      )
+    } else if (method == "n_fill") {
+      groups <- n_fill_group_factor_(
+        v = data[[1]],
+        n_windows = n,
+        force_equal = force_equal,
+        descending = descending
+      )
+    } else if (method == "n_rand") {
+      groups <- n_rand_group_factor_(
+        v = data[[1]],
+        n_windows = n,
+        force_equal = force_equal,
+        descending = descending
+      )
+    } else if (method == "l_sizes") {
+      groups <- l_sizes_group_factor_(
+        v = data[[1]],
+        n = n,
+        force_equal = force_equal,
+        descending = descending
+      )
+    } else if (method == "l_starts") {
 
       # Notice that we pass the starts_col as data
 
-      groups <- l_starts_group_factor_(starts_col, n, force_equal,
-                                       descending,
-                                       remove_missing_starts = remove_missing_starts)
-
-    } else if (method == 'staircase'){
-
-      groups <- stair_split_group_factor_(data[[1]], n, force_equal, descending)
-
-    } else if (method == 'primes'){
-
-      groups <- primes_split_group_factor_(data[[1]], n, force_equal, descending)
-
+      groups <- l_starts_group_factor_(
+        v = starts_col,
+        n = n,
+        force_equal = force_equal,
+        descending = descending,
+        remove_missing_starts = remove_missing_starts
+      )
+    } else if (method == "staircase") {
+      groups <- stair_split_group_factor_(
+        v = data[[1]],
+        step_size = n,
+        force_equal = force_equal,
+        descending = descending
+      )
+    } else if (method == "primes") {
+      groups <- primes_split_group_factor_(
+        v = data[[1]],
+        start_at = n,
+        force_equal = force_equal,
+        descending = descending
+      )
     }
-
   } else {
-
-    if(method == 'greedy'){
-
-      groups <- greedy_group_factor_(data, n, force_equal, descending)
-
-    } else if (method == 'n_dist'){
-
-      groups <- n_dist_group_factor_(data, n, force_equal, descending)
-
-    } else if (method == 'n_last'){
-
-      groups <- n_last_group_factor_(data, n, force_equal, descending)
-
-    } else if (method == 'n_fill'){
-
-      groups <- n_fill_group_factor_(data, n, force_equal, descending)
-
-    } else if (method == 'n_rand'){
-
-      groups <- n_rand_group_factor_(data, n, force_equal, descending)
-
-    } else if (method == 'l_sizes'){
-
-      groups <- l_sizes_group_factor_(data, n, force_equal, descending)
-
-    } else if (method == 'l_starts'){
-
-      groups <- l_starts_group_factor_(data, n, force_equal, descending, remove_missing_starts)
-
-    } else if (method == 'staircase'){
-
-      groups <- stair_split_group_factor_(data, n, force_equal, descending)
-
-    } else if (method == 'primes'){
-
-      groups <- primes_split_group_factor_(data, start_at=n, force_equal, descending)
-
+    if (method == "greedy") {
+      groups <- greedy_group_factor_(
+        v = data,
+        size = n,
+        force_equal = force_equal,
+        descending = descending
+      )
+    } else if (method == "n_dist") {
+      groups <- n_dist_group_factor_(
+        v = data,
+        n_windows =  n,
+        force_equal = force_equal,
+        descending = descending
+      )
+    } else if (method == "n_last") {
+      groups <- n_last_group_factor_(
+        v = data,
+        n_windows = n,
+        force_equal = force_equal,
+        descending = descending
+      )
+    } else if (method == "n_fill") {
+      groups <- n_fill_group_factor_(
+        v = data,
+        n_windows = n,
+        force_equal = force_equal,
+        descending = descending
+      )
+    } else if (method == "n_rand") {
+      groups <- n_rand_group_factor_(
+        v = data,
+        n_windows = n,
+        force_equal = force_equal,
+        descending = descending
+      )
+    } else if (method == "l_sizes") {
+      groups <- l_sizes_group_factor_(
+        v = data,
+        n = n,
+        force_equal = force_equal,
+        descending = descending
+      )
+    } else if (method == "l_starts") {
+      groups <- l_starts_group_factor_(
+        v = data,
+        n = n,
+        force_equal = force_equal,
+        descending = descending,
+        remove_missing_starts = remove_missing_starts
+      )
+    } else if (method == "staircase") {
+      groups <- stair_split_group_factor_(
+        v = data,
+        step_size = n,
+        force_equal = force_equal,
+        descending = descending
+      )
+    } else if (method == "primes") {
+      groups <- primes_split_group_factor_(
+        v = data,
+        start_at = n,
+        force_equal = force_equal,
+        descending = descending
+      )
     }
-
   }
 
   # If randomize is set to TRUE
   # .. reorganize the grouping factor randomly
 
-  if (isTRUE(randomize)){
-
+  if (isTRUE(randomize)) {
     groups <- sample(groups)
-
   }
 
   # Return grouping factor
   return(groups)
-
 }
-

@@ -14,29 +14,31 @@ size \%primes\% start_at
 }
 \value{
 Remainder (Integer).
-Returns 0 if the last group
-has the size of the associated prime number.
+ Returns \code{0} if the last group
+ has the size of the associated prime number.
 }
 \description{
 When using the primes method,
-the last group might not have the size of the associated prime number
-if there are not enough elements left. Use \%primes\% to find this remainder.
+ the last group might not have the size of the associated prime number
+ if there are not enough elements left. Use \code{\%primes\%} to find this remainder.
 }
 \examples{
 # Attach packages
 library(groupdata2)
 
 100 \%primes\% 2
-
 }
 \seealso{
-Other staircase tools: \code{\link{\%staircase\%}},
-  \code{\link{group_factor}}, \code{\link{group}}
+Other staircase tools: 
+\code{\link{\%staircase\%}()},
+\code{\link{group_factor}()},
+\code{\link{group}()}
 
-Other remainder tools: \code{\link{\%staircase\%}}
+Other remainder tools: 
+\code{\link{\%staircase\%}()}
 }
 \author{
-Ludvig Renbo Olsen, \email{mail@ludvigolsen.dk}
+Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 }
 \concept{remainder tools}
 \concept{staircase tools}

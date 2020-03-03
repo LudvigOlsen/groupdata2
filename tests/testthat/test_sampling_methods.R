@@ -12,7 +12,6 @@ context("sampling_methods()")
 # }
 
 test_that("balance() works with method n_ids()", {
-
   xpectr::set_test_seed(1)
 
   df <- data.frame(
@@ -24,9 +23,11 @@ test_that("balance() works with method n_ids()", {
 
   # Max
   xpectr::set_test_seed(1)
-  balanced_by_n_ids <- balance(df, size="max", cat_col = "diagnosis",
-                              id_col = "participant",
-                              id_method = "n_ids", mark_new_rows = FALSE)
+  balanced_by_n_ids <- balance(df,
+    size = "max", cat_col = "diagnosis",
+    id_col = "participant",
+    id_method = "n_ids", mark_new_rows = FALSE
+  )
   counts <- balanced_by_n_ids %>%
     dplyr::count(diagnosis, participant)
   expect_equal(counts$n, c(2, 4, 4, 2, 2))
@@ -34,22 +35,22 @@ test_that("balance() works with method n_ids()", {
 
   # Test mark_new_rows = TRUE
   xpectr::set_test_seed(1)
-  balanced_by_n_ids <- balance(df, size="max", cat_col = "diagnosis",
-                               id_col = "participant",
-                               id_method = "n_ids", mark_new_rows = TRUE)
-  expect_equal(balanced_by_n_ids$.new_row, c(0,0,0,0,0,0,0,0,0,0,0,1,0,0))
+  balanced_by_n_ids <- balance(df,
+    size = "max", cat_col = "diagnosis",
+    id_col = "participant",
+    id_method = "n_ids", mark_new_rows = TRUE
+  )
+  expect_equal(balanced_by_n_ids$.new_row, c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0))
   counts <- balanced_by_n_ids %>%
     dplyr::count(diagnosis, participant)
   expect_equal(counts$n, c(2, 4, 4, 2, 2))
   expect_equal(counts$diagnosis, factor(c(0, 0, 0, 1, 1)))
 
-#   # Test intact IDs
-#   test_intact_IDs(df, balanced_by_n_ids, "participant")
-
+  #   # Test intact IDs
+  #   test_intact_IDs(df, balanced_by_n_ids, "participant")
 })
 
 test_that("balance() works with method n_rows_c", {
-
   xpectr::set_test_seed(1)
 
   df <- data.frame(
@@ -61,9 +62,11 @@ test_that("balance() works with method n_rows_c", {
 
   # Max
   xpectr::set_test_seed(1)
-  balanced_by_n_rows <- balance(df, size="max", cat_col = "diagnosis",
-                               id_col = "participant",
-                               id_method = "n_rows_c", mark_new_rows = FALSE)
+  balanced_by_n_rows <- balance(df,
+    size = "max", cat_col = "diagnosis",
+    id_col = "participant",
+    id_method = "n_rows_c", mark_new_rows = FALSE
+  )
   counts <- balanced_by_n_rows %>%
     dplyr::count(diagnosis, participant)
   expect_equal(counts$n, c(2, 4, 4, 4, 6))
@@ -71,75 +74,82 @@ test_that("balance() works with method n_rows_c", {
 
   # Test mark_new_rows = TRUE
   xpectr::set_test_seed(1)
-  balanced_by_n_rows <- balance(df, size="max", cat_col = "diagnosis",
-                               id_col = "participant",
-                               id_method = "n_rows_c", mark_new_rows = TRUE)
-  expect_equal(balanced_by_n_rows$.new_row, c(0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,0,1,1))
+  balanced_by_n_rows <- balance(df,
+    size = "max", cat_col = "diagnosis",
+    id_col = "participant",
+    id_method = "n_rows_c", mark_new_rows = TRUE
+  )
+  expect_equal(balanced_by_n_rows$.new_row, c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1))
   counts <- balanced_by_n_rows %>%
     dplyr::count(diagnosis, participant)
   expect_equal(counts$n, c(2, 4, 4, 4, 6))
   expect_equal(counts$diagnosis, factor(c(0, 0, 0, 1, 1)))
   cat_count <- balanced_by_n_rows %>%
     dplyr::count(diagnosis)
-  expect_equal(cat_count$n, c(10,10))
+  expect_equal(cat_count$n, c(10, 10))
 
   # Min
   xpectr::set_test_seed(1)
-  balanced_by_n_rows <- balance(df, size="min", cat_col = "diagnosis",
-                                id_col = "participant",
-                                id_method = "n_rows_c", mark_new_rows = FALSE)
+  balanced_by_n_rows <- balance(df,
+    size = "min", cat_col = "diagnosis",
+    id_col = "participant",
+    id_method = "n_rows_c", mark_new_rows = FALSE
+  )
   counts <- balanced_by_n_rows %>%
     dplyr::count(diagnosis, participant)
-  expect_equal(counts$n, c(4,1,2))
+  expect_equal(counts$n, c(4, 1, 2))
   expect_equal(counts$diagnosis, factor(c(0, 1, 1)))
 
   # Test mark_new_rows = TRUE
   xpectr::set_test_seed(1)
-  balanced_by_n_rows <- balance(df, size="min", cat_col = "diagnosis",
-                                id_col = "participant",
-                                id_method = "n_rows_c", mark_new_rows = TRUE)
-  expect_equal(balanced_by_n_rows$.new_row, c(0,0,0,0,0,0,0))
+  balanced_by_n_rows <- balance(df,
+    size = "min", cat_col = "diagnosis",
+    id_col = "participant",
+    id_method = "n_rows_c", mark_new_rows = TRUE
+  )
+  expect_equal(balanced_by_n_rows$.new_row, c(0, 0, 0, 0, 0, 0, 0))
   counts <- balanced_by_n_rows %>%
     dplyr::count(diagnosis, participant)
-  expect_equal(counts$n, c(4,1,2))
+  expect_equal(counts$n, c(4, 1, 2))
   expect_equal(counts$diagnosis, factor(c(0, 1, 1)))
   cat_count <- balanced_by_n_rows %>%
     dplyr::count(diagnosis)
-  expect_equal(cat_count$n, c(4,3))
+  expect_equal(cat_count$n, c(4, 3))
 
 
   # Specific n
   xpectr::set_test_seed(1)
-  balanced_by_n_rows <- balance(df, size=5, cat_col = "diagnosis",
-                                id_col = "participant",
-                                id_method = "n_rows_c", mark_new_rows = FALSE)
+  balanced_by_n_rows <- balance(df,
+    size = 5, cat_col = "diagnosis",
+    id_col = "participant",
+    id_method = "n_rows_c", mark_new_rows = FALSE
+  )
   counts <- balanced_by_n_rows %>%
     dplyr::count(diagnosis, participant)
-  expect_equal(counts$n, c(2,4,1,4))
+  expect_equal(counts$n, c(2, 4, 1, 4))
   expect_equal(counts$diagnosis, factor(c(0, 0, 1, 1)))
 
   # Test mark_new_rows = TRUE
   xpectr::set_test_seed(1)
-  balanced_by_n_rows <- balance(df, size=5, cat_col = "diagnosis",
-                                id_col = "participant",
-                                id_method = "n_rows_c", mark_new_rows = TRUE)
-  expect_equal(balanced_by_n_rows$.new_row, c(0,0,0,0,0,0,0,0,1,0,1))
+  balanced_by_n_rows <- balance(df,
+    size = 5, cat_col = "diagnosis",
+    id_col = "participant",
+    id_method = "n_rows_c", mark_new_rows = TRUE
+  )
+  expect_equal(balanced_by_n_rows$.new_row, c(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1))
   counts <- balanced_by_n_rows %>%
     dplyr::count(diagnosis, participant)
-  expect_equal(counts$n, c(2,4,1,4))
+  expect_equal(counts$n, c(2, 4, 1, 4))
   expect_equal(counts$diagnosis, factor(c(0, 0, 1, 1)))
   cat_count <- balanced_by_n_rows %>%
     dplyr::count(diagnosis)
-  expect_equal(cat_count$n, c(6,5))
+  expect_equal(cat_count$n, c(6, 5))
 
 
   # Add tests to secure that IDs are respected - compare rows per id in data and balanced data
-
-
 })
 
 test_that("balance() works with method distributed", {
-
   xpectr::set_test_seed(1)
 
   df <- data.frame(
@@ -151,9 +161,11 @@ test_that("balance() works with method distributed", {
 
   # Max
   xpectr::set_test_seed(4)
-  balanced_by_n_rows <- balance(df, size="max", cat_col = "diagnosis",
-                                id_col = "participant",
-                                id_method = "distributed", mark_new_rows = FALSE)
+  balanced_by_n_rows <- balance(df,
+    size = "max", cat_col = "diagnosis",
+    id_col = "participant",
+    id_method = "distributed", mark_new_rows = FALSE
+  )
   counts <- balanced_by_n_rows %>%
     dplyr::count(diagnosis, participant)
   expect_equal(counts$n, c(2, 4, 4, 4, 6))
@@ -161,72 +173,80 @@ test_that("balance() works with method distributed", {
 
   # Test mark_new_rows = TRUE
   xpectr::set_test_seed(4)
-  balanced_by_n_rows <- balance(df, size="max", cat_col = "diagnosis",
-                                id_col = "participant",
-                                id_method = "distributed", mark_new_rows = TRUE)
-  expect_equal(balanced_by_n_rows$.new_row, c(0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1,1,1,1))
+  balanced_by_n_rows <- balance(df,
+    size = "max", cat_col = "diagnosis",
+    id_col = "participant",
+    id_method = "distributed", mark_new_rows = TRUE
+  )
+  expect_equal(balanced_by_n_rows$.new_row, c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1))
   counts <- balanced_by_n_rows %>%
     dplyr::count(diagnosis, participant)
   expect_equal(counts$n, c(2, 4, 4, 4, 6))
   expect_equal(counts$diagnosis, factor(c(0, 0, 0, 1, 1)))
   cat_count <- balanced_by_n_rows %>%
     dplyr::count(diagnosis)
-  expect_equal(cat_count$n, c(10,10))
+  expect_equal(cat_count$n, c(10, 10))
 
   # Min
   xpectr::set_test_seed(1)
-  balanced_by_n_rows <- balance(df, size="min", cat_col = "diagnosis",
-                                id_col = "participant",
-                                id_method = "distributed", mark_new_rows = FALSE)
+  balanced_by_n_rows <- balance(df,
+    size = "min", cat_col = "diagnosis",
+    id_col = "participant",
+    id_method = "distributed", mark_new_rows = FALSE
+  )
   counts <- balanced_by_n_rows %>%
     dplyr::count(diagnosis, participant)
-  expect_equal(counts$n, c(1,2,1,2))
+  expect_equal(counts$n, c(1, 2, 1, 2))
   expect_equal(counts$diagnosis, factor(c(0, 0, 1, 1)))
 
   # Test mark_new_rows = TRUE
   xpectr::set_test_seed(1)
-  balanced_by_n_rows <- balance(df, size = "min", cat_col = "diagnosis",
-                                id_col = "participant",
-                                id_method = "distributed", mark_new_rows = TRUE)
-  expect_equal(balanced_by_n_rows$.new_row, c(0,0,0,0,0,0))
+  balanced_by_n_rows <- balance(df,
+    size = "min", cat_col = "diagnosis",
+    id_col = "participant",
+    id_method = "distributed", mark_new_rows = TRUE
+  )
+  expect_equal(balanced_by_n_rows$.new_row, c(0, 0, 0, 0, 0, 0))
   counts <- balanced_by_n_rows %>%
     dplyr::count(diagnosis, participant)
-  expect_equal(counts$n, c(1,2,1,2))
+  expect_equal(counts$n, c(1, 2, 1, 2))
   expect_equal(counts$diagnosis, factor(c(0, 0, 1, 1)))
   cat_count <- balanced_by_n_rows %>%
     dplyr::count(diagnosis)
-  expect_equal(cat_count$n, c(3,3))
+  expect_equal(cat_count$n, c(3, 3))
 
 
   # Specific n
   xpectr::set_test_seed(2)
-  balanced_by_n_rows <- balance(df, size=5, cat_col = "diagnosis",
-                                id_col = "participant",
-                                id_method = "distributed", mark_new_rows = FALSE)
+  balanced_by_n_rows <- balance(df,
+    size = 5, cat_col = "diagnosis",
+    id_col = "participant",
+    id_method = "distributed", mark_new_rows = FALSE
+  )
   counts <- balanced_by_n_rows %>%
     dplyr::count(diagnosis, participant)
-  expect_equal(counts$n, c(2,3,2,3))
+  expect_equal(counts$n, c(2, 3, 2, 3))
   expect_equal(counts$diagnosis, factor(c(0, 0, 1, 1)))
 
   # Test mark_new_rows = TRUE
   xpectr::set_test_seed(2)
-  balanced_by_n_rows <- balance(df, size=5, cat_col = "diagnosis",
-                                id_col = "participant",
-                                id_method = "distributed", mark_new_rows = TRUE)
-  expect_equal(balanced_by_n_rows$.new_row, c(0,0,0,0,0,0,1,0,0,1))
+  balanced_by_n_rows <- balance(df,
+    size = 5, cat_col = "diagnosis",
+    id_col = "participant",
+    id_method = "distributed", mark_new_rows = TRUE
+  )
+  expect_equal(balanced_by_n_rows$.new_row, c(0, 0, 0, 0, 0, 0, 1, 0, 0, 1))
   counts <- balanced_by_n_rows %>%
     dplyr::count(diagnosis, participant)
-  expect_equal(counts$n, c(2,3,2,3))
+  expect_equal(counts$n, c(2, 3, 2, 3))
   expect_equal(counts$diagnosis, factor(c(0, 0, 1, 1)))
   cat_count <- balanced_by_n_rows %>%
     dplyr::count(diagnosis)
-  expect_equal(cat_count$n, c(5,5))
-
+  expect_equal(cat_count$n, c(5, 5))
 })
 
 
 test_that("balance() works with method nested", {
-
   xpectr::set_test_seed(1)
 
   df <- data.frame(
@@ -238,9 +258,11 @@ test_that("balance() works with method nested", {
 
   # Max
   xpectr::set_test_seed(1)
-  balanced_by_nested <- balance(df, size="max", cat_col = "diagnosis",
-                                id_col = "participant",
-                                id_method = "nested", mark_new_rows = FALSE)
+  balanced_by_nested <- balance(df,
+    size = "max", cat_col = "diagnosis",
+    id_col = "participant",
+    id_method = "nested", mark_new_rows = FALSE
+  )
   counts <- balanced_by_nested %>%
     dplyr::count(diagnosis, participant)
   expect_equal(counts$n, c(4, 4, 4, 2, 2))
@@ -248,19 +270,17 @@ test_that("balance() works with method nested", {
 
   # Test mark_new_rows = TRUE
   xpectr::set_test_seed(1)
-  balanced_by_nested <- balance(df, size="max", cat_col = "diagnosis",
-                                id_col = "participant",
-                                id_method = "nested", mark_new_rows = TRUE)
-  expect_equal(balanced_by_nested$.new_row, c(0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0))
+  balanced_by_nested <- balance(df,
+    size = "max", cat_col = "diagnosis",
+    id_col = "participant",
+    id_method = "nested", mark_new_rows = TRUE
+  )
+  expect_equal(balanced_by_nested$.new_row, c(0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0))
   counts <- balanced_by_nested %>%
     dplyr::count(diagnosis, participant)
   expect_equal(counts$n, c(4, 4, 4, 2, 2))
   expect_equal(counts$diagnosis, factor(c(0, 0, 0, 1, 1)))
   cat_count <- balanced_by_nested %>%
     dplyr::count(diagnosis)
-  expect_equal(cat_count$n, c(12,4))
-
+  expect_equal(cat_count$n, c(12, 4))
 })
-
-
-

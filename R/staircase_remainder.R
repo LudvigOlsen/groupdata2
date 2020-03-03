@@ -1,19 +1,15 @@
-# R CMD check NOTE handling
-if(getRversion() >= "2.15.1")  utils::globalVariables(c("groups", "n_elements"))
-
 
 ## %staircase%
 #' @title Find remainder from staircase method.
 #' @description When using the staircase method,
-#' the last group might not have the size of the second last
-#' group + step size. Use \%staircase\% to find this remainder.
-#' @author Ludvig Renbo Olsen, \email{mail@@ludvigolsen.dk}
+#'  the last group might not have the size of the second last
+#'  group + step size. Use \code{\%staircase\%} to find this remainder.
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @param size Size to staircase (Integer)
 #' @param step_size Step size (Integer)
 #' @return Remainder (Integer).
-#' Returns 0 if the last group
-#' has the size of the second last group + step size.
+#'  Returns 0 if the last group has the size of the second last group + step size.
 #' @family staircase tools
 #' @family remainder tools
 #' @aliases staircase
@@ -58,8 +54,8 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("groups", "n_elements"))
   # Create a column with number of elements (group number times step size)
   # Create a column with cumulative sum of the number of elements
   group_data <- group_data %>%
-    dplyr::mutate(n_elements = groups * step_size,
-                  cumsum = cumsum(n_elements))
+    dplyr::mutate(n_elements = .data$groups * step_size,
+                  cumsum = cumsum(.data$n_elements))
 
   # Get the first row where cumsum is larger or equal to 'size'
   last_group_row <- group_data[group_data[["cumsum"]] >= size ,][1 ,]
@@ -90,10 +86,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("groups", "n_elements"))
     remainder <- n_elements_last_group - excess_elements
   }
 
-
-
   # Return remainder (size of last group)
-  return(remainder)
-
+  remainder
 
 }

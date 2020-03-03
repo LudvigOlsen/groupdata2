@@ -7,10 +7,19 @@
 \alias{split}
 \title{Create groups from your data.}
 \usage{
-group(data, n, method = "n_dist", starts_col = NULL,
-  force_equal = FALSE, allow_zero = FALSE, return_factor = FALSE,
-  descending = FALSE, randomize = FALSE, col_name = ".groups",
-  remove_missing_starts = FALSE)
+group(
+  data,
+  n,
+  method = "n_dist",
+  starts_col = NULL,
+  force_equal = FALSE,
+  allow_zero = FALSE,
+  return_factor = FALSE,
+  descending = FALSE,
+  randomize = FALSE,
+  col_name = ".groups",
+  remove_missing_starts = FALSE
+)
 }
 \arguments{
 \item{data}{Data frame or vector.}
@@ -135,38 +144,47 @@ library(groupdata2)
 library(dplyr)
 
 # Create data frame
-df <- data.frame("x"=c(1:12),
- "species" = rep(c('cat','pig', 'human'), 4),
- "age" = sample(c(1:100), 12))
+df <- data.frame(
+  "x" = c(1:12),
+  "species" = factor(rep(c("cat", "pig", "human"), 4)),
+  "age" = sample(c(1:100), 12)
+)
 
 # Using group()
-df_grouped <- group(df, 5, method = 'n_dist')
+df_grouped <- group(df, 5, method = "n_dist")
 
 # Using group() with dplyr pipeline to get mean age
 df_means <- df \%>\%
- group(5, method = 'n_dist') \%>\%
- dplyr::summarise(mean_age = mean(age))
+  group(5, method = "n_dist") \%>\%
+  dplyr::summarise(mean_age = mean(age))
 
 # Using group_factor() with l_starts
 # "c('pig',2)" skips to the second appearance of
 # "pig" after the first appearance of "cat"
 df_grouped <- group(df,
-                    list('cat', c('pig',2), 'human'),
-                    method = 'l_starts',
-                    starts_col = 'species')
-
+  list("cat", c("pig", 2), "human"),
+  method = "l_starts",
+  starts_col = "species"
+)
 }
 \seealso{
-Other grouping functions: \code{\link{all_groups_identical}},
-  \code{\link{fold}}, \code{\link{group_factor}},
-  \code{\link{partition}}, \code{\link{splt}}
+Other grouping functions: 
+\code{\link{all_groups_identical}()},
+\code{\link{fold}()},
+\code{\link{group_factor}()},
+\code{\link{partition}()},
+\code{\link{splt}()}
 
-Other staircase tools: \code{\link{\%primes\%}},
-  \code{\link{\%staircase\%}}, \code{\link{group_factor}}
+Other staircase tools: 
+\code{\link{\%primes\%}()},
+\code{\link{\%staircase\%}()},
+\code{\link{group_factor}()}
 
-Other l_starts tools: \code{\link{differs_from_previous}},
-  \code{\link{find_missing_starts}},
-  \code{\link{find_starts}}, \code{\link{group_factor}}
+Other l_starts tools: 
+\code{\link{differs_from_previous}()},
+\code{\link{find_missing_starts}()},
+\code{\link{find_starts}()},
+\code{\link{group_factor}()}
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}

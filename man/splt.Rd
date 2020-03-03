@@ -4,9 +4,17 @@
 \alias{splt}
 \title{Split data by a range of methods.}
 \usage{
-splt(data, n, method = "n_dist", starts_col = NULL,
-  force_equal = FALSE, allow_zero = FALSE, descending = FALSE,
-  randomize = FALSE, remove_missing_starts = FALSE)
+splt(
+  data,
+  n,
+  method = "n_dist",
+  starts_col = NULL,
+  force_equal = FALSE,
+  allow_zero = FALSE,
+  descending = FALSE,
+  randomize = FALSE,
+  remove_missing_starts = FALSE
+)
 }
 \arguments{
 \item{data}{Data frame or vector.}
@@ -125,18 +133,22 @@ library(groupdata2)
 library(dplyr)
 
 # Create data frame
-df <- data.frame("x"=c(1:12),
- "species" = rep(c('cat','pig', 'human'), 4),
- "age" = sample(c(1:100), 12))
+df <- data.frame(
+  "x" = c(1:12),
+  "species" = factor(rep(c("cat", "pig", "human"), 4)),
+  "age" = sample(c(1:100), 12)
+)
 
 # Using splt()
-df_list <- splt(df, 5, method = 'n_dist')
-
+df_list <- splt(df, 5, method = "n_dist")
 }
 \seealso{
-Other grouping functions: \code{\link{all_groups_identical}},
-  \code{\link{fold}}, \code{\link{group_factor}},
-  \code{\link{group}}, \code{\link{partition}}
+Other grouping functions: 
+\code{\link{all_groups_identical}()},
+\code{\link{fold}()},
+\code{\link{group_factor}()},
+\code{\link{group}()},
+\code{\link{partition}()}
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}

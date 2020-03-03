@@ -5,11 +5,21 @@
 \alias{create_balanced_groups}
 \title{Create balanced folds for cross-validation.}
 \usage{
-fold(data, k = 5, cat_col = NULL, num_col = NULL, id_col = NULL,
-  method = "n_dist", id_aggregation_fn = sum,
-  extreme_pairing_levels = 1, num_fold_cols = 1,
-  unique_fold_cols_only = TRUE, max_iters = 5,
-  handle_existing_fold_cols = "keep_warn", parallel = FALSE)
+fold(
+  data,
+  k = 5,
+  cat_col = NULL,
+  num_col = NULL,
+  id_col = NULL,
+  method = "n_dist",
+  id_aggregation_fn = sum,
+  extreme_pairing_levels = 1,
+  num_fold_cols = 1,
+  unique_fold_cols_only = TRUE,
+  max_iters = 5,
+  handle_existing_fold_cols = "keep_warn",
+  parallel = FALSE
+)
 }
 \arguments{
 \item{data}{Data frame or vector.}
@@ -242,37 +252,46 @@ library(dplyr)
 
 # Create data frame
 df <- data.frame(
- "participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
- "age" = rep(sample(c(1:100), 6), 3),
- "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
- "score" = sample(c(1:100), 3*6))
+  "participant" = factor(rep(c("1", "2", "3", "4", "5", "6"), 3)),
+  "age" = rep(sample(c(1:100), 6), 3),
+  "diagnosis" = factor(rep(c("a", "b", "a", "a", "b", "b"), 3)),
+  "score" = sample(c(1:100), 3 * 6)
+)
 df <- df \%>\% arrange(participant)
-df$session <- rep(c('1','2', '3'), 6)
+df$session <- rep(c("1", "2", "3"), 6)
 
 # Using fold()
 
 ## Without balancing
-df_folded <- fold(df, 3, method = 'n_dist')
+df_folded <- fold(df, 3, method = "n_dist")
 
 ## With cat_col
-df_folded <- fold(df, 3, cat_col = 'diagnosis',
- method = 'n_dist')
+df_folded <- fold(df, 3,
+  cat_col = "diagnosis",
+  method = "n_dist"
+)
 
 ## With id_col
-df_folded <- fold(df, 3, id_col = 'participant',
- method = 'n_dist')
+df_folded <- fold(df, 3,
+  id_col = "participant",
+  method = "n_dist"
+)
 
 ## With num_col
 # Note: 'method' would not be used in this case
-df_folded <- fold(df, 3, num_col = 'score')
+df_folded <- fold(df, 3, num_col = "score")
 
 # With cat_col and id_col
-df_folded <- fold(df, 3, cat_col = 'diagnosis',
- id_col = 'participant', method = 'n_dist')
+df_folded <- fold(df, 3,
+  cat_col = "diagnosis",
+  id_col = "participant", method = "n_dist"
+)
 
 ## With cat_col, id_col and num_col
-df_folded <- fold(df, 3, cat_col = 'diagnosis',
- id_col = 'participant', num_col = 'score')
+df_folded <- fold(df, 3,
+  cat_col = "diagnosis",
+  id_col = "participant", num_col = "score"
+)
 
 # Order by folds
 df_folded <- df_folded \%>\% arrange(.folds)
@@ -280,36 +299,48 @@ df_folded <- df_folded \%>\% arrange(.folds)
 ## Multiple fold columns
 # Useful for repeated cross-validation
 # Note: Consider running in parallel
-df_folded <- fold(df, 3, cat_col = 'diagnosis',
- id_col = 'participant', num_fold_cols = 5,
- unique_fold_cols_only=TRUE,
- max_iters=4)
+df_folded <- fold(df, 3,
+  cat_col = "diagnosis",
+  id_col = "participant", num_fold_cols = 5,
+  unique_fold_cols_only = TRUE,
+  max_iters = 4
+)
 
 ## Check if additional extreme_pairing_levels
 ## improve the numerical balance
 set.seed(2) # try with seed 1 as well
-df_folded_1 <- fold(df, 3, num_col = 'score',
-                     extreme_pairing_levels = 1)
+df_folded_1 <- fold(df, 3,
+  num_col = "score",
+  extreme_pairing_levels = 1
+)
 df_folded_1 \%>\%
   dplyr::group_by(.folds) \%>\%
-  dplyr::summarise(sum_score = sum(score),
-                   mean_score = mean(score))
+  dplyr::summarise(
+    sum_score = sum(score),
+    mean_score = mean(score)
+  )
 
 set.seed(2) # try with seed 1 as well
-df_folded_2 <- fold(df, 3, num_col = 'score',
-                     extreme_pairing_levels = 2)
+df_folded_2 <- fold(df, 3,
+  num_col = "score",
+  extreme_pairing_levels = 2
+)
 df_folded_2 \%>\%
   dplyr::group_by(.folds) \%>\%
-  dplyr::summarise(sum_score = sum(score),
-                   mean_score = mean(score))
-
+  dplyr::summarise(
+    sum_score = sum(score),
+    mean_score = mean(score)
+  )
 }
 \seealso{
 \code{\link{partition}} for balanced partitions
 
-Other grouping functions: \code{\link{all_groups_identical}},
-  \code{\link{group_factor}}, \code{\link{group}},
-  \code{\link{partition}}, \code{\link{splt}}
+Other grouping functions: 
+\code{\link{all_groups_identical}()},
+\code{\link{group_factor}()},
+\code{\link{group}()},
+\code{\link{partition}()},
+\code{\link{splt}()}
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}

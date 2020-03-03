@@ -94,25 +94,27 @@
 #' library(groupdata2)
 #'
 #' # Create a data frame
-#' df <- data.frame('a' = factor(c('a','a','b','b','c','c')),
-#'                  'n' = c(1,3,6,2,2,4))
+#' df <- data.frame(
+#'   "a" = factor(c("a", "a", "b", "b", "c", "c")),
+#'   "n" = c(1, 3, 6, 2, 2, 4)
+#' )
 #'
 #' # Get differing values in column 'a' with no threshold.
 #' # This will simply check, if it is different to the previous value or not.
-#' differs_from_previous(df, col = 'a')
+#' differs_from_previous(df, col = "a")
 #'
 #' # Get indices of differing values in column 'a' with no threshold.
-#' differs_from_previous(df, col = 'a', return_index = TRUE)
+#' differs_from_previous(df, col = "a", return_index = TRUE)
 #'
 #' # Get values, that are 2 or more greater than the previous value
-#' differs_from_previous(df, col = 'n', threshold=2, direction="positive")
+#' differs_from_previous(df, col = "n", threshold = 2, direction = "positive")
 #'
 #' # Get values, that are 4 or more less than the previous value
-#' differs_from_previous(df, col = 'n', threshold=4, direction="negative")
+#' differs_from_previous(df, col = "n", threshold = 4, direction = "negative")
 #'
 #' # Get values, that are either 2 or more greater than the previous value
 #' # or 4 or more less than the previous value
-#' differs_from_previous(df, col = 'n', threshold=c(-4,2), direction="both")
+#' differs_from_previous(df, col = "n", threshold = c(-4, 2), direction = "both")
 differs_from_previous <- function(data,
                                   col = NULL,
                                   threshold = NULL,
@@ -120,231 +122,235 @@ differs_from_previous <- function(data,
                                   return_index = FALSE,
                                   include_first = FALSE,
                                   handle_na = "ignore",
-                                  factor_conversion_warning=TRUE) {
-    #
-    # Run find_different_from_previous_vec_ for either a vector or data frame
-    #
+                                  factor_conversion_warning = TRUE) {
+  #
+  # Run find_different_from_previous_vec_ for either a vector or data frame
+  #
 
-    # If data is a data frame
-    if (is.data.frame(data)) {
-      # Check if col is specified
-      if (is.null(col)) {
-        # If not, raise error
-        stop("col must be specified when data is data frame.")
-
-      }
-      if (col %ni% colnames(data)){
-        stop("col was not found in data frame.")
-      }
-
-      # If col is a factor
-      if (is.factor(data[[col]])) {
-        if (!is.null(threshold)){
-          stop("col is factor. 'threshold' must be NULL. Alternatively, convert factor to numeric vector.")
-        }
-        if (isTRUE(factor_conversion_warning)){
-          warning("col is factor. Using as character.")
-        }
-
-        # Convert col to character
-        data[[col]] <- as.character(data[[col]])
-
-      }
-
-      v <- data[[col]]
-
-
-    } else {
-      # If data is a factor
-      if (is.factor(data)) {
-        if (isTRUE(factor_conversion_warning)){
-          warning("data is factor. Using as character.")
-        }
-
-        # Convert data to character
-        data <- as.character(data)
-      }
-
-      # TODO I SHOULD CHECK IF DATA IS A VECTOR SOMEWHERE.
-
-      # Check if col is specified.
-      if (!is.null(col)) {
-        # If it is, warn the user that it won't be used
-        warning("col not used as data is not a data frame")
-
-      }
-
-      v <- data
-
+  # If data is a data frame
+  if (is.data.frame(data)) {
+    # Check if col is specified
+    if (is.null(col)) {
+      # If not, raise error
+      stop("col must be specified when data is data frame.")
+    }
+    if (col %ni% colnames(data)) {
+      stop("col was not found in data frame.")
     }
 
-    # Create and return start values or indices of values that differ from the previous value
-    return(
-      find_different_from_previous_vec_(
-        v,
-        threshold = threshold,
-        direction = direction,
-        return_index = return_index,
-        include_first = include_first,
-        handle_na = handle_na
-      )
-    )
+    # If col is a factor
+    if (is.factor(data[[col]])) {
+      if (!is.null(threshold)) {
+        stop("col is factor. 'threshold' must be NULL. Alternatively, convert factor to numeric vector.")
+      }
+      if (isTRUE(factor_conversion_warning)) {
+        warning("col is factor. Using as character.")
+      }
 
+      # Convert col to character
+      data[[col]] <- as.character(data[[col]])
+    }
+
+    v <- data[[col]]
+  } else {
+    # If data is a factor
+    if (is.factor(data)) {
+      if (isTRUE(factor_conversion_warning)) {
+        warning("data is factor. Using as character.")
+      }
+
+      # Convert data to character
+      data <- as.character(data)
+    }
+
+    # TODO I SHOULD CHECK IF DATA IS A VECTOR SOMEWHERE.
+
+    # Check if col is specified.
+    if (!is.null(col)) {
+      # If it is, warn the user that it won't be used
+      warning("col not used as data is not a data frame")
+    }
+
+    v <- data
+  }
+
+  # Create and return start values or indices of values that differ from the previous value
+  return(
+    find_different_from_previous_vec_(
+      v,
+      threshold = threshold,
+      direction = direction,
+      return_index = return_index,
+      include_first = include_first,
+      handle_na = handle_na
+    )
+  )
 }
 
 
 
 
 
-find_different_from_previous_vec_ <-
-  function(v,
-           threshold = NULL,
-           direction = "both",
-           return_index = FALSE,
-           handle_na = "ignore",
-           include_first = FALSE) {
-    #
-    # Find values or index at which
-    # value changes in vector
-    # E.g. vector c(1,1,2,2,2,3,3) would return
-    # values c(1,2,3) or indices c(1,3,6)
-    # Uses a kind of rolling windows to determine
-    # if a value is the same as the previous or new
+find_different_from_previous_vec_ <- function(
+                                              v,
+                                              threshold = NULL,
+                                              direction = "both",
+                                              return_index = FALSE,
+                                              handle_na = "ignore",
+                                              include_first = FALSE) {
 
-    # Threshold can be a numeric scalar, a numeric vector of length 2, or NULL.
-    # Threshold is inclusive. I.e. if threshold is 2 and the difference is 2, it's a match.
-    # If threshold is NULL
-    # .. TRUE if value is different than previous value.
-    # .. .. Works for both numeric and character vectors.
-    # If threshold is numeric scalar
-    # .. Depending on direction, the difference between the value
-    # .. and the previous value is checked against the threshold.
-    # If threshold is a numeric vector of length 2
-    # .. The first element is the negative threshold (and must be a negative number).
-    # .. .. Returns TRUE if the difference from the previous value is negative and below or equal to this threshold.
-    # .. The second element is the positive threshold (and must be a positive number).
-    # .. .. Returns TRUE if the difference from the previous value is positive and above or equal to this threshold.
+  #
+  # Find values or index at which
+  # value changes in vector
+  # E.g. vector c(1,1,2,2,2,3,3) would return
+  # values c(1,2,3) or indices c(1,3,6)
+  # Uses a kind of rolling windows to determine
+  # if a value is the same as the previous or new
 
-    # Direction is used when threshold is not NULL.
-    # If direction is 'both'
-    # .. Check whether the difference to the previous value is
-    # .. .. greater than or equal to the positive threshold
-    # .. .. less than or equal to the negative threshold
-    # If direction is 'positive'
-    # .. Check whether the difference to the previous value is
-    # .. .. greater than or equal to the positive threshold
-    # If direction is 'negative'
-    # .. Check whether the difference to the previous value is
-    # .. .. less than or equal to the negative threshold
+  # Threshold can be a numeric scalar, a numeric vector of length 2, or NULL.
+  # Threshold is inclusive. I.e. if threshold is 2 and the difference is 2, it's a match.
+  # If threshold is NULL
+  # .. TRUE if value is different than previous value.
+  # .. .. Works for both numeric and character vectors.
+  # If threshold is numeric scalar
+  # .. Depending on direction, the difference between the value
+  # .. and the previous value is checked against the threshold.
+  # If threshold is a numeric vector of length 2
+  # .. The first element is the negative threshold (and must be a negative number).
+  # .. .. Returns TRUE if the difference from the previous value is negative and below or equal to this threshold.
+  # .. The second element is the positive threshold (and must be a positive number).
+  # .. .. Returns TRUE if the difference from the previous value is positive and above or equal to this threshold.
 
-    v_orig <- v
+  # Direction is used when threshold is not NULL.
+  # If direction is 'both'
+  # .. Check whether the difference to the previous value is
+  # .. .. greater than or equal to the positive threshold
+  # .. .. less than or equal to the negative threshold
+  # If direction is 'positive'
+  # .. Check whether the difference to the previous value is
+  # .. .. greater than or equal to the positive threshold
+  # If direction is 'negative'
+  # .. Check whether the difference to the previous value is
+  # .. .. less than or equal to the negative threshold
 
-    contains_na <- anyNA(v)
-    if (length(handle_na) > 1)
-      stop("'handle_na' had length > 1.")
-    if (handle_na == "as_element" &&
-        !is.null(threshold))
-      stop("when 'handle_na' is 'as_element', 'threshold' must be NULL.")
+  v_orig <- v
 
-    ## Handle NAs
-    if (isTRUE(contains_na)){
-      if (handle_na == "ignore"){
-        not_na_indices <- which(!is.na(v))
-        v <- v[!is.na(v)]
-      } else if (handle_na == "as_element"){
-        v[is.na(v)] <- "NA"
-      }  else if (is.numeric(handle_na)){
-        v[is.na(v)] <- handle_na
-        v_orig <- v
-      } else {
-        stop("'handle_na' must be either a method ('ignore' or 'convert') or a value to replace NAs with.")
-      }
-    }
-
-    # Adds vector to data frame
-    # Creates a new column shifted down one row.
-    # Checks if the current value is the same as the previous.
-
-    # Shift / offset v one row down
-    # Insert v[1] at beginning and remove last element of v
-    # to get same length as v
-    v2 <- c(v[1], v[seq_along(v) - 1])
-
-    # Create data frame with v, v2 and
-    # a logical column stating whether
-    # v is new or not.
-    if (!is.null(threshold)) {
-      if (!is.numeric(threshold)) {
-        stop("'threshold' must be numeric scalar, a numeric vector of length 2, or NULL.")
-      }
-      if (length(threshold) == 2) {
-        if (threshold[1] >= 0) {
-          stop("When 'threshold' is a vector of length 2, the first element must be negative.")
-        }
-        if (threshold[2] <= 0) {
-          stop("When 'threshold' is a vector of length 2, the second element must be positive.")
-        }
-        if (direction != "both") {
-          stop("When 'threshold' is a vector of length 2, 'direction' must be 'both'.")
-        }
-
-        neg_threshold <- threshold[1]
-        threshold <- threshold[2]
-
-      } else if (length(threshold) == 1) {
-        if (threshold <= 0) {
-          stop("When 'threshold' is a scalar it must be a positive number.")
-        }
-
-        neg_threshold <- -threshold
-      } else {
-        stop("'threshold' must be numeric scalar, a numeric vector of length 2, or NULL.")
-      }
-
-      if (direction == "both") {
-        df <- data.frame(v, v2,
-                         new = !is_between_(v - v2, neg_threshold, threshold),
-                         stringsAsFactors = FALSE)
-      } else if (direction == "positive") {
-        df <- data.frame(v, v2, new = v - v2 >= threshold,
-                         stringsAsFactors = FALSE)
-      } else if (direction == "negative") {
-        df <- data.frame(v, v2, new = v - v2 <= neg_threshold,
-                         stringsAsFactors = FALSE)
-      } else {
-        stop("'direction' must be one of 'both', 'negative', and 'positive'.")
-      }
-
-    } else {
-      df <- data.frame(v, v2, new = v != v2,
-                       stringsAsFactors = FALSE)
-    }
-
-    if (isTRUE(include_first)){
-      # Set first value to TRUE
-      df$new[1] <- TRUE
-    }
-
-    # Add back NA rows
-    if (isTRUE(contains_na) && handle_na == "ignore"){
-      df$orig_indices <- not_na_indices
-      # Get indices where v contains a new value
-      new_indices <- df$orig_indices[df$new]
-    } else {
-      # Get indices where v contains a new value
-      new_indices <- which(df$new)
-    }
-
-    # If return_index is TRUE
-    if (isTRUE(return_index)) {
-      # Return only the indices where
-      # v contains a new value
-      return(new_indices)
-
-    } else {
-      # Return values at the indices
-      return(v_orig[new_indices])
-    }
-
-
+  contains_na <- anyNA(v)
+  if (length(handle_na) > 1) {
+    stop("'handle_na' had length > 1.")
   }
+  if (handle_na == "as_element" &&
+    !is.null(threshold)) {
+    stop("when 'handle_na' is 'as_element', 'threshold' must be NULL.")
+  }
+
+  ## Handle NAs
+  if (isTRUE(contains_na)) {
+    if (handle_na == "ignore") {
+      not_na_indices <- which(!is.na(v))
+      v <- v[!is.na(v)]
+    } else if (handle_na == "as_element") {
+      v[is.na(v)] <- "NA"
+    } else if (is.numeric(handle_na)) {
+      v[is.na(v)] <- handle_na
+      v_orig <- v
+    } else {
+      stop(
+        "'handle_na' must be either a method ('ignore' or 'convert') or a value to replace NAs with."
+      )
+    }
+  }
+
+  # Adds vector to data frame
+  # Creates a new column shifted down one row.
+  # Checks if the current value is the same as the previous.
+
+  # Shift / offset v one row down
+  # Insert v[1] at beginning and remove last element of v
+  # to get same length as v
+  v2 <- c(v[1], v[seq_along(v) - 1])
+
+  # Create data frame with v, v2 and
+  # a logical column stating whether
+  # v is new or not.
+  if (!is.null(threshold)) {
+    if (!is.numeric(threshold)) {
+      stop("'threshold' must be numeric scalar, a numeric vector of length 2, or NULL.")
+    }
+    if (length(threshold) == 2) {
+      if (threshold[1] >= 0) {
+        stop("When 'threshold' is a vector of length 2, the first element must be negative.")
+      }
+      if (threshold[2] <= 0) {
+        stop("When 'threshold' is a vector of length 2, the second element must be positive.")
+      }
+      if (direction != "both") {
+        stop("When 'threshold' is a vector of length 2, 'direction' must be 'both'.")
+      }
+
+      neg_threshold <- threshold[1]
+      threshold <- threshold[2]
+    } else if (length(threshold) == 1) {
+      if (threshold <= 0) {
+        stop("When 'threshold' is a scalar it must be a positive number.")
+      }
+
+      neg_threshold <- -threshold
+    } else {
+      stop("'threshold' must be numeric scalar, a numeric vector of length 2, or NULL.")
+    }
+
+    if (direction == "both") {
+      df <- data.frame(
+        v,
+        v2,
+        new = !is_between_(v - v2, neg_threshold, threshold),
+        stringsAsFactors = FALSE
+      )
+    } else if (direction == "positive") {
+      df <- data.frame(v,
+        v2,
+        new = v - v2 >= threshold,
+        stringsAsFactors = FALSE
+      )
+    } else if (direction == "negative") {
+      df <- data.frame(v,
+        v2,
+        new = v - v2 <= neg_threshold,
+        stringsAsFactors = FALSE
+      )
+    } else {
+      stop("'direction' must be one of 'both', 'negative', and 'positive'.")
+    }
+  } else {
+    df <- data.frame(v, v2,
+      new = v != v2,
+      stringsAsFactors = FALSE
+    )
+  }
+
+  if (isTRUE(include_first)) {
+    # Set first value to TRUE
+    df$new[1] <- TRUE
+  }
+
+  # Add back NA rows
+  if (isTRUE(contains_na) && handle_na == "ignore") {
+    df$orig_indices <- not_na_indices
+    # Get indices where v contains a new value
+    new_indices <- df$orig_indices[df$new]
+  } else {
+    # Get indices where v contains a new value
+    new_indices <- which(df$new)
+  }
+
+  # If return_index is TRUE
+  if (isTRUE(return_index)) {
+    # Return only the indices where
+    # v contains a new value
+    return(new_indices)
+  } else {
+    # Return values at the indices
+    return(v_orig[new_indices])
+  }
+}

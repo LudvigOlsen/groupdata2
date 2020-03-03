@@ -27,38 +27,48 @@
 #' )
 #'
 #' # Using downsample()
-#' downsample(df, cat_col="diagnosis")
+#' downsample(df, cat_col = "diagnosis")
 #'
 #' # Using downsample() with id_method "n_ids"
 #' # With column specifying added rows
-#' downsample(df, cat_col="diagnosis",
-#'         id_col="participant", id_method="n_ids")
+#' downsample(df,
+#'   cat_col = "diagnosis",
+#'   id_col = "participant",
+#'   id_method = "n_ids"
+#' )
 #'
 #' # Using downsample() with id_method "n_rows_c"
 #' # With column specifying added rows
-#' downsample(df, cat_col="diagnosis",
-#'         id_col="participant", id_method="n_rows_c")
+#' downsample(df,
+#'   cat_col = "diagnosis",
+#'   id_col = "participant",
+#'   id_method = "n_rows_c"
+#' )
 #'
 #' # Using downsample() with id_method "distributed"
-#' downsample(df, cat_col="diagnosis",
-#'         id_col="participant",
-#'         id_method="distributed")
+#' downsample(df,
+#'   cat_col = "diagnosis",
+#'   id_col = "participant",
+#'   id_method = "distributed"
+#' )
 #'
 #' # Using downsample() with id_method "nested"
-#' downsample(df, cat_col="diagnosis",
-#'         id_col="participant",
-#'         id_method="nested")
-#'
+#' downsample(df,
+#'   cat_col = "diagnosis",
+#'   id_col = "participant",
+#'   id_method = "nested"
+#' )
 downsample <- function(data,
                        cat_col,
                        id_col = NULL,
                        id_method = "n_ids") {
-  balance(data,
-          size="min",
-          cat_col=cat_col,
-          id_col=id_col,
-          id_method=id_method)
-
+  balance(
+    data = data,
+    size = "min",
+    cat_col = cat_col,
+    id_col = id_col,
+    id_method = id_method
+  )
 }
 
 ## upsample
@@ -89,44 +99,58 @@ downsample <- function(data,
 #' )
 #'
 #' # Using upsample()
-#' upsample(df, cat_col="diagnosis")
+#' upsample(df, cat_col = "diagnosis")
 #'
 #' # Using upsample() with id_method "n_ids"
 #' # With column specifying added rows
-#' upsample(df, cat_col="diagnosis",
-#'         id_col="participant", id_method="n_ids",
-#'         mark_new_rows = TRUE)
+#' upsample(df,
+#'   cat_col = "diagnosis",
+#'   id_col = "participant",
+#'   id_method = "n_ids",
+#'   mark_new_rows = TRUE
+#' )
 #'
 #' # Using upsample() with id_method "n_rows_c"
 #' # With column specifying added rows
-#' upsample(df, cat_col="diagnosis",
-#'         id_col="participant", id_method="n_rows_c",
-#'         mark_new_rows = TRUE)
+#' upsample(df,
+#'   cat_col = "diagnosis",
+#'   id_col = "participant",
+#'   id_method = "n_rows_c",
+#'   mark_new_rows = TRUE
+#' )
 #'
 #' # Using upsample() with id_method "distributed"
 #' # With column specifying added rows
-#' upsample(df, cat_col="diagnosis",
-#'         id_col="participant", id_method="distributed",
-#'         mark_new_rows = TRUE)
+#' upsample(df,
+#'   cat_col = "diagnosis",
+#'   id_col = "participant",
+#'   id_method = "distributed",
+#'   mark_new_rows = TRUE
+#' )
 #'
 #' # Using upsample() with id_method "nested"
 #' # With column specifying added rows
-#' upsample(df, cat_col="diagnosis",
-#'         id_col="participant", id_method="nested",
-#'         mark_new_rows = TRUE)
+#' upsample(df,
+#'   cat_col = "diagnosis",
+#'   id_col = "participant",
+#'   id_method = "nested",
+#'   mark_new_rows = TRUE
+#' )
 upsample <- function(data,
                      cat_col,
                      id_col = NULL,
                      id_method = "n_ids",
                      mark_new_rows = FALSE,
                      new_rows_col_name = ".new_row") {
-  balance(data,
-          size="max",
-          cat_col=cat_col,
-          id_col=id_col,
-          id_method=id_method,
-          mark_new_rows=mark_new_rows,
-          new_rows_col_name=new_rows_col_name)
+  balance(
+    data = data,
+    size = "max",
+    cat_col = cat_col,
+    id_col = id_col,
+    id_method = id_method,
+    mark_new_rows = mark_new_rows,
+    new_rows_col_name = new_rows_col_name
+  )
 }
 
 ## balance
@@ -223,38 +247,49 @@ upsample <- function(data,
 #' )
 #'
 #' # Using balance() with specific number of rows
-#' balance(df, 3, cat_col="diagnosis")
+#' balance(df, 3, cat_col = "diagnosis")
 #'
 #' # Using balance() with min
-#' balance(df, "min", cat_col="diagnosis")
+#' balance(df, "min", cat_col = "diagnosis")
 #'
 #' # Using balance() with max
-#' balance(df, "max", cat_col="diagnosis")
+#' balance(df, "max", cat_col = "diagnosis")
 #'
 #' # Using balance() with id_method "n_ids"
 #' # With column specifying added rows
-#' balance(df, "max", cat_col="diagnosis",
-#'         id_col="participant", id_method="n_ids",
-#'         mark_new_rows = TRUE)
+#' balance(df, "max",
+#'   cat_col = "diagnosis",
+#'   id_col = "participant",
+#'   id_method = "n_ids",
+#'   mark_new_rows = TRUE
+#' )
 #'
 #' # Using balance() with id_method "n_rows_c"
 #' # With column specifying added rows
-#' balance(df, "max", cat_col="diagnosis",
-#'         id_col="participant", id_method="n_rows_c",
-#'         mark_new_rows = TRUE)
+#' balance(df, "max",
+#'   cat_col = "diagnosis",
+#'   id_col = "participant",
+#'   id_method = "n_rows_c",
+#'   mark_new_rows = TRUE
+#' )
 #'
 #' # Using balance() with id_method "distributed"
 #' # With column specifying added rows
-#' balance(df, "max", cat_col="diagnosis",
-#'         id_col="participant", id_method="distributed",
-#'         mark_new_rows = TRUE)
+#' balance(df, "max",
+#'   cat_col = "diagnosis",
+#'   id_col = "participant",
+#'   id_method = "distributed",
+#'   mark_new_rows = TRUE
+#' )
 #'
 #' # Using balance() with id_method "nested"
 #' # With column specifying added rows
-#' balance(df, "max", cat_col="diagnosis",
-#'         id_col="participant", id_method="nested",
-#'         mark_new_rows = TRUE)
-#'
+#' balance(df, "max",
+#'   cat_col = "diagnosis",
+#'   id_col = "participant",
+#'   id_method = "nested",
+#'   mark_new_rows = TRUE
+#' )
 #' @importFrom dplyr filter sample_n %>%
 #' @importFrom rlang :=
 balance <- function(data,
@@ -265,7 +300,6 @@ balance <- function(data,
                     # replace = TRUE, # TODO Some times we want to choose between replacement or repetition
                     mark_new_rows = FALSE,
                     new_rows_col_name = ".new_row") {
-
   if (is.character(size)) {
     if (size %ni% c("min", "max", "mean", "median")) {
       stop("'size' must be one of 'min','max','mean','median' or a whole number.")
@@ -274,37 +308,39 @@ balance <- function(data,
     if (!arg_is_wholenumber_(size)) {
       stop("'size' must be one of 'min','max','mean','median' or a whole number.")
     }
-    if (size < 0){
+    if (size < 0) {
       stop("'size' must be positive when specified as a whole number.")
     }
   }
   if (!is.character(cat_col)) {
     stop("'cat_col' must be the name of a column in 'data'.")
   }
-  if (!is.null(id_col)){
-    if (is.null(data[[id_col]])){
+  if (!is.null(id_col)) {
+    if (is.null(data[[id_col]])) {
       stop("'id_col' was not found in data.")
     }
-    if (! is.factor(data[[id_col]])){
+    if (!is.factor(data[[id_col]])) {
       stop("'id_col' must be a factor.")
     }
   }
 
-  if (id_method %ni% c("n_ids",
-                       "n_rows_c",
-                       # TODO "n_rows_o"
-                       # Should find the optimal combinations of IDs.
-                       # E.g. using dynamic programming.
-                       # "n_rows_o",
-                       "distributed",
-                       "nested")){ # find more
+  if (id_method %ni% c(
+    "n_ids",
+    "n_rows_c",
+    # TODO "n_rows_o"
+    # Should find the optimal combinations of IDs.
+    # E.g. using dynamic programming.
+    # "n_rows_o",
+    "distributed",
+    "nested"
+  )) { # find more
     stop("'id_method' must be one of 'n_ids', 'n_rows_c', 'distributed', and 'nested'.")
   }
 
-  if (!is.logical(mark_new_rows)){
+  if (!is.logical(mark_new_rows)) {
     stop("'mark_new_rows' must be logical (TRUE/FALSE).")
   }
-  if (is.na(mark_new_rows)){
+  if (is.na(mark_new_rows)) {
     stop("'mark_new_rows' was NA. Must be either TRUE or FALSE.")
   }
 
@@ -316,7 +352,6 @@ balance <- function(data,
   data[[local_tmp_new_row_var]] <- 0
 
   if (!is.null(id_col)) {
-
     if (id_method == "n_ids") {
       balanced <- id_method_n_ids_(
         data = data,
@@ -325,16 +360,18 @@ balance <- function(data,
         id_col = id_col,
         mark_new_rows = mark_new_rows,
         new_rows_col_name = local_tmp_new_row_var
-      )}
+      )
+    }
     else if (id_method == "n_rows_c") {
-        balanced <- id_method_n_rows_closest(
-          data = data,
-          size = size,
-          cat_col = cat_col,
-          id_col = id_col,
-          mark_new_rows = mark_new_rows,
-          new_rows_col_name = local_tmp_new_row_var
-        )}
+      balanced <- id_method_n_rows_closest(
+        data = data,
+        size = size,
+        cat_col = cat_col,
+        id_col = id_col,
+        mark_new_rows = mark_new_rows,
+        new_rows_col_name = local_tmp_new_row_var
+      )
+    }
     else if (id_method == "distributed") {
       balanced <- id_method_distributed(
         data = data,
@@ -343,7 +380,8 @@ balance <- function(data,
         id_col = id_col,
         mark_new_rows = mark_new_rows,
         new_rows_col_name = local_tmp_new_row_var
-      )}
+      )
+    }
     else if (id_method == "nested") {
       balanced <- id_method_nested(
         data = data,
@@ -352,46 +390,53 @@ balance <- function(data,
         id_col = id_col,
         mark_new_rows = mark_new_rows,
         new_rows_col_name = local_tmp_new_row_var
-      )}
+      )
+    }
   } else {
-
     to_size <- get_target_size(data, size, cat_col)
     balanced <- plyr::ldply(unique(data[[cat_col]]), function(category) {
-        data_for_cat <- data %>%
-          filter(!!as.name(cat_col) == category)
+      data_for_cat <- data %>%
+        filter(!!as.name(cat_col) == category)
 
-        n_rows <- nrow(data_for_cat)
+      n_rows <- nrow(data_for_cat)
 
-        if (n_rows == to_size) {
-          return(data_for_cat)
-        } else if (n_rows < to_size) {
-          return(add_rows_with_sampling(data_for_cat, to_size=to_size,
-                                        new_rows_col_name=local_tmp_new_row_var))
-        } else {
+      if (n_rows == to_size) {
+        return(data_for_cat)
+      } else if (n_rows < to_size) {
+        return(
+          add_rows_with_sampling(
+            data = data_for_cat,
+            to_size = to_size,
+            new_rows_col_name = local_tmp_new_row_var
+          )
+        )
+      } else {
+        return(
           data_for_cat %>%
             sample_n(size = to_size, replace = FALSE)
-        }
-      })
-
+        )
+      }
+    })
   }
 
   if (!isTRUE(mark_new_rows)) {
-    balanced <- balanced %>%
-      base_deselect(cols = local_tmp_new_row_var)
-
+    balanced <- base_deselect(data = balanced,
+                              cols = local_tmp_new_row_var)
   } else {
     # Replace temporary column name with passed column name
     # e.g. '.new_row'
-    balanced <- base_rename(balanced, before = local_tmp_new_row_var,
-                            after = new_rows_col_name)
+    balanced <- base_rename(
+      data = balanced,
+      before = local_tmp_new_row_var,
+      after = new_rows_col_name
+    )
   }
 
   if (!is.null(id_col)) {
-  balanced %>%
-    dplyr::arrange(!! as.name(cat_col), !! as.name(id_col))
+    balanced %>%
+      dplyr::arrange(!!as.name(cat_col), !!as.name(id_col))
   } else {
     balanced %>%
-      dplyr::arrange(!! as.name(cat_col))
+      dplyr::arrange(!!as.name(cat_col))
   }
-
 }

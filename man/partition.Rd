@@ -4,9 +4,17 @@
 \alias{partition}
 \title{Create balanced partitions.}
 \usage{
-partition(data, p = 0.2, cat_col = NULL, num_col = NULL,
-  id_col = NULL, id_aggregation_fn = sum, extreme_pairing_levels = 1,
-  force_equal = FALSE, list_out = TRUE)
+partition(
+  data,
+  p = 0.2,
+  cat_col = NULL,
+  num_col = NULL,
+  id_col = NULL,
+  id_aggregation_fn = sum,
+  extreme_pairing_levels = 1,
+  force_equal = FALSE,
+  list_out = TRUE
+)
 }
 \arguments{
 \item{data}{Data frame or vector.}
@@ -144,35 +152,40 @@ library(dplyr)
 
 # Create data frame
 df <- data.frame(
- "participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
- "age" = rep(sample(c(1:100), 6), 3),
- "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
- "score" = sample(c(1:100), 3*6))
+  "participant" = factor(rep(c("1", "2", "3", "4", "5", "6"), 3)),
+  "age" = rep(sample(c(1:100), 6), 3),
+  "diagnosis" = factor(rep(c("a", "b", "a", "a", "b", "b"), 3)),
+  "score" = sample(c(1:100), 3 * 6)
+)
 df <- df \%>\% arrange(participant)
-df$session <- rep(c('1','2', '3'), 6)
+df$session <- rep(c("1", "2", "3"), 6)
 
 # Using partition()
 
 # Without balancing
-partitions <- partition(df, c(0.2,0.3))
+partitions <- partition(df, c(0.2, 0.3))
 
 # With cat_col
-partitions <- partition(df, c(0.5), cat_col = 'diagnosis')
+partitions <- partition(df, c(0.5), cat_col = "diagnosis")
 
 # With id_col
-partitions <- partition(df, c(0.5), id_col = 'participant')
+partitions <- partition(df, c(0.5), id_col = "participant")
 
 # With num_col
-partitions <- partition(df, c(0.5), num_col = 'score')
+partitions <- partition(df, c(0.5), num_col = "score")
 
 # With cat_col and id_col
-partitions <- partition(df, c(0.5), cat_col = 'diagnosis',
-                        id_col = 'participant')
+partitions <- partition(df, c(0.5),
+  cat_col = "diagnosis",
+  id_col = "participant"
+)
 
 # With cat_col, num_col and id_col
-partitions <- partition(df, c(0.5), cat_col = 'diagnosis',
-                        num_col = "score",
-                        id_col = 'participant')
+partitions <- partition(df, c(0.5),
+  cat_col = "diagnosis",
+  num_col = "score",
+  id_col = "participant"
+)
 
 # Return data frame with grouping factor
 # with list_out = FALSE
@@ -181,27 +194,37 @@ partitions <- partition(df, c(0.5), list_out = FALSE)
 # Check if additional extreme_pairing_levels
 # improve the numerical balance
 set.seed(2) # try with seed 1 as well
-partitions_1 <- partition(df, c(0.5), num_col = 'score',
-                          extreme_pairing_levels = 1,
-                          list_out = FALSE)
+partitions_1 <- partition(df, c(0.5),
+  num_col = "score",
+  extreme_pairing_levels = 1,
+  list_out = FALSE
+)
 partitions_1 \%>\%
   dplyr::group_by(.partitions) \%>\%
-  dplyr::summarise(sum_score = sum(score),
-                   mean_score = mean(score))
+  dplyr::summarise(
+    sum_score = sum(score),
+    mean_score = mean(score)
+  )
 set.seed(2) # try with seed 1 as well
-partitions_2 <- partition(df, c(0.5), num_col = 'score',
-                          extreme_pairing_levels = 2,
-                          list_out = FALSE)
+partitions_2 <- partition(df, c(0.5),
+  num_col = "score",
+  extreme_pairing_levels = 2,
+  list_out = FALSE
+)
 partitions_2 \%>\%
   dplyr::group_by(.partitions) \%>\%
-  dplyr::summarise(sum_score = sum(score),
-                   mean_score = mean(score))
-
+  dplyr::summarise(
+    sum_score = sum(score),
+    mean_score = mean(score)
+  )
 }
 \seealso{
-Other grouping functions: \code{\link{all_groups_identical}},
-  \code{\link{fold}}, \code{\link{group_factor}},
-  \code{\link{group}}, \code{\link{splt}}
+Other grouping functions: 
+\code{\link{all_groups_identical}()},
+\code{\link{fold}()},
+\code{\link{group_factor}()},
+\code{\link{group}()},
+\code{\link{splt}()}
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}

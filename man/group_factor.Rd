@@ -4,9 +4,17 @@
 \alias{group_factor}
 \title{Create grouping factor for subsetting your data.}
 \usage{
-group_factor(data, n, method = "n_dist", starts_col = NULL,
-  force_equal = FALSE, allow_zero = FALSE, descending = FALSE,
-  randomize = FALSE, remove_missing_starts = FALSE)
+group_factor(
+  data,
+  n,
+  method = "n_dist",
+  starts_col = NULL,
+  force_equal = FALSE,
+  allow_zero = FALSE,
+  descending = FALSE,
+  randomize = FALSE,
+  remove_missing_starts = FALSE
+)
 }
 \arguments{
 \item{data}{Data frame or vector.}
@@ -126,39 +134,48 @@ library(groupdata2)
 library(dplyr)
 
 # Create a data frame
-df <- data.frame("x"=c(1:12),
- "species" = rep(c('cat','pig', 'human'), 4),
- "age" = sample(c(1:100), 12))
+df <- data.frame(
+  "x" = c(1:12),
+  "species" = factor(rep(c("cat", "pig", "human"), 4)),
+  "age" = sample(c(1:100), 12)
+)
 
 # Using group_factor() with n_dist
-groups <- group_factor(df, 5, method = 'n_dist')
+groups <- group_factor(df, 5, method = "n_dist")
 df$groups <- groups
 
 # Using group_factor() with greedy
-groups <- group_factor(df, 5, method = 'greedy')
+groups <- group_factor(df, 5, method = "greedy")
 df$groups <- groups
 
 # Using group_factor() with l_sizes
-groups <- group_factor(df, list(0.2, 0.3), method = 'l_sizes')
+groups <- group_factor(df, list(0.2, 0.3), method = "l_sizes")
 df$groups <- groups
 
 # Using group_factor() with l_starts
-groups <- group_factor(df, list('cat', c('pig',2), 'human'),
-                       method = 'l_starts', starts_col = 'species')
+groups <- group_factor(df, list("cat", c("pig", 2), "human"),
+  method = "l_starts", starts_col = "species"
+)
 df$groups <- groups
-
 }
 \seealso{
-Other grouping functions: \code{\link{all_groups_identical}},
-  \code{\link{fold}}, \code{\link{group}},
-  \code{\link{partition}}, \code{\link{splt}}
+Other grouping functions: 
+\code{\link{all_groups_identical}()},
+\code{\link{fold}()},
+\code{\link{group}()},
+\code{\link{partition}()},
+\code{\link{splt}()}
 
-Other staircase tools: \code{\link{\%primes\%}},
-  \code{\link{\%staircase\%}}, \code{\link{group}}
+Other staircase tools: 
+\code{\link{\%primes\%}()},
+\code{\link{\%staircase\%}()},
+\code{\link{group}()}
 
-Other l_starts tools: \code{\link{differs_from_previous}},
-  \code{\link{find_missing_starts}},
-  \code{\link{find_starts}}, \code{\link{group}}
+Other l_starts tools: 
+\code{\link{differs_from_previous}()},
+\code{\link{find_missing_starts}()},
+\code{\link{find_starts}()},
+\code{\link{group}()}
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}

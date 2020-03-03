@@ -3,7 +3,6 @@
 \docType{package}
 \name{groupdata2}
 \alias{groupdata2}
-\alias{groupdata2-package}
 \title{groupdata2: A package for creating groups from data}
 \description{
 Methods for dividing data into groups.

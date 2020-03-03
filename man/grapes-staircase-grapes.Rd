@@ -14,13 +14,12 @@ size \%staircase\% step_size
 }
 \value{
 Remainder (Integer).
-Returns 0 if the last group
-has the size of the second last group + step size.
+ Returns 0 if the last group has the size of the second last group + step size.
 }
 \description{
 When using the staircase method,
-the last group might not have the size of the second last
-group + step size. Use \%staircase\% to find this remainder.
+ the last group might not have the size of the second last
+ group + step size. Use \code{\%staircase\%} to find this remainder.
 }
 \examples{
 # Attach packages
@@ -37,13 +36,16 @@ for (step_size in c(1:30)){
 
 }
 \seealso{
-Other staircase tools: \code{\link{\%primes\%}},
-  \code{\link{group_factor}}, \code{\link{group}}
+Other staircase tools: 
+\code{\link{\%primes\%}()},
+\code{\link{group_factor}()},
+\code{\link{group}()}
 
-Other remainder tools: \code{\link{\%primes\%}}
+Other remainder tools: 
+\code{\link{\%primes\%}()}
 }
 \author{
-Ludvig Renbo Olsen, \email{mail@ludvigolsen.dk}
+Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 }
 \concept{remainder tools}
 \concept{staircase tools}

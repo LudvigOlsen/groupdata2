@@ -4,8 +4,15 @@
 \alias{balance}
 \title{Balance groups by up- and downsampling.}
 \usage{
-balance(data, size, cat_col, id_col = NULL, id_method = "n_ids",
-  mark_new_rows = FALSE, new_rows_col_name = ".new_row")
+balance(
+  data,
+  size,
+  cat_col,
+  id_col = NULL,
+  id_method = "n_ids",
+  mark_new_rows = FALSE,
+  new_rows_col_name = ".new_row"
+)
 }
 \arguments{
 \item{data}{Data frame.}
@@ -109,42 +116,54 @@ df <- data.frame(
 )
 
 # Using balance() with specific number of rows
-balance(df, 3, cat_col="diagnosis")
+balance(df, 3, cat_col = "diagnosis")
 
 # Using balance() with min
-balance(df, "min", cat_col="diagnosis")
+balance(df, "min", cat_col = "diagnosis")
 
 # Using balance() with max
-balance(df, "max", cat_col="diagnosis")
+balance(df, "max", cat_col = "diagnosis")
 
 # Using balance() with id_method "n_ids"
 # With column specifying added rows
-balance(df, "max", cat_col="diagnosis",
-        id_col="participant", id_method="n_ids",
-        mark_new_rows = TRUE)
+balance(df, "max",
+  cat_col = "diagnosis",
+  id_col = "participant",
+  id_method = "n_ids",
+  mark_new_rows = TRUE
+)
 
 # Using balance() with id_method "n_rows_c"
 # With column specifying added rows
-balance(df, "max", cat_col="diagnosis",
-        id_col="participant", id_method="n_rows_c",
-        mark_new_rows = TRUE)
+balance(df, "max",
+  cat_col = "diagnosis",
+  id_col = "participant",
+  id_method = "n_rows_c",
+  mark_new_rows = TRUE
+)
 
 # Using balance() with id_method "distributed"
 # With column specifying added rows
-balance(df, "max", cat_col="diagnosis",
-        id_col="participant", id_method="distributed",
-        mark_new_rows = TRUE)
+balance(df, "max",
+  cat_col = "diagnosis",
+  id_col = "participant",
+  id_method = "distributed",
+  mark_new_rows = TRUE
+)
 
 # Using balance() with id_method "nested"
 # With column specifying added rows
-balance(df, "max", cat_col="diagnosis",
-        id_col="participant", id_method="nested",
-        mark_new_rows = TRUE)
-
+balance(df, "max",
+  cat_col = "diagnosis",
+  id_col = "participant",
+  id_method = "nested",
+  mark_new_rows = TRUE
+)
 }
 \seealso{
-Other sampling functions: \code{\link{downsample}},
-  \code{\link{upsample}}
+Other sampling functions: 
+\code{\link{downsample}()},
+\code{\link{upsample}()}
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}

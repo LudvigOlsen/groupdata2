@@ -19,37 +19,51 @@
 #' library(groupdata2)
 #'
 #' # Same groups, different identifiers
-#' x1 <- c(1,1,2,2,3,3)
-#' x2 <- c(2,2,1,1,4,4)
+#' x1 <- c(1, 1, 2, 2, 3, 3)
+#' x2 <- c(2, 2, 1, 1, 4, 4)
 #' all_groups_identical(x1, x2) # TRUE
 #'
 #' # Same groups, different identifier types
-#' x1 <- c(1,1,2,2,3,3)
-#' x2 <- c("a","a","b","b","c","c")
+#' x1 <- c(1, 1, 2, 2, 3, 3)
+#' x2 <- c("a", "a", "b", "b", "c", "c")
 #' all_groups_identical(x1, x2) # TRUE
 #'
 #' # Not same groups
 #' # Note that all groups must be the same to return TRUE
-#' x1 <- c(1,1,2,2,3,3)
-#' x2 <- c(1,2,2,3,3,3)
+#' x1 <- c(1, 1, 2, 2, 3, 3)
+#' x2 <- c(1, 2, 2, 3, 3, 3)
 #' all_groups_identical(x1, x2) # FALSE
 #'
 #' # Different number of groups
-#' x1 <- c(1,1,2,2,3,3)
-#' x2 <- c(1,1,1,2,2,2)
+#' x1 <- c(1, 1, 2, 2, 3, 3)
+#' x2 <- c(1, 1, 1, 2, 2, 2)
 #' all_groups_identical(x1, x2) # FALSE
-all_groups_identical <- function(x, y){
-  d <- tibble::tibble("col_1" = as.character(x),
-                      "col_2" = as.character(y)) %>%
+all_groups_identical <- function(x, y) {
+
+  d <- tibble::tibble(
+    "col_1" = as.character(x),
+    "col_2" = as.character(y)
+  ) %>%
     dplyr::arrange(.data$col_1) %>%
-    group(n = "auto", method = "l_starts", col_name = ".groups_1",
-          starts_col = "col_2") %>% dplyr::ungroup()
-  if (nlevels(d[[".groups_1"]]) != length(unique(d[["col_1"]]))){
+    group(
+      n = "auto", method = "l_starts",
+      col_name = ".groups_1",
+      starts_col = "col_2"
+    ) %>%
+    dplyr::ungroup()
+
+  if (nlevels(d[[".groups_1"]]) != length(unique(d[["col_1"]]))) {
     return(FALSE)
   } else {
     d <- d %>%
-      group(n = "auto", method = "l_starts", col_name = ".groups_2",
-            starts_col = "col_1") %>% dplyr::ungroup()
-    return(isTRUE(dplyr::all_equal(d[[".groups_1"]], d[[".groups_2"]], ignore_row_order = FALSE)))
+      group(
+        n = "auto",
+        method = "l_starts",
+        col_name = ".groups_2",
+        starts_col = "col_1"
+      ) %>%
+      dplyr::ungroup()
+    return(isTRUE(dplyr::all_equal(d[[".groups_1"]], d[[".groups_2"]],
+                                   ignore_row_order = FALSE)))
   }
 }

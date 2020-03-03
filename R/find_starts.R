@@ -24,46 +24,53 @@
 #' library(groupdata2)
 #'
 #' # Create a data frame
-#' df <- data.frame('a' = c('a','a','b','b','c','c'),
-#'                  stringsAsFactors = FALSE)
+#' df <- data.frame(
+#'   "a" = c("a", "a", "b", "b", "c", "c"),
+#'   stringsAsFactors = FALSE
+#' )
 #'
 #' # Get start values for new groups in column 'a'
-#' find_starts(df, col = 'a')
+#' find_starts(df, col = "a")
 #'
 #' # Get indices of start values for new groups
 #' # in column 'a'
-#' find_starts(df, col = 'a',
-#'             return_index = TRUE)
+#' find_starts(df,
+#'   col = "a",
+#'   return_index = TRUE
+#' )
 #'
 #' ## Use found starts with l_starts method
 #' # Notice: This is equivalent to n = 'auto'
 #' # with l_starts method
 #'
 #' # Get start values for new groups in column 'a'
-#' starts <- find_starts(df, col = 'a')
+#' starts <- find_starts(df, col = "a")
 #'
 #' # Use starts in group() with 'l_starts' method
-#' group(df, n = starts, method = 'l_starts',
-#'       starts_col = 'a')
+#' group(df,
+#'   n = starts, method = "l_starts",
+#'   starts_col = "a"
+#' )
 #'
 #' # Similar but with indices instead of values
 #'
 #' # Get indices of start values for new groups
 #' # in column 'a'
-#' starts_ind <- find_starts(df, col = 'a',
-#'                           return_index = TRUE)
+#' starts_ind <- find_starts(df,
+#'   col = "a",
+#'   return_index = TRUE
+#' )
 #'
 #' # Use starts in group() with 'l_starts' method
-#' group(df, n = starts_ind, method = 'l_starts',
-#'       starts_col = 'index')
-#'
-#'
+#' group(df,
+#'   n = starts_ind, method = "l_starts",
+#'   starts_col = "index"
+#' )
 find_starts <- function(data,
                         col = NULL,
                         return_index = FALSE,
                         handle_na = "ignore",
-                        factor_conversion_warning=TRUE){
-
+                        factor_conversion_warning = TRUE) {
   differs_from_previous(
     data = data,
     col = col,
@@ -73,7 +80,4 @@ find_starts <- function(data,
     handle_na = handle_na,
     factor_conversion_warning = factor_conversion_warning
   )
-
 }
-
-
