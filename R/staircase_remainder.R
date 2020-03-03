@@ -52,7 +52,8 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("groups", "n_elements"))
   n_groups <- ceiling(size/step_size)
 
   # Create a data frame with 1 column containing a group index
-  group_data <- data.frame('groups' = c(1:n_groups))
+  group_data <- data.frame('groups' = c(1:n_groups),
+                           stringsAsFactors = FALSE)
 
   # Create a column with number of elements (group number times step size)
   # Create a column with cumulative sum of the number of elements

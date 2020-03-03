@@ -3,7 +3,7 @@ context("utilities")
 
 test_that("seed 1 returns same numbers with runif()",{
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   # In R 3.6.0 the random sampling generator was changed
   # So a lot of tests were ... wrong ...

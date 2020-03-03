@@ -12,8 +12,8 @@ stair_split_group_factor_ <- function(v, step_size, force_equal = FALSE, descend
   n_groups <- ceiling(length(v)/step_size)
 
   # Create a data frame with 1 column containing a group index
-  group_data <- data.frame('groups' = c(1:n_groups))
-
+  group_data <- data.frame('groups' = c(1:n_groups),
+                           stringsAsFactors = FALSE)
 
   # Create a column with number of elements (group number times step size)
   # Create a column with cumulative sum of the number of elements
@@ -110,7 +110,8 @@ primes_split_group_factor_ <- function(v, start_at = 2,
   n_groups <- ceiling(length(v)/start_at)
 
   # Create a data frame with 1 column containing a group index
-  group_data <- data.frame('groups' = c(1:n_groups))
+  group_data <- data.frame('groups' = c(1:n_groups),
+                           stringsAsFactors = FALSE)
 
   # Create a column with number of elements (group number times step size)
   # Create a column with cumulative sum of the number of elements

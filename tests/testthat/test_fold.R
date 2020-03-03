@@ -8,11 +8,11 @@ context("fold()")
 
 test_that("dimensions of data frame with fold()",{
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
-                   "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
+                   "diagnosis" = factor(rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3)),
                    "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
 
   df <- df[order(df$participant),]
@@ -29,14 +29,13 @@ test_that("dimensions of data frame with fold()",{
 
 })
 
-
 test_that("errors and warnings are correct with fold()",{
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
-                   "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
+                   "diagnosis" = factor(rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3)),
                    "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
 
   df <- df[order(df$participant),]
@@ -72,11 +71,11 @@ test_that("errors and warnings are correct with fold()",{
 
 test_that(".folds is correct in fold()",{
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
-                   "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
+                   "diagnosis" = factor(rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3)),
                    "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
 
   df <- df %>% dplyr::arrange(participant)
@@ -90,7 +89,7 @@ test_that(".folds is correct in fold()",{
   col_is_factor <- function(df, n, cat_col = NULL, num_col = NULL,
                             id_col = NULL, col, num_fold_cols=1){
 
-    set_seed_for_R_compatibility(1)
+    xpectr::set_test_seed(1)
     folded_df <- fold(df, n, cat_col=cat_col, num_col=num_col,
                       id_col=id_col, num_fold_cols = num_fold_cols)
     # print(folded_df)
@@ -102,7 +101,7 @@ test_that(".folds is correct in fold()",{
                            id_col = NULL, method, num_fold_cols=1,
                            folds_col=".folds", seed=1){
 
-    set_seed_for_R_compatibility(seed)
+    xpectr::set_test_seed(seed)
     folded_df <- fold(df, n, cat_col=cat_col, num_col = num_col, id_col=id_col,
                       method = method, num_fold_cols=num_fold_cols)
     #print(folded_df)
@@ -224,15 +223,14 @@ test_that(".folds is correct in fold()",{
 
 })
 
-
 test_that("values are decently balanced in num_col in fold()",{
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
-                   "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
+                   "diagnosis" = factor(rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3)),
                    "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
 
   df <- df %>% dplyr::arrange(participant, score)
@@ -286,7 +284,7 @@ test_that("values are decently balanced in num_col in fold()",{
   expect_equal(aggregated_scores$group_sums, c(283,246,133,155))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   # With num_col and cat_col
   df_folded <- fold(df, 3, num_col = 'score', cat_col="diagnosis")
@@ -314,7 +312,7 @@ test_that("values are decently balanced in num_col in fold()",{
   expect_equal(aggregated_scores$group_sums, c(237, 283, 297))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   df_folded <- fold(df, 2, num_col = 'score', cat_col="diagnosis", id_col="participant")
   aggregated_scores <- df_folded %>%
     dplyr::group_by(.folds) %>%
@@ -326,14 +324,12 @@ test_that("values are decently balanced in num_col in fold()",{
 
 })
 
-
-
 test_that("repeated folding works in fold()",{
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
-                   "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
+                   "diagnosis" = factor(rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3)),
                    "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
 
   df <- df %>% dplyr::arrange(participant, score)
@@ -355,7 +351,7 @@ test_that("repeated folding works in fold()",{
   expected_aggregated_folds_col <- expected_aggregated_folds_col[order(expected_aggregated_folds_col)]
   expect_equal(aggregated_scores$folds_col, expected_aggregated_folds_col)
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   # We set num_fold_cols to a larger number than is possible to create unique .folds columns
   # Hence it will only create a smaller number of columns!
   df_folded_5reps <- fold(head(df,7), 2, num_col = 'score', num_fold_cols=10,
@@ -393,7 +389,6 @@ test_that("repeated folding works in fold()",{
 
 })
 
-
 test_that("bootstrap test of num_col works",{
 
   # Takes 4 seconds, so we disable it for now.
@@ -404,12 +399,12 @@ test_that("bootstrap test of num_col works",{
                    "age"=rep(sample(100),100))
 
   # Single
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   df_folded <- fold(df, 3, num_col="age")
 
   for (i in 1:10){
 
-    set_seed_for_R_compatibility(i)
+    xpectr::set_test_seed(i)
     df_folded <- fold(df, 0.5, cat_col="diagnosis", num_col="age",
                       id_col="participant")
 
@@ -424,7 +419,7 @@ test_that("bootstrap test of num_col works",{
 
   for (i in 1:10){
 
-    set_seed_for_R_compatibility(i)
+    xpectr::set_test_seed(i)
     df_folded <- fold(df, 5, cat_col="diagnosis", num_col="age",
                       id_col="participant")
 
@@ -444,7 +439,7 @@ test_that("bootstrap test of num_col works",{
 
   for (i in 1:10){
 
-    set_seed_for_R_compatibility(i)
+    xpectr::set_test_seed(i)
     df_folded <- fold(df, 5,
                       cat_col="diagnosis", num_col="age",
                       id_col="participant", extreme_pairing_levels = 2)
@@ -465,7 +460,7 @@ test_that("bootstrap test of num_col works",{
 
   for (i in 1:10){
 
-    set_seed_for_R_compatibility(i)
+    xpectr::set_test_seed(i)
     expect_error(fold(df, 5,
                       cat_col="diagnosis", num_col="age",
                       id_col="participant", extreme_pairing_levels = 3),
@@ -488,7 +483,7 @@ test_that("bootstrap test of num_col works",{
 
   for (i in 1:10){
 
-    set_seed_for_R_compatibility(i)
+    xpectr::set_test_seed(i)
     df_folded <- fold(df, i,
                       cat_col="diagnosis", num_col="age", extreme_pairing_levels = 1)
 
@@ -499,7 +494,7 @@ test_that("bootstrap test of num_col works",{
     expect_true(is_between_(min(age_distribution$mean_age), 49, 51.5))
     expect_true(is_between_(max(age_distribution$mean_age), 49, 51.5))
 
-    set_seed_for_R_compatibility(i)
+    xpectr::set_test_seed(i)
     df_folded <- fold(df, i,
                       cat_col="diagnosis", num_col="age", extreme_pairing_levels = 2)
 
@@ -510,7 +505,7 @@ test_that("bootstrap test of num_col works",{
     expect_true(is_between_(min(age_distribution$mean_age), 49, 51.5))
     expect_true(is_between_(max(age_distribution$mean_age), 49, 51.5))
 
-    set_seed_for_R_compatibility(i)
+    xpectr::set_test_seed(i)
     df_folded <- fold(df, i,
                       cat_col="diagnosis", num_col="age", extreme_pairing_levels = 3)
 
@@ -525,7 +520,7 @@ test_that("bootstrap test of num_col works",{
 
 
 
-  # set_seed_for_R_compatibility(47)
+  # xpectr::set_test_seed(47)
   # # With four levels of extreme pairing
   # df_folded <- fold(df, 5,
   #                   cat_col="diagnosis", num_col="age",
@@ -537,4 +532,22 @@ test_that("bootstrap test of num_col works",{
 
 })
 
+test_that("fuzz tests for fold()", {
 
+  xpectr::set_test_seed(1)
+
+  df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
+                   "age" = rep(c(25,65,34), 3),
+                   "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
+                   "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
+
+  df <- df[order(df$participant),]
+
+  # Add session info
+  df$session <- rep(c('1','2', '3'), 6)
+
+  # The added grouping factor means we should get and extra column
+  expect_equal(ncol(fold(df, 5)), 6)
+
+
+})

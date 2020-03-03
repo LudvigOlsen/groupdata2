@@ -198,9 +198,11 @@ library(knitr)
 
 ```{r}
 # Create data frame
-df <- data.frame("x"=c(1:12),
-  "species" = rep(c('cat','pig', 'human'), 4),
-  "age" = sample(c(1:100), 12))
+df <- data.frame(
+  "x"=c(1:12),
+  "species" = factor(rep(c('cat','pig', 'human'), 4)),
+  "age" = sample(c(1:100), 12)
+)
 ```
 
 
@@ -236,7 +238,7 @@ df %>%
 df <- data.frame(
   "participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
   "age" = rep(c(20,33,27,21,32,25), 3),
-  "diagnosis" = rep(c('a', 'b', 'a', 'b', 'b', 'a'), 3),
+  "diagnosis" = factor(rep(c('a', 'b', 'a', 'b', 'b', 'a'), 3)),
   "score" = c(10,24,15,35,24,14,24,40,30,50,54,25,45,67,40,78,62,30))
 df <- df %>% arrange(participant)
 df$session <- rep(c('1','2', '3'), 6)

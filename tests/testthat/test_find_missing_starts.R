@@ -3,7 +3,7 @@ context("find_missing_starts()")
 
 test_that("find_missing_starts() find the right missing starts", {
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   v <- c('a','a','b','c','c','d','d')
   df <- data.frame(v = v,
@@ -42,8 +42,7 @@ test_that("find_missing_starts() find the right missing starts", {
   # Example from docs:
 
   # Create a data frame
-  df <- data.frame('a' = c('a','a','b',
-                           'b','c','c'))
+  df <- data.frame('a' = factor(c('a','a','b','b','c','c')))
 
   # Create list of starts
   starts <- c("a", "e", "b", "d", "c")
@@ -69,9 +68,5 @@ test_that("find_missing_starts() find the right missing starts", {
                "'n' must be either a list or a vector.", fixed=TRUE)
   expect_error(find_missing_starts(c(1,2,3,4), n=c(3), return_skip_numbers = 3),
                "'return_skip_numbers' must be logical (TRUE/FALSE).", fixed=TRUE)
-
-
-
-
 
 })

@@ -3,11 +3,11 @@ context("partition()")
 
 test_that("dimensions of data frame with partition()",{
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
-                   "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
+                   "diagnosis" = factor(rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3)),
                    "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
 
   df <- df %>% dplyr::arrange(participant)
@@ -28,11 +28,11 @@ test_that("dimensions of data frame with partition()",{
 
 test_that(".partitions is correct in partition() with list_out == FALSE",{
 
-  set_seed_for_R_compatibility(6)
+  xpectr::set_test_seed(6)
 
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
-                   "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
+                   "diagnosis" = factor(rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3)),
                    "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
 
   df <- df %>% dplyr::arrange(participant)
@@ -45,7 +45,7 @@ test_that(".partitions is correct in partition() with list_out == FALSE",{
 
   col_is_factor <- function(df, n, cat_col = NULL, num_col = NULL, id_col = NULL, col){
 
-    set_seed_for_R_compatibility(1)
+    xpectr::set_test_seed(1)
     partitioned_df <- partition(df, n, cat_col=cat_col, num_col=num_col,
                                 id_col=id_col, list_out = FALSE)
 
@@ -57,7 +57,7 @@ test_that(".partitions is correct in partition() with list_out == FALSE",{
 
   group_counts <- function(df, n, cat_col = NULL, num_col = NULL, id_col = NULL, force_equal = FALSE){
 
-    set_seed_for_R_compatibility(1)
+    xpectr::set_test_seed(1)
     partitioned_df <- partition(df, n, cat_col=cat_col, num_col=num_col,
                                 id_col=id_col, force_equal = force_equal,
                                 list_out = FALSE)
@@ -106,7 +106,7 @@ test_that(".partitions is correct in partition() with list_out == FALSE",{
   expect_equal(group_counts(df, 1, cat_col = 'diagnosis', id_col = 'participant', num_col = 'score'), c(6,12))
 
   # unequal number of rows in df
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   expect_equal(group_counts(df_unequal, 0.2), c(3,14))
   expect_equal(group_counts(df_unequal, 0.2, cat_col = 'diagnosis'), c(2,15))
   expect_equal(group_counts(df_unequal, 0.2, id_col = 'participant'), c(3,14))
@@ -135,7 +135,7 @@ test_that(".partitions is correct in partition() with list_out == FALSE",{
   # Test force_equal
 
   # equal number of rows in df
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   expect_equal(group_counts(df, 2, id_col = 'participant', force_equal = TRUE), c(6))
   expect_equal(group_counts(df, 3, id_col = 'participant', force_equal = TRUE), c(9))
   expect_equal(group_counts(df, 2, cat_col = 'diagnosis', force_equal = TRUE), c(4))
@@ -148,7 +148,7 @@ test_that(".partitions is correct in partition() with list_out == FALSE",{
                             force_equal = TRUE), c(12))
 
   # unequal number of rows in df
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   expect_equal(group_counts(df_unequal, 2, id_col = 'participant', force_equal = TRUE), c(6))
   expect_equal(group_counts(df_unequal, 3, id_col = 'participant', force_equal = TRUE), c(9))
   expect_equal(group_counts(df_unequal, 2, cat_col = 'diagnosis', force_equal = TRUE), c(4))
@@ -164,11 +164,11 @@ test_that(".partitions is correct in partition() with list_out == FALSE",{
 
 test_that(".partitions is correct in partition() with list_out == TRUE",{
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
-                   "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
+                   "diagnosis" = factor(rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3)),
                    "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
 
   df <- df %>% dplyr::arrange(participant)
@@ -216,11 +216,11 @@ test_that(".partitions is correct in partition() with list_out == TRUE",{
 
 test_that("partition() outputs correct error messages",{
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
-                   "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
+                   "diagnosis" = factor(rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3)),
                    "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
 
   df <- df %>% dplyr::arrange(participant)
@@ -242,7 +242,7 @@ test_that("partition() outputs correct error messages",{
 
 test_that("bootstrap test of num_col works",{
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   # Takes 4 seconds, so we disable it for now.
   testthat::skip(message = "Skipping bootstrapped numerical balancing test in partition()")
@@ -252,7 +252,7 @@ test_that("bootstrap test of num_col works",{
                    "age"=rep(sample(100),100))
 
   # Single
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   df_partitioned <- partition(df, c(0.3,0.3),
                               #cat_col="diagnosis",
                               num_col="age",
@@ -261,7 +261,7 @@ test_that("bootstrap test of num_col works",{
 
   for (i in 1:10){
 
-    set_seed_for_R_compatibility(i)
+    xpectr::set_test_seed(i)
     df_partitioned <- partition(df, 0.5, cat_col="diagnosis", num_col="age",
                                 id_col="participant", list_out = FALSE)
 
@@ -276,7 +276,7 @@ test_that("bootstrap test of num_col works",{
 
   for (i in 1:10){
 
-    set_seed_for_R_compatibility(i)
+    xpectr::set_test_seed(i)
     df_partitioned <- partition(df, c(0.2, 0.2, 0.2, 0.2, 0.2),
                                 cat_col="diagnosis", num_col="age",
                                 id_col="participant", list_out = FALSE)
@@ -297,7 +297,7 @@ test_that("bootstrap test of num_col works",{
 
   for (i in 1:10){
 
-    set_seed_for_R_compatibility(i)
+    xpectr::set_test_seed(i)
     df_partitioned <- partition(df, c(0.2, 0.2, 0.2, 0.2, 0.2),
                                 cat_col="diagnosis", num_col="age",
                                 id_col="participant", extreme_pairing_levels = 2,
@@ -319,7 +319,7 @@ test_that("bootstrap test of num_col works",{
 
   for (i in 1:10){
 
-    set_seed_for_R_compatibility(i)
+    xpectr::set_test_seed(i)
     df_partitioned <- partition(df, c(0.2, 0.2, 0.2, 0.2, 0.2),
                                 cat_col="diagnosis", num_col="age",
                                 id_col="participant", extreme_pairing_levels = 3,

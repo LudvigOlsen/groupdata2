@@ -4,7 +4,7 @@ context("group_factor()")
 
 test_that("group sizes works with group_factor with method greedy", {
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   group_counts <- function(v, n){
 
@@ -41,7 +41,7 @@ test_that("group sizes works with group_factor with method greedy", {
 
 test_that("group sizes works with group_factor with method n_dist", {
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   group_counts <- function(v, n){
 
@@ -78,7 +78,7 @@ test_that("group sizes works with group_factor with method n_dist", {
 
 test_that("group sizes works with group_factor with method n_fill", {
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   group_counts <- function(v, n){
 
@@ -117,7 +117,7 @@ test_that("group sizes works with group_factor with method n_fill", {
 
 test_that("group sizes works with group_factor with method n_rand", {
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   count_groups <- function(v, n){
 
@@ -167,7 +167,7 @@ test_that("group sizes works with group_factor with method n_rand", {
 
 test_that("group sizes works with group_factor with method staircase", {
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   group_counts <- function(v, n){
 
@@ -235,7 +235,7 @@ test_that("group sizes works with group_factor with method staircase", {
 
 test_that("group sizes works with group_factor with method primes", {
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   group_counts <- function(v, n, force_equal=FALSE){
 
@@ -306,7 +306,7 @@ test_that("group sizes works with group_factor with method primes", {
 
 test_that("group sizes works with group_factor with method l_sizes", {
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   group_f <- function(v, n){
 
@@ -338,7 +338,7 @@ test_that("group sizes works with group_factor with method l_sizes", {
 
 test_that("group sizes works with group_factor with method l_starts", {
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   group_f <- function(v, n){
 
@@ -421,7 +421,7 @@ test_that("group sizes works with group_factor with method l_starts", {
 
 test_that("l_starts raises error correctly when value is not found", {
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   expect_error(group(c(1:5), c(1,3,6), method = 'l_starts'),
                "Start value \"6\" not found in vector", fixed = TRUE)
@@ -436,7 +436,8 @@ test_that("l_starts raises error correctly when value is not found", {
                "Start value \"2\" not found in vector", fixed = TRUE)
 
   df <- data.frame('a' = c(1,2,3,4),
-                   'b' = c(4,5,6,7))
+                   'b' = c(4,5,6,7),
+                   stringsAsFactors = FALSE)
 
   expect_error(group(df, n = c(2,4), method = 'l_starts',
                      starts_col = 'c'),
@@ -446,7 +447,7 @@ test_that("l_starts raises error correctly when value is not found", {
 
 test_that("force_equal works with group_factor with all methods",{
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   group_counts <- function(v, n, method){
 
@@ -529,7 +530,7 @@ test_that("force_equal works with group_factor with all methods",{
 
 test_that("allow_zero works with group_factor", {
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   v <- c(1:3)
 
@@ -541,7 +542,7 @@ test_that("allow_zero works with group_factor", {
 
 test_that("l_sizes works with no groups",{
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   expect_equal(group_factor(c(1:3), 0.2, method = 'l_sizes'), factor(c(2,2,2)))
   expect_warning(group_factor(c(1:3), 0.2, method = 'l_sizes', force_equal = TRUE), "No groups. Returned NA.", fixed = TRUE)

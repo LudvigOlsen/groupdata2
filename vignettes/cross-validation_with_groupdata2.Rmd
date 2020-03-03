@@ -99,8 +99,8 @@ df <- data.frame("participant" = factor(as.integer(
                                         rep(c('1','2', '3', '4', '5', 
                                         '6', '7', '8', '9', '10'), 3))),
                 "age" = rep(c(20,23,27,21,32,31,43,21,34,32), 3),
-                "diagnosis" = rep(c('a', 'b', 'a', 'b', 'b', 
-                                    'a', 'a', 'a', 'b', 'b'), 3),
+                "diagnosis" = factor(rep(c('a', 'b', 'a', 'b', 'b', 
+                                           'a', 'a', 'a', 'b', 'b'), 3)),
                 "score" = c(10,24,15,35,24,14,11,16,33,29,  # for 1st session
                             24,40,30,50,54,25,35,32,53,55,  # for 2nd session
                             45,67,40,78,62,30,41,44,66,81)) # for 3rd session

@@ -131,7 +131,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #' df <- data.frame(
 #'  "participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
 #'  "age" = rep(sample(c(1:100), 6), 3),
-#'  "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
+#'  "diagnosis" = factor(rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3)),
 #'  "score" = sample(c(1:100), 3*6))
 #' df <- df %>% arrange(participant)
 #' df$session <- rep(c('1','2', '3'), 6)

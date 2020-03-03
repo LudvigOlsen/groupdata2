@@ -16,9 +16,9 @@ test_that("groups are correctly compared with all_groups_identical()",{
 
   expect_true(all_groups_identical(x1, x4))
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   x5 <- factor(sample(rep(rev(c("a","b","c","d","g")), each=5)))
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   x6 <- sample(factor(rep(rev(c("a","b","c","d","g")), each=5)))
   expect_true(all_groups_identical(x5, x6))
   expect_true(!all_groups_identical(x1, x5))

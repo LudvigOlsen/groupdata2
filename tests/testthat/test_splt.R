@@ -3,10 +3,10 @@ context("splt()")
 
 test_that("dimensions of output with splt()", {
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   df <- data.frame("x"=c(1:12),
-                   "species" = rep(c('cat','pig', 'human'), 4),
+                   "species" = factor(rep(c('cat','pig', 'human'), 4)),
                    "age" = c(5,65,34,54,32,54,23,65,23,65,87,98))
 
   get_element_sizes <- function(df, n){
@@ -38,7 +38,7 @@ test_that("dimensions of output with splt()", {
 
 test_that("splt() works with force_equal on vector", {
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   splt_equal <- function(data, n, method){
 
@@ -79,7 +79,7 @@ test_that("splt() works with force_equal on vector", {
 
 test_that("splt() works with force_equal on vector", {
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   splt_equal <- function(data, n, method, starts_col = NULL){
 
@@ -100,7 +100,7 @@ test_that("splt() works with force_equal on vector", {
 
   df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                    "age" = rep(c(25,65,34), 3),
-                   "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
+                   "diagnosis" = factor(rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3)),
                    "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
 
 

@@ -22,7 +22,7 @@
 #'
 #' # Create data frame
 #' df <- data.frame("x"=c(1:12),
-#'  "species" = rep(c('cat','pig', 'human'), 4),
+#'  "species" = factor(rep(c('cat','pig', 'human'), 4)),
 #'  "age" = sample(c(1:100), 12))
 #'
 #' # Using group()
@@ -113,7 +113,7 @@ group <- function(data, n, method = 'n_dist', starts_col = NULL,
     # Return data grouped by the grouping factor
     return(dplyr::group_by(data, !! as.name(col_name)))
 
-  } else { # If data is vector
+  } else { # If 'data' is vector
 
     # If force_equal is TRUE
     if(isTRUE(force_equal)){
@@ -124,7 +124,7 @@ group <- function(data, n, method = 'n_dist', starts_col = NULL,
     }
 
     # Create data frame with data and the grouping factor
-    data <- data.frame(data)
+    data <- data.frame(data, stringsAsFactors = FALSE)
     data[[local_tmp_var]] <- grouping_factor
 
     # Replace temporary column name with passed column name

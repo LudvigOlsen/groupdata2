@@ -3,7 +3,7 @@ context("differs_from_previous()")
 
 test_that("differs_from_previous() find the right values and indices", {
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   v <- c('a','a','b','c','c','d','d')
   df <- data.frame(v = v,
@@ -120,7 +120,7 @@ test_that("differs_from_previous() find the right values and indices", {
 
 test_that("differs_from_previous() work with NAs", {
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   v <- c('a','a','b','c',NA,'d','d',NA,"e","e")
   df <- data.frame(v = v,

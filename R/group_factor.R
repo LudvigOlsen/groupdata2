@@ -111,7 +111,7 @@
 #'
 #' # Create a data frame
 #' df <- data.frame("x"=c(1:12),
-#'  "species" = rep(c('cat','pig', 'human'), 4),
+#'  "species" = factor(rep(c('cat','pig', 'human'), 4)),
 #'  "age" = sample(c(1:100), 12))
 #'
 #' # Using group_factor() with n_dist

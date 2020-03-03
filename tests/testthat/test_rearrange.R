@@ -4,7 +4,7 @@ context("rearrange()")
 test_that("rearrange() works", {
 
   # Create data frame
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   df <- data.frame(
     "participant" = factor(c(1, 3, 5, 6, 7, 8, 9)),
     "score" = c(79,85,140,69,87,92,87))
@@ -109,7 +109,7 @@ test_that("create_rearrange_factor_pair_extremes_() works", {
 test_that("rearrange() works on vectors", {
 
   # Create data frame
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   score <- sort(c(79,85,140,69,87,92,87))
 
   # with unequal number of rows

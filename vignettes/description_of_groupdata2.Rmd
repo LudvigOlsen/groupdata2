@@ -1001,7 +1001,7 @@ See the necessary attached packages for running the examples under [Attach Packa
 
 ```{r}
 df <- data.frame("x"=c(1:12), 
-                "species" = rep(c('cat','pig', 'human'), 4), 
+                "species" = factor(rep(c('cat','pig', 'human'), 4)), 
                 "age" = sample(c(1:100), 12))
 
 ```
@@ -1040,7 +1040,7 @@ Since the grouping factor is shorter than the data frame, we can't combine them 
 
 ```{r}
 df <- data.frame("x"=c(1:12), 
-                "species" = rep(c('cat','pig', 'human'), 4), 
+                "species" = factor(rep(c('cat','pig', 'human'), 4)), 
                 "age" = sample(c(1:100), 12))
 
 ```
@@ -1079,7 +1079,7 @@ df %>% kable(align = 'c')
 
 ```{r}
 df <- data.frame("x"=c(1:12), 
-                "species" = rep(c('cat','pig', 'human'), 4), 
+                "species" = factor(rep(c('cat','pig', 'human'), 4)), 
                 "age" = sample(c(1:100), 12))
 
 ```
@@ -1117,7 +1117,7 @@ Notice that we discard the excess rows/elements so all groups contain the same a
 
 ```{r}
 df <- data.frame("x"=c(1:12), 
-                "species" = rep(c('cat','pig', 'human'), 4), 
+                "species" = factor(rep(c('cat','pig', 'human'), 4)), 
                 "age" = sample(c(1:100), 12))
 
 
@@ -1143,7 +1143,7 @@ df_grouped %>% kable(align = 'c')
 
 ```{r}
 df <- data.frame("x"=c(1:12), 
-                "species" = rep(c('cat','pig', 'human'), 4), 
+                "species" = factor(rep(c('cat','pig', 'human'), 4)), 
                 "age" = sample(c(1:100), 12))
 
 
@@ -1181,7 +1181,7 @@ Notice that we discard the excess rows/elements so all groups contain the same a
 
 ```{r}
 df <- data.frame("x"=c(1:12), 
-                "species" = rep(c('cat','pig', 'human'), 4), 
+                "species" = factor(rep(c('cat','pig', 'human'), 4)), 
                 "age" = sample(c(1:100), 12))
 
 ```
@@ -1205,7 +1205,7 @@ df_list %>% kable(align = 'c')
 ```{r}
 df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                 "age" = rep(sample(c(1:100), 6), 3),
-                "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
+                "diagnosis" = factor(rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3)),
                 "score" = sample(c(1:100), 3*6))
 
 df <- df %>% 
@@ -1316,7 +1316,7 @@ df_folded %>%
 ```{r}
 df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                 "age" = rep(sample(c(1:100), 6), 3),
-                "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
+                "diagnosis" = factor(rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3)),
                 "score" = sample(c(1:100), 3*6))
 
 df <- df %>% arrange(participant)
@@ -1433,7 +1433,7 @@ set.seed(2)
 ```{r}
 df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
                 "age" = rep(sample(c(1:100), 6), 3),
-                "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
+                "diagnosis" = factor(rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3)),
                 "score" = sample(c(1:100), 3*6))
 
 df <- df %>% 
@@ -1601,7 +1601,7 @@ df_balanced %>%
 
 ```{r}
 df <- data.frame("x"=c(1:12), 
-                "species" = rep(c('cat','pig', 'human'), 4), 
+                "species" = factor(rep(c('cat','pig', 'human'), 4)), 
                 "age" = sample(c(1:100), 12))
 
 ```
@@ -1841,7 +1841,6 @@ for (n in c(8,15,20)){
   group_sizes <- plyr::count(group_factor(vec, n, method='greedy'))
 
   data_temp <- data.frame(group_sizes, 'Size' = factor(n))
-
   
   if (exists ('greedy_data')) {
     
@@ -1988,7 +1987,6 @@ for (n in c(2, 5, 11)){
   group_sizes <- plyr::count(group_factor(vec, n, method='primes'))
 
   data_temp <- data.frame(group_sizes, 'start_at' = factor(n))
-
   
   if (exists ('primes_data')) {
     

@@ -24,8 +24,8 @@
 #' library(groupdata2)
 #'
 #' # Create a data frame
-#' df <- data.frame('a' = c('a','a','b',
-#'                          'b','c','c'))
+#' df <- data.frame('a' = c('a','a','b','b','c','c'),
+#'                  stringsAsFactors = FALSE)
 #'
 #' # Get start values for new groups in column 'a'
 #' find_starts(df, col = 'a')

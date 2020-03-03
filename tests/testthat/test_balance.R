@@ -3,7 +3,7 @@ context("balance()")
 
 test_that("all size settings work in balance()",{
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   # Create data frame
   df <- data.frame(
@@ -12,7 +12,7 @@ test_that("all size settings work in balance()",{
     "score" = sample(c(1:100), 7))
 
   # Using balance() with number
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   df_3 <- balance(df, 3, "participant")
 
   expect_equal(nrow(df_3), 3*3)
@@ -22,7 +22,7 @@ test_that("all size settings work in balance()",{
 
 
   # Using balance() with min
-  set_seed_for_R_compatibility(2)
+  xpectr::set_test_seed(2)
   df_min <- balance(df, "min", "participant")
 
   expect_equal(nrow(df_min), 3)
@@ -31,7 +31,7 @@ test_that("all size settings work in balance()",{
   expect_equal(ncol(df_min), 3)
 
   # Using balance() with max
-  set_seed_for_R_compatibility(2)
+  xpectr::set_test_seed(2)
   df_max <- balance(df, "max", "participant")
 
   expect_equal(nrow(df_max), 4*3)
@@ -40,7 +40,7 @@ test_that("all size settings work in balance()",{
   expect_equal(ncol(df_max), 3)
 
   # Using balance() with mean
-  set_seed_for_R_compatibility(19)
+  xpectr::set_test_seed(19)
   df_mean <- balance(df, "mean", "participant")
 
   expect_equal(nrow(df_mean), 2*3)
@@ -49,7 +49,7 @@ test_that("all size settings work in balance()",{
   expect_equal(ncol(df_mean), 3)
 
   # Using balance() with median
-  set_seed_for_R_compatibility(19)
+  xpectr::set_test_seed(19)
   df_median <-balance(df, "median", "participant")
 
   expect_equal(nrow(df_median), 2*3)
@@ -58,7 +58,7 @@ test_that("all size settings work in balance()",{
   expect_equal(ncol(df_median), 3)
 
   # Errors
-  set_seed_for_R_compatibility(19)
+  xpectr::set_test_seed(19)
   # Size arg
   expect_error(balance(df, "moon", "participant"),
                "'size' must be one of 'min','max','mean','median' or a whole number.", fixed=TRUE)
@@ -92,7 +92,7 @@ test_that("all size settings work in balance()",{
 
 test_that("mark_new_rows works in balance()",{
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   # Create data frame
   df <- data.frame(
@@ -100,11 +100,11 @@ test_that("mark_new_rows works in balance()",{
     "trial" = c(1,2,1,1,2,3,4),
     "score" = sample(c(1:100), 7))
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   df_3 <- balance(df, 3, "participant", mark_new_rows = TRUE)
   expect_equal(df_3$.new_row, c(0,0,1,0,1,1,0,0,0))
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   df_3 <- balance(df, 3, "participant", mark_new_rows = TRUE, new_rows_col_name = "someName")
   expect_equal(df_3$someName, c(0,0,1,0,1,1,0,0,0))
 
@@ -112,7 +112,7 @@ test_that("mark_new_rows works in balance()",{
 
 test_that("both wrapper functions, upsample() and downsample() work",{
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   # Create data frame
   df <- data.frame(
@@ -120,16 +120,16 @@ test_that("both wrapper functions, upsample() and downsample() work",{
     "trial" = c(1,2,1,1,2,3,4),
     "score" = sample(c(1:100), 7))
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   df_min_balance <- balance(df, "min", "participant")
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   df_min_downsample <- downsample(df, "participant")
 
   expect_equal(df_min_balance, df_min_downsample)
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   df_max_balance <- balance(df, "max", "participant")
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   df_max_upsample <- upsample(df, "participant")
 
   expect_equal(df_max_balance, df_max_upsample)
@@ -138,11 +138,11 @@ test_that("both wrapper functions, upsample() and downsample() work",{
 
 test_that("balance() works in dplyr pipeline",{
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   library(dplyr)
   # Create data frame
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   df <- data.frame(
     "participant" = factor(c(1, 1, 2, 3, 3, 3, 3)),
     "trial" = c(1,2,1,1,2,3,4),

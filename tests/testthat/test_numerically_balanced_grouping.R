@@ -4,7 +4,7 @@ context("numerically_balanced_group_factor_()")
 test_that("numerically_balanced_group_factor_() work with n=2", {
 
   # Create data frame
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   df <- data.frame(
     "participant" = factor(c(1, 3, 5, 6, 7, 8)),
     "score" = c(79,85,140,69,87,92))
@@ -24,7 +24,7 @@ test_that("numerically_balanced_group_factor_() work with n=2", {
 test_that("numerically_balanced_group_factor_() works with n=3", {
 
   # Create data frame
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   df <- data.frame(
     "participant" = factor(c(1, 1, 2, 3, 3, 3, 3)),
     "trial" = c(1,2,1,1,2,3,4),
@@ -33,19 +33,19 @@ test_that("numerically_balanced_group_factor_() works with n=3", {
                   neg_pos_score = score-50)
 
   # numerically_balanced_group_factor_ on unequal number of data frame rows
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   expect_equal(numerically_balanced_group_factor_(df, 3, num_col="score"),
                factor(c(1,3,2,3,1,2,1)))
 
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   nbf1 <- numerically_balanced_group_factor_(df, 3, num_col="neg_score")
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   nbf2 <- numerically_balanced_group_factor_(df, 3, num_col="score")
   expect_equal(nbf1,nbf2)
 
   # add grouping factor to df and get sums of value col
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   df_grouped <- df %>%
     dplyr::mutate(.groups = numerically_balanced_group_factor_(df, 3, num_col="score"))
 
@@ -59,21 +59,21 @@ test_that("numerically_balanced_group_factor_() works with n=3", {
   # numerically_balanced_group_factor_ on equal number of data frame rows
 
   df <- df %>% dplyr::filter(dplyr::row_number() != 7)
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   expect_equal(numerically_balanced_group_factor_(df, 3, num_col="score"),
                factor(c(3,2,2,1,1,3)))
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   nbf1 <- numerically_balanced_group_factor_(df, 3, num_col="neg_score")
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   nbf2 <- numerically_balanced_group_factor_(df, 3, num_col="score")
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   nbf3 <- numerically_balanced_group_factor_(df, 3, num_col="neg_pos_score")
   expect_equal(nbf1,nbf2)
   expect_equal(nbf1,nbf3)
 
   # add grouping factor to df and get sums of value col
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   df_grouped <- df %>%
     dplyr::mutate(.groups = numerically_balanced_group_factor_(
       df, 3, num_col="score"))
@@ -99,12 +99,11 @@ test_that("numerically_balanced_group_factor_() unequal method on small datasets
 
   check_groups <- function(n_rows=5, iter=100, n_folds=3, unequal_method="first"){
 
-    df <- data.frame(
-      "x" = factor(1:n_rows))
+    df <- data.frame("x" = factor(1:n_rows), stringsAsFactors = FALSE)
 
     group_summaries <- plyr::ldply(1:iter, function(i){
 
-      set_seed_for_R_compatibility(i)
+      xpectr::set_test_seed(i)
       if (i %% 2 == 0){
         cond <- "uniform"
         df$score <- sample(1:100, n_rows)
@@ -228,7 +227,7 @@ test_that("numerically_balanced_group_factor_() unequal method on small datasets
 test_that("numerically_balanced_group_factor_() work method='l_sizes'", {
 
   # Create data frame
-  set_seed_for_R_compatibility(2)
+  xpectr::set_test_seed(2)
   df <- data.frame(
     "participant" = factor(c(1, 3, 5, 6, 7, 8)),
     "score" = c(79,85,140,69,87,92))
@@ -244,7 +243,7 @@ test_that("numerically_balanced_group_factor_() work method='l_sizes'", {
   expect_equal(vbf, factor(c(1,2,1,1,2,2)))
   expect_equal(group_sums$group_sum, c(288,264))
 
-  set_seed_for_R_compatibility(4)
+  xpectr::set_test_seed(4)
   vbf <- numerically_balanced_group_factor_(df, 0.2, num_col="score", method = 'l_sizes')
   df_vbf <- df %>%
     dplyr::mutate(.groups = vbf)
@@ -256,7 +255,7 @@ test_that("numerically_balanced_group_factor_() work method='l_sizes'", {
   expect_equal(vbf, factor(c(1,2,2,2,2,2)))
   expect_equal(group_sums$group_sum, c(79,473))
 
-  set_seed_for_R_compatibility(19)
+  xpectr::set_test_seed(19)
   # With 3 partitions
   vbf <- numerically_balanced_group_factor_(df, c(0.2,0.2), num_col="score",
                                             method = 'l_sizes')
@@ -278,7 +277,7 @@ test_that("numerically_balanced_group_factor_() on large datasets", {
   # testthat::skip(message = "Skipping numerical balancing of a large dataset")
 
   # Create data frame
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
   df <- data.frame(
     "participant" = factor(rep(1:10, 100)),
     "diagnosis" = factor(rep(rep(c("a","b"), each=5), 100)),
@@ -295,7 +294,7 @@ test_that("numerically_balanced_group_factor_() on large datasets", {
 
   ####
 
-  set_seed_for_R_compatibility(6)
+  xpectr::set_test_seed(6)
   df_999 <- head(df, 999)
 
   df_999$num_balanced_factor_2 <- numerically_balanced_group_factor_(df_999,
@@ -319,7 +318,7 @@ test_that("experiment: numerically_balanced_group_factor_() optimizes for sd", {
 
   testthat::skip("Simulation that runs for a long time")
   # Create data frame
-  set_seed_for_R_compatibility(5)
+  xpectr::set_test_seed(5)
 
   # library(ggplot2)
   # library(dplyr)

@@ -94,7 +94,7 @@
 #' library(groupdata2)
 #'
 #' # Create a data frame
-#' df <- data.frame('a' = c('a','a','b','b','c','c'),
+#' df <- data.frame('a' = factor(c('a','a','b','b','c','c')),
 #'                  'n' = c(1,3,6,2,2,4))
 #'
 #' # Get differing values in column 'a' with no threshold.
@@ -303,17 +303,21 @@ find_different_from_previous_vec_ <-
 
       if (direction == "both") {
         df <- data.frame(v, v2,
-                         new = !is_between_(v - v2, neg_threshold, threshold))
+                         new = !is_between_(v - v2, neg_threshold, threshold),
+                         stringsAsFactors = FALSE)
       } else if (direction == "positive") {
-        df <- data.frame(v, v2, new = v - v2 >= threshold)
+        df <- data.frame(v, v2, new = v - v2 >= threshold,
+                         stringsAsFactors = FALSE)
       } else if (direction == "negative") {
-        df <- data.frame(v, v2, new = v - v2 <= neg_threshold)
+        df <- data.frame(v, v2, new = v - v2 <= neg_threshold,
+                         stringsAsFactors = FALSE)
       } else {
         stop("'direction' must be one of 'both', 'negative', and 'positive'.")
       }
 
     } else {
-      df <- data.frame(v, v2, new = v != v2)
+      df <- data.frame(v, v2, new = v != v2,
+                       stringsAsFactors = FALSE)
     }
 
     if (isTRUE(include_first)){

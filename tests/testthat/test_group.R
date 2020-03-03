@@ -5,10 +5,10 @@ context("group()")
 
 test_that("dimensions of data frame with group()", {
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   df <- data.frame("x"=c(1:12),
-                   "species" = rep(c('cat','pig', 'human'), 4),
+                   "species" = factor(rep(c('cat','pig', 'human'), 4)),
                    "age" = c(5,65,34,54,32,54,23,65,23,65,87,98))
 
   # The added grouping factor means we should get and extra column
@@ -26,11 +26,11 @@ test_that("dimensions of data frame with group()", {
 
 test_that("mean age of groups made with group()", {
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   # Create df 3x12
   df <- data.frame("x"=c(1:12),
-                   "species" = rep(c('cat','pig', 'human'), 4),
+                   "species" = factor(rep(c('cat','pig', 'human'), 4)),
                    "age" = c(5,65,34,54,32,54,23,65,23,65,87,98))
 
   int_mean_age <- function(df, n, method){
@@ -60,11 +60,11 @@ test_that("mean age of groups made with group()", {
 
 test_that("error messages work in group()", {
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   # Create df 3x12
   df <- data.frame("x"=c(1:12),
-                   "species" = rep(c('cat','pig', 'human'), 4),
+                   "species" = factor(rep(c('cat','pig', 'human'), 4)),
                    "age" = c(5,65,34,54,32,54,23,65,23,65,87,98))
 
   expect_error(group(df, 13), "nrow(data) >= n is not TRUE", fixed=TRUE)
@@ -74,11 +74,11 @@ test_that("error messages work in group()", {
 
 test_that("allow_zero works in group()", {
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   # Create df 3x12
   df <- data.frame("x"=c(1:12),
-                   "species" = rep(c('cat','pig', 'human'), 4),
+                   "species" = factor(rep(c('cat','pig', 'human'), 4)),
                    "age" = c(5,65,34,54,32,54,23,65,23,65,87,98))
 
   group_zero <- function(force_equal=FALSE){
@@ -114,11 +114,11 @@ test_that("allow_zero works in group()", {
 
 test_that("col_name can be set correctly in group()",{
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   # Create df 3x12
   df <- data.frame("x"=c(1:12),
-                   "species" = rep(c('cat','pig', 'human'), 4),
+                   "species" = factor(rep(c('cat','pig', 'human'), 4)),
                    "age" = c(5,65,34,54,32,54,23,65,23,65,87,98))
 
   set_col_name <- function(df){
@@ -135,7 +135,7 @@ test_that("col_name can be set correctly in group()",{
 
 test_that("l_starts can take n = auto", {
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   df <- data.frame("x"=c(1:12),
                    "x2" = c(1,1,1,2,NA,2,2,3,NA,NA,6,6),
@@ -160,9 +160,10 @@ test_that("l_starts can take n = auto", {
 
 test_that("l_starts can take starts_col = index / .index", {
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
-  df <- data.frame("x"=c(1:12))
+  df <- data.frame("x"=c(1:12),
+                   stringsAsFactors = FALSE)
 
   # index
   expect_equal(group(df, c(1,4,7), method = 'l_starts',
@@ -176,7 +177,8 @@ test_that("l_starts can take starts_col = index / .index", {
 
   df2 <- data.frame("x"=c(1:12),
                     'index' = c(2:13),
-                    '.index' = c(3:14))
+                    '.index' = c(3:14),
+                    stringsAsFactors = FALSE)
 
   expect_warning(expect_equal(group(df2, c(2,7,11), method = 'l_starts',
                      starts_col = '.index')$.groups,

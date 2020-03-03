@@ -4,7 +4,7 @@ context("create_n_primes")
 
 test_that("create_n_primes returns the right primes",{
 
-  set_seed_for_R_compatibility(1)
+  xpectr::set_test_seed(1)
 
   expect_equal(groupdata2:::create_n_primes(10,5), c(5,7,11,13,17,19,23,29,31,37))
   expect_equal(groupdata2:::create_n_primes(10,13), c(13,17,19,23,29,31,37,41,43,47))

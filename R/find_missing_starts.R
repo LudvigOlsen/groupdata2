@@ -23,8 +23,8 @@
 #' library(groupdata2)
 #'
 #' # Create a data frame
-#' df <- data.frame('a' = c('a','a','b',
-#'                          'b','c','c'))
+#' df <- data.frame('a' = c('a','a','b','b','c','c'),
+#'                  stringsAsFactors = FALSE)
 #'
 #' # Create list of starts
 #' starts <- c("a", "e", "b", "d", "c")
