@@ -1,7 +1,10 @@
 
 ## find_missing_starts
 #' @title Find start positions that cannot be found in data.
-#' @description Tells you which values and (optionally) skip_to numbers that are
+#' @description
+#'  \Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}
+#'
+#'  Tells you which values and (optionally) skip_to numbers that are
 #'  recursively removed when using the \code{l_starts} method with remove_missing_starts
 #'  set to TRUE.
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}

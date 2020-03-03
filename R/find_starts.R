@@ -1,22 +1,27 @@
 ## find_starts
 #' @title Find start positions of groups in data.
-#' @description Finds values or indices of values that are not the same
-#' as the previous value.
+#' @description
+#'  \Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}
 #'
-#' E.g. to use with the \code{l_starts} method.
+#'  Finds values or indices of values that are not the same
+#'  as the previous value.
 #'
-#' Wraps \code{\link{differs_from_previous}()}.
+#'  E.g. to use with the \code{l_starts} method.
+#'
+#'  Wraps \code{\link{differs_from_previous}()}.
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @param data Data frame or Vector
 #'
-#' N.B. If checking a factor, it is converted to a character vector.
-#' Conversion will generate a warning, which can be turned off by setting \code{factor_conversion_warning} to \code{FALSE}.
+#'  N.B. If checking a factor, it is converted to a character vector.
+#'  Conversion will generate a warning, which can be turned off by
+#'  setting \code{factor_conversion_warning} to \code{FALSE}.
 #' @param return_index Return indices of starts. (Logical)
 #' @param col Name of column to find starts in. Used when data is
 #'  data frame. (Character)
 #' @inheritParams differs_from_previous
-#' @param factor_conversion_warning Generate warning when converting factor to character. (Logical)
+#' @param factor_conversion_warning Generate warning when
+#'  converting factor to character. (Logical)
 #' @return Vector with either start values or indices of start values.
 #' @family l_starts tools
 #' @examples

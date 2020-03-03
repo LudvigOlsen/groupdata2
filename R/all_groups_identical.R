@@ -1,5 +1,8 @@
 #' @title Test if two grouping factors contain the same groups.
-#' @description Checks whether two grouping factors contain the same groups,
+#' @description
+#'  \Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}
+#'
+#'  Checks whether two grouping factors contain the same groups,
 #'  looking only at the group members, allowing for different group names / identifiers.
 #' @param x,y Two grouping factors (vectors/factors with group identifiers) to compare.
 #' @details

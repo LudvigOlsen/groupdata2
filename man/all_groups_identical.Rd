@@ -13,17 +13,19 @@ all_groups_identical(x, y)
 Whether \strong{all} groups in \code{x} are the same in \code{y}, memberwise. (logical)
 }
 \description{
+\Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}
+
 Checks whether two grouping factors contain the same groups,
- looking only at the group members, allowing for different group names / identifiers.
+looking only at the group members, allowing for different group names / identifiers.
 }
 \details{
 Both factors are sorted by \code{x}.
- A grouping factor is created with new groups starting at the values in
- \code{y} which differ from the previous row
- (i.e. \code{\link{group}()} with \code{method = "l_starts"} and \code{n = "auto"}).
- A similar grouping factor is created for \code{x},
- to have group identifiers range from \code{1} to the number of groups.
- The two generated grouping factors are tested for equality.
+A grouping factor is created with new groups starting at the values in
+\code{y} which differ from the previous row
+(i.e. \code{\link{group}()} with \code{method = "l_starts"} and \code{n = "auto"}).
+A similar grouping factor is created for \code{x},
+to have group identifiers range from \code{1} to the number of groups.
+The two generated grouping factors are tested for equality.
 }
 \examples{
 # Attach groupdata2

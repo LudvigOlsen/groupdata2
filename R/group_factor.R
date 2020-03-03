@@ -1,7 +1,10 @@
 
 ## group_factor
 #' @title Create grouping factor for subsetting your data.
-#' @description Divides data into groups by a range of methods.
+#' @description
+#'  \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
+#'
+#'  Divides data into groups by a range of methods.
 #'  Creates and returns a grouping factor
 #'  with 1s for group 1, 2s for group 2, etc.
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}

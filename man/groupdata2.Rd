@@ -74,9 +74,9 @@ Go to \code{\link{fold}}
 Balance the sizes of your groups with up- and downsampling.
 
 Uses up- and/or downsampling to fix the group sizes to the
- \code{min}, \code{max}, \code{mean}, or \code{median} group size or
- to a specific number of rows. Has a range of methods for balancing on
- ID level.
+\code{min}, \code{max}, \code{mean}, or \code{median} group size or
+to a specific number of rows. Has a range of methods for balancing on
+ID level.
 
 Go to \code{\link{balance}}
 }

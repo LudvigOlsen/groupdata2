@@ -1,7 +1,10 @@
 
 ## %staircase%
 #' @title Find remainder from staircase method.
-#' @description When using the staircase method,
+#' @description
+#'  \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
+#'
+#'  When using the staircase method,
 #'  the last group might not have the size of the second last
 #'  group + step size. Use \code{\%staircase\%} to find this remainder.
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}

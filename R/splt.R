@@ -1,7 +1,10 @@
 
 ## splt
 #' @title Split data by a range of methods.
-#' @description Divides data into groups by a range of methods.
+#' @description
+#'  \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
+#'
+#'  Divides data into groups by a range of methods.
 #'  Splits data by these groups.
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export

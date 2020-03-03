@@ -1,7 +1,10 @@
 
 ## downsample
 #' @title Downsampling of rows in a data frame.
-#' @description Uses random downsampling to fix the group sizes to the
+#' @description
+#'  \Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}
+#'
+#'  Uses random downsampling to fix the group sizes to the
 #'  smallest group in the data frame.
 #'
 #'  Wraps \code{\link{balance}()}.
@@ -73,7 +76,10 @@ downsample <- function(data,
 
 ## upsample
 #' @title Upsampling of rows in a data frame.
-#' @description Uses random upsampling to fix the group sizes to the
+#' @description
+#'  \Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}
+#'
+#'  Uses random upsampling to fix the group sizes to the
 #'  largest group in the data frame.
 #'
 #'  Wraps \code{\link{balance}()}.
@@ -155,7 +161,10 @@ upsample <- function(data,
 
 ## balance
 #' @title Balance groups by up- and downsampling.
-#' @description Uses up- and/or downsampling to fix the group sizes to the
+#' @description
+#'  \Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}
+#'
+#'  Uses up- and/or downsampling to fix the group sizes to the
 #'  \code{min}, \code{max}, \code{mean}, or \code{median} group size or
 #'  to a specific number of rows. Has a range of methods for balancing on
 #'  ID level.

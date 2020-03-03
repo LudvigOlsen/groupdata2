@@ -3,7 +3,10 @@ if (getRversion() >= "2.15.1") utils::globalVariables(c("."))
 
 ## fold
 #' @title Create balanced folds for cross-validation.
-#' @description Divides data into groups by a range of methods.
+#' @description
+#'  \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
+#'
+#'  Divides data into groups by a range of methods.
 #'  Balances a given categorical variable and/or numerical variable between folds and keeps (if possible)
 #'  all data points with a shared ID (e.g. participant_id) in the same fold.
 #'  Can create multiple unique fold columns for repeated cross-validation.

@@ -16,7 +16,8 @@ find_starts(
 \item{data}{Data frame or Vector
 
 N.B. If checking a factor, it is converted to a character vector.
-Conversion will generate a warning, which can be turned off by setting \code{factor_conversion_warning} to \code{FALSE}.}
+Conversion will generate a warning, which can be turned off by
+setting \code{factor_conversion_warning} to \code{FALSE}.}
 
 \item{col}{Name of column to find starts in. Used when data is
 data frame. (Character)}
@@ -25,27 +26,30 @@ data frame. (Character)}
 
 \item{handle_na}{How to handle \code{NA}s in the column.
 
- \subsection{"ignore"}{
- Removes the \code{NA}s before finding the differing values, ensuring
- that the first value after an \code{NA} will be correctly identified as new,
- if it differs from the value before the \code{NA}(s).
- }
+\subsection{"ignore"}{
+Removes the \code{NA}s before finding the differing values, ensuring
+that the first value after an \code{NA} will be correctly identified as new,
+if it differs from the value before the \code{NA}(s).
+}
 
- \subsection{"as_element"}{
- Treats all \code{NA}s as the string \code{"NA"}.
- This means, that \code{threshold} must be \code{NULL} when using this method.
- }
+\subsection{"as_element"}{
+Treats all \code{NA}s as the string \code{"NA"}.
+This means, that \code{threshold} must be \code{NULL} when using this method.
+}
 
- \subsection{Numeric scalar}{
- A numeric value to replace \code{NA}s with.
- }}
+\subsection{Numeric scalar}{
+A numeric value to replace \code{NA}s with.
+}}
 
-\item{factor_conversion_warning}{Generate warning when converting factor to character. (Logical)}
+\item{factor_conversion_warning}{Generate warning when
+converting factor to character. (Logical)}
 }
 \value{
 Vector with either start values or indices of start values.
 }
 \description{
+\Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}
+
 Finds values or indices of values that are not the same
 as the previous value.
 

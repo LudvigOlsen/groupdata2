@@ -1,7 +1,10 @@
 
 ## differs_from_previous
 #' @title Find values in a vector that differ from the previous value.
-#' @description Finds values, or indices of values, that differ from the previous value by some threshold(s).
+#' @description
+#'  \Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}
+#'
+#'  Finds values, or indices of values, that differ from the previous value by some threshold(s).
 #'
 #'  Operates with both a positive and a negative threshold.
 #'  Depending on \code{direction}, it checks if the difference to the previous value is:

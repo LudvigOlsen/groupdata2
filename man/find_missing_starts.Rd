@@ -22,12 +22,14 @@ when data is a data frame. Pass 'index' to use row names. (Character)}
 }
 \value{
 List of start values and skip_to numbers or vector of the start values.
- Returns NULL if no values found.
+Returns NULL if no values found.
 }
 \description{
+\Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}
+
 Tells you which values and (optionally) skip_to numbers that are
- recursively removed when using the \code{l_starts} method with remove_missing_starts
- set to TRUE.
+recursively removed when using the \code{l_starts} method with remove_missing_starts
+set to TRUE.
 }
 \examples{
 # Attach packages

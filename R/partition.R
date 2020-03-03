@@ -1,7 +1,10 @@
 
 ## partition
 #' @title Create balanced partitions.
-#' @description Splits data into partitions.
+#' @description
+#'  \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
+#'
+#'  Splits data into partitions.
 #'  Balances a given categorical variable and/or numerical variable between partitions and keeps (if possible)
 #'  all data points with a shared ID (e.g. participant_id) in the same partition.
 #' @details

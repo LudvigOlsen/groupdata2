@@ -13,51 +13,53 @@ downsample(data, cat_col, id_col = NULL, id_method = "n_ids")
 
 \item{id_col}{Name of factor with IDs. (Character)
 
- IDs are considered entities, e.g. allowing us to add or remove all rows for an ID.
- How this is used is up to the \code{id_method}.
+IDs are considered entities, e.g. allowing us to add or remove all rows for an ID.
+How this is used is up to the \code{id_method}.
 
- E.g. If we have measured a participant multiple times and
- want make sure that we keep all these measurements. Then we would either
- remove/add all measurements for the participant or leave in
- all measurements for the participant.}
+E.g. If we have measured a participant multiple times and
+want make sure that we keep all these measurements. Then we would either
+remove/add all measurements for the participant or leave in
+all measurements for the participant.}
 
 \item{id_method}{Method for balancing the IDs. (Character)
 
- \code{n_ids}, \code{n_rows_c}, \code{distributed}, or \code{nested}.
- \subsection{n_ids (default)}{
- Balances on ID level only. It makes sure there are the same number of IDs for each category.
- This might lead to a different number of rows between categories.
- }
- \subsection{n_rows_c}{
- Attempts to level the number of rows per category, while only removing/adding entire IDs.
- This is done in 2 steps:
- \enumerate{
- \item If a category needs to add all its rows one or more times, the data is repeated.
- \item Iteratively, the ID with the number of rows closest to the
-    lacking/excessive number of rows is added/removed.
-    This happens until adding/removing the closest ID would lead to a size further from
-    the target size than the current size.
-    If multiple IDs are closest, one is randomly sampled.
-    }
- }
- \subsection{distributed}{
- Distributes the lacking/excess rows equally between the IDs.
- If the number to distribute can not be equally divided, some IDs will have 1 row more/less than the others.
- }
- \subsection{nested}{
- Calls \code{balance()} on each category with IDs as cat_col.
+\code{n_ids}, \code{n_rows_c}, \code{distributed}, or \code{nested}.
+\subsection{n_ids (default)}{
+Balances on ID level only. It makes sure there are the same number of IDs for each category.
+This might lead to a different number of rows between categories.
+}
+\subsection{n_rows_c}{
+Attempts to level the number of rows per category, while only removing/adding entire IDs.
+This is done in 2 steps:
+\enumerate{
+\item If a category needs to add all its rows one or more times, the data is repeated.
+\item Iteratively, the ID with the number of rows closest to the
+lacking/excessive number of rows is added/removed.
+This happens until adding/removing the closest ID would lead to a size further from
+the target size than the current size.
+If multiple IDs are closest, one is randomly sampled.
+}
+}
+\subsection{distributed}{
+Distributes the lacking/excess rows equally between the IDs.
+If the number to distribute can not be equally divided, some IDs will have 1 row more/less than the others.
+}
+\subsection{nested}{
+Calls \code{balance()} on each category with IDs as cat_col.
 
- I.e. if size is "min", IDs will have the size of the smallest ID in their category.
- }}
+I.e. if size is "min", IDs will have the size of the smallest ID in their category.
+}}
 }
 \value{
 Data frame with some rows removed. Ordered by \code{cat_col} and (potentially) \code{id_col}.
 }
 \description{
-Uses random downsampling to fix the group sizes to the
- smallest group in the data frame.
+\Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}
 
- Wraps \code{\link{balance}()}.
+Uses random downsampling to fix the group sizes to the
+smallest group in the data frame.
+
+Wraps \code{\link{balance}()}.
 }
 \details{
 \subsection{Without \code{id_col}}{
