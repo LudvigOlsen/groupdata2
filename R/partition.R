@@ -80,6 +80,7 @@
 #' @export
 #' @family grouping functions
 #' @inheritParams group_factor
+#' @param data Data frame.
 #' @param p List or vector of partition sizes.
 #'  Given as whole number(s) and/or percentage(s) (\code{0} < \code{n} < \code{1}).
 #'  E.g. \eqn{c(0.2, 3, 0.1)}.
@@ -140,25 +141,29 @@
 #' # Using partition()
 #'
 #' # Without balancing
-#' partitions <- partition(df, c(0.2, 0.3))
+#' partitions <- partition(data = df, p = c(0.2, 0.3))
 #'
 #' # With cat_col
-#' partitions <- partition(df, c(0.5), cat_col = "diagnosis")
+#' partitions <- partition(data = df, p = 0.5, cat_col = "diagnosis")
 #'
 #' # With id_col
-#' partitions <- partition(df, c(0.5), id_col = "participant")
+#' partitions <- partition(data = df, p = 0.5, id_col = "participant")
 #'
 #' # With num_col
-#' partitions <- partition(df, c(0.5), num_col = "score")
+#' partitions <- partition(data = df, p = 0.5, num_col = "score")
 #'
 #' # With cat_col and id_col
-#' partitions <- partition(df, c(0.5),
+#' partitions <- partition(
+#'   data = df,
+#'   p = 0.5,
 #'   cat_col = "diagnosis",
 #'   id_col = "participant"
 #' )
 #'
 #' # With cat_col, num_col and id_col
-#' partitions <- partition(df, c(0.5),
+#' partitions <- partition(
+#'   data = df,
+#'   p = 0.5,
 #'   cat_col = "diagnosis",
 #'   num_col = "score",
 #'   id_col = "participant"
@@ -171,7 +176,9 @@
 #' # Check if additional extreme_pairing_levels
 #' # improve the numerical balance
 #' set.seed(2) # try with seed 1 as well
-#' partitions_1 <- partition(df, c(0.5),
+#' partitions_1 <- partition(
+#'   data = df,
+#'   p = 0.5,
 #'   num_col = "score",
 #'   extreme_pairing_levels = 1,
 #'   list_out = FALSE
@@ -183,7 +190,9 @@
 #'     mean_score = mean(score)
 #'   )
 #' set.seed(2) # try with seed 1 as well
-#' partitions_2 <- partition(df, c(0.5),
+#' partitions_2 <- partition(
+#'   data = df,
+#'   p = 0.5,
 #'   num_col = "score",
 #'   extreme_pairing_levels = 2,
 #'   list_out = FALSE
@@ -216,16 +225,59 @@ partition <- function(data,
   #        FALSE allows you to pass "p = 0.2" and get 2 partitions - 0.2 and 0.8
   #
 
-  if (!is.null(cat_col) && cat_col %ni% colnames(data)) {
-    stop(paste0("cat_col: '", cat_col, "' is not in data"))
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+  checkmate::assert_data_frame(x = data, min.rows = 1, add = assert_collection)
+  checkmate::reportAssertions(assert_collection)
+  checkmate::assert_numeric(x = p, lower = 1/nrow(data), upper = nrow(data), any.missing = FALSE,
+                            finite = TRUE, add = assert_collection)
+  checkmate::assert_count(x = extreme_pairing_levels, positive = TRUE, add = assert_collection)
+  checkmate::assert_character(x = cat_col, min.len = 1, any.missing = FALSE,
+                              null.ok = TRUE, unique = TRUE,
+                              names = "unnamed", add = assert_collection)
+  checkmate::assert_string(x = num_col, na.ok = FALSE, min.chars = 1,
+                           null.ok = TRUE,  add = assert_collection)
+  checkmate::assert_string(x = id_col, na.ok = FALSE, min.chars = 1,
+                           null.ok = TRUE,  add = assert_collection)
+  checkmate::assert_function(x = id_aggregation_fn, add = assert_collection)
+  checkmate::assert_flag(x = force_equal, add = assert_collection)
+  checkmate::assert_flag(x = list_out, add = assert_collection)
+  checkmate::reportAssertions(assert_collection)
+  # TODO Could have a helper for adding this kind of message:
+  if (!is.null(cat_col) && length(setdiff(cat_col, colnames(data))) != 0){
+    assert_collection$push(paste0("'cat_col' column(s), '",
+                                  paste0(setdiff(cat_col, colnames(data)), collapse = ", "),
+                                  "', not found in 'data'."))
   }
-  if (!is.null(id_col) && id_col %ni% colnames(data)) {
-    stop(paste0("id_col: '", id_col, "' is not in data"))
+  if (!is.null(num_col)){
+    if (num_col %ni% colnames(data)){
+      assert_collection$push(paste0("'num_col' column, '", num_col, "', not found in 'data'."))
+    }
+    checkmate::reportAssertions(assert_collection)
+    if (!checkmate::test_numeric(data[[num_col]])){
+      assert_collection$push(paste0("'num_col' column must be numeric."))
+    }
   }
-  if (!is.null(num_col) && num_col %ni% colnames(data)) {
-    stop(paste0("num_col: '", num_col, "' is not in data"))
+  if (!is.null(id_col)) {
+    if (id_col %ni% colnames(data)){
+      assert_collection$push(paste0("'id_col' column, '", id_col, "', not found in 'data'."))
+    }
+    checkmate::reportAssertions(assert_collection)
+    checkmate::assert_factor(x = data[[id_col]], add = assert_collection)
+    if (!is.null(cat_col)) {
+      if (id_col %in% cat_col) {
+        assert_collection$push("'id_col' and 'cat_col' cannot contain the same column name.")
+      }
+      # Check that cat_col is constant within each ID
+      # TODO Perhaps faster with group_keys()? We don't care about the counts just the combos
+      counts <- dplyr::count(data, !!as.name(id_col), !!as.name(cat_col))
+      if (nrow(counts) != length(unique(counts[[id_col]]))) {
+        assert_collection$push("The value in 'data[[cat_col]]' must be constant within each ID.")
+      }
+    }
   }
-
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
 
   # If num_col is not NULL
   if (!is.null(num_col)) {

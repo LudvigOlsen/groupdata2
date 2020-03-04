@@ -855,7 +855,13 @@ base_rename <- function(data, before, after, warn_at_overwrite = FALSE) {
 
 # Cols should be col names
 base_select <- function(data, cols) {
-  subset(data, select = cols)
+  tryCatch(subset(data, select = cols), error = function(e){
+    if (grepl("is missing", e)){
+      stop("base_select() only work on data frames.")
+    } else {
+      stop(paste0("base_select() got error from subset(): ", e))
+    }
+  })
 }
 
 # Cols should be col names
