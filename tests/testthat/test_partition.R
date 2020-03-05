@@ -490,8 +490,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = 0.5, cat_col = "score", num_col = NULL, id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * The value in 'data[[cat_col]]' must",
-                         " be constant within each ID.")),
+    xpectr::strip(paste0("1 assertions failed:\n * The value in 'data[[cat_col]]' mus",
+                         "t be constant within each ID.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = 0.5, cat_col = "par...
@@ -500,8 +500,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = 0.5, cat_col = "participant", num_col = NULL, id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * 'id_col' and 'cat_col' cannot conta",
-                         "in the same column name.")),
+    xpectr::strip(paste0("1 assertions failed:\n * 'id_col' and 'cat_col' cannot cont",
+                         "ain the same column name.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = 0.5, cat_col = 2, n...
@@ -510,8 +510,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = 0.5, cat_col = 2, num_col = NULL, id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'cat_col': Must be of type",
-                         " 'character' (or 'NULL'), not 'double'.")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'cat_col': Must be of typ",
+                         "e 'character' (or 'NULL'), not 'double'.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = 0.5, cat_col = NA, ...
@@ -520,8 +520,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = 0.5, cat_col = NA, num_col = NULL, id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'cat_col': Contains missin",
-                         "g values (element 1).")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'cat_col': Contains missi",
+                         "ng values (element 1).")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = 0.5, cat_col = c("d...
@@ -530,8 +530,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = 0.5, cat_col = c("diagnosis", "diagnosis"), num_col = NULL, id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'cat_col': Contains duplic",
-                         "ated values, position 2.")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'cat_col': Contains dupli",
+                         "cated values, position 2.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = 0.5, cat_col = c("d...
@@ -540,8 +540,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = 0.5, cat_col = c("diagnosis", "hej"), num_col = NULL, id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * 'cat_col' column(s), 'hej', not fou",
-                         "nd in 'data'.")),
+    xpectr::strip(paste0("1 assertions failed:\n * 'cat_col' column(s), 'hej', not fo",
+                         "und in 'data'.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = 0.5, cat_col = c("d...
@@ -630,8 +630,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = c(1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2), p = 0.5, cat_col = "diagnosis", num_col = NULL, id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'data': Must be of type 'd",
-                         "ata.frame', not 'double'.")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'data': Must be of type '",
+                         "data.frame', not 'double'.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df[df$diagnosis == "a", ], ...
@@ -680,8 +680,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = NA, p = 0.5, cat_col = "diagnosis", num_col = NULL, id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'data': Must be of type 'd",
-                         "ata.frame', not 'logical'.")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'data': Must be of type '",
+                         "data.frame', not 'logical'.")),
     fixed = TRUE)
 
   # Testing partition_2(data = matrix(1, 3, 3), p = 0.5, c...
@@ -690,8 +690,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = matrix(1, 3, 3), p = 0.5, cat_col = "diagnosis", num_col = NULL, id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'data': Must be of type 'd",
-                         "ata.frame', not 'matrix'.")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'data': Must be of type '",
+                         "data.frame', not 'matrix'.")),
     fixed = TRUE)
 
   # Testing partition_2(data = NULL, p = 0.5, cat_col = "d...
@@ -700,8 +700,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = NULL, p = 0.5, cat_col = "diagnosis", num_col = NULL, id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'data': Must be of type 'd",
-                         "ata.frame', not 'NULL'.")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'data': Must be of type '",
+                         "data.frame', not 'NULL'.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = 0.5, cat_col = "dia...
@@ -710,8 +710,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = 0.5, cat_col = "diagnosis", num_col = NULL, id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = 0, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'extreme_pairing_levels': ",
-                         "Must be >= 1.")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'extreme_pairing_levels':",
+                         " Must be >= 1.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = 0.5, cat_col = "dia...
@@ -720,8 +720,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = 0.5, cat_col = "diagnosis", num_col = NULL, id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = NA, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'extreme_pairing_levels': ",
-                         "May not be NA.")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'extreme_pairing_levels':",
+                         " May not be NA.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = 0.5, cat_col = "dia...
@@ -730,8 +730,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = 0.5, cat_col = "diagnosis", num_col = NULL, id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = NULL, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'extreme_pairing_levels': ",
-                         "Must be of type 'count', not 'NULL'.")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'extreme_pairing_levels':",
+                         " Must be of type 'count', not 'NULL'.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = 0.5, cat_col = "dia...
@@ -779,8 +779,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = 0.5, cat_col = "diagnosis", num_col = NULL, id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = NULL, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'force_equal': Must be of ",
-                         "type 'logical flag', not 'NULL'.")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'force_equal': Must be of",
+                         " type 'logical flag', not 'NULL'.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = 0.5, cat_col = "dia...
@@ -789,8 +789,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = 0.5, cat_col = "diagnosis", num_col = NULL, id_col = "participant", id_aggregation_fn = 1, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'id_aggregation_fn': Must ",
-                         "be a function, not 'double'.")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'id_aggregation_fn': Must",
+                         " be a function, not 'double'.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = 0.5, cat_col = "dia...
@@ -799,8 +799,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = 0.5, cat_col = "diagnosis", num_col = NULL, id_col = "participant", id_aggregation_fn = NA, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'id_aggregation_fn': Must ",
-                         "be a function, not 'logical'.")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'id_aggregation_fn': Must",
+                         " be a function, not 'logical'.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = 0.5, cat_col = "dia...
@@ -809,8 +809,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = 0.5, cat_col = "diagnosis", num_col = NULL, id_col = "participant", id_aggregation_fn = NULL, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'id_aggregation_fn': Must ",
-                         "be a function, not 'NULL'.")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'id_aggregation_fn': Must",
+                         " be a function, not 'NULL'.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = 0.5, cat_col = "dia...
@@ -819,8 +819,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = 0.5, cat_col = "diagnosis", num_col = NULL, id_col = "shuffled_participant", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * The value in 'data[[cat_col]]' must",
-                         " be constant within each ID.")),
+    xpectr::strip(paste0("1 assertions failed:\n * The value in 'data[[cat_col]]' mus",
+                         "t be constant within each ID.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = 0.5, cat_col = "dia...
@@ -829,8 +829,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = 0.5, cat_col = "diagnosis", num_col = NULL, id_col = "diagnosis", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * 'id_col' and 'cat_col' cannot conta",
-                         "in the same column name.")),
+    xpectr::strip(paste0("1 assertions failed:\n * 'id_col' and 'cat_col' cannot cont",
+                         "ain the same column name.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = 0.5, cat_col = "dia...
@@ -839,9 +839,9 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = 0.5, cat_col = "diagnosis", num_col = NULL, id_col = "score", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("2 assertions failed:\n * Variable 'data[[id_col]]': Must be ",
-                         "of type 'factor', not 'double'.\n * The value in 'data[[cat_",
-                         "col]]' must be constant within each ID.")),
+    xpectr::strip(paste0("2 assertions failed:\n * Variable 'data[[id_col]]': Must be",
+                         " of type 'factor', not 'double'.\n * The value in 'data[[cat",
+                         "_col]]' must be constant within each ID.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = 0.5, cat_col = "dia...
@@ -850,7 +850,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = 0.5, cat_col = "diagnosis", num_col = NULL, id_col = "hej", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip("1 assertions failed:\n * 'id_col' column, 'hej', not found in 'data'."),
+    xpectr::strip(paste0("1 assertions failed:\n * 'id_col' column, 'hej', not found ",
+                         "in 'data'.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = 0.5, cat_col = "dia...
@@ -877,8 +878,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = 0.5, cat_col = "diagnosis", num_col = NULL, id_col = 1, id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'id_col': Must be of type ",
-                         "'string' (or 'NULL'), not 'double'.")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'id_col': Must be of type",
+                         " 'string' (or 'NULL'), not 'double'.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = 0.5, cat_col = "dia...
@@ -980,8 +981,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = 0.5, cat_col = "diagnosis", num_col = NULL, id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = NULL)),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'list_out': Must be of typ",
-                         "e 'logical flag', not 'NULL'.")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'list_out': Must be of ty",
+                         "pe 'logical flag', not 'NULL'.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = 0.5, cat_col = "dia...
@@ -989,7 +990,7 @@ test_that("input checks fuzz testing of partition()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_13881 <- xpectr::capture_side_effects(partition_2(data = df, p = 0.5, cat_col = "diagnosis", num_col = "score", id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE))
+  side_effects_13881 <- xpectr::capture_side_effects(partition_2(data = df, p = 0.5, cat_col = "diagnosis", num_col = "score", id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_13881[['warnings']]),
     xpectr::strip(character(0)),
@@ -999,7 +1000,6 @@ test_that("input checks fuzz testing of partition()", {
     xpectr::strip(c("'before' and 'after' were identical.\n", "'before' and 'after' were identical.\n")),
     fixed = TRUE)
   # Assigning output
-  # TODO(xpectr) ERROR: WRONG OUTPUT HERE BECAUSE WE DON'T SET SEED AGAIN BEFORE RERUNNING!!!
   output_13881 <- xpectr::suppress_mw(partition_2(data = df, p = 0.5, cat_col = "diagnosis", num_col = "score", id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE))
   # Testing class
   expect_equal(
@@ -1051,7 +1051,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = 0.5, cat_col = "diagnosis", num_col = "hej", id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip("1 assertions failed:\n * 'num_col' column, 'hej', not found in 'data'."),
+    xpectr::strip(paste0("1 assertions failed:\n * 'num_col' column, 'hej', not found",
+                         " in 'data'.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = 0.5, cat_col = "dia...
@@ -1078,8 +1079,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = 0.5, cat_col = "diagnosis", num_col = 1, id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'num_col': Must be of type",
-                         " 'string' (or 'NULL'), not 'double'.")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'num_col': Must be of typ",
+                         "e 'string' (or 'NULL'), not 'double'.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = "hej", cat_col = "d...
@@ -1088,8 +1089,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = "hej", cat_col = "diagnosis", num_col = NULL, id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'p': Must be of type 'nume",
-                         "ric', not 'character'.")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'p': Must be of type 'num",
+                         "eric', not 'character'.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = 40, cat_col = "diag...
@@ -1187,7 +1188,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = 0, cat_col = "diagnosis", num_col = NULL, id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip("1 assertions failed:\n * Variable 'p': Element 1 is not >= 0.0555556."),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'p': Element 1 is not >= ",
+                         "0.0555556.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = -1, cat_col = "diag...
@@ -1196,7 +1198,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = -1, cat_col = "diagnosis", num_col = NULL, id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip("1 assertions failed:\n * Variable 'p': Element 1 is not >= 0.0555556."),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'p': Element 1 is not >= ",
+                         "0.0555556.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = NA, cat_col = "diag...
@@ -1205,8 +1208,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = NA, cat_col = "diagnosis", num_col = NULL, id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'p': Contains missing valu",
-                         "es (element 1).")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'p': Contains missing val",
+                         "ues (element 1).")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = NULL, cat_col = "di...
@@ -1215,8 +1218,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = NULL, cat_col = "diagnosis", num_col = NULL, id_col = "participant", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'p': Must be of type 'nume",
-                         "ric', not 'NULL'.")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'p': Must be of type 'num",
+                         "eric', not 'NULL'.")),
     fixed = TRUE)
 
   ## Finished testing 'partition_2'                                           ####
