@@ -4,12 +4,14 @@
 
 * Adds argument `handle_na` to `differs_from_previous()` and `find_starts()`.
 
-* Bug fix: In grouping functions with method `l_starts` and `n = "auto"`, `NA`s are now replaced by a unique value 
-before finding group starts. E.g. c(1,1,1,2,2,NA,NA,4,4) yields 4 groups.
+* Bug fix: In grouping functions with method `l_starts` and `n = "auto"`, `NA`s are now replaced by a unique value before finding group starts. E.g. `c(1,1,1,2,2,NA,NA,4,4)` yields 4 groups.
 
 * The `data` argument in `fold()` takes a data frame, not vectors.
 
-* Adds `checkmate` input checks.
+* Possibly breaking change: Adds `checkmate` input checks. Improves error messages but also restricts behavior.
+
+* Adds `xpectr` as suggested package. Doubles number of unit tests.
+
 
 # groupdata2 1.1.2
 

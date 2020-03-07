@@ -23,27 +23,38 @@ status](https://ci.appveyor.com/api/projects/status/github/LudvigOlsen/groupdata
 
 ## Overview
 
-R package: Methods for dividing data into groups. Create balanced
-partitions and cross-validation folds. Perform time series windowing and
-general grouping and splitting of data. Balance existing groups with up-
-and downsampling.
+R package for dividing data into groups.
 
-Main functions:
+  - Create **balanced partitions** and cross-validation **folds**.
+  - Perform time series **windowing** and general **grouping** and
+    **splitting** of data.
+  - **Balance** existing groups with **up- and downsampling**.
+  - Finds values, or indices of values, that **differ** from the
+    previous value by some threshold(s).
+  - Check if two grouping factors have the same groups,
+**memberwise**.
 
-  - `group_factor()`  
-  - `group()`  
-  - `splt()`  
-  - `partition()`  
-  - `fold()`  
-  - `balance()`
+### Main functions
 
-Other tools:
+| Function         | Description                                                                                                                                                                               |
+| :--------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `group_factor()` | Divides data into groups by a range of methods.                                                                                                                                           |
+| `group()`        | Creates grouping factor and adds to the given data frame.                                                                                                                                 |
+| `splt()`         | Creates grouping factor and splits the data by these groups.                                                                                                                              |
+| `partition()`    | Splits data into partitions. Balances a given categorical variable and/or numerical variable between partitions and keeps all data points with a shared ID in the same partition.         |
+| `fold()`         | Creates folds for (repeated) cross-validation. Balances a given categorical variable and/or numerical variable between folds and keeps all data points with a shared ID in the same fold. |
+| `balance()`      | Uses up- and/or downsampling to equalize group sizes. Can balance on ID level.                                                                                                            |
 
-  - `find_starts()`
-  - `differs_from_previous()`
-  - `all_groups_identical()`
-  - `%staircase%`  
-  - `%primes%`
+### Other tools
+
+| Function                  | Description                                                                                   |
+| :------------------------ | :-------------------------------------------------------------------------------------------- |
+| `all_groups_identical()`  | Checks whether two grouping factors contain the same groups, *memberwise*.                    |
+| `differs_from_previous()` | Finds values, or indices of values, that differ from the previous value by some threshold(s). |
+| `find_starts()`           | Finds values or indices of values that are not the same as the previous value.                |
+| `find_missing_starts()`   | Finds missing starts for the `l_starts` method.                                               |
+| `%primes%`                | Finds remainder for the `primes` method.                                                      |
+| `%staircase%`             | Finds remainder for the `staircase` method.                                                   |
 
 ## Installation
 
@@ -68,7 +79,8 @@ descriptions.
 
 ### `group_factor()`
 
-Returns a factor with group numbers, e.g. (1,1,1,2,2,2,3,3,3).
+Returns a factor with group numbers, e.g.
+`factor(c(1,1,1,2,2,2,3,3,3))`.
 
 This can be used to subset, aggregate, group\_by, etc.
 
@@ -80,7 +92,7 @@ Randomize grouping factor by setting `randomize = TRUE`
 
 Returns the given data as a data frame with added grouping factor made
 with `group_factor()`. The data frame is grouped by the grouping factor
-for easy use with dplyr pipelines.
+for easy use in `magrittr`/`dplyr` pipelines.
 
 ### `splt()`
 
@@ -162,22 +174,22 @@ E.g. group sizes: 12, 11, 11, 11, 12
 Uses a list / vector of group sizes to divide up the data.  
 Excess data points are placed in an extra group.
 
-E.g. *n = c(11, 11)* returns group sizes: 11, 11, 35
+E.g. `n = c(11, 11)` returns group sizes: 11, 11, 35
 
 ##### Method: l\_starts
 
 Uses a list of starting positions to divide up the data.  
 Starting positions are values in a vector (e.g. column in data frame).
-Skip to a specific nth appearance of a value by using c(value,
-skip\_to).
+Skip to a specific nth appearance of a value by using `c(value,
+skip_to)`.
 
-E.g. *n = c(11, 15, 27, 43)* returns group sizes: 10, 4, 12, 16, 15
+E.g. `n = c(11, 15, 27, 43)` returns group sizes: 10, 4, 12, 16, 15
 
-Identical to *n = list(11, 15, c(27, 1), 43)* where 1 specifies that we
+Identical to `n = list(11, 15, c(27, 1), 43` where `1` specifies that we
 want the first appearance of 27 after the previous value 15.
 
-If passing *n = “auto”* starting positions are automatically found with
-find\_starts().
+If passing `n = "auto"` starting positions are automatically found with
+`find_starts()`.
 
 ### Specify step size
 
@@ -193,14 +205,14 @@ E.g. group sizes: 5, 10, 15, 20, 7
 ##### Method: primes
 
 Creates groups with sizes corresponding to prime numbers.  
-Starts at n (prime number). Increases to the the next prime number until
-there is no more data.
+Starts at `n` (prime number). Increases to the the next prime number
+until there is no more data.
 
 E.g. group sizes: 5, 7, 11, 13, 17, 4
 
 ## Balancing ID Methods
 
-There are currently 4 methods for balancing on ID level in balance().
+There are currently 4 methods for balancing on ID level in `balance()`.
 
 ##### ID method: n\_ids
 
@@ -237,9 +249,11 @@ library(knitr)
 
 ``` r
 # Create data frame
-df <- data.frame("x"=c(1:12),
-  "species" = rep(c('cat','pig', 'human'), 4),
-  "age" = sample(c(1:100), 12))
+df <- data.frame(
+  "x"=c(1:12),
+  "species" = factor(rep(c('cat','pig', 'human'), 4)),
+  "age" = sample(c(1:100), 12)
+)
 ```
 
 ### `group()`
@@ -293,6 +307,8 @@ df %>%
         method = 'l_starts',
         starts_col = "species") %>%
   kable()
+#> Warning in assign_starts_col(data = data, starts_col = starts_col):
+#> 'data[[starts_col]]' is factor. Converting to character.
 ```
 
 |  x | species | age | .groups |
@@ -317,7 +333,7 @@ df %>%
 df <- data.frame(
   "participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
   "age" = rep(c(20,33,27,21,32,25), 3),
-  "diagnosis" = rep(c('a', 'b', 'a', 'b', 'b', 'a'), 3),
+  "diagnosis" = factor(rep(c('a', 'b', 'a', 'b', 'b', 'a'), 3)),
   "score" = c(10,24,15,35,24,14,24,40,30,50,54,25,45,67,40,78,62,30))
 df <- df %>% arrange(participant)
 df$session <- rep(c('1','2', '3'), 6)
@@ -333,8 +349,8 @@ set.seed(1)
 df_folded <- fold(df, k = 3, cat_col = 'diagnosis',
                   num_col = "age", 
                   id_col = 'participant')
-#> 'old_name' and 'new_name' were identical.
-#> 'old_name' and 'new_name' were identical.
+#> 'before' and 'after' were identical.
+#> 'before' and 'after' were identical.
 
 # Show df_folded ordered by folds
 df_folded %>% 

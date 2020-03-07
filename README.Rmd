@@ -9,6 +9,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
+  out.width = "100%",
   dpi = 92,
   fig.retina = 2
 )
@@ -39,25 +40,36 @@ rvers <- substring(dep, 7, nchar(dep)-1)
 
 ## Overview
 
-R package: Methods for dividing data into groups. Create balanced partitions and cross-validation folds. 
-Perform time series windowing and general grouping and splitting of data. Balance existing groups with up- and downsampling.
+R package for dividing data into groups. 
 
-Main functions:   
+* Create **balanced partitions** and cross-validation **folds**. 
+* Perform time series **windowing** and general **grouping** and **splitting** of data. 
+* **Balance** existing groups with **up- and downsampling**.
+* Finds values, or indices of values, that **differ** from the previous value by some threshold(s).
+* Check if two grouping factors have the same groups, **memberwise**.
 
-* `group_factor()`  
-* `group()`  
-* `splt()`  
-* `partition()`  
-* `fold()`  
-* `balance()`
+### Main functions
 
-Other tools:  
+|Function              |Description                                                        |
+|:---------------------|:------------------------------------------------------------------|
+|`group_factor()`      |Divides data into groups by a range of methods.                    |
+|`group()`             |Creates grouping factor and adds to the given data frame.          |
+|`splt()`              |Creates grouping factor and splits the data by these groups.       |
+|`partition()`         |Splits data into partitions. Balances a given categorical variable and/or numerical variable between partitions and keeps all data points with a shared ID in the same partition.  |
+|`fold()`              |Creates folds for (repeated) cross-validation. Balances a given categorical variable and/or numerical variable between folds and keeps all data points with a shared ID in the same fold. |
+|`balance()`           |Uses up- and/or downsampling to equalize group sizes. Can balance on ID level.|
 
-* `find_starts()`
-* `differs_from_previous()`
-* `all_groups_identical()`
-* `%staircase%`  
-* `%primes%` 
+### Other tools
+
+|Function                  |Description                                                        |
+|:-------------------------|:------------------------------------------------------------------|
+|`all_groups_identical()`  |Checks whether two grouping factors contain the same groups, *memberwise*.|
+|`differs_from_previous()` |Finds values, or indices of values, that differ from the previous value by some threshold(s).|
+|`find_starts()`           |Finds values or indices of values that are not the same as the previous value.|
+|`find_missing_starts()`   |Finds missing starts for the `l_starts` method.|
+|`%primes%`                |Finds remainder for the `primes` method.   |
+|`%staircase%`             |Finds remainder for the `staircase` method.|
+
 
 ## Installation  
 CRAN version:
@@ -77,7 +89,7 @@ groupdata2 contains a number of vignettes with relevant use cases and descriptio
 
 ## Functions  
 ### `group_factor()`  
-Returns a factor with group numbers, e.g. (1,1,1,2,2,2,3,3,3).  
+Returns a factor with group numbers, e.g. `factor(c(1,1,1,2,2,2,3,3,3))`.  
 
 This can be used to subset, aggregate, group_by, etc.   
 
@@ -86,7 +98,7 @@ Create equally sized groups by setting `force_equal = TRUE`
 Randomize grouping factor by setting `randomize = TRUE`  
 
 ### `group()`  
-Returns the given data as a data frame with added grouping factor made with `group_factor()`. The data frame is grouped by the grouping factor for easy use with dplyr pipelines.  
+Returns the given data as a data frame with added grouping factor made with `group_factor()`. The data frame is grouped by the grouping factor for easy use in `magrittr`/`dplyr` pipelines.  
 
 ### `splt()`  
 Creates the specified groups with `group_factor()` and splits the given data by the grouping factor with `base::split`. Returns the splits in a list.  
@@ -143,19 +155,19 @@ E.g. group sizes: 12, 11, 11, 11, 12
 Uses a list / vector of group sizes to divide up the data.  
 Excess data points are placed in an extra group.  
 
-E.g. *n = c(11, 11)* returns group sizes: 11, 11, 35  
+E.g. `n = c(11, 11)` returns group sizes: 11, 11, 35  
 
 ##### Method: l_starts
 Uses a list of starting positions to divide up the data.  
 Starting positions are values in a vector (e.g. column in data frame). 
-Skip to a specific nth appearance of a value by using c(value, skip_to).  
+Skip to a specific nth appearance of a value by using `c(value, skip_to)`.  
 
-E.g. *n = c(11, 15, 27, 43)* returns group sizes: 10, 4, 12, 16, 15  
+E.g. `n = c(11, 15, 27, 43)` returns group sizes: 10, 4, 12, 16, 15  
 
-Identical to *n = list(11, 15, c(27, 1), 43)* where 1 specifies that we 
+Identical to `n = list(11, 15, c(27, 1), 43` where `1` specifies that we 
 want the first appearance of 27 after the previous value 15.  
 
-If passing *n = "auto"* starting positions are automatically found with find_starts().  
+If passing `n = "auto"` starting positions are automatically found with `find_starts()`.  
 
 ### Specify step size
 ##### Method: staircase
@@ -167,12 +179,12 @@ E.g. group sizes: 5, 10, 15, 20, 7
 ### Specify start at
 ##### Method: primes
 Creates groups with sizes corresponding to prime numbers.  
-Starts at n (prime number). Increases to the the next prime number until there is no more data.
+Starts at `n` (prime number). Increases to the the next prime number until there is no more data.
 
 E.g. group sizes: 5, 7, 11, 13, 17, 4  
 
 ## Balancing ID Methods
-There are currently 4 methods for balancing on ID level in balance().
+There are currently 4 methods for balancing on ID level in `balance()`.
 
 ##### ID method: n_ids
 Balances on ID level only. It makes sure there are the same number of IDs in each category. This might lead to a different number of rows between categories.
