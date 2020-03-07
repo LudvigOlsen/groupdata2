@@ -9,22 +9,23 @@ create_num_col_groups <- function(data, n, num_col,
                                   unequal_method = "first",
                                   optimize_for = "mean",
                                   force_equal = FALSE,
-                                  pre_randomize = TRUE
-                                  ) {
+                                  pre_randomize = TRUE) {
 
-  # Run some checks
-  # TODO: This was copied from group_factor, not sure we need it here
-  n <- check_convert_check_(data = data, n = n, method = method,
-                            force_equal = force_equal,
-                            allow_zero = FALSE, descending = FALSE,
-                            remove_missing_starts = FALSE,
-                            starts_col = NULL)
+  # Most have been checked in parent
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+  checkmate::assert_string(x = col_name, add = assert_collection)
+  checkmate::assert_string(x = unequal_method, add = assert_collection)
+  checkmate::assert_string(x = optimize_for, add = assert_collection)
+  checkmate::assert_flag(x = pre_randomize, add = assert_collection)
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
 
   # If method is n_*, we are doing folding
   is_n_method <- substring(method, 1, 2) == "n_"
 
   # Sample data frame before use.
-  if (isTRUE(pre_randomize)){
+  if (isTRUE(pre_randomize)) {
 
     # Create unique local temporary index
     local_tmp_index_var <- create_tmp_var(data)
@@ -37,25 +38,25 @@ create_num_col_groups <- function(data, n, num_col,
 
   # Init rank summary for balanced joining of fold ID's
   # when cat_col is specified
-  if (is_n_method) rank_summary <- NULL
+  if (isTRUE(is_n_method)) rank_summary <- NULL
 
   # If cat_col is not NULL
-  if (!is.null(cat_col)){
+  if (!is.null(cat_col)) {
 
     # If id_col is not NULL
-    if (!is.null(id_col)){
+    if (!is.null(id_col)) {
 
       # aggregate val col per ID
       ids_aggregated <- data %>%
-        dplyr::group_by(!! as.name(cat_col), !! as.name(id_col)) %>%
-        dplyr::summarize(aggr_val = id_aggregation_fn(!! as.name(num_col))) %>%
+        dplyr::group_by(!!as.name(cat_col), !!as.name(id_col)) %>%
+        dplyr::summarize(aggr_val = id_aggregation_fn(!!as.name(num_col))) %>%
         dplyr::ungroup()
 
       # Find groups for each category
-      ids_grouped <- plyr::ldply(unique(ids_aggregated[[cat_col]]), function(category){
+      ids_grouped <- plyr::ldply(unique(ids_aggregated[[cat_col]]), function(category) {
         ids_for_cat <- ids_aggregated[
-          ids_aggregated[[cat_col]] == category
-        ,]
+          ids_aggregated[[cat_col]] == category,
+        ]
         ids_for_cat$._new_groups_ <-
           numerically_balanced_group_factor_(
             ids_for_cat,
@@ -66,12 +67,14 @@ create_num_col_groups <- function(data, n, num_col,
             extreme_pairing_levels = extreme_pairing_levels
           )
 
-        if (is_n_method){
+        if (isTRUE(is_n_method)) {
           # Rename groups to be combined in the most balanced way
-          if (is.null(rank_summary)){
-            rank_summary <<- create_rank_summary(ids_for_cat,
-                                                 levels_col = "._new_groups_",
-                                                 num_col = "aggr_val")
+          if (is.null(rank_summary)) {
+            rank_summary <<- create_rank_summary(
+              ids_for_cat,
+              levels_col = "._new_groups_",
+              num_col = "aggr_val"
+            )
           } else {
             renaming_levels_list <- rename_levels_by_reverse_rank_summary(
               data = ids_for_cat,
@@ -93,17 +96,17 @@ create_num_col_groups <- function(data, n, num_col,
       data <- data %>%
         dplyr::inner_join(ids_grouped, by = c(cat_col, id_col))
 
-    # If id_col is NULL
+      # If id_col is NULL
     } else {
 
       # For each category in cat_col
       # .. create value balanced group factor
 
       # Find groups for each category
-      data <- plyr::ldply(unique(data[[cat_col]]), function(category){
+      data <- plyr::ldply(unique(data[[cat_col]]), function(category) {
         data_for_cat <- data[
-          data[[cat_col]] == category
-        ,]
+          data[[cat_col]] == category,
+        ]
         data_for_cat$._new_groups_ <- numerically_balanced_group_factor_(
           data = data_for_cat,
           n = n,
@@ -113,16 +116,19 @@ create_num_col_groups <- function(data, n, num_col,
           extreme_pairing_levels = extreme_pairing_levels
         )
 
-        if (is_n_method){
+        if (isTRUE(is_n_method)) {
           # Rename groups to be combined in the most balanced way
-          if (is.null(rank_summary)){
-            rank_summary <<- create_rank_summary(data_for_cat,
-                                                 levels_col = "._new_groups_",
-                                                 num_col = num_col)
+          if (is.null(rank_summary)) {
+            rank_summary <<- create_rank_summary(
+              data_for_cat,
+              levels_col = "._new_groups_",
+              num_col = num_col
+            )
           } else {
             renaming_levels_list <- rename_levels_by_reverse_rank_summary(
               data = data_for_cat, rank_summary = rank_summary,
-              levels_col = "._new_groups_", num_col = num_col)
+              levels_col = "._new_groups_", num_col = num_col
+            )
             rank_summary <<- renaming_levels_list[["updated_rank_summary"]]
             data_for_cat <- renaming_levels_list[["updated_data"]]
           }
@@ -130,14 +136,13 @@ create_num_col_groups <- function(data, n, num_col,
 
         data_for_cat
       })
-
     }
 
-  # If cat_col is NULL
+    # If cat_col is NULL
   } else {
 
     # If id_col is not NULL
-    if (!is.null(id_col)){
+    if (!is.null(id_col)) {
 
       # Aggregate num_col for IDs with the passed id_aggregation_fn
       # Create value balanced group factor based on aggregated values
@@ -145,7 +150,7 @@ create_num_col_groups <- function(data, n, num_col,
 
       # aggregate val col per ID
       ids_aggregated <- data %>%
-        group_by(!! as.name(id_col)) %>%
+        group_by(!!as.name(id_col)) %>%
         dplyr::summarize(aggr_val = id_aggregation_fn(!!as.name(num_col))) %>%
         dplyr::ungroup()
 
@@ -162,9 +167,9 @@ create_num_col_groups <- function(data, n, num_col,
 
       # Transfer groups to data
       data <- data %>%
-        dplyr::inner_join(ids_aggregated, by=c(id_col))
+        dplyr::inner_join(ids_aggregated, by = c(id_col))
 
-    # If id_col is NULL
+      # If id_col is NULL
     } else {
 
       # Add group factor
@@ -176,34 +181,29 @@ create_num_col_groups <- function(data, n, num_col,
         unequal_method = unequal_method,
         extreme_pairing_levels = extreme_pairing_levels
       )
-
     }
   }
 
   # Reorder if pre-randomized
-  if(isTRUE(pre_randomize)){
+  if (isTRUE(pre_randomize)) {
     data <- data %>%
-      dplyr::arrange(!! as.name(local_tmp_index_var))
+      dplyr::arrange(!!as.name(local_tmp_index_var))
     data[[local_tmp_index_var]] <- NULL
   }
 
-
-
   # Force equal
   # Remove stuff
-  if(method == "l_sizes" & isTRUE(force_equal)){
-
+  if (method == "l_sizes" & isTRUE(force_equal)) {
     number_of_groups_specified <- length(n)
 
     data <- data[
-      factor_to_num(data[["._new_groups_"]]) <= number_of_groups_specified
-    ,]
-
+      factor_to_num(data[["._new_groups_"]]) <= number_of_groups_specified,
+    ]
   }
 
   # replace column name
-  data <- base_rename(data, before = '._new_groups_', after = col_name)
+  if (col_name != "._new_groups_")
+    data <- base_rename(data, before = "._new_groups_", after = col_name)
 
-  return(dplyr::as_tibble(data))
-
+  dplyr::as_tibble(data)
 }

@@ -1,9 +1,12 @@
 # R CMD check NOTE handling
-if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
+if (getRversion() >= "2.15.1") utils::globalVariables(c("."))
 
 ## fold
 #' @title Create balanced folds for cross-validation.
-#' @description Divides data into groups by a range of methods.
+#' @description
+#'  \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
+#'
+#'  Divides data into groups by a range of methods.
 #'  Balances a given categorical variable and/or numerical variable between folds and keeps (if possible)
 #'  all data points with a shared ID (e.g. participant_id) in the same fold.
 #'  Can create multiple unique fold columns for repeated cross-validation.
@@ -81,6 +84,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'  }
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
+#' @param data Data frame.
 #' @param k \emph{Dependent on method.}
 #'
 #'  Number of folds (default), fold size, with more (see \code{method}).
@@ -208,7 +212,6 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'  \eqn{(e.g. 5, 10, 15, 20, 7)}.
 #'
 #'  \code{n} is step size}
-#' @inheritParams group_factor
 #' @aliases create_balanced_groups
 #' @family grouping functions
 #' @return Data frame with grouping factor for subsetting in cross-validation.
@@ -220,37 +223,46 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'
 #' # Create data frame
 #' df <- data.frame(
-#'  "participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
-#'  "age" = rep(sample(c(1:100), 6), 3),
-#'  "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
-#'  "score" = sample(c(1:100), 3*6))
+#'   "participant" = factor(rep(c("1", "2", "3", "4", "5", "6"), 3)),
+#'   "age" = rep(sample(c(1:100), 6), 3),
+#'   "diagnosis" = factor(rep(c("a", "b", "a", "a", "b", "b"), 3)),
+#'   "score" = sample(c(1:100), 3 * 6)
+#' )
 #' df <- df %>% arrange(participant)
-#' df$session <- rep(c('1','2', '3'), 6)
+#' df$session <- rep(c("1", "2", "3"), 6)
 #'
 #' # Using fold()
 #'
 #' ## Without balancing
-#' df_folded <- fold(df, 3, method = 'n_dist')
+#' df_folded <- fold(df, 3, method = "n_dist")
 #'
 #' ## With cat_col
-#' df_folded <- fold(df, 3, cat_col = 'diagnosis',
-#'  method = 'n_dist')
+#' df_folded <- fold(df, 3,
+#'   cat_col = "diagnosis",
+#'   method = "n_dist"
+#' )
 #'
 #' ## With id_col
-#' df_folded <- fold(df, 3, id_col = 'participant',
-#'  method = 'n_dist')
+#' df_folded <- fold(df, 3,
+#'   id_col = "participant",
+#'   method = "n_dist"
+#' )
 #'
 #' ## With num_col
 #' # Note: 'method' would not be used in this case
-#' df_folded <- fold(df, 3, num_col = 'score')
+#' df_folded <- fold(df, 3, num_col = "score")
 #'
 #' # With cat_col and id_col
-#' df_folded <- fold(df, 3, cat_col = 'diagnosis',
-#'  id_col = 'participant', method = 'n_dist')
+#' df_folded <- fold(df, 3,
+#'   cat_col = "diagnosis",
+#'   id_col = "participant", method = "n_dist"
+#' )
 #'
 #' ## With cat_col, id_col and num_col
-#' df_folded <- fold(df, 3, cat_col = 'diagnosis',
-#'  id_col = 'participant', num_col = 'score')
+#' df_folded <- fold(df, 3,
+#'   cat_col = "diagnosis",
+#'   id_col = "participant", num_col = "score"
+#' )
 #'
 #' # Order by folds
 #' df_folded <- df_folded %>% arrange(.folds)
@@ -258,29 +270,38 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #' ## Multiple fold columns
 #' # Useful for repeated cross-validation
 #' # Note: Consider running in parallel
-#' df_folded <- fold(df, 3, cat_col = 'diagnosis',
-#'  id_col = 'participant', num_fold_cols = 5,
-#'  unique_fold_cols_only=TRUE,
-#'  max_iters=4)
+#' df_folded <- fold(df, 3,
+#'   cat_col = "diagnosis",
+#'   id_col = "participant", num_fold_cols = 5,
+#'   unique_fold_cols_only = TRUE,
+#'   max_iters = 4
+#' )
 #'
 #' ## Check if additional extreme_pairing_levels
 #' ## improve the numerical balance
 #' set.seed(2) # try with seed 1 as well
-#' df_folded_1 <- fold(df, 3, num_col = 'score',
-#'                      extreme_pairing_levels = 1)
+#' df_folded_1 <- fold(df, 3,
+#'   num_col = "score",
+#'   extreme_pairing_levels = 1
+#' )
 #' df_folded_1 %>%
 #'   dplyr::group_by(.folds) %>%
-#'   dplyr::summarise(sum_score = sum(score),
-#'                    mean_score = mean(score))
+#'   dplyr::summarise(
+#'     sum_score = sum(score),
+#'     mean_score = mean(score)
+#'   )
 #'
 #' set.seed(2) # try with seed 1 as well
-#' df_folded_2 <- fold(df, 3, num_col = 'score',
-#'                      extreme_pairing_levels = 2)
+#' df_folded_2 <- fold(df, 3,
+#'   num_col = "score",
+#'   extreme_pairing_levels = 2
+#' )
 #' df_folded_2 %>%
 #'   dplyr::group_by(.folds) %>%
-#'   dplyr::summarise(sum_score = sum(score),
-#'                    mean_score = mean(score))
-#'
+#'   dplyr::summarise(
+#'     sum_score = sum(score),
+#'     mean_score = mean(score)
+#'   )
 #' @importFrom dplyr group_by_ do %>%
 #' @importFrom utils combn
 #' @importFrom rlang .data
@@ -289,7 +310,7 @@ fold <- function(data,
                  cat_col = NULL,
                  num_col = NULL,
                  id_col = NULL,
-                 method = 'n_dist',
+                 method = "n_dist",
                  id_aggregation_fn = sum,
                  extreme_pairing_levels = 1,
                  num_fold_cols = 1,
@@ -313,121 +334,96 @@ fold <- function(data,
   # .. data frame with grouping factor (folds)
   #
 
-  if (method %in% c("l_sizes", "l_starts", "primes")){
-    stop(paste0("method '",method,"' is not supported by fold()."))
-  }
+  checks <- check_fold(
+    data = data,
+    k = k,
+    cat_col = cat_col,
+    num_col = num_col,
+    id_col = id_col,
+    method = method,
+    id_aggregation_fn = id_aggregation_fn,
+    extreme_pairing_levels = extreme_pairing_levels,
+    num_fold_cols = num_fold_cols,
+    unique_fold_cols_only = unique_fold_cols_only,
+    max_iters = max_iters,
+    handle_existing_fold_cols = handle_existing_fold_cols,
+    parallel = parallel
+  )
 
-  if (length(k) > 1){
-    stop("'k' must be numeric scalar.")
-  }
-  if (k < 0){
-    stop("'k' must be positive.")
-  }
-
-  # Convert k to wholenumber if given as percentage
-  if(!arg_is_wholenumber_(k) && is_between_(k,0,1)){
-    rows_per_fold <- convert_percentage_(k, data)
-    k <- ceiling(nrow(data)/rows_per_fold)
-  }
-
-  # Stop if k is not a wholenumber
-  stopifnot(arg_is_wholenumber_(k))
-
-  # Check if *_cols are in data
-  if (!is.null(cat_col) && cat_col %ni% colnames(data)){
-    stop(paste0("cat_col: '", cat_col, "' is not in data"))}
-  if (!is.null(id_col) && id_col %ni% colnames(data)){
-    stop(paste0("id_col: '", id_col, "' is not in data"))}
-  if (!is.null(num_col) && num_col %ni% colnames(data)){
-    stop(paste0("num_col: '", num_col, "' is not in data"))}
-
-  # If num_col is specified, warn that method is ignored
-  if (!is.null(num_col) & method != "n_dist"){
-    warning(paste0("'method' is ignored when 'num_col' is not NULL. ",
-                   "This warning occurs, because 'method' is not the default value."))
-  }
-
-  # If method is either greedy or staircase and cat_col is not NULL
-  # we don't want k elements per level in cat_col
-  # so we divide k by the number of levels in cat_col
-  if(method %in% c('greedy', 'staircase') && !is.null(cat_col)){
-
-    n_levels_cat_col <- length(unique(data[[cat_col]]))
-    k <- ceiling(k/n_levels_cat_col)
-
-  }
-
-  if (!is.character(handle_existing_fold_cols) ||
-      length(handle_existing_fold_cols) != 1 ||
-      is.na(handle_existing_fold_cols) ||
-      is.null(handle_existing_fold_cols) ||
-      handle_existing_fold_cols %ni% c("keep_warn","keep","remove")){
-    stop("Please specify handle_existing_fold_cols as either 'keep_warn','keep', or 'remove'.")
-  }
+  k <- checks[["k"]]
 
   # Check for existing fold columns
   existing_fold_colnames <- extract_fold_colnames(data)
   num_existing_fold_colnames <- length(existing_fold_colnames)
-  if (num_existing_fold_colnames > 0){
+  if (num_existing_fold_colnames > 0) {
 
     # Handle existing fold cols as specified
-    if (handle_existing_fold_cols == "remove"){
+    if (handle_existing_fold_cols == "remove") {
       # We need to ungroup the dataset, or it will be automatically included again.
       data <- data %>%
         dplyr::ungroup() %>%
         base_deselect(cols = existing_fold_colnames)
       existing_fold_colnames <- character()
       num_existing_fold_colnames <- 0
-
-    } else if (handle_existing_fold_cols == "keep_warn"){
-      if (num_existing_fold_colnames == 1) {warn_terms__ <- c("column", "It", "it")}
-      else {warn_terms__ <- c("columns", "These", "them")}
-      warning(paste0("Found ", num_existing_fold_colnames," existing fold ",warn_terms__[1],
-                     ". ",warn_terms__[2]," will NOT be replaced. ",
-                     "Change 'handle_existing_fold_cols' to 'remove' if you want to replace ",warn_terms__[3],"."))
+    } else if (handle_existing_fold_cols == "keep_warn") {
+      if (num_existing_fold_colnames == 1) {
+        warn_terms__ <- c("column", "It", "it")
+      }
+      else {
+        warn_terms__ <- c("columns", "These", "them")
+      }
+      warning(paste0(
+        "Found ", num_existing_fold_colnames, " existing fold ", warn_terms__[1],
+        ". ", warn_terms__[2], " will NOT be replaced. ",
+        "Change 'handle_existing_fold_cols' to 'remove' if you want to replace ", warn_terms__[3], "."
+      ))
     }
-
   }
 
   fold_cols_to_generate <- num_fold_cols
   expected_total_num_fold_cols <- num_existing_fold_colnames + num_fold_cols
   max_fold_cols_number <- ifelse(num_existing_fold_colnames > 0,
-                                 extract_max_fold_cols_number(existing_fold_colnames),
-                                 0)
+    extract_max_fold_cols_number(existing_fold_colnames),
+    0
+  )
   continue_repeating <- TRUE
   times_repeated <- 0
-  completed_comparisons <- data.frame("V1" = character(), "V2" = character(),
-                                      "identical" = logical(),
-                                      stringsAsFactors = FALSE)
+  completed_comparisons <- data.frame(
+    "V1" = character(), "V2" = character(),
+    "identical" = logical(),
+    stringsAsFactors = FALSE
+  )
 
-  while (isTRUE(continue_repeating)){
+  while (isTRUE(continue_repeating)) {
 
     # If num_col is not NULL
-    if (!is.null(num_col)){
-      plyr::l_ply(1:fold_cols_to_generate, function(r){
-        data <<- create_num_col_groups(data, n = k,
-                                       num_col = num_col,
-                                       cat_col = cat_col,
-                                       id_col = id_col,
-                                       col_name = name_new_fold_col(num_to_create = num_fold_cols,
-                                                                    num_existing = num_existing_fold_colnames,
-                                                                    max_existing_number = max_fold_cols_number,
-                                                                    current = r),
-                                       id_aggregation_fn = id_aggregation_fn,
-                                       extreme_pairing_levels = extreme_pairing_levels,
-                                       method = "n_fill",
-                                       pre_randomize = TRUE) %>%
+    if (!is.null(num_col)) {
+      plyr::l_ply(1:fold_cols_to_generate, function(r) {
+        data <<- create_num_col_groups(data,
+          n = k,
+          num_col = num_col,
+          cat_col = cat_col,
+          id_col = id_col,
+          col_name = name_new_fold_col(
+            num_to_create = num_fold_cols,
+            num_existing = num_existing_fold_colnames,
+            max_existing_number = max_fold_cols_number,
+            current = r
+          ),
+          id_aggregation_fn = id_aggregation_fn,
+          extreme_pairing_levels = extreme_pairing_levels,
+          method = "n_fill",
+          pre_randomize = TRUE
+        ) %>%
           dplyr::ungroup()
-
       })
-
     } else {
 
       # If cat_col is not NULL
-      if (!is.null(cat_col)){
+      if (!is.null(cat_col)) {
 
         # If id_col is not NULL
-        if (!is.null(id_col)){
+        if (!is.null(id_col)) {
 
           # Group by cat_col
           # For each group:
@@ -435,78 +431,94 @@ fold <- function(data,
           # .. add grouping factor to data
           # Group by new grouping factor '.folds'
 
-          #for (r in 1:fold_cols_to_generate){ # Replace with different loop fn
-          plyr::l_ply(1:fold_cols_to_generate, function(r){
+          # for (r in 1:fold_cols_to_generate){ # Replace with different loop fn
+          plyr::l_ply(1:fold_cols_to_generate, function(r) {
             data <<- data %>%
-              group_by(!! as.name(cat_col)) %>%
+              group_by(!!as.name(cat_col)) %>%
               do(group_uniques_(., k, id_col, method,
-                                col_name = name_new_fold_col(num_to_create = num_fold_cols,
-                                                             num_existing = num_existing_fold_colnames,
-                                                             max_existing_number = max_fold_cols_number,
-                                                             current = r))) %>%
+                col_name = name_new_fold_col(
+                  num_to_create = num_fold_cols,
+                  num_existing = num_existing_fold_colnames,
+                  max_existing_number = max_fold_cols_number,
+                  current = r
+                )
+              )) %>%
               dplyr::ungroup()
           })
 
-        # If id_col is NULL
+          # If id_col is NULL
         } else {
 
           # Group by cat_col
           # Create groups from data
           # .. and add grouping factor to data
 
-          #for (r in 1:fold_cols_to_generate){
-          plyr::l_ply(1:fold_cols_to_generate, function(r){
+          # for (r in 1:fold_cols_to_generate){
+          plyr::l_ply(1:fold_cols_to_generate, function(r) {
             data <<- data %>%
-              group_by(!! as.name(cat_col)) %>%
-              do(group(., k, method = method,
-                       randomize = TRUE,
-                       col_name = name_new_fold_col(num_to_create = num_fold_cols,
-                                                    num_existing = num_existing_fold_colnames,
-                                                    max_existing_number = max_fold_cols_number,
-                                                    current = r))) %>%
+              group_by(!!as.name(cat_col)) %>%
+              do(group(., k,
+                method = method,
+                randomize = TRUE,
+                col_name = name_new_fold_col(
+                  num_to_create = num_fold_cols,
+                  num_existing = num_existing_fold_colnames,
+                  max_existing_number = max_fold_cols_number,
+                  current = r
+                )
+              )) %>%
               dplyr::ungroup()
           })
         }
 
-      # If cat_col is NULL
+        # If cat_col is NULL
       } else {
 
         # If id_col is not NULL
-        if (!is.null(id_col)){
+        if (!is.null(id_col)) {
 
           # Create groups of unique IDs
           # .. and add grouping factor to data
 
-          #for (r in 1:fold_cols_to_generate){
-          plyr::l_ply(1:fold_cols_to_generate, function(r){
+          # for (r in 1:fold_cols_to_generate){
+          plyr::l_ply(1:fold_cols_to_generate, function(r) {
             data <<- data %>%
-              group_uniques_(k, id_col, method,
-                             col_name = name_new_fold_col(num_to_create = num_fold_cols,
-                                                          num_existing = num_existing_fold_colnames,
-                                                          max_existing_number = max_fold_cols_number,
-                                                          current = r)) %>%
+              group_uniques_(
+                n = k,
+                id_col = id_col,
+                method = method,
+                col_name = name_new_fold_col(
+                  num_to_create = num_fold_cols,
+                  num_existing = num_existing_fold_colnames,
+                  max_existing_number = max_fold_cols_number,
+                  current = r
+                )
+              ) %>%
               dplyr::ungroup()
-
           })
 
-        # If id_col is NULL
+          # If id_col is NULL
         } else {
 
           # Create groups from all the data points
           # .. and add grouping factor to data
 
-          plyr::l_ply(1:fold_cols_to_generate, function(r){
-          #for (r in 1:fold_cols_to_generate){
-            data <<- group(data, k,
-                          method = method,
-                          randomize = TRUE,
-                          col_name = name_new_fold_col(num_to_create = num_fold_cols,
-                                                       num_existing = num_existing_fold_colnames,
-                                                       max_existing_number = max_fold_cols_number,
-                                                       current = r)) %>%
+          plyr::l_ply(1:fold_cols_to_generate, function(r) {
+            # for (r in 1:fold_cols_to_generate){
+            data <<- group(
+              data = data,
+              n = k,
+              method = method,
+              randomize = TRUE,
+              col_name = name_new_fold_col(
+                num_to_create = num_fold_cols,
+                num_existing = num_existing_fold_colnames,
+                max_existing_number = max_fold_cols_number,
+                current = r
+              )
+            ) %>%
               dplyr::ungroup()
           })
-
         }
       }
     }
@@ -515,13 +527,14 @@ fold <- function(data,
     times_repeated <- times_repeated + 1
 
     # Remove identical .folds columns or break out of while loop
-    if (expected_total_num_fold_cols > 1 && isTRUE(unique_fold_cols_only)){
+    if (expected_total_num_fold_cols > 1 && isTRUE(unique_fold_cols_only)) {
       folds_colnames <- extract_fold_colnames(data)
 
       data_and_comparisons <- remove_identical_cols(data, folds_colnames,
-                                                    exclude_comparisons = completed_comparisons,
-                                                    return_all_comparisons=TRUE,
-                                                    group_wise = TRUE, parallel=parallel)
+        exclude_comparisons = completed_comparisons,
+        return_all_comparisons = TRUE,
+        group_wise = TRUE, parallel = parallel
+      )
 
       data <- data_and_comparisons[["updated_data"]]
       removed_cols <- data_and_comparisons[["removed_cols"]]
@@ -530,46 +543,44 @@ fold <- function(data,
           data_and_comparisons[["comparisons"]] %>%
             # If they were identical,
             # we removed one and the comparison isn't useful to save
-            filter(!identical,
-                   .data$V2 %ni% removed_cols)
-          )
+            filter(
+              !identical,
+              .data$V2 %ni% removed_cols
+            )
+        )
 
       folds_colnames <- extract_fold_colnames(data)
 
-      if (length(folds_colnames) < expected_total_num_fold_cols){
+      if (length(folds_colnames) < expected_total_num_fold_cols) {
         fold_cols_to_generate <- expected_total_num_fold_cols - length(folds_colnames)
       }
 
       # If we have generated too many unique folds cols
       # NOTE: This should not happen anymore
       # Remove some
-      if (length(folds_colnames) > expected_total_num_fold_cols){
-        cols_to_remove <- folds_colnames[(expected_total_num_fold_cols + 1) : length(folds_colnames)]
+      if (length(folds_colnames) > expected_total_num_fold_cols) {
+        cols_to_remove <- folds_colnames[(expected_total_num_fold_cols + 1):length(folds_colnames)]
         data <- data %>% base_deselect(cols = cols_to_remove)
         continue_repeating <- FALSE
-
-      } else if (length(folds_colnames) == expected_total_num_fold_cols || times_repeated == max_iters){
+      } else if (length(folds_colnames) == expected_total_num_fold_cols || times_repeated == max_iters) {
         # If we have the right number of fold columns
         # or we have reached the max times
         # we wish to repeat the repeating
         # (TODO Find better vocabulary for this!)
         continue_repeating <- FALSE
-
       } else {
         # Find the max number in .folds_xx
         max_fold_cols_number <- extract_max_fold_cols_number(folds_colnames)
       }
-
     } else {
       continue_repeating <- FALSE
     }
   }
 
-  if (num_fold_cols == 1 && expected_total_num_fold_cols == 1){
+  if (num_fold_cols == 1 && expected_total_num_fold_cols == 1) {
     # Group by .folds
     data <- data %>%
-      group_by(!! as.name('.folds'))
-
+      group_by(!!as.name(".folds"))
   } else {
     # Rename the fold columns to have consecutive number
     folds_colnames <- extract_fold_colnames(data)
@@ -577,8 +588,116 @@ fold <- function(data,
   }
 
   # Return data
-  return(data)
-
-
+  data
 }
 
+
+check_fold <- function(data,
+                       k,
+                       cat_col,
+                       num_col,
+                       id_col,
+                       method,
+                       id_aggregation_fn,
+                       extreme_pairing_levels,
+                       num_fold_cols,
+                       unique_fold_cols_only,
+                       max_iters,
+                       handle_existing_fold_cols,
+                       parallel){
+
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+  checkmate::assert_data_frame(x = data, min.rows = 1, add = assert_collection)
+  checkmate::reportAssertions(assert_collection)
+  checkmate::assert_number(x = k, lower = 0, upper = nrow(data), finite = TRUE, add = assert_collection)
+  checkmate::assert_count(x = extreme_pairing_levels, positive = TRUE, add = assert_collection)
+  checkmate::assert_count(x = num_fold_cols, positive = TRUE, add = assert_collection)
+  checkmate::assert_count(x = max_iters, positive = TRUE, add = assert_collection)
+  checkmate::assert_flag(x = unique_fold_cols_only, add = assert_collection)
+  checkmate::assert_flag(x = parallel, add = assert_collection)
+  checkmate::assert_character(x = cat_col, min.len = 1, any.missing = FALSE,
+                              null.ok = TRUE, unique = TRUE,
+                              names = "unnamed", add = assert_collection)
+  checkmate::assert_string(x = num_col, na.ok = FALSE, min.chars = 1,
+                           null.ok = TRUE,  add = assert_collection)
+  checkmate::assert_string(x = id_col, na.ok = FALSE, min.chars = 1,
+                           null.ok = TRUE,  add = assert_collection)
+  checkmate::assert_string(x = method, min.chars = 1, add = assert_collection)
+  checkmate::assert_function(x = id_aggregation_fn, add = assert_collection)
+  checkmate::assert_string(x = handle_existing_fold_cols,
+                           add = assert_collection)
+  checkmate::reportAssertions(assert_collection)
+
+  # Convert k to wholenumber if given as percentage
+  if (!arg_is_wholenumber_(k) && is_between_(k, 0, 1)) {
+    rows_per_fold <- convert_percentage_(k, data)
+    k <- ceiling(nrow(data) / rows_per_fold)
+  }
+  checkmate::assert_count(x = k, positive = TRUE, add = assert_collection)
+
+  # TODO Could have a helper for adding this kind of message:
+  if (!is.null(cat_col) && length(setdiff(cat_col, colnames(data))) != 0){
+    assert_collection$push(paste0("'cat_col' column(s), '",
+                                  paste0(setdiff(cat_col, colnames(data)), collapse = ", "),
+                                  "', not found in 'data'."))
+  }
+  if (!is.null(num_col)){
+    if (num_col %ni% colnames(data)){
+      assert_collection$push(paste0("'num_col' column, '", num_col, "', not found in 'data'."))
+    }
+    checkmate::reportAssertions(assert_collection)
+    if (!checkmate::test_numeric(data[[num_col]])){
+      assert_collection$push(paste0("'num_col' column must be numeric."))
+    }
+  }
+  if (!is.null(id_col) && id_col %ni% colnames(data)) {
+    assert_collection$push(paste0("'id_col' column, '", id_col, "', not found in 'data'."))
+  }
+  checkmate::assert_names(
+    x = method,
+    subset.of = c("n_dist", "n_fill", "n_last", "n_rand", "greedy", "staircase"),
+    add = assert_collection
+  )
+  checkmate::assert_names(
+    x = handle_existing_fold_cols,
+    subset.of = c("keep_warn", "keep", "remove"),
+    add = assert_collection
+  )
+  checkmate::reportAssertions(assert_collection)
+  if (!is.null(id_col)) {
+    checkmate::assert_factor(x = data[[id_col]], add = assert_collection)
+    if (!is.null(cat_col)) {
+      if (id_col %in% cat_col) {
+        assert_collection$push("'id_col' and 'cat_col' cannot contain the same column name.")
+      }
+      # Check that cat_col is constant within each ID
+      # Note: I tested and count() is faster than group_keys()
+      counts <- dplyr::count(data, !!as.name(id_col), !!as.name(cat_col))
+      if (nrow(counts) != length(unique(counts[[id_col]]))) {
+        assert_collection$push("The value in 'data[[cat_col]]' must be constant within each ID.")
+      }
+    }
+  }
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
+
+  # If num_col is specified, warn that method is ignored
+  if (!is.null(num_col) & method != "n_dist") {
+    warning(paste0(
+      "'method' is ignored when 'num_col' is not 'NULL'. ",
+      "This warning occurs, because 'method' is not the default value."
+    ))
+  }
+
+  # If method is either greedy or staircase and cat_col is not NULL
+  # we don't want k elements per level in cat_col
+  # so we divide k by the number of levels in cat_col
+  if (method %in% c("greedy", "staircase") && !is.null(cat_col)) {
+    n_levels_cat_col <- length(unique(data[[cat_col]]))
+    k <- ceiling(k / n_levels_cat_col)
+  }
+
+  list("k" = k)
+
+}

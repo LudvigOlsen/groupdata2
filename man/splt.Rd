@@ -4,95 +4,103 @@
 \alias{splt}
 \title{Split data by a range of methods.}
 \usage{
-splt(data, n, method = "n_dist", starts_col = NULL,
-  force_equal = FALSE, allow_zero = FALSE, descending = FALSE,
-  randomize = FALSE, remove_missing_starts = FALSE)
+splt(
+  data,
+  n,
+  method = "n_dist",
+  starts_col = NULL,
+  force_equal = FALSE,
+  allow_zero = FALSE,
+  descending = FALSE,
+  randomize = FALSE,
+  remove_missing_starts = FALSE
+)
 }
 \arguments{
 \item{data}{Data frame or vector.}
 
 \item{n}{\emph{Dependent on method.}
 
- Number of groups (default), group size, list of group sizes,
- list of group starts, step size or prime number to start at. See \code{method}.
+Number of groups (default), group size, list of group sizes,
+list of group starts, step size or prime number to start at. See \code{method}.
 
- Passed as whole number(s) and/or percentage(s) (\code{0} < \code{n} < \code{1})
- and/or character.
+Passed as whole number(s) and/or percentage(s) (\code{0} < \code{n} < \code{1})
+and/or character.
 
- Method \code{l_starts} allows \code{'auto'}.}
+Method \code{l_starts} allows \code{'auto'}.}
 
 \item{method}{\code{greedy}, \code{n_dist}, \code{n_fill}, \code{n_last},
- \code{n_rand}, \code{l_sizes}, \code{l_starts}, \code{staircase}, or
- \code{primes}.
+\code{n_rand}, \code{l_sizes}, \code{l_starts}, \code{staircase}, or
+\code{primes}.
 
- \strong{Notice}: examples are sizes of the generated groups
- based on a vector with 57 elements.
+\strong{Notice}: examples are sizes of the generated groups
+based on a vector with 57 elements.
 
- \subsection{greedy}{Divides up the data greedily given a specified group size
- \eqn{(e.g. 10, 10, 10, 10, 10, 7)}.
+\subsection{greedy}{Divides up the data greedily given a specified group size
+\eqn{(e.g. 10, 10, 10, 10, 10, 7)}.
 
- \code{n} is group size}
+\code{n} is group size}
 
- \subsection{n_dist (default)}{Divides the data into a specified number of groups and
- distributes excess data points across groups
- \eqn{(e.g. 11, 11, 12, 11, 12)}.
+\subsection{n_dist (default)}{Divides the data into a specified number of groups and
+distributes excess data points across groups
+\eqn{(e.g. 11, 11, 12, 11, 12)}.
 
- \code{n} is number of groups}
+\code{n} is number of groups}
 
- \subsection{n_fill}{Divides the data into a specified number of groups and
- fills up groups with excess data points from the beginning
- \eqn{(e.g. 12, 12, 11, 11, 11)}.
+\subsection{n_fill}{Divides the data into a specified number of groups and
+fills up groups with excess data points from the beginning
+\eqn{(e.g. 12, 12, 11, 11, 11)}.
 
- \code{n} is number of groups}
+\code{n} is number of groups}
 
- \subsection{n_last}{Divides the data into a specified number of groups.
- It finds the most equal group sizes possible,
- using all data points. Only the last group is able to differ in size
- \eqn{(e.g. 11, 11, 11, 11, 13)}.
+\subsection{n_last}{Divides the data into a specified number of groups.
+It finds the most equal group sizes possible,
+using all data points. Only the last group is able to differ in size
+\eqn{(e.g. 11, 11, 11, 11, 13)}.
 
- \code{n} is number of groups}
+\code{n} is number of groups}
 
- \subsection{n_rand}{Divides the data into a specified number of groups.
- Excess data points are placed randomly in groups (only 1 per group)
- \eqn{(e.g. 12, 11, 11, 11, 12)}.
+\subsection{n_rand}{Divides the data into a specified number of groups.
+Excess data points are placed randomly in groups (only 1 per group)
+\eqn{(e.g. 12, 11, 11, 11, 12)}.
 
- \code{n} is number of groups}
+\code{n} is number of groups}
 
- \subsection{l_sizes}{Divides up the data by a list of group sizes.
- Excess data points are placed in an extra group at the end.
- \eqn{(e.g. n = list(0.2,0.3) outputs groups with sizes (11,17,29))}.
+\subsection{l_sizes}{Divides up the data by a list of group sizes.
+Excess data points are placed in an extra group at the end.
+\eqn{(e.g. n = list(0.2,0.3) outputs groups with sizes (11,17,29))}.
 
- \code{n} is a list of group sizes}
+\code{n} is a list of group sizes}
 
- \subsection{l_starts}{Starts new groups at specified values of vector.
+\subsection{l_starts}{Starts new groups at specified values of vector.
 
- \code{n} is a list of starting positions.
- Skip values by c(value, skip_to_number) where skip_to_number is the nth appearance of the value
- in the vector.
- Groups automatically start from first data point.
+\code{n} is a list of starting positions.
+Skip values by c(value, skip_to_number) where skip_to_number is the nth appearance of the value
+in the vector.
+Groups automatically start from first data point.
 
- \eqn{E.g. n = c(1,3,7,25,50) outputs groups with sizes (2,4,18,25,8)}.
+\eqn{E.g. n = c(1,3,7,25,50) outputs groups with sizes (2,4,18,25,8)}.
 
- To skip: \eqn{given vector c("a", "e", "o", "a", "e", "o"), n = list("a", "e", c("o", 2))
+To skip: \eqn{given vector c("a", "e", "o", "a", "e", "o"), n = list("a", "e", c("o", 2))
  outputs groups with sizes (1,4,1)}.}
 
- If passing \eqn{n = 'auto'} the starting positions are automatically found with
- \code{\link{find_starts}()}. Note that all \code{NA}s are first replaced by a single unique value,
- meaning that they will also cause group starts.
+If passing \eqn{n = 'auto'} the starting positions are automatically found with
+\code{\link{find_starts}()}. Note that all \code{NA}s are first replaced by a single unique value,
+meaning that they will also cause group starts.
 
- \subsection{staircase}{Uses step size to divide up the data.
- Group size increases with 1 step for every group,
- until there is no more data
- \eqn{(e.g. 5, 10, 15, 20, 7)}.
+\subsection{staircase}{Uses step size to divide up the data.
+Group size increases with 1 step for every group,
+until there is no more data
+\eqn{(e.g. 5, 10, 15, 20, 7)}.
 
- \code{n} is step size}
+\code{n} is step size}
 
- \subsection{primes}{Uses prime numbers as group sizes.
- Group size increases to the next prime number
- until there is no more data.
- \eqn{(e.g. 5, 7, 11, 13, 17, 4)}.
+\subsection{primes}{Uses prime numbers as group sizes.
+Group size increases to the next prime number
+until there is no more data.
+\eqn{(e.g. 5, 7, 11, 13, 17, 4)}.
 
- \code{n} is the prime number to start at}}
+\code{n} is the prime number to start at}}
 
 \item{starts_col}{Name of column with values to match in method \code{l_starts}
 when data is a data frame. Pass \code{'index'} to use row names. (Character)}
@@ -116,8 +124,10 @@ For method \code{l_starts} only.
 List of the split data
 }
 \description{
+\Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
+
 Divides data into groups by a range of methods.
- Splits data by these groups.
+Splits data by these groups.
 }
 \examples{
 # Attach packages
@@ -125,18 +135,22 @@ library(groupdata2)
 library(dplyr)
 
 # Create data frame
-df <- data.frame("x"=c(1:12),
- "species" = rep(c('cat','pig', 'human'), 4),
- "age" = sample(c(1:100), 12))
+df <- data.frame(
+  "x" = c(1:12),
+  "species" = factor(rep(c("cat", "pig", "human"), 4)),
+  "age" = sample(c(1:100), 12)
+)
 
 # Using splt()
-df_list <- splt(df, 5, method = 'n_dist')
-
+df_list <- splt(df, 5, method = "n_dist")
 }
 \seealso{
-Other grouping functions: \code{\link{all_groups_identical}},
-  \code{\link{fold}}, \code{\link{group_factor}},
-  \code{\link{group}}, \code{\link{partition}}
+Other grouping functions: 
+\code{\link{all_groups_identical}()},
+\code{\link{fold}()},
+\code{\link{group_factor}()},
+\code{\link{group}()},
+\code{\link{partition}()}
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}

@@ -1,19 +1,18 @@
-# R CMD check NOTE handling
-if(getRversion() >= "2.15.1")  utils::globalVariables(c("groups", "n_elements"))
-
 
 ## %staircase%
-#' @title Find remainder from staircase method.
-#' @description When using the staircase method,
-#' the last group might not have the size of the second last
-#' group + step size. Use \%staircase\% to find this remainder.
-#' @author Ludvig Renbo Olsen, \email{mail@@ludvigolsen.dk}
+#' @title Find remainder from 'staircase' method.
+#' @description
+#'  \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
+#'
+#'  When using the \code{staircase} method,
+#'  the last group might not have the size of the second last
+#'  group + step size. Use \code{\%staircase\%} to find this remainder.
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @param size Size to staircase (Integer)
 #' @param step_size Step size (Integer)
 #' @return Remainder (Integer).
-#' Returns 0 if the last group
-#' has the size of the second last group + step size.
+#'  Returns \code{0} if the last group has the size of the second last group + step size.
 #' @family staircase tools
 #' @family remainder tools
 #' @aliases staircase
@@ -45,20 +44,25 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("groups", "n_elements"))
   # remainder of 0
   #
 
-  stopifnot(step_size > 0)
-
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+  checkmate::assert_count(x = size, add = assert_collection)
+  checkmate::assert_count(x = step_size, positive = TRUE, add = assert_collection)
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
 
   # Get the number of groups with no staircasing
   n_groups <- ceiling(size/step_size)
 
   # Create a data frame with 1 column containing a group index
-  group_data <- data.frame('groups' = c(1:n_groups))
+  group_data <- data.frame('groups' = seq_len(n_groups),
+                           stringsAsFactors = FALSE)
 
   # Create a column with number of elements (group number times step size)
   # Create a column with cumulative sum of the number of elements
   group_data <- group_data %>%
-    dplyr::mutate(n_elements = groups * step_size,
-                  cumsum = cumsum(n_elements))
+    dplyr::mutate(n_elements = .data$groups * step_size,
+                  cumsum = cumsum(.data$n_elements))
 
   # Get the first row where cumsum is larger or equal to 'size'
   last_group_row <- group_data[group_data[["cumsum"]] >= size ,][1 ,]
@@ -89,10 +93,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("groups", "n_elements"))
     remainder <- n_elements_last_group - excess_elements
   }
 
-
-
   # Return remainder (size of last group)
-  return(remainder)
-
+  remainder
 
 }

@@ -1,7 +1,10 @@
 
 ## group_factor
 #' @title Create grouping factor for subsetting your data.
-#' @description Divides data into groups by a range of methods.
+#' @description
+#'  \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
+#'
+#'  Divides data into groups by a range of methods.
 #'  Creates and returns a grouping factor
 #'  with 1s for group 1, 2s for group 2, etc.
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
@@ -110,170 +113,275 @@
 #' library(dplyr)
 #'
 #' # Create a data frame
-#' df <- data.frame("x"=c(1:12),
-#'  "species" = rep(c('cat','pig', 'human'), 4),
-#'  "age" = sample(c(1:100), 12))
+#' df <- data.frame(
+#'   "x" = c(1:12),
+#'   "species" = factor(rep(c("cat", "pig", "human"), 4)),
+#'   "age" = sample(c(1:100), 12)
+#' )
 #'
 #' # Using group_factor() with n_dist
-#' groups <- group_factor(df, 5, method = 'n_dist')
+#' groups <- group_factor(df, 5, method = "n_dist")
 #' df$groups <- groups
 #'
 #' # Using group_factor() with greedy
-#' groups <- group_factor(df, 5, method = 'greedy')
+#' groups <- group_factor(df, 5, method = "greedy")
 #' df$groups <- groups
 #'
 #' # Using group_factor() with l_sizes
-#' groups <- group_factor(df, list(0.2, 0.3), method = 'l_sizes')
+#' groups <- group_factor(df, list(0.2, 0.3), method = "l_sizes")
 #' df$groups <- groups
 #'
-#'# Using group_factor() with l_starts
-#' groups <- group_factor(df, list('cat', c('pig',2), 'human'),
-#'                        method = 'l_starts', starts_col = 'species')
+#' # Using group_factor() with l_starts
+#' groups <- group_factor(df, list("cat", c("pig", 2), "human"),
+#'   method = "l_starts", starts_col = "species"
+#' )
 #' df$groups <- groups
-#'
-group_factor <- function(data, n, method = 'n_dist', starts_col = NULL, force_equal = FALSE,
+group_factor <- function(data, n, method = "n_dist", starts_col = NULL, force_equal = FALSE,
                          allow_zero = FALSE, descending = FALSE,
-                         randomize = FALSE, remove_missing_starts = FALSE){
+                         randomize = FALSE, remove_missing_starts = FALSE) {
 
   #
   # Takes data frame or vector
   # Returns a grouping factor
   #
 
+  # Check and prep inputs
+  checks <- check_group_factor(
+    data = data, n = n,
+    method = method,
+    starts_col = starts_col,
+    force_equal = force_equal,
+    allow_zero = allow_zero,
+    descending = descending,
+    randomize = randomize,
+    remove_missing_starts = remove_missing_starts)
+
+  n <- checks[["n"]]
+  starts_col <- checks[["starts_col"]]
+
   ### Allow zero ###
 
   # If allow_zero is TRUE and n is 0
   # return NAs instead of giving an error
-  if (isTRUE(allow_zero) && n == 0){
-
-    if(is.data.frame(data)){
-
+  if (isTRUE(allow_zero) &&
+      checkmate::test_number(n) &&
+      n == 0) {
+    if (is.data.frame(data)) {
       return(rep(NA, each = nrow(data)))
-
     } else {
-
       return(rep(NA, each = length(data)))
-
     }
-
-
   }
-
-  # Check arguments
-  # Convert n if given as percentage
-  # Check more arguments
-  n <- check_convert_check_(data, n, method, force_equal,
-                            allow_zero, descending,
-                            remove_missing_starts = remove_missing_starts,
-                            starts_col = starts_col)
 
   # For method l_starts
   # If data is a data frame and starts_col is not NULL
   # We want to get the column with values to match
 
-  starts_col <- assign_starts_col(data, starts_col)
-
-  # Create grouping factors
-  # .. Check if data is a data frame or a vector
-  # .. Call grouping factor function for specified method
-
-  if(is.data.frame(data)){
-
-    if(method == 'greedy'){
-
-      groups <- greedy_group_factor_(data[[1]], n, force_equal, descending)
-
-    } else if (method == 'n_dist'){
-
-      groups <- n_dist_group_factor_(data[[1]], n, force_equal, descending)
-
-    } else if (method == 'n_last'){
-
-      groups <- n_last_group_factor_(data[[1]], n, force_equal, descending)
-
-    } else if (method == 'n_fill'){
-
-      groups <- n_fill_group_factor_(data[[1]], n, force_equal, descending)
-
-    } else if (method == 'n_rand'){
-
-      groups <- n_rand_group_factor_(data[[1]], n, force_equal, descending)
-
-    } else if (method == 'l_sizes'){
-
-      groups <- l_sizes_group_factor_(data[[1]], n, force_equal, descending)
-
-    } else if (method == 'l_starts'){
-
-      # Notice that we pass the starts_col as data
-
-      groups <- l_starts_group_factor_(starts_col, n, force_equal,
-                                       descending,
-                                       remove_missing_starts = remove_missing_starts)
-
-    } else if (method == 'staircase'){
-
-      groups <- stair_split_group_factor_(data[[1]], n, force_equal, descending)
-
-    } else if (method == 'primes'){
-
-      groups <- primes_split_group_factor_(data[[1]], n, force_equal, descending)
-
+  if (method == "l_starts") {
+    if (is.data.frame(data)){
+      starts_col <- assign_starts_col(data = data, starts_col = starts_col)
+    } else {
+      if (is.factor(data)){
+        warning("'data' is a factor. Converting to character.")
+        data <- as.character(data)
+      }
     }
-
-  } else {
-
-    if(method == 'greedy'){
-
-      groups <- greedy_group_factor_(data, n, force_equal, descending)
-
-    } else if (method == 'n_dist'){
-
-      groups <- n_dist_group_factor_(data, n, force_equal, descending)
-
-    } else if (method == 'n_last'){
-
-      groups <- n_last_group_factor_(data, n, force_equal, descending)
-
-    } else if (method == 'n_fill'){
-
-      groups <- n_fill_group_factor_(data, n, force_equal, descending)
-
-    } else if (method == 'n_rand'){
-
-      groups <- n_rand_group_factor_(data, n, force_equal, descending)
-
-    } else if (method == 'l_sizes'){
-
-      groups <- l_sizes_group_factor_(data, n, force_equal, descending)
-
-    } else if (method == 'l_starts'){
-
-      groups <- l_starts_group_factor_(data, n, force_equal, descending, remove_missing_starts)
-
-    } else if (method == 'staircase'){
-
-      groups <- stair_split_group_factor_(data, n, force_equal, descending)
-
-    } else if (method == 'primes'){
-
-      groups <- primes_split_group_factor_(data, start_at=n, force_equal, descending)
-
-    }
-
   }
 
-  # If randomize is set to TRUE
-  # .. reorganize the grouping factor randomly
+  # Set data as vector
+  if (is.data.frame(data)) {
+    # The grouping factor methods work on a vector
+    if (!is.null(starts_col)) # for l_starts
+      data <- starts_col
+    else
+      data <- seq_len(nrow(data))
+  }
 
-  if (isTRUE(randomize)){
+  # Create grouping factors
+  if (method == "greedy") {
+    groups <- greedy_group_factor_(
+      v = data,
+      size = n,
+      force_equal = force_equal,
+      descending = descending
+    )
+  } else if (method == "n_dist") {
+    groups <- n_dist_group_factor_(
+      v = data,
+      n_windows =  n,
+      force_equal = force_equal,
+      descending = descending
+    )
+  } else if (method == "n_last") {
+    groups <- n_last_group_factor_(
+      v = data,
+      n_windows = n,
+      force_equal = force_equal,
+      descending = descending
+    )
+  } else if (method == "n_fill") {
+    groups <- n_fill_group_factor_(
+      v = data,
+      n_windows = n,
+      force_equal = force_equal,
+      descending = descending
+    )
+  } else if (method == "n_rand") {
+    groups <- n_rand_group_factor_(
+      v = data,
+      n_windows = n,
+      force_equal = force_equal,
+      descending = descending
+    )
+  } else if (method == "l_sizes") {
+    groups <- l_sizes_group_factor_(
+      v = data,
+      n = n,
+      force_equal = force_equal,
+      descending = descending
+    )
+  } else if (method == "l_starts") {
+    groups <- l_starts_group_factor_(
+      v = data, # is starts_col when originally data frame
+      n = n,
+      force_equal = force_equal,
+      descending = descending,
+      remove_missing_starts = remove_missing_starts
+    )
+  } else if (method == "staircase") {
+    groups <- stair_split_group_factor_(
+      v = data,
+      step_size = n,
+      force_equal = force_equal,
+      descending = descending
+    )
+  } else if (method == "primes") {
+    groups <- primes_split_group_factor_(
+      v = data,
+      start_at = n,
+      force_equal = force_equal,
+      descending = descending
+    )
+  }
 
+  # Shuffle groups
+  if (isTRUE(randomize)) {
     groups <- sample(groups)
-
   }
 
   # Return grouping factor
-  return(groups)
-
+  groups
 }
 
+check_group_factor <- function(data, n, method, starts_col, force_equal,
+                               allow_zero, descending,
+                               randomize, remove_missing_starts,
+                               available_methods = c(
+                                 "greedy", "n_dist", "n_fill", "n_last", "n_rand",
+                                 "l_sizes", "l_starts", "staircase", "primes")){
+
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+  if (is.null(n)){
+    assert_collection$push("'n' cannot be 'NULL'")
+  }
+  if (is.null(data)){
+    assert_collection$push("'data' cannot be 'NULL'")
+  }
+  if (!is.data.frame(data) && length(data) == 1 && is.na(data)){
+    assert_collection$push("'data' cannot be 'NA'.")
+  }
+  checkmate::reportAssertions(assert_collection)
+
+  checkmate::assert(
+    checkmate::check_data_frame(x = data, min.cols = 1, min.rows = 1),
+    checkmate::check_vector(x = data, min.len = 1, strict = TRUE),
+    checkmate::check_factor(x = data, min.len = 1),
+    .var.name = "data")
+  checkmate::assert(
+    checkmate::check_numeric(x = n, finite = TRUE,
+                             any.missing = FALSE),
+    checkmate::check_character(x = n, any.missing = FALSE),
+    checkmate::check_list(x = n, types = c("character", "numeric", "list"),
+                          any.missing = FALSE),
+    .var.name = "n")
+  checkmate::assert_string(x = method, min.chars = 1, add = assert_collection)
+  checkmate::assert(
+    checkmate::check_string(x = starts_col, min.chars = 1, null.ok = TRUE),
+    checkmate::check_count(x = starts_col, positive = TRUE, null.ok = TRUE),
+    .var.name = "starts_col")
+  checkmate::assert_flag(x = force_equal, add = assert_collection)
+  checkmate::assert_flag(x = allow_zero, add = assert_collection)
+  checkmate::assert_flag(x = descending, add = assert_collection)
+  checkmate::assert_flag(x = randomize, add = assert_collection)
+  checkmate::assert_flag(x = remove_missing_starts, add = assert_collection)
+
+  checkmate::reportAssertions(assert_collection)
+  checkmate::assert_names(x = method, subset.of = available_methods,
+                          what = "method", add = assert_collection)
+  if (!isTRUE(allow_zero) &&
+      checkmate::test_number(n) &&
+      n == 0){
+    assert_collection$push("'n' was 0. If this is on purpose, set 'allow_zero' to 'TRUE'.")
+    checkmate::reportAssertions(assert_collection)
+  }
+  if (!is.null(starts_col)) {
+    if (!is.data.frame(data)){
+      assert_collection$push("when 'starts_col' is specified, 'data' must be a data frame.")
+      checkmate::reportAssertions(assert_collection)
+    }
+    if (is.character(starts_col) && starts_col %ni% c(colnames(data), "index", ".index")){
+      assert_collection$push(paste0("'starts_col' column, '", starts_col, "', not found in 'data'."))
+    } else if (is.numeric(starts_col) && ncol(data) < starts_col){
+      assert_collection$push(
+        paste0("'starts_col' was passed as a column index but was larger th",
+               "an the number of columns in 'data'.")
+      )
+    }
+    checkmate::reportAssertions(assert_collection)
+    if (is.numeric(starts_col)) starts_col <- colnames(data)[[starts_col]]
+    checkmate::assert(
+      checkmate::check_string(x = starts_col, pattern = "^\\.?index$"),
+      checkmate::check_numeric(x = data[[starts_col]]),
+      checkmate::check_character(x = data[[starts_col]]),
+      checkmate::check_factor(x = data[[starts_col]]),
+      .var.name = "data[[starts_col]]"
+    )
+  }
+
+  if (method != "l_starts") {
+    if (is.character(n)){
+      assert_collection$push("'n' can only be character when method is 'l_starts'.")
+    }
+    if (!is.null(starts_col)){
+      assert_collection$push("when method is not 'l_starts', 'starts_col' must be 'NULL'.")
+    }
+  }
+  if (is.list(n) && method %ni% c("l_starts", "l_sizes")){
+    assert_collection$push("'n' can only be a list when method is either 'l_starts' or 'l_sizes'.")
+  }
+  if (method == "l_starts" &&
+      is.data.frame(data) &&
+      is.null(starts_col)){
+    assert_collection$push("when 'method' is 'l_starts' and 'data' is a data frame, 'starts_col' must be specified.")
+  }
+
+  # Convert n if given as single percentage
+  n <- convert_n(n = n, data = data, method = method, allow_zero = allow_zero)
+
+  # Check number of elements in n
+  if (is.data.frame(data)){
+    if (length(n) > nrow(data)){
+      assert_collection$push("'n' cannot have more elements than the number of rows in 'data'.")
+    }
+  } else if (length(n) > length(data)){
+    assert_collection$push("'n' cannot have more elements than 'data'.")
+  }
+
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
+
+  list("starts_col" = starts_col,
+       "n" = n)
+
+}

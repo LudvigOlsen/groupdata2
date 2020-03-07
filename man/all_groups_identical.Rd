@@ -7,53 +7,60 @@
 all_groups_identical(x, y)
 }
 \arguments{
-\item{x, y}{Two grouping factors (vectors/factors with group identifiers) to compare.}
+\item{x, y}{Two grouping factors (vectors/factors with group identifiers) to compare.
+
+\strong{N.B.} Both are converted to character vectors.}
 }
 \value{
-Whether \strong{all} groups in \code{x} are the same in \code{y}, memberwise. (logical)
+Whether \strong{all} groups in \code{x} are the same in \code{y}, \emph{memberwise}. (logical)
 }
 \description{
+\Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}
+
 Checks whether two grouping factors contain the same groups,
- looking only at the group members, allowing for different group names / identifiers.
+looking only at the group members, allowing for different group names / identifiers.
 }
 \details{
 Both factors are sorted by \code{x}.
- A grouping factor is created with new groups starting at the values in
- \code{y} which differ from the previous row
- (i.e. \code{\link{group}()} with \code{method = "l_starts"} and \code{n = "auto"}).
- A similar grouping factor is created for \code{x},
- to have group identifiers range from \code{1} to the number of groups.
- The two generated grouping factors are tested for equality.
+A grouping factor is created with new groups starting at the values in
+\code{y} which differ from the previous row
+(i.e. \code{\link{group}()} with \code{method = "l_starts"} and \code{n = "auto"}).
+A similar grouping factor is created for \code{x},
+to have group identifiers range from \code{1} to the number of groups.
+The two generated grouping factors are tested for equality.
 }
 \examples{
 # Attach groupdata2
 library(groupdata2)
 
 # Same groups, different identifiers
-x1 <- c(1,1,2,2,3,3)
-x2 <- c(2,2,1,1,4,4)
+x1 <- c(1, 1, 2, 2, 3, 3)
+x2 <- c(2, 2, 1, 1, 4, 4)
 all_groups_identical(x1, x2) # TRUE
 
 # Same groups, different identifier types
-x1 <- c(1,1,2,2,3,3)
-x2 <- c("a","a","b","b","c","c")
+x1 <- c(1, 1, 2, 2, 3, 3)
+x2 <- c("a", "a", "b", "b", "c", "c")
 all_groups_identical(x1, x2) # TRUE
 
 # Not same groups
 # Note that all groups must be the same to return TRUE
-x1 <- c(1,1,2,2,3,3)
-x2 <- c(1,2,2,3,3,3)
+x1 <- c(1, 1, 2, 2, 3, 3)
+x2 <- c(1, 2, 2, 3, 3, 3)
 all_groups_identical(x1, x2) # FALSE
 
 # Different number of groups
-x1 <- c(1,1,2,2,3,3)
-x2 <- c(1,1,1,2,2,2)
+x1 <- c(1, 1, 2, 2, 3, 3)
+x2 <- c(1, 1, 1, 2, 2, 2)
 all_groups_identical(x1, x2) # FALSE
 }
 \seealso{
-Other grouping functions: \code{\link{fold}},
-  \code{\link{group_factor}}, \code{\link{group}},
-  \code{\link{partition}}, \code{\link{splt}}
+Other grouping functions: 
+\code{\link{fold}()},
+\code{\link{group_factor}()},
+\code{\link{group}()},
+\code{\link{partition}()},
+\code{\link{splt}()}
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}

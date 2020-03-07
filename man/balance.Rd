@@ -4,96 +4,105 @@
 \alias{balance}
 \title{Balance groups by up- and downsampling.}
 \usage{
-balance(data, size, cat_col, id_col = NULL, id_method = "n_ids",
-  mark_new_rows = FALSE, new_rows_col_name = ".new_row")
+balance(
+  data,
+  size,
+  cat_col,
+  id_col = NULL,
+  id_method = "n_ids",
+  mark_new_rows = FALSE,
+  new_rows_col_name = ".new_row"
+)
 }
 \arguments{
 \item{data}{Data frame.}
 
 \item{size}{Size to fix group sizes to.
- Can be a specific number, given as a whole number, or one of the following strings:
- \code{"min"}, \code{"max"}, \code{"mean"}, \code{"median"}.
+Can be a specific number, given as a whole number, or one of the following strings:
+\code{"min"}, \code{"max"}, \code{"mean"}, \code{"median"}.
 
- \subsection{number}{
- Fix each group to have the size of the specified number of row.
- Uses downsampling for groups with too many rows and upsampling for groups with too few rows.
- }
- \subsection{min}{
- Fix each group to have the size of smallest group in the dataset.
- Uses downsampling on all groups that have too many rows.
- }
- \subsection{max}{
- Fix each group to have the size of largest group in the dataset.
- Uses upsampling on all groups that have too few rows.
- }
- \subsection{mean}{
- Fix each group to have the mean group size in the dataset. The mean is rounded.
- Uses downsampling for groups with too many rows and upsampling for groups with too few rows.
- }
- \subsection{median}{
- Fix each group to have the median group size in the dataset. The median is rounded.
- Uses downsampling for groups with too many rows and upsampling for groups with too few rows.
- }}
+\subsection{number}{
+Fix each group to have the size of the specified number of row.
+Uses downsampling for groups with too many rows and upsampling for groups with too few rows.
+}
+\subsection{min}{
+Fix each group to have the size of smallest group in the dataset.
+Uses downsampling on all groups that have too many rows.
+}
+\subsection{max}{
+Fix each group to have the size of largest group in the dataset.
+Uses upsampling on all groups that have too few rows.
+}
+\subsection{mean}{
+Fix each group to have the mean group size in the dataset. The mean is rounded.
+Uses downsampling for groups with too many rows and upsampling for groups with too few rows.
+}
+\subsection{median}{
+Fix each group to have the median group size in the dataset. The median is rounded.
+Uses downsampling for groups with too many rows and upsampling for groups with too few rows.
+}}
 
 \item{cat_col}{Name of categorical variable to balance by. (Character)}
 
 \item{id_col}{Name of factor with IDs. (Character)
 
- IDs are considered entities, e.g. allowing us to add or remove all rows for an ID.
- How this is used is up to the \code{id_method}.
+IDs are considered entities, e.g. allowing us to add or remove all rows for an ID.
+How this is used is up to the \code{id_method}.
 
- E.g. If we have measured a participant multiple times and
- want make sure that we keep all these measurements. Then we would either
- remove/add all measurements for the participant or leave in
- all measurements for the participant.}
+E.g. If we have measured a participant multiple times and
+want make sure that we keep all these measurements. Then we would either
+remove/add all measurements for the participant or leave in
+all measurements for the participant.}
 
 \item{id_method}{Method for balancing the IDs. (Character)
 
- \code{n_ids}, \code{n_rows_c}, \code{distributed}, or \code{nested}.
- \subsection{n_ids (default)}{
- Balances on ID level only. It makes sure there are the same number of IDs for each category.
- This might lead to a different number of rows between categories.
- }
- \subsection{n_rows_c}{
- Attempts to level the number of rows per category, while only removing/adding entire IDs.
- This is done in 2 steps:
- \enumerate{
- \item If a category needs to add all its rows one or more times, the data is repeated.
- \item Iteratively, the ID with the number of rows closest to the
-    lacking/excessive number of rows is added/removed.
-    This happens until adding/removing the closest ID would lead to a size further from
-    the target size than the current size.
-    If multiple IDs are closest, one is randomly sampled.
-    }
- }
- \subsection{distributed}{
- Distributes the lacking/excess rows equally between the IDs.
- If the number to distribute can not be equally divided, some IDs will have 1 row more/less than the others.
- }
- \subsection{nested}{
- Calls \code{balance()} on each category with IDs as cat_col.
+\code{n_ids}, \code{n_rows_c}, \code{distributed}, or \code{nested}.
+\subsection{n_ids (default)}{
+Balances on ID level only. It makes sure there are the same number of IDs for each category.
+This might lead to a different number of rows between categories.
+}
+\subsection{n_rows_c}{
+Attempts to level the number of rows per category, while only removing/adding entire IDs.
+This is done in 2 steps:
+\enumerate{
+\item If a category needs to add all its rows one or more times, the data is repeated.
+\item Iteratively, the ID with the number of rows closest to the
+lacking/excessive number of rows is added/removed.
+This happens until adding/removing the closest ID would lead to a size further from
+the target size than the current size.
+If multiple IDs are closest, one is randomly sampled.
+}
+}
+\subsection{distributed}{
+Distributes the lacking/excess rows equally between the IDs.
+If the number to distribute can not be equally divided, some IDs will have 1 row more/less than the others.
+}
+\subsection{nested}{
+Calls \code{balance()} on each category with IDs as cat_col.
 
- I.e. if size is "min", IDs will have the size of the smallest ID in their category.
- }}
+I.e. if size is \code{"min"}, IDs will have the size of the smallest ID in their category.
+}}
 
-\item{mark_new_rows}{Add column with 1s for added rows, and 0s for original rows. (Logical)}
+\item{mark_new_rows}{Add column with \code{1}s for added rows, and \code{0}s for original rows. (Logical)}
 
 \item{new_rows_col_name}{Name of column marking new rows. Defaults to \code{".new_row"}.}
 }
 \value{
 Data frame with added and/or deleted rows.
- Ordered by \code{cat_col} and (potentially) \code{id_col}.
+Ordered by \code{cat_col} and (potentially) \code{id_col}.
 }
 \description{
+\Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}
+
 Uses up- and/or downsampling to fix the group sizes to the
- \code{min}, \code{max}, \code{mean}, or \code{median} group size or
- to a specific number of rows. Has a range of methods for balancing on
- ID level.
+\code{min}, \code{max}, \code{mean}, or \code{median} group size or
+to a specific number of rows. Has a range of methods for balancing on
+ID level.
 }
 \details{
 \subsection{Without \code{id_col}}{Upsampling is done with replacement for added rows,
- while the original data remains intact.
- Downsampling is done without replacement, meaning that rows are not duplicated but only removed.}
+while the original data remains intact.
+Downsampling is done without replacement, meaning that rows are not duplicated but only removed.}
 \subsection{With \code{id_col}}{See \code{id_method} description.}
 }
 \examples{
@@ -109,42 +118,54 @@ df <- data.frame(
 )
 
 # Using balance() with specific number of rows
-balance(df, 3, cat_col="diagnosis")
+balance(df, 3, cat_col = "diagnosis")
 
 # Using balance() with min
-balance(df, "min", cat_col="diagnosis")
+balance(df, "min", cat_col = "diagnosis")
 
 # Using balance() with max
-balance(df, "max", cat_col="diagnosis")
+balance(df, "max", cat_col = "diagnosis")
 
 # Using balance() with id_method "n_ids"
 # With column specifying added rows
-balance(df, "max", cat_col="diagnosis",
-        id_col="participant", id_method="n_ids",
-        mark_new_rows = TRUE)
+balance(df, "max",
+  cat_col = "diagnosis",
+  id_col = "participant",
+  id_method = "n_ids",
+  mark_new_rows = TRUE
+)
 
 # Using balance() with id_method "n_rows_c"
 # With column specifying added rows
-balance(df, "max", cat_col="diagnosis",
-        id_col="participant", id_method="n_rows_c",
-        mark_new_rows = TRUE)
+balance(df, "max",
+  cat_col = "diagnosis",
+  id_col = "participant",
+  id_method = "n_rows_c",
+  mark_new_rows = TRUE
+)
 
 # Using balance() with id_method "distributed"
 # With column specifying added rows
-balance(df, "max", cat_col="diagnosis",
-        id_col="participant", id_method="distributed",
-        mark_new_rows = TRUE)
+balance(df, "max",
+  cat_col = "diagnosis",
+  id_col = "participant",
+  id_method = "distributed",
+  mark_new_rows = TRUE
+)
 
 # Using balance() with id_method "nested"
 # With column specifying added rows
-balance(df, "max", cat_col="diagnosis",
-        id_col="participant", id_method="nested",
-        mark_new_rows = TRUE)
-
+balance(df, "max",
+  cat_col = "diagnosis",
+  id_col = "participant",
+  id_method = "nested",
+  mark_new_rows = TRUE
+)
 }
 \seealso{
-Other sampling functions: \code{\link{downsample}},
-  \code{\link{upsample}}
+Other sampling functions: 
+\code{\link{downsample}()},
+\code{\link{upsample}()}
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}

@@ -4,9 +4,13 @@
 \alias{rearrange}
 \title{Rearrange data by a set of methods.}
 \usage{
-rearrange(data, method = "pair_extremes", unequal_method = "middle",
+rearrange(
+  data,
+  method = "pair_extremes",
+  unequal_method = "middle",
   drop_rearrange_factor = TRUE,
-  rearrange_factor_name = ".rearrange_factor")
+  rearrange_factor_name = ".rearrange_factor"
+)
 }
 \arguments{
 \item{data}{Data frame or Vector.}
@@ -41,11 +45,11 @@ E.g. 1,2,3,4,4,3,2,1,\strong{5}.
 
 \item{rearrange_factor_name}{Name of rearrange factor.
 
- N.B. Only used when \code{drop_rearrange_factor} is FALSE.}
+N.B. Only used when \code{drop_rearrange_factor} is FALSE.}
 }
 \description{
 \strong{Internal}: Creates a rearrange factor and sorts the data by it.
- A rearrange factor is simply a vector of integers to sort by.
+A rearrange factor is simply a vector of integers to sort by.
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}

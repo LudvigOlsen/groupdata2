@@ -34,10 +34,10 @@
 #'
 #'  N.B. Only used when \code{drop_rearrange_factor} is FALSE.
 #'
-rearrange <- function(data, method="pair_extremes",
+rearrange <- function(data, method = "pair_extremes",
                       unequal_method = "middle",
                       drop_rearrange_factor = TRUE,
-                      rearrange_factor_name=".rearrange_factor"){
+                      rearrange_factor_name = ".rearrange_factor") {
 
   # Note, pre-sorting of data must happen outside rearrange.
 
@@ -45,7 +45,7 @@ rearrange <- function(data, method="pair_extremes",
 
   # Check data
   # Potentially convert vector to data frame
-  if (is.vector(data)){
+  if (is.vector(data)) {
     data <- data %>% tibble::enframe(name = NULL)
   }
   if (method %ni% c("pair_extremes")) {
@@ -56,27 +56,29 @@ rearrange <- function(data, method="pair_extremes",
   }
 
   # Get function for creating rearrance factor
-  if (method == "pair_extremes"){
+  if (method == "pair_extremes") {
     create_rearrange_factor_fn <- create_rearrange_factor_pair_extremes_
   }
 
   # Arrange by 'by' -> create rearrange factor -> arrange by rearrance factor
   data[[local_tmp_rearrange_var]] <- create_rearrange_factor_fn(
-      size = nrow(data), unequal_method = unequal_method)
+    size = nrow(data), unequal_method = unequal_method
+  )
   data <- data %>%
     dplyr::arrange(!!as.name(local_tmp_rearrange_var))
 
   # Remove rearrange factor if it shouldn't be returned
-  if (isTRUE(drop_rearrange_factor)){
+  if (isTRUE(drop_rearrange_factor)) {
     data <- data %>%
       base_deselect(cols = local_tmp_rearrange_var)
-  } else {
-    data <- base_rename(data, before = local_tmp_rearrange_var,
-                        after = rearrange_factor_name)
+  } else if (local_tmp_rearrange_var != rearrange_factor_name) {
+    data <- base_rename(data,
+      before = local_tmp_rearrange_var,
+      after = rearrange_factor_name
+    )
   }
 
   data
-
 }
 
 create_rearrange_factor_pair_extremes_ <- function(size, unequal_method = "middle") {

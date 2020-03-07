@@ -2,19 +2,17 @@ library(groupdata2)
 context("splt()")
 
 test_that("dimensions of output with splt()", {
+  xpectr::set_test_seed(1)
 
-  set_seed_for_R_compatibility(1)
+  df <- data.frame(
+    "x" = c(1:12),
+    "species" = factor(rep(c("cat", "pig", "human"), 4)),
+    "age" = c(5, 65, 34, 54, 32, 54, 23, 65, 23, 65, 87, 98)
+  )
 
-  df <- data.frame("x"=c(1:12),
-                   "species" = rep(c('cat','pig', 'human'), 4),
-                   "age" = c(5,65,34,54,32,54,23,65,23,65,87,98))
-
-  get_element_sizes <- function(df, n){
-
-    sizes <- plyr::llply(splt(df, n), function(d){
-
+  get_element_sizes <- function(df, n) {
+    sizes <- plyr::llply(splt(df, n), function(d) {
       return(nrow(d))
-
     })
 
     return(unname(unlist(sizes)))
@@ -27,25 +25,23 @@ test_that("dimensions of output with splt()", {
   expect_equal(length(splt(df, 3)), 3)
 
   # Check that there are the right amount of rows in list elements
-  expect_equal(get_element_sizes(df, 3), c(4,4,4))
+  expect_equal(get_element_sizes(df, 3), c(4, 4, 4))
 
   # There should be n elements in the list
   expect_equal(length(splt(df, 0, allow_zero = T)), 1)
   expect_equal(nrow(splt(df, 0, allow_zero = T)[[1]]), 12)
-
 })
 
 
 test_that("splt() works with force_equal on vector", {
+  xpectr::set_test_seed(1)
 
-  set_seed_for_R_compatibility(1)
-
-  splt_equal <- function(data, n, method){
-
+  splt_equal <- function(data, n, method) {
     splits <- splt(data, n, method,
-                   force_equal = T)
+      force_equal = T
+    )
 
-    counts <- plyr::llply(splits, function(s){
+    counts <- plyr::llply(splits, function(s) {
       return(length(s))
     })
 
@@ -56,38 +52,36 @@ test_that("splt() works with force_equal on vector", {
     return(counts)
   }
 
-  expect_equal(splt_equal( c(1:10), 3, 'greedy'), c(3,3,3) )
-  expect_equal(splt_equal( c(1:10), .3, 'greedy'), c(3,3,3) )
-  expect_equal(splt_equal( c(1:10), 3, 'n_dist'), c(3,3,3) )
-  expect_equal(splt_equal( c(1:10), .3, 'n_dist'), c(3,3,3) )
-  expect_equal(splt_equal( c(1:10), 3, 'n_fill'), c(3,3,3) )
-  expect_equal(splt_equal( c(1:10), .3, 'n_fill'), c(3,3,3) )
-  expect_equal(splt_equal( c(1:10), 3, 'n_last'), c(3,3,3) )
-  expect_equal(splt_equal( c(1:10), .3, 'n_last'), c(3,3,3) )
-  expect_equal(splt_equal( c(1:10), 3, 'n_rand'), c(3,3,3) )
-  expect_equal(splt_equal( c(1:10), .3, 'n_rand'), c(3,3,3) )
-  expect_equal(splt_equal( c(1:10), 3, 'l_sizes'), c(3) )
-  expect_equal(splt_equal( c(1:10), c(0.2,0.3), 'l_sizes'), c(2,3) )
+  expect_equal(splt_equal(c(1:10), 3, "greedy"), c(3, 3, 3))
+  expect_equal(splt_equal(c(1:10), .3, "greedy"), c(3, 3, 3))
+  expect_equal(splt_equal(c(1:10), 3, "n_dist"), c(3, 3, 3))
+  expect_equal(splt_equal(c(1:10), .3, "n_dist"), c(3, 3, 3))
+  expect_equal(splt_equal(c(1:10), 3, "n_fill"), c(3, 3, 3))
+  expect_equal(splt_equal(c(1:10), .3, "n_fill"), c(3, 3, 3))
+  expect_equal(splt_equal(c(1:10), 3, "n_last"), c(3, 3, 3))
+  expect_equal(splt_equal(c(1:10), .3, "n_last"), c(3, 3, 3))
+  expect_equal(splt_equal(c(1:10), 3, "n_rand"), c(3, 3, 3))
+  expect_equal(splt_equal(c(1:10), .3, "n_rand"), c(3, 3, 3))
+  expect_equal(splt_equal(c(1:10), 3, "l_sizes"), c(3))
+  expect_equal(splt_equal(c(1:10), c(0.2, 0.3), "l_sizes"), c(2, 3))
   # l_starts shouldn't cut any values.
-  expect_equal(splt_equal( c(1:10), c(3,5), 'l_starts'), c(2,2,6) )
+  expect_equal(splt_equal(c(1:10), c(3, 5), "l_starts"), c(2, 2, 6))
 
-  expect_equal(splt_equal( c(1:57), 5, 'staircase'), c(5,10,15,20) )
-  expect_equal(splt_equal( c(1:57), 0.2, 'staircase'), c(11,22) )
-  expect_equal(splt_equal( c(1:57), 5, 'primes'), c(5,7,11,13,17) )
-
+  expect_equal(splt_equal(c(1:57), 5, "staircase"), c(5, 10, 15, 20))
+  expect_equal(splt_equal(c(1:57), 0.2, "staircase"), c(11, 22))
+  expect_equal(splt_equal(c(1:57), 5, "primes"), c(5, 7, 11, 13, 17))
 })
 
 test_that("splt() works with force_equal on vector", {
+  xpectr::set_test_seed(1)
 
-  set_seed_for_R_compatibility(1)
-
-  splt_equal <- function(data, n, method, starts_col = NULL){
-
+  splt_equal <- function(data, n, method, starts_col = NULL) {
     splits <- splt(data, n, method,
-                   force_equal = T,
-                   starts_col = starts_col)
+      force_equal = T,
+      starts_col = starts_col
+    )
 
-    counts <- plyr::llply(splits, function(s){
+    counts <- plyr::llply(splits, function(s) {
       return(nrow(s))
     })
 
@@ -98,30 +92,73 @@ test_that("splt() works with force_equal on vector", {
     return(counts)
   }
 
-  df <- data.frame("participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
-                   "age" = rep(c(25,65,34), 3),
-                   "diagnosis" = rep(c('a', 'b', 'a', 'a', 'b', 'b'), 3),
-                   "score" = c(34,23,54,23,56,76,43,56,76,42,54,1,5,76,34,76,23,65))
+  df <- data.frame(
+    "participant" = factor(rep(c("1", "2", "3", "4", "5", "6"), 3)),
+    "age" = rep(c(25, 65, 34), 3),
+    "diagnosis" = factor(rep(c("a", "b", "a", "a", "b", "b"), 3)),
+    "score" = c(34, 23, 54, 23, 56, 76, 43, 56, 76, 42, 54, 1, 5, 76, 34, 76, 23, 65)
+  )
 
-
-  expect_equal(splt_equal( df, 3, 'greedy'), c(3,3,3,3,3,3) )
-  expect_equal(splt_equal( df, .2, 'greedy'), c(3,3,3,3,3,3) )
-  expect_equal(splt_equal( df, 3, 'n_dist'), c(6,6,6) )
-  expect_equal(splt_equal( df, .2, 'n_dist'), c(6,6,6) )
-  expect_equal(splt_equal( df, 3, 'n_fill'), c(6,6,6) )
-  expect_equal(splt_equal( df, .2, 'n_fill'), c(6,6,6) )
-  expect_equal(splt_equal( df, 3, 'n_last'), c(6,6,6) )
-  expect_equal(splt_equal( df, .2, 'n_last'), c(6,6,6) )
-  expect_equal(splt_equal( df, 3, 'n_rand'), c(6,6,6) )
-  expect_equal(splt_equal( df, .2, 'n_rand'), c(6,6,6) )
-  expect_equal(splt_equal( df, 3, 'l_sizes'), c(3) )
-  expect_equal(splt_equal( df, c(0.2,0.3), 'l_sizes'), c(3,5) )
+  expect_equal(splt_equal(df, 3, "greedy"), c(3, 3, 3, 3, 3, 3))
+  expect_equal(splt_equal(df, .2, "greedy"), c(3, 3, 3, 3, 3, 3))
+  expect_equal(splt_equal(df, 3, "n_dist"), c(6, 6, 6))
+  expect_equal(splt_equal(df, .2, "n_dist"), c(6, 6, 6))
+  expect_equal(splt_equal(df, 3, "n_fill"), c(6, 6, 6))
+  expect_equal(splt_equal(df, .2, "n_fill"), c(6, 6, 6))
+  expect_equal(splt_equal(df, 3, "n_last"), c(6, 6, 6))
+  expect_equal(splt_equal(df, .2, "n_last"), c(6, 6, 6))
+  expect_equal(splt_equal(df, 3, "n_rand"), c(6, 6, 6))
+  expect_equal(splt_equal(df, .2, "n_rand"), c(6, 6, 6))
+  expect_equal(splt_equal(df, 3, "l_sizes"), c(3))
+  expect_equal(splt_equal(df, c(0.2, 0.3), "l_sizes"), c(3, 5))
+  expect_equal(splt_equal(df, 5, "staircase"), c(5, 10))
+  expect_equal(splt_equal(df, 0.2, "staircase"), c(3, 6, 9))
+  expect_equal(splt_equal(df, 5, "primes"), c(5, 7))
   # l_starts shouldn't cut any values.
-  expect_equal(splt_equal( df, c(3,5), 'l_starts', starts_col = 1), c(2,2,14) )
 
-  expect_equal(splt_equal( df, 5, 'staircase'), c(5,10) )
-  expect_equal(splt_equal( df, 0.2, 'staircase'), c(3,6,9) )
-  expect_equal(splt_equal( df, 5, 'primes'), c(5,7) )
+  ## Testing 'splt_equal(df, c(3, 5), "l_starts", starts_c...'              ####
+  ## Initially generated by xpectr
+  xpectr::set_test_seed(42)
+  # Testing side effects
+  # Assigning side effects
+  side_effects_12655 <- xpectr::capture_side_effects(splt_equal(df, c(3, 5), "l_starts", starts_col = 1), reset_seed = TRUE)
+  expect_equal(
+    xpectr::strip(side_effects_12655[['warnings']]),
+    xpectr::strip("'data[[starts_col]]' is factor. Converting to character."),
+    fixed = TRUE)
+  expect_equal(
+    xpectr::strip(side_effects_12655[['messages']]),
+    xpectr::strip(character(0)),
+    fixed = TRUE)
+  # Assigning output
+  output_12655 <- xpectr::suppress_mw(splt_equal(df, c(3, 5), "l_starts", starts_col = 1))
+  # Testing class
+  expect_equal(
+    class(output_12655),
+    "integer",
+    fixed = TRUE)
+  # Testing type
+  expect_type(
+    output_12655,
+    type = "integer")
+  # Testing values
+  expect_equal(
+    output_12655,
+    c(2, 2, 14),
+    tolerance = 1e-4)
+  # Testing names
+  expect_equal(
+    names(output_12655),
+    NULL,
+    fixed = TRUE)
+  # Testing length
+  expect_equal(
+    length(output_12655),
+    3L)
+  # Testing sum of element lengths
+  expect_equal(
+    sum(xpectr::element_lengths(output_12655)),
+    3L)
+  ## Finished testing 'splt_equal(df, c(3, 5), "l_starts", starts_c...'     ####
 
 })
-

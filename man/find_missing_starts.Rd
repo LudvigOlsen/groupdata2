@@ -4,8 +4,7 @@
 \alias{find_missing_starts}
 \title{Find start positions that cannot be found in data.}
 \usage{
-find_missing_starts(data, n, starts_col = NULL,
-  return_skip_numbers = TRUE)
+find_missing_starts(data, n, starts_col = NULL, return_skip_numbers = TRUE)
 }
 \arguments{
 \item{data}{Data frame or Vector}
@@ -23,35 +22,43 @@ when data is a data frame. Pass 'index' to use row names. (Character)}
 }
 \value{
 List of start values and skip_to numbers or vector of the start values.
- Returns NULL if no values found.
+Returns NULL if no values found.
 }
 \description{
+\Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}
+
 Tells you which values and (optionally) skip_to numbers that are
- recursively removed when using the \code{l_starts} method with remove_missing_starts
- set to TRUE.
+recursively removed when using the \code{l_starts} method with remove_missing_starts
+set to TRUE.
 }
 \examples{
 # Attach packages
 library(groupdata2)
 
 # Create a data frame
-df <- data.frame('a' = c('a','a','b',
-                         'b','c','c'))
+df <- data.frame(
+  "a" = c("a", "a", "b", "b", "c", "c"),
+  stringsAsFactors = FALSE
+)
 
 # Create list of starts
 starts <- c("a", "e", "b", "d", "c")
 
 # Find missing starts with skip_to numbers
-find_missing_starts(df, starts, starts_col = 'a')
+find_missing_starts(df, starts, starts_col = "a")
 
 # Find missing starts without skip_to numbers
-find_missing_starts(df, starts, starts_col = 'a',
-                    return_skip_numbers = FALSE)
+find_missing_starts(df, starts,
+  starts_col = "a",
+  return_skip_numbers = FALSE
+)
 }
 \seealso{
-Other l_starts tools: \code{\link{differs_from_previous}},
-  \code{\link{find_starts}}, \code{\link{group_factor}},
-  \code{\link{group}}
+Other l_starts tools: 
+\code{\link{differs_from_previous}()},
+\code{\link{find_starts}()},
+\code{\link{group_factor}()},
+\code{\link{group}()}
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}

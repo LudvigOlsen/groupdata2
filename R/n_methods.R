@@ -1,6 +1,6 @@
 ## Number of groups methods
 
-n_last_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending = FALSE){
+n_last_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending = FALSE) {
 
   #
   # Takes a vector and the number of wanted splits
@@ -11,66 +11,55 @@ n_last_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending =
   # if length of the vector isn't divisible with n_windows
   #
 
-
-  ### Force equal ### Set window_size ###
+  ### Force equal ### Set window_size ####
 
   # If force_equal is set to TRUE,
   # and we don't already have equally sized windows,
   # remove values from v, until we get
   # largest possible equally sized windows
 
-  if ( isTRUE(force_equal) && !(is_wholenumber_(length(v)/n_windows)) ){
-
-    window_size <- floor(length(v)/n_windows)
-    v <- v[1:(n_windows*window_size)]
-
+  if (isTRUE(force_equal) && !(is_wholenumber_(length(v) / n_windows))) {
+    window_size <- floor(length(v) / n_windows)
+    v <- v[1:(n_windows * window_size)]
   } else {
 
     # Calculate size of windows
-    window_size <- ceiling(length(v)/n_windows)
-
+    window_size <- ceiling(length(v) / n_windows)
   }
 
-
-  ### Creating grouping factor ###
+  ### Creating grouping factor ####
 
   # Try to use use greedy_group_factor_ and check
   # if it returns the right number of windows
 
   # Set grouping_factor with greedy_group_factor_
-  window_grouping_factor <- greedy_group_factor_(v, window_size)
+  window_grouping_factor <- greedy_group_factor_(v = v, size = window_size)
 
   # If it didn't return the right number of windows
   if (max(as.numeric(window_grouping_factor)) != n_windows ||
-      !is_optimal_(window_grouping_factor, n_windows)){
+    !is_optimal_(grouping_factor = window_grouping_factor,
+                 n_windows = n_windows)) {
+    window_size <- floor(length(v) / n_windows)
 
-    window_size <- floor(length(v)/n_windows)
-
-    if (window_size < 1){
-
-      message('window_size < 1. This should not be possible!')
+    if (window_size < 1) {
+      message("window_size < 1. This should not be possible!")
       window_size <- 1
-
     }
 
     # Get the size of the last window
-    size_last_window <- length(v)-(n_windows-1)*window_size
+    size_last_window <- length(v) - (n_windows - 1) * window_size
 
     window_grouping_factor <- rep(c(1:n_windows), each = window_size)
 
     # Add the missing values in the last window
 
     # Find the number of values to add
-    n_to_add <- size_last_window-window_size
+    n_to_add <- size_last_window - window_size
 
     window_grouping_factor <- append(window_grouping_factor, rep(n_windows, n_to_add))
-
-
   }
 
-  return(as.factor(window_grouping_factor))
-
-
+  as.factor(window_grouping_factor)
 }
 
 
@@ -78,7 +67,7 @@ n_last_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending =
 # The point is that first all windows are equally big, and then
 # excess datapoints are distributed one at a time ascending/descending
 
-n_fill_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending = FALSE){
+n_fill_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending = FALSE) {
 
   #
   # Takes a vector and a number of windows to create
@@ -90,18 +79,20 @@ n_fill_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending =
   #
 
   # Create a grouping factor with the biggest possible equal windows
-  equal_groups <- n_last_group_factor_(v, n_windows, force_equal=TRUE)
+  equal_groups <- n_last_group_factor_(
+    v = v,
+    n_windows = n_windows,
+    force_equal = TRUE
+  )
 
   # Find how many excess datapoints there are
-  excess_data_points <- length(v)-length(equal_groups)
+  excess_data_points <- length(v) - length(equal_groups)
 
 
   # If there are no excess_data_points or force_equal
   # is set to TRUE, we simply return the equal groups
-  if (excess_data_points == 0 || isTRUE(force_equal)){
-
+  if (excess_data_points == 0 || isTRUE(force_equal)) {
     return(equal_groups)
-
   }
 
   # We create a vector the size of excess_data_points
@@ -109,19 +100,17 @@ n_fill_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending =
   # correspond to the last windows, if set to FALSE
   # the values will correspond to the first windows
 
-  if (isTRUE(descending)){
+  if (isTRUE(descending)) {
 
     # Find where to start the values from
-    start_rep <- (n_windows-excess_data_points)+1
+    start_rep <- (n_windows - excess_data_points) + 1
 
     # Create vector of values to add
-    values_to_add <- c(start_rep:n_windows)
-
+    values_to_add <- start_rep:n_windows
   } else {
 
     # Create vector of values to add
-    values_to_add <- c(1:excess_data_points)
-
+    values_to_add <- seq_len(excess_data_points)
   }
 
   # Create grouping factor
@@ -130,17 +119,16 @@ n_fill_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending =
   # .. Sorts the vector so 1s are together, 2s are together, etc.
   # .. Converts the vector to a factor
 
-  grouping_factor <- factor(sort(c(as.numeric(equal_groups),values_to_add)))
+  grouping_factor <- factor(sort(c(as.numeric(equal_groups), values_to_add)))
 
   # Return grouping factor
-  return(grouping_factor)
-
+  grouping_factor
 }
 
 
 # number of windows random assign of excess values
 
-n_rand_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending = FALSE){
+n_rand_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending = FALSE) {
 
   #
   # Takes a vector and a number of windows to create
@@ -152,42 +140,44 @@ n_rand_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending =
   #
 
   # Create a grouping factor with the biggest possible equal windows
-  equal_groups <- n_last_group_factor_(v, n_windows, force_equal=TRUE)
+  equal_groups <- n_last_group_factor_(
+    v = v,
+    n_windows = n_windows,
+    force_equal = TRUE
+  )
 
   # Find how many excess datapoints there are
-  excess_data_points <- length(v)-length(equal_groups)
+  excess_data_points <- length(v) - length(equal_groups)
 
   # If there are no excess_data_points or force_equal
   # is set to TRUE, we simply return the equal groups
-  if (excess_data_points == 0 || isTRUE(force_equal)){
+  if (excess_data_points == 0 || isTRUE(force_equal)) {
 
     # Return equal groups grouping factor
     return(equal_groups)
-
   }
 
   # Get values to add
   # .. Creates a vector with values from 1 to the number
   # .. of windows
   # .. Randomly picks a value for each excess data point
-  values_to_add <- sample(c(1:n_windows), excess_data_points)
+  values_to_add <- sample(seq_len(n_windows), excess_data_points)
 
   # Create grouping factor
   # .. Converts the equal groups factor to a numeric vector
   # .. Adds the values to the equal groups vector
   # .. Sorts the vector so 1s are together, 2s are together, etc.
   # .. Converts the vector to a factor
-  grouping_factor <- factor(sort(c(as.numeric(equal_groups),values_to_add)))
+  grouping_factor <- factor(sort(c(as.numeric(equal_groups), values_to_add)))
 
   # Return grouping factor
-  return(grouping_factor)
-
+  grouping_factor
 }
 
 
 # N distributed
 
-n_dist_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending = FALSE){
+n_dist_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending = FALSE) {
 
   #
   # Takes a vector and a number of windows to create
@@ -197,17 +187,20 @@ n_dist_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending =
 
   # If force_equal is set to TRUE
   # .. Create equal groups and return these
-  if (isTRUE(force_equal)){
+  if (isTRUE(force_equal)) {
 
     # Create a grouping factor with the biggest possible equal windows
-    equal_groups <- n_last_group_factor_(v, n_windows, force_equal=TRUE)
+    equal_groups <- n_last_group_factor_(
+      v = v,
+      n_windows = n_windows,
+      force_equal = TRUE
+    )
 
     return(equal_groups)
-
   } else {
 
     # Create grouping factor with distributed excess elements
-    grouping_factor <- factor(ceiling(seq_along(v)/(length(v)/n_windows)))
+    grouping_factor <- factor(ceiling(seq_along(v) / (length(v) / n_windows)))
 
     # Sometimes a value of e.g. 7.0000.. is rounded up to 8
     # in the above ceiling(). This means that we get 8 groups
@@ -216,7 +209,7 @@ n_dist_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending =
     # --> This should be tested! <--
 
     # If there are too many groups
-    if (max_num_factor(grouping_factor) > n_windows){
+    if (max_num_factor(grouping_factor) > n_windows) {
 
       # Get the largest number in grouping factor
       max_value <- max_num_factor(grouping_factor)
@@ -226,28 +219,27 @@ n_dist_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending =
 
       # If there is only one group too much and it only contains one element
       # put this element in the second last group instead
-      if (max_value-1 == n_windows && last_group_size == 1){
+      if (max_value - 1 == n_windows && last_group_size == 1) {
 
         # Replace the level of the factor containing the max_value
         # with the value of the second last group instead (max_value - 1)
-        grouping_factor <- replace_level(grouping_factor,
-                                         max_value,
-                                         max_value-1)
-
+        grouping_factor <- replace_level(
+          f = grouping_factor,
+          match = max_value,
+          replace = max_value - 1
+        )
 
         # Else, stop the script as something has gone wrong
         # and I need to know about it!
       } else {
-
-        stop(paste('Grouping factor contains too many groups! ',
-                   max_value, ' groups in total with ',
-                   last_group_size, ' elements in last group.', sep=''))
-
+        stop(paste("Grouping factor contains too many groups! ",
+          max_value, " groups in total with ",
+          last_group_size, " elements in last group.",
+          sep = ""
+        ))
       }
-
     }
 
     return(grouping_factor)
   }
-
 }

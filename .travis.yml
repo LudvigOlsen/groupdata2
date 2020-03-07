@@ -3,12 +3,22 @@
 language: R
 cache: packages
 
-#Define multiple R-versions
-r:
-  - oldrel
-  - release
-  - devel
-
-# CodeCov
-after_success:
-  - Rscript -e 'library(covr); codecov()'
+matrix:
+  include:
+  - r: devel
+  - r: release
+    after_success:
+    - Rscript -e 'library(covr); codecov()'
+  - r: release
+    name: pgk-devs-devel
+    before_script: Rscript -e "remotes::install_github(paste0('tidyverse/', c('tidyr','tibble','dplyr')))"
+  - r: release
+    os: osx
+    name: release osx
+  - r: oldrel
+  - r: 3.5.0
+  - r: release
+    name: Strict Latin-1 locale
+    before_script:
+      - sudo locale-gen en_US
+      - export LC_ALL=en_US

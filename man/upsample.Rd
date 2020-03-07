@@ -4,8 +4,14 @@
 \alias{upsample}
 \title{Upsampling of rows in a data frame.}
 \usage{
-upsample(data, cat_col, id_col = NULL, id_method = "n_ids",
-  mark_new_rows = FALSE, new_rows_col_name = ".new_row")
+upsample(
+  data,
+  cat_col,
+  id_col = NULL,
+  id_method = "n_ids",
+  mark_new_rows = FALSE,
+  new_rows_col_name = ".new_row"
+)
 }
 \arguments{
 \item{data}{Data frame.}
@@ -14,44 +20,44 @@ upsample(data, cat_col, id_col = NULL, id_method = "n_ids",
 
 \item{id_col}{Name of factor with IDs. (Character)
 
- IDs are considered entities, e.g. allowing us to add or remove all rows for an ID.
- How this is used is up to the \code{id_method}.
+IDs are considered entities, e.g. allowing us to add or remove all rows for an ID.
+How this is used is up to the \code{id_method}.
 
- E.g. If we have measured a participant multiple times and
- want make sure that we keep all these measurements. Then we would either
- remove/add all measurements for the participant or leave in
- all measurements for the participant.}
+E.g. If we have measured a participant multiple times and
+want make sure that we keep all these measurements. Then we would either
+remove/add all measurements for the participant or leave in
+all measurements for the participant.}
 
 \item{id_method}{Method for balancing the IDs. (Character)
 
- \code{n_ids}, \code{n_rows_c}, \code{distributed}, or \code{nested}.
- \subsection{n_ids (default)}{
- Balances on ID level only. It makes sure there are the same number of IDs for each category.
- This might lead to a different number of rows between categories.
- }
- \subsection{n_rows_c}{
- Attempts to level the number of rows per category, while only removing/adding entire IDs.
- This is done in 2 steps:
- \enumerate{
- \item If a category needs to add all its rows one or more times, the data is repeated.
- \item Iteratively, the ID with the number of rows closest to the
-    lacking/excessive number of rows is added/removed.
-    This happens until adding/removing the closest ID would lead to a size further from
-    the target size than the current size.
-    If multiple IDs are closest, one is randomly sampled.
-    }
- }
- \subsection{distributed}{
- Distributes the lacking/excess rows equally between the IDs.
- If the number to distribute can not be equally divided, some IDs will have 1 row more/less than the others.
- }
- \subsection{nested}{
- Calls \code{balance()} on each category with IDs as cat_col.
+\code{n_ids}, \code{n_rows_c}, \code{distributed}, or \code{nested}.
+\subsection{n_ids (default)}{
+Balances on ID level only. It makes sure there are the same number of IDs for each category.
+This might lead to a different number of rows between categories.
+}
+\subsection{n_rows_c}{
+Attempts to level the number of rows per category, while only removing/adding entire IDs.
+This is done in 2 steps:
+\enumerate{
+\item If a category needs to add all its rows one or more times, the data is repeated.
+\item Iteratively, the ID with the number of rows closest to the
+lacking/excessive number of rows is added/removed.
+This happens until adding/removing the closest ID would lead to a size further from
+the target size than the current size.
+If multiple IDs are closest, one is randomly sampled.
+}
+}
+\subsection{distributed}{
+Distributes the lacking/excess rows equally between the IDs.
+If the number to distribute can not be equally divided, some IDs will have 1 row more/less than the others.
+}
+\subsection{nested}{
+Calls \code{balance()} on each category with IDs as cat_col.
 
- I.e. if size is "min", IDs will have the size of the smallest ID in their category.
- }}
+I.e. if size is \code{"min"}, IDs will have the size of the smallest ID in their category.
+}}
 
-\item{mark_new_rows}{Add column with 1s for added rows, and 0s for original rows. (Logical)}
+\item{mark_new_rows}{Add column with \code{1}s for added rows, and \code{0}s for original rows. (Logical)}
 
 \item{new_rows_col_name}{Name of column marking new rows. Defaults to \code{".new_row"}.}
 }
@@ -59,10 +65,12 @@ upsample(data, cat_col, id_col = NULL, id_method = "n_ids",
 Data frame with added rows. Ordered by \code{cat_col} and (potentially) \code{id_col}.
 }
 \description{
-Uses random upsampling to fix the group sizes to the
- largest group in the data frame.
+\Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}
 
- Wraps \code{\link{balance}()}.
+Uses random upsampling to fix the group sizes to the
+largest group in the data frame.
+
+Wraps \code{\link{balance}()}.
 }
 \details{
 \subsection{Without \code{id_col}}{
@@ -82,35 +90,48 @@ df <- data.frame(
 )
 
 # Using upsample()
-upsample(df, cat_col="diagnosis")
+upsample(df, cat_col = "diagnosis")
 
 # Using upsample() with id_method "n_ids"
 # With column specifying added rows
-upsample(df, cat_col="diagnosis",
-        id_col="participant", id_method="n_ids",
-        mark_new_rows = TRUE)
+upsample(df,
+  cat_col = "diagnosis",
+  id_col = "participant",
+  id_method = "n_ids",
+  mark_new_rows = TRUE
+)
 
 # Using upsample() with id_method "n_rows_c"
 # With column specifying added rows
-upsample(df, cat_col="diagnosis",
-        id_col="participant", id_method="n_rows_c",
-        mark_new_rows = TRUE)
+upsample(df,
+  cat_col = "diagnosis",
+  id_col = "participant",
+  id_method = "n_rows_c",
+  mark_new_rows = TRUE
+)
 
 # Using upsample() with id_method "distributed"
 # With column specifying added rows
-upsample(df, cat_col="diagnosis",
-        id_col="participant", id_method="distributed",
-        mark_new_rows = TRUE)
+upsample(df,
+  cat_col = "diagnosis",
+  id_col = "participant",
+  id_method = "distributed",
+  mark_new_rows = TRUE
+)
 
 # Using upsample() with id_method "nested"
 # With column specifying added rows
-upsample(df, cat_col="diagnosis",
-        id_col="participant", id_method="nested",
-        mark_new_rows = TRUE)
+upsample(df,
+  cat_col = "diagnosis",
+  id_col = "participant",
+  id_method = "nested",
+  mark_new_rows = TRUE
+)
 }
 \seealso{
-Other sampling functions: \code{\link{balance}},
-  \code{\link{downsample}}
+Other sampling functions: 
+\code{\link{balance}()},
+\code{\link{downsample}()}
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
