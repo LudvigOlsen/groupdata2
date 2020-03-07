@@ -1,6 +1,6 @@
 Package: groupdata2
 Title: Creating Groups from Data
-Version: 1.1.2.9000
+Version: 1.2.0
 Authors@R: person("Ludvig Renbo", "Olsen", email = "r-pkgs@ludvigolsen.dk", role = c("aut", "cre"))
 Description: Methods for dividing data into groups. 
     Create balanced partitions and cross-validation folds. 
@@ -19,7 +19,7 @@ Imports:
     numbers (>= 0.7-5),
     lifecycle,
     plyr (>= 1.8.5),
-    rlang (>= 0.4.5),
+    rlang (>= 0.4.4),
     tibble (>= 2.1.3),
     utils
 RoxygenNote: 7.0.2
@@ -33,9 +33,8 @@ Suggests:
     rmarkdown,
     testthat,
     tidyr,
-    xpectr (>= 0.1.0)
+    xpectr (>= 0.1.1)
 RdMacros: 
     lifecycle
 Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr
-
