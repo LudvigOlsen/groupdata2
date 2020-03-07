@@ -350,6 +350,7 @@ balance <- function(data,
       assert_collection$push("'id_col' and 'cat_col' cannot contain the same column name.")
     }
     # Check that cat_col is constant within each ID
+    # Note: I tested and count() is faster than group_keys()
     counts <- dplyr::count(data, !!as.name(id_col), !!as.name(cat_col))
     if (nrow(counts) != length(unique(counts[[id_col]]))){
       assert_collection$push("The value in 'data[[cat_col]]' must be constant within each ID.")
@@ -357,11 +358,6 @@ balance <- function(data,
   }
   checkmate::reportAssertions(assert_collection)
   # End of argument checks ####
-
-  # TODO "n_rows_o"
-  # Should find the optimal combinations of IDs.
-  # E.g. using dynamic programming.
-  # "n_rows_o",
 
   # Add new row flag column
   local_tmp_new_row_var <- create_tmp_var(data, ".TmpNewRow")

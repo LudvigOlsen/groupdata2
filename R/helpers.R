@@ -121,92 +121,14 @@ isEmpty_ <- function(x) {
   length(x) == 0
 }
 
-check_arguments_ <- function(data, n, method, force_equal,
-                             allow_zero, descending,
-                             remove_missing_starts) {
+convert_n <- function(data, n, method, allow_zero) {
 
-  # Checks if the given arguments live up to certain rules,
-  # which allow them to be used in the function
+  if (method %ni% c("l_starts", "l_sizes")) {
 
-  # "data" can be both a data frame or a vector
-
-  stopifnot(method %in% c(
-    "greedy",
-    "n_dist",
-    "n_last",
-    "n_fill",
-    "n_rand",
-    "l_sizes",
-    "l_starts",
-    "staircase",
-    "primes"
-  ))
-
-  if (!(method %in% c("l_starts", "l_sizes"))) {
-    stopifnot(
-      arg_is_number_(n),
-      n > 0
-    )
-  } else if (method == "l_starts") {
-
-    # Check n for l_starts
-    stopifnot(is.list(n) || is.vector(n) || n == "auto")
-    stopifnot(is.logical(remove_missing_starts))
-  } else if (method == "l_sizes") {
-    stopifnot(is.list(n) || is.vector(n) && !is.character(n))
-  }
-
-  # Stop execution if input variables aren't what we expect / can handle
-  stopifnot(
-    (!is.null(n)),
-    is.logical(force_equal),
-    is.logical(allow_zero),
-    is.logical(descending)
-  )
-
-  if (is.data.frame(data)) {
-
-    # Stop execution if input variables aren't what we expect / can handle
-    stopifnot(nrow(data) > 0)
-  } else {
-
-    # Stop execution if input variables aren't what we expect / can handle
-    stopifnot(
-      (!is.null(data)),
-      is.vector(data) || is.factor(data),
-      length(data) > 0
-    )
-  }
-}
-
-check_convert_check_ <- function(data, n, method, force_equal,
-                                 allow_zero, descending,
-                                 remove_missing_starts,
-                                 starts_col = NULL) {
-
-  # Checks arguments
-  # Converts n if given as percentage
-  # Checks more arguments
-  # Returns the converted/non-converted n
-
-  # Notice: This is used in more than one of the main functions
-  # so I put it in a function to make those functions more readable
-
-  ### Check arguments
-
-  # Check if given arguments are allowed
-  # If not -> stop execution
-  check_arguments_(
-    data = data,
-    n = n,
-    method = method,
-    force_equal = force_equal,
-    allow_zero = allow_zero,
-    descending = descending,
-    remove_missing_starts = remove_missing_starts
-  )
-
-  if (!(method %in% c("l_starts", "l_sizes"))) {
+    # Sanity check
+    if (!checkmate::test_number(x = n)){
+      stop(paste0("when 'method' is '", method, "', 'n' must be numeric scalar."))
+    }
 
     ### Convert from percentage
 
@@ -218,42 +140,20 @@ check_convert_check_ <- function(data, n, method, force_equal,
 
     if (is_between_(n, 0, 1)) {
       n <- convert_percentage_(n, data)
-
-      # If the percentage given returns 0
-      # throw an error
-      stopifnot(n > 0)
     }
 
-    stopifnot(arg_is_wholenumber_(n))
-
-
-    ### Check arguments 2
-
-    # Check if
-    # .. n is a whole number
-    # .. Length of the data is larger or
-    # .. equal to n
-    # If not -> stop execution
-
-
+    # Sanity check
+    checkmate::assert_count(x = n,
+                            positive = !allow_zero,
+                            .var.name = "n converted to whole number")
     if (is.data.frame(data)) {
-      stopifnot(nrow(data) >= n)
+      checkmate::assert_true(nrow(data) >= n)
     } else {
-      stopifnot(length(data) >= n)
-    }
-  } else {
-    if (is.data.frame(data)) {
-      stopifnot(nrow(data) >= length(n))
-
-      if (method == "l_starts" && is.null(starts_col)) {
-        stop("'starts_col' cannot be NULL when using method 'l_starts' with a data.frame.")
-      }
-    } else {
-      stopifnot(length(data) >= length(n))
+      checkmate::assert_true(length(data) >= n)
     }
   }
 
-  return(n)
+  n
 }
 
 factor_to_num <- function(f) {
@@ -337,12 +237,19 @@ create_n_primes <- function(n, start_at = 2) {
   # start_at: start prime numbers at (integer)
   #
 
-  # Check if start_at is prime
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+  checkmate::assert_count(x = n, add = assert_collection)
+  checkmate::assert_count(x = start_at, positive = TRUE, add = assert_collection)
+  checkmate::reportAssertions(assert_collection)
   if (!numbers::isPrime(start_at)) {
-    stop("start_at is not a prime number")
+    assert_collection$push("'start_at' is not a prime number.")
   }
-
-  stopifnot(n > 1)
+  if (n <= 1){
+    assert_collection$push("'n' must be larger than 1.")
+  }
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
 
   # Initialize n_primes
   # Counter for created groups
@@ -422,7 +329,7 @@ assign_starts_col <- function(data, starts_col) {
       # If so, warn that it will not be used.
       if (".index" %in% colnames(data)) {
         warning(paste0("data contains column named '.index' but this is ignored. Us",
-                       "ing row names as starts_col instead."))
+                       "ing row names as 'starts_col' instead."))
       }
 
       # Get the row names of data to use as starts_col
@@ -432,30 +339,14 @@ assign_starts_col <- function(data, starts_col) {
       # Check that the column exists in data
       # and get the column from data
     } else {
-
-      # If starts_col is wholenumber
-      # convert to integer
-      if (arg_is_wholenumber_(starts_col)) starts_col <- as.integer(starts_col)
-
-      # If the column is given as name (string),
-      # check if the column exists in data
-      if (starts_col %ni% colnames(data) && !is.integer(starts_col)) {
-        stop(paste("starts_col '", starts_col,
-          "' not found in data.frame.",
-          sep = ""
-        ))
-
-        # Else if starts_col is given as integer (col index)
-        # Check if the number is in the column indices list
-      } else if (is.integer(starts_col) && starts_col %ni% col(data)[1, ]) {
-        stop(paste("starts_col with index '", starts_col,
-          "' not found in data.frame.",
-          sep = ""
-        ))
-      } else {
-        starts_col <- data[[starts_col]]
-      }
+      # Checks made in parent function
+      starts_col <- data[[starts_col]]
     }
+  }
+
+  if (is.factor(starts_col)){
+    warning("'data[[starts_col]]' is factor. Converting to character.")
+    starts_col <- as.character(starts_col)
   }
 
   starts_col
@@ -483,8 +374,7 @@ l_starts_find_indices_ <- function(v, n_list, remove_missing_starts) {
   ind_prev <- 0
 
 
-  tryCatch(
-    {
+  tryCatch({
 
       # We iterate through n and find the index for each value
       indices <- plyr::llply(seq_along(n_list), function(i) {
@@ -616,22 +506,35 @@ update_TempNewRow_from_ids_method <- function(data, new_rows_col_name, ids_new_r
 find_identical_cols <- function(data, cols = NULL, exclude_comparisons = NULL,
                                 return_all_comparisons = FALSE,
                                 group_wise = FALSE, parallel = FALSE) {
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+  checkmate::assert_data_frame(x = data, min.cols = 2, add = assert_collection)
+  checkmate::assert_data_frame(x = exclude_comparisons, null.ok = TRUE, add = assert_collection)
+  checkmate::assert_flag(x = return_all_comparisons, add = assert_collection)
+  checkmate::assert_flag(x = group_wise , add = assert_collection)
+  checkmate::assert_flag(x = parallel, add = assert_collection)
+  checkmate::assert(
+    checkmate::check_character(x = cols, min.len = 2, any.missing = FALSE, null.ok = TRUE),
+    checkmate::check_integerish(x = cols, min.len = 2, lower = 1, any.missing = FALSE, null.ok = TRUE),
+    .var.name = "cols"
+  )
+  checkmate::reportAssertions(assert_collection)
+  if (!is.null(exclude_comparisons))
+    checkmate::assert_names(x = colnames(exclude_comparisons),
+                            must.include = c("V1", "V2"),
+                            add = assert_collection)
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
+
   if (is.null(cols)) {
     cols <- colnames(data)
   }
 
-  column_combinations <- as.data.frame(t(combn(cols, 2)), stringsAsFactors = FALSE)
+  column_combinations <- as.data.frame(t(combn(cols, 2)),
+                                       stringsAsFactors = FALSE)
 
   # Exclude comparisons if specified
   if (!is.null(exclude_comparisons)) {
-
-    # Asserts for exclude_comparisons data frame
-    stopifnot(
-      is.data.frame(exclude_comparisons),
-      "V1" %in% colnames(exclude_comparisons),
-      "V2" %in% colnames(exclude_comparisons)
-    )
-
     column_combinations <- column_combinations %>%
       dplyr::anti_join(exclude_comparisons, by = c("V1", "V2"))
   }

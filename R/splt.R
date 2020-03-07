@@ -41,26 +41,28 @@ splt <- function(data,
   # Returns list with the windows (data frames or vectors)
   #
 
-  # If allow_zero is TRUE, and n is 0
-  # .. Return the given data in a list
-  # .. instead of giving an error
-  if (isTRUE(allow_zero) && n == 0) {
-    return(split(data, factor(1)))
-  }
-
-  # Check arguments
-  # Convert n if given as percentage
-  # Check more arguments
-  n <- check_convert_check_(
-    data = data,
-    n =  n,
+  # Check and prep inputs
+  checks <- check_group_factor(
+    data = data, n = n,
     method = method,
+    starts_col = starts_col,
     force_equal = force_equal,
     allow_zero = allow_zero,
     descending = descending,
-    starts_col = starts_col,
-    remove_missing_starts = remove_missing_starts
-  )
+    randomize = randomize,
+    remove_missing_starts = remove_missing_starts)
+
+  n <- checks[["n"]]
+  starts_col <- checks[["starts_col"]]
+
+  # If allow_zero is TRUE, and n is 0
+  # .. Return the given data in a list
+  # .. instead of giving an error
+  if (isTRUE(allow_zero) &&
+      checkmate::test_number(n) &&
+      n == 0) {
+    return(split(data, factor(1)))
+  }
 
   # Force equal
   # .. Some methods have a different way of calculating

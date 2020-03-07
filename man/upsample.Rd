@@ -54,10 +54,10 @@ If the number to distribute can not be equally divided, some IDs will have 1 row
 \subsection{nested}{
 Calls \code{balance()} on each category with IDs as cat_col.
 
-I.e. if size is "min", IDs will have the size of the smallest ID in their category.
+I.e. if size is \code{"min"}, IDs will have the size of the smallest ID in their category.
 }}
 
-\item{mark_new_rows}{Add column with 1s for added rows, and 0s for original rows. (Logical)}
+\item{mark_new_rows}{Add column with \code{1}s for added rows, and \code{0}s for original rows. (Logical)}
 
 \item{new_rows_col_name}{Name of column marking new rows. Defaults to \code{".new_row"}.}
 }

@@ -1,10 +1,10 @@
 
 ## %primes%
-#' @title Find remainder from primes method.
+#' @title Find remainder from 'primes' method.
 #' @description
 #'  \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
 #'
-#'  When using the primes method,
+#'  When using the \code{primes} method,
 #'  the last group might not have the size of the associated prime number
 #'  if there are not enough elements left. Use \code{\%primes\%} to find this remainder.
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
@@ -37,15 +37,22 @@
   # remainder of 0
   #
 
-  stopifnot(start_at >= 1)
-
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+  checkmate::assert_count(x = size, add = assert_collection)
+  checkmate::assert_count(x = start_at, positive = TRUE, add = assert_collection)
+  checkmate::reportAssertions(assert_collection)
+  if (start_at >= size)
+    assert_collection$push("'start_at' must be smaller than 'size'.")
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
 
   # Get the number of groups with no staircasing
   n_groups <- ceiling(size / start_at)
 
   # Create a data frame with 1 column containing a group index
   group_data <- data.frame(
-    "groups" = c(1:n_groups),
+    "groups" = seq_len(n_groups),
     stringsAsFactors = FALSE
   )
 

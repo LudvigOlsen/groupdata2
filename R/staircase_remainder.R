@@ -1,10 +1,10 @@
 
 ## %staircase%
-#' @title Find remainder from staircase method.
+#' @title Find remainder from 'staircase' method.
 #' @description
 #'  \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
 #'
-#'  When using the staircase method,
+#'  When using the \code{staircase} method,
 #'  the last group might not have the size of the second last
 #'  group + step size. Use \code{\%staircase\%} to find this remainder.
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
@@ -12,7 +12,7 @@
 #' @param size Size to staircase (Integer)
 #' @param step_size Step size (Integer)
 #' @return Remainder (Integer).
-#'  Returns 0 if the last group has the size of the second last group + step size.
+#'  Returns \code{0} if the last group has the size of the second last group + step size.
 #' @family staircase tools
 #' @family remainder tools
 #' @aliases staircase
@@ -44,14 +44,18 @@
   # remainder of 0
   #
 
-  stopifnot(step_size > 0)
-
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+  checkmate::assert_count(x = size, add = assert_collection)
+  checkmate::assert_count(x = step_size, positive = TRUE, add = assert_collection)
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
 
   # Get the number of groups with no staircasing
   n_groups <- ceiling(size/step_size)
 
   # Create a data frame with 1 column containing a group index
-  group_data <- data.frame('groups' = c(1:n_groups),
+  group_data <- data.frame('groups' = seq_len(n_groups),
                            stringsAsFactors = FALSE)
 
   # Create a column with number of elements (group number times step size)

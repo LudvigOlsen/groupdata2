@@ -27,7 +27,7 @@ test_that("find_starts() find the right starts", {
   # v3 - notice: find_starts() converts factors to characters
 
   expect_warning(expect_equal(check_find_starts_df("v3"), c("1", "2", "3")),
-    "col is factor. Using as character.",
+    "'col' is factor. Using as character.",
     fixed = TRUE
   )
 
@@ -35,42 +35,42 @@ test_that("find_starts() find the right starts", {
     check_find_starts_df("v3", return_index = TRUE),
     c(1, 4, 7)
   ),
-  "col is factor. Using as character.",
+  "'col' is factor. Using as character.",
   fixed = TRUE
   )
 
   expect_error(find_starts(df),
-    "col must be specified when data is data frame",
+    "'col' must be specified when 'data' is data frame",
     fixed = TRUE
   )
 
   expect_error(find_starts(df),
-    "col must be specified when data is data frame",
+    "'col' must be specified when 'data' is data frame",
     fixed = TRUE
   )
 
   expect_warning(find_starts(v, col = "a"),
-    "col not used as data is not a data frame",
+    "'col' not used as 'data' is not a data frame",
     fixed = TRUE
   )
 
   expect_warning(find_starts(factor(v)),
-    "data is factor. Using as character.",
+    "'data' is factor. Using as character.",
     fixed = TRUE
   )
 
   expect_warning(find_starts(factor(v), return_index = TRUE),
-    "data is factor. Using as character.",
+    "'data' is factor. Using as character.",
     fixed = TRUE
   )
 
   expect_warning(find_starts(df, col = "v3"),
-    "col is factor. Using as character.",
+    "'col' is factor. Using as character.",
     fixed = TRUE
   )
 
   expect_warning(find_starts(df, col = "v3", return_index = TRUE),
-    "col is factor. Using as character.",
+    "'col' is factor. Using as character.",
     fixed = TRUE
   )
 })

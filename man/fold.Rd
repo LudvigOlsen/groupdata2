@@ -22,7 +22,7 @@ fold(
 )
 }
 \arguments{
-\item{data}{Data frame or vector.}
+\item{data}{Data frame.}
 
 \item{k}{\emph{Dependent on method.}
 

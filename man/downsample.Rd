@@ -47,7 +47,7 @@ If the number to distribute can not be equally divided, some IDs will have 1 row
 \subsection{nested}{
 Calls \code{balance()} on each category with IDs as cat_col.
 
-I.e. if size is "min", IDs will have the size of the smallest ID in their category.
+I.e. if size is \code{"min"}, IDs will have the size of the smallest ID in their category.
 }}
 }
 \value{

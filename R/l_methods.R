@@ -29,11 +29,6 @@ l_sizes_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE)
     stop("Element <= 0 found in n")
   }
 
-  stopifnot(
-    is.logical(force_equal),
-    is.logical(descending)
-  )
-
   # If n is given as a list() object
   # unlist n to get a c() vector
   if (typeof(n) == "list" && !is.data.frame(n)) {
@@ -192,35 +187,21 @@ l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE
   # method: l_starts
   # Takes values to start groups at
   # Allows skipping of values
-  # Under development
   #
-
-  stopifnot(
-    is.logical(force_equal),
-    is.logical(descending)
-  )
 
   # If we want to return the missing starts,
   # We need to recursively remove them first
   if (isTRUE(return_missing_starts)) remove_missing_starts <- TRUE
 
-
   # Check if n is 'auto'
+  if (checkmate::test_string(x = n, pattern = "^auto$")) {
 
-  # If n is not a list
-  # N.b. because n == 'auto' on a list issues warning
-  if (!is.list(n)) {
+    # Replace NAs
+    tmp_na_val <- create_tmp_val(v)
+    v[is.na(v)] <- tmp_na_val
 
-    # And n is 'auto'
-    if (n[1] == "auto") {
-
-      # Replace NAs
-      tmp_na_val <- create_tmp_val(v)
-      v[is.na(v)] <- tmp_na_val
-
-      # Find starts
-      n <- find_starts(v)
-    }
+    # Find starts
+    n <- find_starts(v)
   }
 
   # For each element in n
@@ -244,8 +225,7 @@ l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE
   # of n, we insert it.
   if (n_list[[1]][1] != v[1]) {
 
-    # Insert first value of v in the beginning
-    # of n
+    # Insert first value of v in the beginning of n
     n_list <- append(n_list, list(c(as.character(v[1]), 1)), 0)
   }
 
@@ -262,10 +242,9 @@ l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE
       remove_missing_starts = remove_missing_starts)
     n_list <- found[2]
     ind_next <- found[1]
-    # If an error was caught
+    ind_next
   },
   error = function(e) {
-    # Raise error with
     stop(paste("group_factor: ", e$message, sep = ""))
   })
 

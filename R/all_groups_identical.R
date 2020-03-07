@@ -5,6 +5,8 @@
 #'  Checks whether two grouping factors contain the same groups,
 #'  looking only at the group members, allowing for different group names / identifiers.
 #' @param x,y Two grouping factors (vectors/factors with group identifiers) to compare.
+#'
+#'  \strong{N.B.} Both are converted to character vectors.
 #' @details
 #'  Both factors are sorted by \code{x}.
 #'  A grouping factor is created with new groups starting at the values in
@@ -13,7 +15,7 @@
 #'  A similar grouping factor is created for \code{x},
 #'  to have group identifiers range from \code{1} to the number of groups.
 #'  The two generated grouping factors are tested for equality.
-#' @return Whether \strong{all} groups in \code{x} are the same in \code{y}, memberwise. (logical)
+#' @return Whether \strong{all} groups in \code{x} are the same in \code{y}, \emph{memberwise}. (logical)
 #' @family grouping functions
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
@@ -42,6 +44,19 @@
 #' x2 <- c(1, 1, 1, 2, 2, 2)
 #' all_groups_identical(x1, x2) # FALSE
 all_groups_identical <- function(x, y) {
+
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+  checkmate::assert(checkmate::check_vector(x = x, strict=TRUE),
+                    checkmate::check_factor(x = x),
+                    .var.name = "x")
+  checkmate::assert(checkmate::check_vector(x = y, strict=TRUE),
+                    checkmate::check_factor(x = y),
+                    .var.name = "y")
+  if (length(x) != length(y))
+    assert_collection$push("'x' and 'y' must have same length.")
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
 
   d <- tibble::tibble(
     "col_1" = as.character(x),

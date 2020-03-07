@@ -7,10 +7,12 @@
 all_groups_identical(x, y)
 }
 \arguments{
-\item{x, y}{Two grouping factors (vectors/factors with group identifiers) to compare.}
+\item{x, y}{Two grouping factors (vectors/factors with group identifiers) to compare.
+
+\strong{N.B.} Both are converted to character vectors.}
 }
 \value{
-Whether \strong{all} groups in \code{x} are the same in \code{y}, memberwise. (logical)
+Whether \strong{all} groups in \code{x} are the same in \code{y}, \emph{memberwise}. (logical)
 }
 \description{
 \Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}

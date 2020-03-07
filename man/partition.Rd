@@ -17,7 +17,7 @@ partition(
 )
 }
 \arguments{
-\item{data}{Data frame or vector.}
+\item{data}{Data frame.}
 
 \item{p}{List or vector of partition sizes.
 Given as whole number(s) and/or percentage(s) (\code{0} < \code{n} < \code{1}).
@@ -165,25 +165,29 @@ df$session <- rep(c("1", "2", "3"), 6)
 # Using partition()
 
 # Without balancing
-partitions <- partition(df, c(0.2, 0.3))
+partitions <- partition(data = df, p = c(0.2, 0.3))
 
 # With cat_col
-partitions <- partition(df, c(0.5), cat_col = "diagnosis")
+partitions <- partition(data = df, p = 0.5, cat_col = "diagnosis")
 
 # With id_col
-partitions <- partition(df, c(0.5), id_col = "participant")
+partitions <- partition(data = df, p = 0.5, id_col = "participant")
 
 # With num_col
-partitions <- partition(df, c(0.5), num_col = "score")
+partitions <- partition(data = df, p = 0.5, num_col = "score")
 
 # With cat_col and id_col
-partitions <- partition(df, c(0.5),
+partitions <- partition(
+  data = df,
+  p = 0.5,
   cat_col = "diagnosis",
   id_col = "participant"
 )
 
 # With cat_col, num_col and id_col
-partitions <- partition(df, c(0.5),
+partitions <- partition(
+  data = df,
+  p = 0.5,
   cat_col = "diagnosis",
   num_col = "score",
   id_col = "participant"
@@ -196,7 +200,9 @@ partitions <- partition(df, c(0.5), list_out = FALSE)
 # Check if additional extreme_pairing_levels
 # improve the numerical balance
 set.seed(2) # try with seed 1 as well
-partitions_1 <- partition(df, c(0.5),
+partitions_1 <- partition(
+  data = df,
+  p = 0.5,
   num_col = "score",
   extreme_pairing_levels = 1,
   list_out = FALSE
@@ -208,7 +214,9 @@ partitions_1 \%>\%
     mean_score = mean(score)
   )
 set.seed(2) # try with seed 1 as well
-partitions_2 <- partition(df, c(0.5),
+partitions_2 <- partition(
+  data = df,
+  p = 0.5,
   num_col = "score",
   extreme_pairing_levels = 2,
   list_out = FALSE

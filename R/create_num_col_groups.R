@@ -11,15 +11,15 @@ create_num_col_groups <- function(data, n, num_col,
                                   force_equal = FALSE,
                                   pre_randomize = TRUE) {
 
-  # Run some checks
-  # TODO: This was copied from group_factor, not sure we need it here
-  n <- check_convert_check_(
-    data = data, n = n, method = method,
-    force_equal = force_equal,
-    allow_zero = FALSE, descending = FALSE,
-    remove_missing_starts = FALSE,
-    starts_col = NULL
-  )
+  # Most have been checked in parent
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+  checkmate::assert_string(x = col_name, add = assert_collection)
+  checkmate::assert_string(x = unequal_method, add = assert_collection)
+  checkmate::assert_string(x = optimize_for, add = assert_collection)
+  checkmate::assert_flag(x = pre_randomize, add = assert_collection)
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
 
   # If method is n_*, we are doing folding
   is_n_method <- substring(method, 1, 2) == "n_"
@@ -38,7 +38,7 @@ create_num_col_groups <- function(data, n, num_col,
 
   # Init rank summary for balanced joining of fold ID's
   # when cat_col is specified
-  if (is_n_method) rank_summary <- NULL
+  if (isTRUE(is_n_method)) rank_summary <- NULL
 
   # If cat_col is not NULL
   if (!is.null(cat_col)) {
@@ -67,7 +67,7 @@ create_num_col_groups <- function(data, n, num_col,
             extreme_pairing_levels = extreme_pairing_levels
           )
 
-        if (is_n_method) {
+        if (isTRUE(is_n_method)) {
           # Rename groups to be combined in the most balanced way
           if (is.null(rank_summary)) {
             rank_summary <<- create_rank_summary(
@@ -116,7 +116,7 @@ create_num_col_groups <- function(data, n, num_col,
           extreme_pairing_levels = extreme_pairing_levels
         )
 
-        if (is_n_method) {
+        if (isTRUE(is_n_method)) {
           # Rename groups to be combined in the most balanced way
           if (is.null(rank_summary)) {
             rank_summary <<- create_rank_summary(
@@ -204,5 +204,5 @@ create_num_col_groups <- function(data, n, num_col,
   # replace column name
   data <- base_rename(data, before = "._new_groups_", after = col_name)
 
-  return(dplyr::as_tibble(data))
+  dplyr::as_tibble(data)
 }

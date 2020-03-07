@@ -62,6 +62,13 @@ group <- function(data, n, method = "n_dist", starts_col = NULL,
   # .. Return data frame grouped by grouping factor
   #
 
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+  checkmate::assert_flag(x = return_factor, add = assert_collection)
+  checkmate::assert_string(x = col_name, min.chars = 1, add = assert_collection)
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
+
   # Create grouping factor
   grouping_factor <- group_factor(
     data = data,

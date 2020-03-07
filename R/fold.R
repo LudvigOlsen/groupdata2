@@ -212,7 +212,6 @@ if (getRversion() >= "2.15.1") utils::globalVariables(c("."))
 #'  \eqn{(e.g. 5, 10, 15, 20, 7)}.
 #'
 #'  \code{n} is step size}
-#' @inheritParams group_factor
 #' @aliases create_balanced_groups
 #' @family grouping functions
 #' @return Data frame with grouping factor for subsetting in cross-validation.
@@ -335,97 +334,23 @@ fold <- function(data,
   # .. data frame with grouping factor (folds)
   #
 
-
-  # Check arguments ####
-  assert_collection <- checkmate::makeAssertCollection()
-  checkmate::assert_data_frame(x = data, min.rows = 1, add = assert_collection)
-  checkmate::reportAssertions(assert_collection)
-  checkmate::assert_number(x = k, lower = 0, upper = nrow(data), finite = TRUE, add = assert_collection)
-  checkmate::assert_count(x = extreme_pairing_levels, positive = TRUE, add = assert_collection)
-  checkmate::assert_count(x = num_fold_cols, positive = TRUE, add = assert_collection)
-  checkmate::assert_count(x = max_iters, positive = TRUE, add = assert_collection)
-  checkmate::assert_flag(x = unique_fold_cols_only, add = assert_collection)
-  checkmate::assert_flag(x = parallel, add = assert_collection)
-  checkmate::assert_character(x = cat_col, min.len = 1, any.missing = FALSE,
-                              null.ok = TRUE, unique = TRUE,
-                              names = "unnamed", add = assert_collection)
-  checkmate::assert_string(x = num_col, na.ok = FALSE, min.chars = 1,
-                           null.ok = TRUE,  add = assert_collection)
-  checkmate::assert_string(x = id_col, na.ok = FALSE, min.chars = 1,
-                           null.ok = TRUE,  add = assert_collection)
-  checkmate::assert_string(x = method, min.chars = 1, add = assert_collection)
-  checkmate::assert_function(x = id_aggregation_fn, add = assert_collection)
-  checkmate::assert_string(x = handle_existing_fold_cols,
-                           add = assert_collection)
-  checkmate::reportAssertions(assert_collection)
-  # Convert k to wholenumber if given as percentage
-  if (!arg_is_wholenumber_(k) && is_between_(k, 0, 1)) {
-    rows_per_fold <- convert_percentage_(k, data)
-    k <- ceiling(nrow(data) / rows_per_fold)
-  }
-  checkmate::assert_count(x = k, positive = TRUE, add = assert_collection)
-  # TODO Could have a helper for adding this kind of message:
-  if (!is.null(cat_col) && length(setdiff(cat_col, colnames(data))) != 0){
-    assert_collection$push(paste0("'cat_col' column(s), '",
-                                  paste0(setdiff(cat_col, colnames(data)), collapse = ", "),
-                                  "', not found in 'data'."))
-  }
-  if (!is.null(num_col)){
-    if (num_col %ni% colnames(data)){
-      assert_collection$push(paste0("'num_col' column, '", num_col, "', not found in 'data'."))
-    }
-    checkmate::reportAssertions(assert_collection)
-    if (!checkmate::test_numeric(data[[num_col]])){
-      assert_collection$push(paste0("'num_col' column must be numeric."))
-    }
-  }
-  if (!is.null(id_col) && id_col %ni% colnames(data)) {
-    assert_collection$push(paste0("'id_col' column, '", id_col, "', not found in 'data'."))
-  }
-  checkmate::assert_names(
-    x = method,
-    subset.of = c("n_dist", "n_fill", "n_last", "n_rand", "greedy", "staircase"),
-    add = assert_collection
+  checks <- check_fold(
+    data = data,
+    k = k,
+    cat_col = cat_col,
+    num_col = num_col,
+    id_col = id_col,
+    method = method,
+    id_aggregation_fn = id_aggregation_fn,
+    extreme_pairing_levels = extreme_pairing_levels,
+    num_fold_cols = num_fold_cols,
+    unique_fold_cols_only = unique_fold_cols_only,
+    max_iters = max_iters,
+    handle_existing_fold_cols = handle_existing_fold_cols,
+    parallel = parallel
   )
-  checkmate::assert_names(
-    x = handle_existing_fold_cols,
-    subset.of = c("keep_warn", "keep", "remove"),
-    add = assert_collection
-  )
-  checkmate::reportAssertions(assert_collection)
-  if (!is.null(id_col)) {
-    checkmate::assert_factor(x = data[[id_col]], add = assert_collection)
-    if (!is.null(cat_col)) {
-      if (id_col %in% cat_col) {
-        assert_collection$push("'id_col' and 'cat_col' cannot contain the same column name.")
-      }
-      # Check that cat_col is constant within each ID
-      # TODO Perhaps faster with group_keys()? We don't care about the counts just the combos
-      counts <-
-        dplyr::count(data,!!as.name(id_col),!!as.name(cat_col))
-      if (nrow(counts) != length(unique(counts[[id_col]]))) {
-        assert_collection$push("The value in 'data[[cat_col]]' must be constant within each ID.")
-      }
-    }
-  }
-  checkmate::reportAssertions(assert_collection)
-  # End of argument checks ####
 
-  # If num_col is specified, warn that method is ignored
-  if (!is.null(num_col) & method != "n_dist") {
-    warning(paste0(
-      "'method' is ignored when 'num_col' is not 'NULL'. ",
-      "This warning occurs, because 'method' is not the default value."
-    ))
-  }
-
-  # If method is either greedy or staircase and cat_col is not NULL
-  # we don't want k elements per level in cat_col
-  # so we divide k by the number of levels in cat_col
-  if (method %in% c("greedy", "staircase") && !is.null(cat_col)) {
-    n_levels_cat_col <- length(unique(data[[cat_col]]))
-    k <- ceiling(k / n_levels_cat_col)
-  }
+  k <- checks[["k"]]
 
   # Check for existing fold columns
   existing_fold_colnames <- extract_fold_colnames(data)
@@ -664,4 +589,115 @@ fold <- function(data,
 
   # Return data
   data
+}
+
+
+check_fold <- function(data,
+                       k,
+                       cat_col,
+                       num_col,
+                       id_col,
+                       method,
+                       id_aggregation_fn,
+                       extreme_pairing_levels,
+                       num_fold_cols,
+                       unique_fold_cols_only,
+                       max_iters,
+                       handle_existing_fold_cols,
+                       parallel){
+
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+  checkmate::assert_data_frame(x = data, min.rows = 1, add = assert_collection)
+  checkmate::reportAssertions(assert_collection)
+  checkmate::assert_number(x = k, lower = 0, upper = nrow(data), finite = TRUE, add = assert_collection)
+  checkmate::assert_count(x = extreme_pairing_levels, positive = TRUE, add = assert_collection)
+  checkmate::assert_count(x = num_fold_cols, positive = TRUE, add = assert_collection)
+  checkmate::assert_count(x = max_iters, positive = TRUE, add = assert_collection)
+  checkmate::assert_flag(x = unique_fold_cols_only, add = assert_collection)
+  checkmate::assert_flag(x = parallel, add = assert_collection)
+  checkmate::assert_character(x = cat_col, min.len = 1, any.missing = FALSE,
+                              null.ok = TRUE, unique = TRUE,
+                              names = "unnamed", add = assert_collection)
+  checkmate::assert_string(x = num_col, na.ok = FALSE, min.chars = 1,
+                           null.ok = TRUE,  add = assert_collection)
+  checkmate::assert_string(x = id_col, na.ok = FALSE, min.chars = 1,
+                           null.ok = TRUE,  add = assert_collection)
+  checkmate::assert_string(x = method, min.chars = 1, add = assert_collection)
+  checkmate::assert_function(x = id_aggregation_fn, add = assert_collection)
+  checkmate::assert_string(x = handle_existing_fold_cols,
+                           add = assert_collection)
+  checkmate::reportAssertions(assert_collection)
+
+  # Convert k to wholenumber if given as percentage
+  if (!arg_is_wholenumber_(k) && is_between_(k, 0, 1)) {
+    rows_per_fold <- convert_percentage_(k, data)
+    k <- ceiling(nrow(data) / rows_per_fold)
+  }
+  checkmate::assert_count(x = k, positive = TRUE, add = assert_collection)
+
+  # TODO Could have a helper for adding this kind of message:
+  if (!is.null(cat_col) && length(setdiff(cat_col, colnames(data))) != 0){
+    assert_collection$push(paste0("'cat_col' column(s), '",
+                                  paste0(setdiff(cat_col, colnames(data)), collapse = ", "),
+                                  "', not found in 'data'."))
+  }
+  if (!is.null(num_col)){
+    if (num_col %ni% colnames(data)){
+      assert_collection$push(paste0("'num_col' column, '", num_col, "', not found in 'data'."))
+    }
+    checkmate::reportAssertions(assert_collection)
+    if (!checkmate::test_numeric(data[[num_col]])){
+      assert_collection$push(paste0("'num_col' column must be numeric."))
+    }
+  }
+  if (!is.null(id_col) && id_col %ni% colnames(data)) {
+    assert_collection$push(paste0("'id_col' column, '", id_col, "', not found in 'data'."))
+  }
+  checkmate::assert_names(
+    x = method,
+    subset.of = c("n_dist", "n_fill", "n_last", "n_rand", "greedy", "staircase"),
+    add = assert_collection
+  )
+  checkmate::assert_names(
+    x = handle_existing_fold_cols,
+    subset.of = c("keep_warn", "keep", "remove"),
+    add = assert_collection
+  )
+  checkmate::reportAssertions(assert_collection)
+  if (!is.null(id_col)) {
+    checkmate::assert_factor(x = data[[id_col]], add = assert_collection)
+    if (!is.null(cat_col)) {
+      if (id_col %in% cat_col) {
+        assert_collection$push("'id_col' and 'cat_col' cannot contain the same column name.")
+      }
+      # Check that cat_col is constant within each ID
+      # Note: I tested and count() is faster than group_keys()
+      counts <- dplyr::count(data, !!as.name(id_col), !!as.name(cat_col))
+      if (nrow(counts) != length(unique(counts[[id_col]]))) {
+        assert_collection$push("The value in 'data[[cat_col]]' must be constant within each ID.")
+      }
+    }
+  }
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
+
+  # If num_col is specified, warn that method is ignored
+  if (!is.null(num_col) & method != "n_dist") {
+    warning(paste0(
+      "'method' is ignored when 'num_col' is not 'NULL'. ",
+      "This warning occurs, because 'method' is not the default value."
+    ))
+  }
+
+  # If method is either greedy or staircase and cat_col is not NULL
+  # we don't want k elements per level in cat_col
+  # so we divide k by the number of levels in cat_col
+  if (method %in% c("greedy", "staircase") && !is.null(cat_col)) {
+    n_levels_cat_col <- length(unique(data[[cat_col]]))
+    k <- ceiling(k / n_levels_cat_col)
+  }
+
+  list("k" = k)
+
 }
