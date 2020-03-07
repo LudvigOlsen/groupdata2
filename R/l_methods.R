@@ -232,7 +232,6 @@ l_starts_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE
   n_list_backup <- n_list
 
   # We use tryCatch to catch the error if a start value is not found
-  # TODO What's in start_indices here??? Nothing is returned right? !!!!!!!!!!!!!!
   start_indices <- tryCatch({
     # Find indices
     # Put in function to enable recursion when removing

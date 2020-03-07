@@ -21,16 +21,6 @@ arg_is_wholenumber_ <- function(n) {
   is.integer(n) || (is.numeric(n) && is_wholenumber_(n))
 }
 
-# TODO Replace with simply is.numeric
-# integer is numeric
-arg_is_number_ <- function(n) {
-
-  # Checks if n is either an integer or a numeric
-  # Returns TRUE if yes, FALSE if no
-
-  is.integer(n) || is.numeric(n)
-}
-
 is_optimal_ <- function(grouping_factor, n_windows) {
 
   # Takes a grouping factor and the number of windows in it
@@ -212,7 +202,7 @@ group_uniques_ <- function(data, n, id_col, method, starts_col = NULL,
   )
 
   # Add grouping factor to data
-  # TODO replace with dplyr join
+  # TODO replace with dplyr join (didn't seem to work)
   data <- merge(data, id_groups, by.x = c(id_col),
                 by.y = c(colnames(id_groups)[1]))
 

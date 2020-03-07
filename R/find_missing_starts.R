@@ -85,7 +85,8 @@ check_find_missing_starts <- function(data, n, starts_col = NULL,
   if (is.null(n)){
     assert_collection$push("'n' cannot be 'NULL'")
   }
-  if (length(n) == 1 && is.na(n)){
+  checkmate::reportAssertions(assert_collection)
+  if (length(n) == 1 && all(is.na(n))){
     assert_collection$push("'n' cannot be 'NA'")
   }
   if (!is.data.frame(data) && length(data) == 1 && is.na(data)){
@@ -111,22 +112,27 @@ check_find_missing_starts <- function(data, n, starts_col = NULL,
     checkmate::check_string(x = starts_col, min.chars = 1, null.ok = TRUE),
     checkmate::check_count(x = starts_col, positive = TRUE, null.ok = TRUE),
     .var.name = "starts_col")
-
+  checkmate::reportAssertions(assert_collection)
   if (!is.null(starts_col)) {
     if (!is.data.frame(data)){
       assert_collection$push("when 'starts_col' is specified, 'data' must be a data frame.")
       checkmate::reportAssertions(assert_collection)
     }
-    if (is.character(starts_col) && starts_col %ni% c(colnames(data), "index", ".index")){
+    if (checkmate::test_string(starts_col) &&
+        starts_col %ni% c(colnames(data), "index", ".index")){
       assert_collection$push(paste0("'starts_col' column, '", starts_col, "', not found in 'data'."))
-    } else if (is.numeric(starts_col) && ncol(data) < starts_col){
+    } else if (checkmate::test_number(starts_col) &&
+               ncol(data) < starts_col){
       assert_collection$push(
         paste0("'starts_col' was passed as a column index but was larger th",
                "an the number of columns in 'data'.")
       )
     }
     checkmate::reportAssertions(assert_collection)
-    if (is.numeric(starts_col)) starts_col <- colnames(data)[[starts_col]]
+
+    if (checkmate::test_number(starts_col))
+      starts_col <- colnames(data)[[starts_col]]
+
     checkmate::assert(
       checkmate::check_string(x = starts_col, pattern = "^\\.?index$"),
       checkmate::check_numeric(x = data[[starts_col]]),
