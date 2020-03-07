@@ -554,7 +554,7 @@ find_identical_cols <- function(data, cols = NULL, exclude_comparisons = NULL,
       if (isTRUE(group_wise)) {
         return(all_groups_identical(col_1, col_2))
       } else {
-        return(isTRUE(dplyr::all_equal(col_1, col_2, ignore_row_order = FALSE)))
+        return(all(as.character(col_1) == as.character(col_2)))
       }
     }
   ) %>% unlist()
@@ -566,7 +566,7 @@ find_identical_cols <- function(data, cols = NULL, exclude_comparisons = NULL,
   identicals <- column_combinations[
     column_combinations[["identical"]],
     c("V1", "V2")
-  ]
+  ] %>% dplyr::as_tibble()
 
   if (isTRUE(return_all_comparisons)) {
     return(list(identicals, column_combinations))
@@ -666,21 +666,22 @@ create_tmp_val <- function(v, tmp_val = ".tmp_val_", disallowed = NULL) {
 # Used in create_num_col_groups
 rename_levels_by_reverse_rank_summary <- function(data, rank_summary, levels_col, num_col) {
   current_rank_summary <- create_rank_summary(data, levels_col, num_col)
+  colnames(current_rank_summary) <- paste0(colnames(current_rank_summary), "_current")
 
   reverse_rank_bind <- rank_summary %>%
     dplyr::arrange(dplyr::desc(.data$sum_)) %>%
     dplyr::bind_cols(current_rank_summary)
 
   pattern_and_replacement <- reverse_rank_bind %>%
-    base_select(cols = c(levels_col, paste0(levels_col, "1")))
+    base_select(cols = c(levels_col, paste0(levels_col, "_current")))
 
   data <- data %>%
     dplyr::left_join(pattern_and_replacement, by = levels_col) %>%
     base_deselect(cols = levels_col) %>%
-    base_rename(before = paste0(levels_col, "1"), after = levels_col)
+    base_rename(before = paste0(levels_col, "_current"), after = levels_col)
 
   updated_rank_summary <- reverse_rank_bind %>%
-    dplyr::mutate(sum_ = .data$sum_ + .data$sum_1) %>%
+    dplyr::mutate(sum_ = .data$sum_ + .data$sum__current) %>%
     base_select(cols = c(levels_col, "sum_"))
 
   list(

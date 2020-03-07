@@ -81,9 +81,6 @@ all_groups_identical <- function(x, y) {
         starts_col = "col_1"
       ) %>%
       dplyr::ungroup()
-    # future dplyr::all_equal can't do tibbles
-    d <- as.data.frame(d, stringsAsFactors = FALSE)
-    return(isTRUE(dplyr::all_equal(d[[".groups_1"]], d[[".groups_2"]],
-                                   ignore_row_order = FALSE)))
+    all(as.character(d[[".groups_1"]]) == as.character(d[[".groups_2"]]))
   }
 }
