@@ -2,6 +2,8 @@
 
 * Adds Zenodo DOI for easier citation.
 
+* Adds `lifecycle` badges to function documentation.
+
 * Adds argument `handle_na` to `differs_from_previous()` and `find_starts()`.
 
 * Bug fix: In grouping functions with method `l_starts` and `n = "auto"`, `NA`s are now replaced by a unique value before finding group starts. E.g. `c(1,1,1,2,2,NA,NA,4,4)` yields 4 groups.
