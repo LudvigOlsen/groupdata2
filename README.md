@@ -250,8 +250,8 @@ library(knitr)
 ``` r
 # Create data frame
 df <- data.frame(
-  "x"=c(1:12),
-  "species" = factor(rep(c('cat','pig', 'human'), 4)),
+  "x" = c(1:12),
+  "species" = factor(rep(c('cat', 'pig', 'human'), 4)),
   "age" = sample(c(1:100), 12)
 )
 ```
@@ -283,7 +283,7 @@ group(df, n = 5, method = 'n_dist') %>%
 
 # Using group() with dplyr pipeline to get mean age
 df %>%
-  group(n = 5, method = 'n_dist') %>%
+  group(n = 5, method = 'n_dist') %>% 
   dplyr::summarise(mean_age = mean(age)) %>%
   kable()
 ```
@@ -303,7 +303,7 @@ df %>%
 # then skips to the second appearance of "pig" after "cat",
 # then starts at the following "cat".
 df %>%
-  group(n = list("cat", c("pig",2), "cat"), 
+  group(n = list("cat", c("pig", 2), "cat"),
         method = 'l_starts',
         starts_col = "species") %>%
   kable()
@@ -331,10 +331,11 @@ df %>%
 ``` r
 # Create data frame
 df <- data.frame(
-  "participant" = factor(rep(c('1','2', '3', '4', '5', '6'), 3)),
-  "age" = rep(c(20,33,27,21,32,25), 3),
+  "participant" = factor(rep(c('1', '2', '3', '4', '5', '6'), 3)),
+  "age" = rep(c(20, 33, 27, 21, 32, 25), 3),
   "diagnosis" = factor(rep(c('a', 'b', 'a', 'b', 'b', 'a'), 3)),
-  "score" = c(10,24,15,35,24,14,24,40,30,50,54,25,45,67,40,78,62,30))
+  "score" = c(10, 24, 15, 35, 24, 14, 24, 40, 30, 
+              50, 54, 25, 45, 67, 40, 78, 62, 30))
 df <- df %>% arrange(participant)
 df$session <- rep(c('1','2', '3'), 6)
 ```
@@ -451,7 +452,7 @@ df_b %>%
 set.seed(1)
 
 # Downsampling by diagnosis
-balance(df_b, size="min", cat_col = "diagnosis") %>% 
+balance(df_b, size = "min", cat_col = "diagnosis") %>% 
   count(diagnosis, participant) %>% 
   kable()
 ```
@@ -467,7 +468,7 @@ balance(df_b, size="min", cat_col = "diagnosis") %>%
 ``` r
 
 # Downsampling the IDs
-balance(df_b, size="min", cat_col = "diagnosis", 
+balance(df_b, size = "min", cat_col = "diagnosis", 
         id_col = "participant", id_method = "n_ids") %>% 
   count(diagnosis, participant) %>% 
   kable()
