@@ -347,11 +347,10 @@ df$session <- rep(c('1','2', '3'), 6)
 set.seed(1)
 
 # Use fold() with cat_col, num_col and id_col
-df_folded <- fold(df, k = 3, cat_col = 'diagnosis',
+df_folded <- fold(df, k = 3, 
+                  cat_col = 'diagnosis',
                   num_col = "age", 
                   id_col = 'participant')
-#> 'before' and 'after' were identical.
-#> 'before' and 'after' were identical.
 
 # Show df_folded ordered by folds
 df_folded %>% 

@@ -202,7 +202,8 @@ create_num_col_groups <- function(data, n, num_col,
   }
 
   # replace column name
-  data <- base_rename(data, before = "._new_groups_", after = col_name)
+  if (col_name != "._new_groups_")
+    data <- base_rename(data, before = "._new_groups_", after = col_name)
 
   dplyr::as_tibble(data)
 }

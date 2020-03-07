@@ -753,7 +753,7 @@ base_rename <- function(data, before, after, warn_at_overwrite = FALSE) {
     data[[after]] <- NULL
   }
   colnames(data)[names(data) == before] <- after
-  return(data)
+  data
 }
 
 # Cols should be col names
