@@ -66,3 +66,11 @@
 #' @docType package
 #' @name groupdata2
 NULL
+
+
+
+# Never used, but removes R CMD check NOTEs
+rcmd_import_handler <- function(){
+  lifecycle::deprecate_soft()
+}
+

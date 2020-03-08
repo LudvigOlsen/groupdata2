@@ -1,3 +1,5 @@
+# groupdata2 1.2.0.9000
+
 # groupdata2 1.2.0
 
 * Adds Zenodo DOI for easier citation.
