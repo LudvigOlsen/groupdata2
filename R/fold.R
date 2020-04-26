@@ -305,6 +305,7 @@ if (getRversion() >= "2.15.1") utils::globalVariables(c("."))
 #' @importFrom dplyr group_by_ do %>%
 #' @importFrom utils combn
 #' @importFrom rlang .data
+#' @importFrom stats runif
 fold <- function(data,
                  k = 5,
                  cat_col = NULL,

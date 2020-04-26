@@ -773,3 +773,14 @@ position_first <- function(data, col) {
 
   base_select(data = data, cols = c(col, setdiff(names(data), col)))
 }
+
+# insertRow2 from https://stackoverflow.com/a/11587051/11832955
+# Note: May not work with rownames!
+insert_row <- function(data, new_row, after) {
+  data <- rbind(data, new_row)
+  data <- data[order(c(seq_len(nrow(data) - 1), after + 0.5)),
+               , drop = FALSE] # extra comma on purpose
+  row.names(data) <- seq_len(nrow(data))
+  data
+}
+

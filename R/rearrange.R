@@ -1,86 +1,527 @@
-## rearrange
-#' @title Rearrange data by a set of methods.
-#' @description \strong{Internal}: Creates a rearrange factor and sorts the data by it.
-#'  A rearrange factor is simply a vector of integers to sort by.
+
+
+#   __________________ #< c9bf40be0f67f749426e4b447b274c13 ># __________________
+#   Rearrange data frame                                                    ####
+
+
+#' @title Arrange a data frame by a set of methods
+#' @description
+#'  \Sexpr[results=rd, stage=render]{lifecycle::badge("experimental")}
+#'
+#'  Creates a special sorting factor and sorts by it. Current methods are
+#'  \code{"pair_extremes"}, \code{"center_max"}, and \code{"center_min"}.
+#'
+#'  For an easier experience and usage examples, see the relevant wrapper functions:
+#'  \code{\link[groupdata2:pair_extremes]{pair_extremes()}},
+#'  \code{\link[groupdata2:center_max]{center_max()}}, or
+#'  \code{\link[groupdata2:center_min]{center_min()}}.
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
-#' @keywords internal
-#' @param data Data frame or Vector.
-#' @param method Name of method used to create rearrange factor.
-#' Currently only \code{pair_extremes}.
-#' \subsection{pair_extremes}{
-#' The first and last rows are grouped. The second and the second last rows are grouped. Etc.
+#' @export
+#' @family rearrange functions
+#' @param data Data frame or vector. When a vector, it is converted to a data frame.
+#' @param col Column to create sorting factor by. When \code{NULL} and \code{data} is a data frame,
+#'  it uses the row numbers.
+#' @param method Sorting method.
 #'
-#' E.g.: 1,2,3,2,1
-#' }
-#' @param unequal_method Name of method to use for dealing with unequal number of rows/elements in data.
-#' \code{first}, \code{middle} or \code{last}
-#' \subsection{first}{
-#' The first group will have size 1.
+#'  One of: \code{"pair_extremes"}, \code{"center_max"}, or \code{"center_min"}.
 #'
-#' E.g. \strong{1},2,3,4,4,3,2.
-#' }
+#'  \subsection{pair_extremes}{
+#'  The values are paired/grouped such that the highest and lowest values form the first group,
+#'  the second highest and the second lowest values form the second group, and so on.
+#'  The values are then sorted by these groups/pairs.
+#'
+#'  When \code{data} has an uneven number of rows,
+#'  the \code{unequal_method} argument determines which group should have only 1 element.
+#'
+#'  \strong{Example}:
+#'
+#'  The column values:
+#'
+#'  \code{c(1, 2, 3, 4, 5, 6)}
+#'
+#'  Creates the \strong{sorting factor}:
+#'
+#'  \code{c(1, 2, 3, 3, 2, 1)}
+#'
+#'  And are \strong{ordered as}:
+#'
+#'  \code{c(1, 6, 2, 5, 3, 4)}
+#'  }
+#'
+#'  \subsection{center_max}{
+#'  The highest value is positioned in the middle with
+#'  values decreasing around it.
+#'
+#'  \strong{Example}:
+#'
+#'  The column values:
+#'
+#'  \code{c(1, 2, 3, 4,} \strong{\code{5}}\code{)}
+#'
+#'  are \strong{ordered as}:
+#'
+#'  \code{c(1, 3,} \strong{\code{5}}\code{, 4, 2)}
+#'
+#'  }
+#'
+#'  \subsection{center_min}{
+#'  The lowest value is positioned in the middle with
+#'  values increasing around it.
+#'
+#'  \strong{Example}:
+#'
+#'  The column values:
+#'
+#'  \code{c(}\strong{\code{1}}\code{, 2, 3, 4, 5)}
+#'
+#'  are \strong{ordered as}:
+#'
+#'  \code{c(5, 3,} \strong{\code{1}}\code{, 2, 4)}
+#'
+#'  }
+#' @param unequal_method Method for dealing with an unequal number of rows
+#'  in \code{data} when \code{method} is \code{"pair_extremes"}.
+#'
+#'  One of: \code{first}, \code{middle} or \code{last}
+#'
+#'  \subsection{first}{
+#'  The first group will have size \code{1}.
+#'
+#'  \strong{Example}:
+#'
+#'  The column values:
+#'
+#'  \code{c(1, 2, 3, 4, 5)}
+#'
+#'  Creates the \strong{sorting factor}:
+#'
+#'  \code{c(}\strong{\code{1}}\code{, 2, 3, 3, 2)}
+#'
+#'  And are \strong{ordered as}:
+#'
+#'  \code{c(}\strong{\code{1}}\code{, 2, 5, 3, 4)}
+#'
+#'  }
+#'
 #' \subsection{middle}{
-#' The middle group will have size 1.
+#'  The middle group will have size \code{1}.
 #'
-#' E.g. 1,2,4,5,\strong{3},5,4,2,1.
-#' }
+#'  \strong{Example}:
+#'
+#'  The column values:
+#'
+#'  \code{c(1, 2, 3, 4, 5)}
+#'
+#'  Creates the \strong{sorting factor}:
+#'
+#'  \code{c(1, 3, }\strong{\code{2}}\code{, 3, 1)}
+#'
+#'  And are \strong{ordered as}:
+#'
+#'  \code{c(1, 5, } \strong{\code{3}}\code{, 2, 4)}
+#'
+#'  }
 #' \subsection{last}{
-#' The last group will have size 1.
+#'  The last group will have size \code{1}.
 #'
-#' E.g. 1,2,3,4,4,3,2,1,\strong{5}.
-#' }
-#' @param drop_rearrange_factor Whether to drop rearrange factor after sorting dataset. \code{Logical}.
-#' @param rearrange_factor_name Name of rearrange factor.
+#'  \strong{Example}:
 #'
-#'  N.B. Only used when \code{drop_rearrange_factor} is FALSE.
+#'  The column values:
 #'
-rearrange <- function(data, method = "pair_extremes",
+#'  \code{c(1, 2, 3, 4, 5)}
+#'
+#'  Creates the \strong{sorting factor}:
+#'
+#'  \code{c(1, 2, 2, 1, }\strong{\code{3}}\code{)}
+#'
+#'  And are \strong{ordered as}:
+#'
+#'  \code{c(1, 4, 2, 3,} \strong{\code{5}}\code{)}
+#'
+#'  }
+#' @param shuffle_members Whether to shuffle the pair members. (Logical)
+#'
+#'  For the \code{"center_*"} methods, this randomizes which values are
+#'  to the right and left of the center.
+#' @param shuffle_pairs Whether to shuffle the pairs when
+#'  \code{method} is \code{"pair_extremes"}. (Logical)
+#' @param keep_factor Whether to keep the sorting factor in the data frame. \code{Logical}.
+#'
+#'  This is mostly useful with the \code{"pair_extremes"} method.
+#' @param factor_name Name of sorting factor.
+#'
+#'  N.B. Only used when \code{keep_factor} is \code{TRUE}.
+#' @return
+#'  The sorted data frame. Optionally with the sorting factor added.
+rearrange <- function(data,
+                      col = NULL,
+                      method = "pair_extremes",
                       unequal_method = "middle",
-                      drop_rearrange_factor = TRUE,
-                      rearrange_factor_name = ".rearrange_factor") {
+                      shuffle_members = FALSE,
+                      shuffle_pairs = FALSE,
+                      keep_factor = FALSE,
+                      factor_name = ".rearrange_factor") {
+
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+
+  # Initial check of 'data'
+  checkmate::assert(
+    checkmate::check_data_frame(
+      data),
+    checkmate::check_vector(
+      data, strict = TRUE, any.missing = FALSE),
+    checkmate::check_factor(
+      data, any.missing = FALSE)
+  )
+
+  if (!is.data.frame(data) && is.list(data)){
+    assert_collection$push(
+      "when 'data' is not a data frame, it cannot be a list."
+    )
+    checkmate::reportAssertions(assert_collection)
+  }
+
+  # Convert to data frame
+  if (!is.list(data)){
+    if (!is.null(col)){
+      assert_collection$push(
+        "when 'data' is not a data frame, 'col' must be 'NULL'."
+      )
+      checkmate::reportAssertions(assert_collection)
+    }
+    data <- data.frame("Value" = data,
+                       stringsAsFactors = FALSE)
+    col = "Value"
+  }
+
+  # Second check of 'data'
+  checkmate::assert_data_frame(data, min.rows = 1, add = assert_collection)
+  checkmate::assert_string(col, min.chars = 1,null.ok = TRUE, add = assert_collection)
+  checkmate::assert_string(method, min.chars = 1, add = assert_collection)
+  checkmate::assert_string(unequal_method, min.chars = 1, add = assert_collection)
+  checkmate::assert_string(factor_name, min.chars = 1, add = assert_collection)
+  checkmate::assert_flag(keep_factor, add = assert_collection)
+  checkmate::assert_flag(shuffle_members, add = assert_collection)
+  checkmate::assert_flag(shuffle_pairs, add = assert_collection)
+  checkmate::reportAssertions(assert_collection)
+  checkmate::assert_names(method,
+                          subset.of = c("pair_extremes", "center_max", "center_min"),
+                          add = assert_collection)
+  checkmate::assert_names(unequal_method,
+                          subset.of = c("first", "middle", "last"),
+                          add = assert_collection)
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
 
   # Note, pre-sorting of data must happen outside rearrange.
 
   local_tmp_rearrange_var <- create_tmp_var(data, ".rearrange_factor_")
+  rm_col <- is.null(col)
 
-  # Check data
-  # Potentially convert vector to data frame
-  if (is.vector(data)) {
-    data <- data %>% tibble::enframe(name = NULL)
-  }
-  if (method %ni% c("pair_extremes")) {
-    stop("'method' must be name of one of the existing methods.")
-  }
-  if (unequal_method %ni% c("first", "middle", "last")) {
-    stop("'unequal_method' must be name of one of the existing methods for dealing with an unequal number of rows/elements.")
+  if (is.null(col)){
+    col <- create_tmp_var(data, ".tmp_col_")
+    data[[col]] <- seq_len(nrow(data))
+  } else {
+    # , drop is required for working with single-column data frames
+    data <- data[order(data[[col]]), , drop = FALSE]
   }
 
-  # Get function for creating rearrance factor
-  if (method == "pair_extremes") {
-    create_rearrange_factor_fn <- create_rearrange_factor_pair_extremes_
-  }
+  # We might get future methods that don't require extreme pairing
+  if (method == "pair_extremes"){
+    data[[local_tmp_rearrange_var]] <- create_rearrange_factor_pair_extremes_(
+      size = nrow(data), unequal_method = unequal_method
+    )
 
-  # Arrange by 'by' -> create rearrange factor -> arrange by rearrance factor
-  data[[local_tmp_rearrange_var]] <- create_rearrange_factor_fn(
-    size = nrow(data), unequal_method = unequal_method
-  )
-  data <- data %>%
-    dplyr::arrange(!!as.name(local_tmp_rearrange_var))
+    # Order data by the pairs
+    data <- order_by_group(data = data,
+                           group_col = local_tmp_rearrange_var,
+                           shuffle_members = shuffle_members,
+                           shuffle_pairs = shuffle_pairs)
+
+  } else if (method %in% c("center_max", "center_min")){
+    data <- rearrange_center_by(
+      data = data,
+      col = col,
+      shuffle_members = shuffle_members,
+      what = ifelse(method == "center_max", "max", "min")
+    )
+    data[[local_tmp_rearrange_var]] <- seq_len(nrow(data))
+  }
 
   # Remove rearrange factor if it shouldn't be returned
-  if (isTRUE(drop_rearrange_factor)) {
+  if (!isTRUE(keep_factor)) {
     data <- data %>%
       base_deselect(cols = local_tmp_rearrange_var)
-  } else if (local_tmp_rearrange_var != rearrange_factor_name) {
+  } else if (local_tmp_rearrange_var != factor_name) {
     data <- base_rename(data,
       before = local_tmp_rearrange_var,
-      after = rearrange_factor_name
+      after = factor_name
     )
+    data[[factor_name]] <- as.factor(data[[factor_name]])
   }
+
+  # Remove tmp column if 'col' was 'NULL'
+  if (isTRUE(rm_col)){
+    data[[col]] <- NULL
+  }
+
+  row.names(data) <- NULL
 
   data
 }
 
+
+##  .................. #< c6f8f66bb5ce65b8b50af7c8bdc94691 ># ..................
+##  Pair extremes wrapper                                                   ####
+
+
+#' @title Pair extreme values and sort by the pairs
+#' @description
+#'  \Sexpr[results=rd, stage=render]{lifecycle::badge("experimental")}
+#'
+#'  The values are paired/grouped such that the highest and lowest values
+#'  form the first group, the second highest and the second lowest values
+#'  form the second group, and so on.
+#'  The values are then sorted by these groups/pairs.
+#'
+#'  When \code{data} has an uneven number of rows, the \code{unequal_method}
+#'  determines which group should have only \code{1} element.
+#'
+#'  Wrapper for \code{\link[groupdata2:rearrange]{rearrange()}} with \code{method = "pair_extremes"}.
+#'
+#'  \strong{Example}:
+#'
+#'  The column values:
+#'
+#'  \code{c(1, 2, 3, 4, 5, 6)}
+#'
+#'  Creates the \strong{sorting factor}:
+#'
+#'  \code{c(1, 2, 3, 3, 2, 1)}
+#'
+#'  And are \strong{ordered as}:
+#'
+#'  \code{c(1, 6, 2, 5, 3, 4)}
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
+#' @export
+#' @family rearrange functions
+#' @inheritParams rearrange
+#' @return
+#'  The sorted data frame. Optionally with the sorting factor added.
+#' @examples
+#' \donttest{
+#' # Attach packages
+#' library(groupdata2)
+#'
+#' # Set seed
+#' set.seed(1)
+#'
+#' # Create a data frame
+#' df <- data.frame(
+#'   "index" = 1:10,
+#'   "A" = sample(1:10),
+#'   "B" = runif(10),
+#'   "C" = LETTERS[1:10],
+#'   stringsAsFactors = FALSE
+#' )
+#'
+#' # Pair extreme indices (row numbers)
+#' pair_extremes(df)
+#'
+#' # Pair extremes in each of the columns
+#' pair_extremes(df, col = "A")$A
+#' pair_extremes(df, col = "B")$B
+#' pair_extremes(df, col = "C")$C
+#'
+#' # Shuffle the members pair-wise
+#' pair_extremes(df, col = "A", shuffle_members = TRUE)
+#'
+#' # Shuffle the order of the pairs
+#' pair_extremes(df, col = "A", shuffle_pairs = TRUE)
+#'
+#' # Plot the extreme pairs
+#' plot(x = 1:10,
+#'      y = pair_extremes(df, col = "B")$B)
+#' # With shuffled pair members (run a few times)
+#' plot(x = 1:10,
+#'      y = pair_extremes(df, col = "B", shuffle_members = TRUE)$B)
+#' # With shuffled pairs (run a few times)
+#' plot(x = rep(1:5, each = 2),
+#'      y = pair_extremes(df, col = "B", shuffle_pairs = TRUE)$B)
+#' }
+pair_extremes <- function(data,
+                          col = NULL,
+                          unequal_method = "middle",
+                          shuffle_members = FALSE,
+                          shuffle_pairs = FALSE,
+                          keep_factor = FALSE,
+                          factor_name = ".rearrange_factor"){
+  rearrange(
+    data = data,
+    col = col,
+    method = "pair_extremes",
+    unequal_method = unequal_method,
+    shuffle_members = shuffle_members,
+    shuffle_pairs = shuffle_pairs,
+    keep_factor = keep_factor,
+    factor_name = factor_name
+  )
+}
+
+
+##  .................. #< a7871fe876eb8675acb8ff2fc16200b3 ># ..................
+##  Center max wrapper                                                      ####
+
+
+#' @title Centers the highest value with values decreasing around it
+#' @description
+#'  \Sexpr[results=rd, stage=render]{lifecycle::badge("experimental")}
+#'
+#'  The highest value is positioned in the middle with the other
+#'  values decreasing around it.
+#'
+#'  Wrapper for \code{\link[groupdata2:rearrange]{rearrange()}} with \code{method = "center_max"}.
+#'
+#'  \strong{Example}:
+#'
+#'  The column values:
+#'
+#'  \code{c(1, 2, 3, 4,} \strong{\code{5}}\code{)}
+#'
+#'  are \strong{ordered as}:
+#'
+#'  \code{c(1, 3,} \strong{\code{5}}\code{, 4, 2)}
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
+#' @export
+#' @family rearrange functions
+#' @inheritParams rearrange
+#' @return
+#'  The sorted data frame.
+#' @examples
+#' \donttest{
+#' # Attach packages
+#' library(groupdata2)
+#'
+#' # Set seed
+#' set.seed(1)
+#'
+#' # Create a data frame
+#' df <- data.frame(
+#'   "index" = 1:10,
+#'   "A" = sample(1:10),
+#'   "B" = runif(10),
+#'   "C" = LETTERS[1:10],
+#'   stringsAsFactors = FALSE
+#' )
+#'
+#' # Center by the index (row numbers)
+#' center_max(df)
+#'
+#' # Center by each of the columns
+#' center_max(df, col = "A")
+#' center_max(df, col = "B")
+#' center_max(df, col = "C")
+#'
+#' # Randomize which elements are left and right of the center
+#' center_max(df, col = "A", shuffle_members = TRUE)
+#'
+#' # Plot the centered values
+#' plot(x = 1:10, y = center_max(df, col = "B")$B)
+#' plot(x = 1:10, y = center_max(df, col = "B", shuffle_members = TRUE)$B)
+#' }
+center_max <- function(data,
+                       col = NULL,
+                       shuffle_members = FALSE){
+  rearrange(
+    data = data,
+    col = col,
+    method = "center_max",
+    shuffle_members = shuffle_members,
+    keep_factor = FALSE
+  )
+}
+
+
+##  .................. #< 4e75ce6b47c7a9a343bc39ec5b0ddf9c ># ..................
+##  Center min wrapper                                                      ####
+
+
+#' @title Centers the lowest value with values increasing around it
+#' @description
+#'  \Sexpr[results=rd, stage=render]{lifecycle::badge("experimental")}
+#'
+#'  The lowest value is positioned in the middle with the other
+#'  values increasing around it.
+#'
+#'  Wrapper for \code{\link[groupdata2:rearrange]{rearrange()}} with \code{method = "center_min"}.
+#'
+#'  \strong{Example}:
+#'
+#'  The column values:
+#'
+#'  \code{c(}\strong{\code{1}}\code{, 2, 3, 4, 5)}
+#'
+#'  are \strong{ordered as}:
+#'
+#'  \code{c(5, 3,} \strong{\code{1}}\code{, 2, 4)}
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
+#' @export
+#' @family rearrange functions
+#' @inheritParams rearrange
+#' @return
+#'  The sorted data frame.
+#' @examples
+#' \donttest{
+#' # Attach packages
+#' library(groupdata2)
+#'
+#' # Set seed
+#' set.seed(1)
+#'
+#' # Create a data frame
+#' df <- data.frame(
+#'   "index" = 1:10,
+#'   "A" = sample(1:10),
+#'   "B" = runif(10),
+#'   "C" = LETTERS[1:10],
+#'   stringsAsFactors = FALSE
+#' )
+#'
+#' # Center by the index (row numbers)
+#' center_min(df)
+#'
+#' # Center by each of the columns
+#' center_min(df, col = "A")
+#' center_min(df, col = "B")
+#' center_min(df, col = "C")
+#'
+#' # Randomize which elements are left and right of the center
+#' center_min(df, col = "A", shuffle_members = TRUE)
+#'
+#' # Plot the centered values
+#' plot(x = 1:10, y = center_min(df, col = "B")$B)
+#' plot(x = 1:10, y = center_min(df, col = "B", shuffle_members = TRUE)$B)
+#' }
+center_min <- function(data,
+                       col = NULL,
+                       shuffle_members = FALSE){
+  rearrange(
+    data = data,
+    col = col,
+    method = "center_min",
+    shuffle_members = shuffle_members,
+    keep_factor = FALSE
+  )
+}
+
+
+##  .................. #< d7de8cc19d87063af61c9c5164b8e37c ># ..................
+##  Rearrange helpers                                                       ####
+
+
+# TODO rename to pair_extreme_rows
+# Then we can also have pair_extreme_vals
 create_rearrange_factor_pair_extremes_ <- function(size, unequal_method = "middle") {
   #
   # Creates factor for rearranging in 1st, last, 2nd, 2nd last, 3rd, 3rd last, ...
@@ -99,6 +540,8 @@ create_rearrange_factor_pair_extremes_ <- function(size, unequal_method = "middl
   # .. .. e.g. 1,2,3,4,4,3,2,1,5
   #
 
+  if (size == 1)
+    return(1)
   half_size <- floor(size / 2)
   idx <- 1:(half_size)
   if (half_size * 2 == size) {
@@ -108,7 +551,8 @@ create_rearrange_factor_pair_extremes_ <- function(size, unequal_method = "middl
       middle <- ceiling((half_size / 2)) + 1
       idx <- idx %>%
         tibble::enframe(name = NULL) %>%
-        dplyr::mutate(value = ifelse(.data$value >= middle, .data$value + 1, .data$value)) %>%
+        dplyr::mutate(value = ifelse(
+          .data$value >= middle, .data$value + 1, .data$value)) %>%
         dplyr::pull(.data$value)
       return(c(idx, middle, rev(idx)))
     } else if (unequal_method == "first") {
@@ -117,4 +561,96 @@ create_rearrange_factor_pair_extremes_ <- function(size, unequal_method = "middl
       return(c(c(idx, rev(idx)), max(idx) + 1))
     }
   }
+}
+
+rearrange_center_by <- function(data, col, shuffle_members, what = "max") {
+
+  size <- nrow(data)
+
+  if (size < 2){
+    return(data)
+  }
+
+  # NOTE: The extra comma is on purpose!
+  # 'drop' is required for single-column data frames
+  data <- data[order(data[[col]], decreasing = what == "min"),
+               , drop = FALSE]
+
+  # If uneven length
+  # extract max and remove from vec
+  middle_row <- NULL
+  if (size %% 2 == 1){
+    if (what == "max"){
+      middle_val <- max(data[[col]])
+    } else if (what == "min"){
+      middle_val <- min(data[[col]])
+    }
+    # Extract and remove middle row
+    middle_row <- data[min(which(data[[col]] == middle_val)), , drop = FALSE]
+    data <- data[-min(which(data[[col]] == middle_val)), , drop = FALSE]
+    size <- size - 1
+  }
+
+  # Create extreme pairs factor
+  extreme_pairs <- create_rearrange_factor_pair_extremes_(
+    size = size)
+
+  if (isTRUE(shuffle_members)){
+    # Add noise to the pair indices to randomize the order
+    # of the members
+    extreme_pairs <- as.numeric(extreme_pairs) +
+      runif(length(extreme_pairs), -0.1, 0.1)
+  }
+
+  # Convert to ordering index
+  new_order <- seq_len(size)[order(extreme_pairs)]
+  # Add ordering index to data
+  tmp_order_var <- create_tmp_var(data, tmp_var = ".tmp_ordering_factor")
+  data[[tmp_order_var]] <- new_order
+  # Order 'data'
+  data <- data[order(data[[tmp_order_var]]), ]
+  data[[tmp_order_var]] <- NULL
+
+  # Insert middle if it was removed
+  if (!is.null(middle_row)){
+    data <- insert_row(
+      data = data,
+      new_row = middle_row,
+      after = size %/% 2)
+  }
+
+  data
+}
+
+order_by_group <- function(data, group_col, shuffle_members, shuffle_pairs){
+
+  backup_group_col <- isTRUE(shuffle_pairs) || isTRUE(shuffle_members)
+  if (isTRUE(backup_group_col)){
+    tmp_backup_group_col <- create_tmp_var(data, tmp_var = "group_col_backup_")
+    data[[tmp_backup_group_col]] <- data[[group_col]]
+  }
+
+  if (isTRUE(shuffle_pairs)){
+    # Randomize levels
+    data[[group_col]] <- as.numeric(
+      factor(data[[group_col]], levels = sample(unique(data[[group_col]])))
+    )
+  }
+  if (isTRUE(shuffle_members)){
+    # Add random noise to the group indices
+    data[[group_col]] <-
+      as.numeric(data[[group_col]]) +
+      runif(nrow(data), -0.1, 0.1)
+  }
+
+  # Order data frame by the groups
+  data <- data[order(data[[group_col]]), , drop = FALSE]
+
+  if (isTRUE(backup_group_col)){
+    # Revert to original group col
+    data[[group_col]] <- data[[tmp_backup_group_col]]
+    data[[tmp_backup_group_col]] <- NULL
+  }
+
+  data
 }
