@@ -332,6 +332,7 @@ rearrange <- function(data,
 #' \donttest{
 #' # Attach packages
 #' library(groupdata2)
+#' library(dplyr)
 #'
 #' # Set seed
 #' set.seed(1)
@@ -428,6 +429,7 @@ pair_extremes <- function(data,
 #' \donttest{
 #' # Attach packages
 #' library(groupdata2)
+#' library(dplyr)
 #'
 #' # Set seed
 #' set.seed(1)
@@ -508,6 +510,7 @@ center_max <- function(data,
 #' \donttest{
 #' # Attach packages
 #' library(groupdata2)
+#' library(dplyr)
 #'
 #' # Set seed
 #' set.seed(1)

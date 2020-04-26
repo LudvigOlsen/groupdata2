@@ -42,6 +42,7 @@ are \strong{ordered as}:
 \donttest{
 # Attach packages
 library(groupdata2)
+library(dplyr)
 
 # Set seed
 set.seed(1)
