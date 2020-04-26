@@ -29,6 +29,7 @@ R package for dividing data into groups.
   - Perform time series **windowing** and general **grouping** and
     **splitting** of data.
   - **Balance** existing groups with **up- and downsampling**.
+  - **Rearrange data** by a set of methods.
   - Finds values, or indices of values, that **differ** from the
     previous value by some threshold(s).
   - Check if two grouping factors have the same groups,
@@ -43,7 +44,8 @@ R package for dividing data into groups.
 | `splt()`         | Creates grouping factor and splits the data by these groups.                                                                                                                              |
 | `partition()`    | Splits data into partitions. Balances a given categorical variable and/or numerical variable between partitions and keeps all data points with a shared ID in the same partition.         |
 | `fold()`         | Creates folds for (repeated) cross-validation. Balances a given categorical variable and/or numerical variable between folds and keeps all data points with a shared ID in the same fold. |
-| `balance()`      | Uses up- and/or downsampling to equalize group sizes. Can balance on ID level.                                                                                                            |
+| `balance()`      | Uses up- and/or downsampling to equalize group sizes. Can balance on ID level. See wrappers: `downsample()`, `upsample()`.                                                                |
+| `rearrange()`    | Arrange/order data by a set of methods. See wrappers: `pair_extremes()`, `center_max()`, `center_min()`.                                                                                  |
 
 ### Other tools
 
@@ -56,28 +58,86 @@ R package for dividing data into groups.
 | `%primes%`                | Finds remainder for the `primes` method.                                                      |
 | `%staircase%`             | Finds remainder for the `staircase` method.                                                   |
 
+## Table of Contents
+
+  - [groupdata2](#groupdata2)
+      - [Overview](#overview)
+          - [Main functions](#main-functions)
+          - [Other tools](#other-tools)
+      - [Installation](#installation-)
+      - [Vignettes](#vignettes-)
+      - [Data for examples](#data-for-examples)
+      - [Functions](#functions-)
+          - [group\_factor()](#group_factor\(\))
+          - [group()](#group\(\)-)
+          - [splt()](#splt\(\)-)
+          - [partition()](#partition\(\)-)
+          - [fold()](#fold\(\)-)
+          - [balance()](#balance\(\))
+          - [rearrange()](#rearrange\(\))
+      - [Grouping Methods](#grouping-methods)
+          - [Specify group size](#specify-group-size)
+          - [Specify number of groups](#specify-number-of-groups)
+          - [Specify list](#specify-list-)
+          - [Specify step size](#specify-step-size)
+          - [Specify start at](#specify-start-at)
+      - [Balancing ID Methods](#balancing-id-methods)
+
 ## Installation
 
 CRAN version:
 
-> install.packages(“groupdata2”)
+> `install.packages("groupdata2")`
 
 Development version:
 
-> install.packages(“devtools”)  
-> devtools::install\_github(“LudvigOlsen/groupdata2”)
+> `install.packages("devtools")`  
+> `devtools::install_github("LudvigOlsen/groupdata2")`
 
 ## Vignettes
 
 groupdata2 contains a number of vignettes with relevant use cases and
 descriptions.
 
-> vignette(package=“groupdata2”) \# for an overview  
-> vignette(“introduction\_to\_groupdata2”) \# begin here
+> `vignette(package = "groupdata2")` \# for an overview  
+> `vignette("introduction_to_groupdata2")` \# begin here
+
+## Data for examples
+
+``` r
+# Attach packages
+library(groupdata2)
+library(dplyr)       # %>% filter() arrange() summarize()
+library(knitr)       # kable()
+```
+
+``` r
+# Create data frame
+df_small <- data.frame(
+  "x" = c(1:12),
+  "species" = rep(c(
+    'cat', 'pig', 'human'
+  ), 4),
+  "age" = sample(c(1:100), 12),
+  stringsAsFactors = FALSE
+)
+```
+
+``` r
+# Create data frame
+df_medium <- data.frame(
+  "participant" = factor(rep(c('1', '2', '3', '4', '5', '6'), 3)),
+  "age" = rep(c(20, 33, 27, 21, 32, 25), 3),
+  "diagnosis" = factor(rep(c('a', 'b', 'a', 'b', 'b', 'a'), 3)),
+  "score" = c(10, 24, 15, 35, 24, 14, 24, 40, 30, 
+              50, 54, 25, 45, 67, 40, 78, 62, 30))
+df_medium <- df_medium %>% arrange(participant)
+df_medium$session <- rep(c('1','2', '3'), 6)
+```
 
 ## Functions
 
-### `group_factor()`
+### group\_factor()
 
 Returns a factor with group numbers, e.g.
 `factor(c(1,1,1,2,2,2,3,3,3))`.
@@ -88,38 +148,425 @@ Create equally sized groups by setting `force_equal = TRUE`
 
 Randomize grouping factor by setting `randomize = TRUE`
 
-### `group()`
+``` r
+# Create grouping factor
+group_factor(
+  data = df_small, 
+  n = 5, 
+  method = "n_dist"
+)
+#>  [1] 1 1 2 2 3 3 3 4 4 5 5 5
+#> Levels: 1 2 3 4 5
+```
 
-Returns the given data as a data frame with added grouping factor made
-with `group_factor()`. The data frame is grouped by the grouping factor
-for easy use in `magrittr`/`dplyr` pipelines.
+### group()
 
-### `splt()`
+Creates a grouping factor and adds it to the given data frame. The data
+frame is grouped by the grouping factor for easy use in `magrittr`
+(`%>%`) pipelines.
+
+``` r
+# Use group()
+group(data = df_small, n = 5, method = 'n_dist') %>%
+  kable()
+```
+
+|  x | species | age | .groups |
+| -: | :------ | --: | :------ |
+|  1 | cat     |  68 | 1       |
+|  2 | pig     |  39 | 1       |
+|  3 | human   |   1 | 2       |
+|  4 | cat     |  34 | 2       |
+|  5 | pig     |  87 | 3       |
+|  6 | human   |  43 | 3       |
+|  7 | cat     |  14 | 3       |
+|  8 | pig     |  82 | 4       |
+|  9 | human   |  59 | 4       |
+| 10 | cat     |  51 | 5       |
+| 11 | pig     |  85 | 5       |
+| 12 | human   |  21 | 5       |
+
+``` r
+# Use group() in a pipeline 
+# Get average age per group
+df_small %>%
+  group(n = 5, method = 'n_dist') %>% 
+  dplyr::summarise(mean_age = mean(age)) %>%
+  kable()
+```
+
+| .groups | mean\_age |
+| :------ | --------: |
+| 1       |  53.50000 |
+| 2       |  17.50000 |
+| 3       |  48.00000 |
+| 4       |  70.50000 |
+| 5       |  52.33333 |
+
+``` r
+# Using group() with 'l_starts' method
+# Starts group at the first 'cat', 
+# then skips to the second appearance of "pig" after "cat",
+# then starts at the following "cat".
+df_small %>%
+  group(n = list("cat", c("pig", 2), "cat"),
+        method = 'l_starts',
+        starts_col = "species") %>%
+  kable()
+```
+
+|  x | species | age | .groups |
+| -: | :------ | --: | :------ |
+|  1 | cat     |  68 | 1       |
+|  2 | pig     |  39 | 1       |
+|  3 | human   |   1 | 1       |
+|  4 | cat     |  34 | 1       |
+|  5 | pig     |  87 | 2       |
+|  6 | human   |  43 | 2       |
+|  7 | cat     |  14 | 3       |
+|  8 | pig     |  82 | 3       |
+|  9 | human   |  59 | 3       |
+| 10 | cat     |  51 | 3       |
+| 11 | pig     |  85 | 3       |
+| 12 | human   |  21 | 3       |
+
+### splt()
 
 Creates the specified groups with `group_factor()` and splits the given
 data by the grouping factor with `base::split`. Returns the splits in a
 list.
 
-### `partition()`
+``` r
+splt(data = df_small,
+     n = 3,
+     method = 'n_dist') %>%
+  kable()
+```
+
+<table class="kable_wrapper">
+
+<tbody>
+
+<tr>
+
+<td>
+
+| x | species | age |
+| -: | :------ | --: |
+| 1 | cat     |  68 |
+| 2 | pig     |  39 |
+| 3 | human   |   1 |
+| 4 | cat     |  34 |
+
+</td>
+
+<td>
+
+|   | x | species | age |
+| - | -: | :------ | --: |
+| 5 | 5 | pig     |  87 |
+| 6 | 6 | human   |  43 |
+| 7 | 7 | cat     |  14 |
+| 8 | 8 | pig     |  82 |
+
+</td>
+
+<td>
+
+|    |  x | species | age |
+| -- | -: | :------ | --: |
+| 9  |  9 | human   |  59 |
+| 10 | 10 | cat     |  51 |
+| 11 | 11 | pig     |  85 |
+| 12 | 12 | human   |  21 |
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+### partition()
 
 Creates (optionally) balanced partitions (e.g. training/test sets).
-Balance partitions on one categorical variable and/or one numerical
+Balance partitions on categorical variable(s) and/or a numerical
 variable. Make sure that all datapoints sharing an ID is in the same
 partition.
 
-### `fold()`
+``` r
+# First set seed to ensure reproducibility
+set.seed(1)
+
+# Use partition() with categorical and numerical balancing,
+# while ensuring all rows per ID are in the same partition
+df_partitioned <- partition(
+  data = df_medium, 
+  p = 0.7,
+  cat_col = 'diagnosis',
+  num_col = "age",
+  id_col = 'participant'
+)
+
+df_partitioned %>% 
+  kable()
+```
+
+<table class="kable_wrapper">
+
+<tbody>
+
+<tr>
+
+<td>
+
+| participant | age | diagnosis | score | session |
+| :---------- | --: | :-------- | ----: | :------ |
+| 1           |  20 | a         |    10 | 1       |
+| 1           |  20 | a         |    24 | 2       |
+| 1           |  20 | a         |    45 | 3       |
+| 4           |  21 | b         |    35 | 1       |
+| 4           |  21 | b         |    50 | 2       |
+| 4           |  21 | b         |    78 | 3       |
+| 5           |  32 | b         |    24 | 1       |
+| 5           |  32 | b         |    54 | 2       |
+| 5           |  32 | b         |    62 | 3       |
+| 6           |  25 | a         |    14 | 1       |
+| 6           |  25 | a         |    25 | 2       |
+| 6           |  25 | a         |    30 | 3       |
+
+</td>
+
+<td>
+
+| participant | age | diagnosis | score | session |
+| :---------- | --: | :-------- | ----: | :------ |
+| 2           |  33 | b         |    24 | 1       |
+| 2           |  33 | b         |    40 | 2       |
+| 2           |  33 | b         |    67 | 3       |
+| 3           |  27 | a         |    15 | 1       |
+| 3           |  27 | a         |    30 | 2       |
+| 3           |  27 | a         |    40 | 3       |
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+### fold()
 
 Creates (optionally) balanced folds for use in cross-validation. Balance
-folds on one categorical variable and/or one numerical variable. Ensure
+folds on categorical variable(s) and/or a numerical variable. Ensure
 that all datapoints sharing an ID is in the same fold. Create multiple
 unique fold columns at once, e.g. for repeated cross-validation.
 
-### `balance()`
+``` r
+# First set seed to ensure reproducibility
+set.seed(1)
+
+# Use fold() with categorical and numerical balancing,
+# while ensuring all rows per ID are in the same fold
+df_folded <- fold(
+  data = df_medium, 
+  k = 3,
+  cat_col = 'diagnosis',
+  num_col = "age",
+  id_col = 'participant'
+)
+
+# Show df_folded ordered by folds
+df_folded %>% 
+  arrange(.folds) %>%
+  kable()
+```
+
+| participant | age | diagnosis | score | session | .folds |
+| :---------- | --: | :-------- | ----: | :------ | :----- |
+| 1           |  20 | a         |    10 | 1       | 1      |
+| 1           |  20 | a         |    24 | 2       | 1      |
+| 1           |  20 | a         |    45 | 3       | 1      |
+| 2           |  33 | b         |    24 | 1       | 1      |
+| 2           |  33 | b         |    40 | 2       | 1      |
+| 2           |  33 | b         |    67 | 3       | 1      |
+| 5           |  32 | b         |    24 | 1       | 2      |
+| 5           |  32 | b         |    54 | 2       | 2      |
+| 5           |  32 | b         |    62 | 3       | 2      |
+| 6           |  25 | a         |    14 | 1       | 2      |
+| 6           |  25 | a         |    25 | 2       | 2      |
+| 6           |  25 | a         |    30 | 3       | 2      |
+| 3           |  27 | a         |    15 | 1       | 3      |
+| 3           |  27 | a         |    30 | 2       | 3      |
+| 3           |  27 | a         |    40 | 3       | 3      |
+| 4           |  21 | b         |    35 | 1       | 3      |
+| 4           |  21 | b         |    50 | 2       | 3      |
+| 4           |  21 | b         |    78 | 3       | 3      |
+
+``` r
+# Show distribution of diagnoses and participants
+df_folded %>% 
+  group_by(.folds) %>% 
+  count(diagnosis, participant) %>% 
+  kable()
+```
+
+| .folds | diagnosis | participant | n |
+| :----- | :-------- | :---------- | -: |
+| 1      | a         | 1           | 3 |
+| 1      | b         | 2           | 3 |
+| 2      | a         | 6           | 3 |
+| 2      | b         | 5           | 3 |
+| 3      | a         | 3           | 3 |
+| 3      | b         | 4           | 3 |
+
+``` r
+# Show age representation in folds
+# Notice that we would get a more even distribution if we had more data.
+# As age is fixed per ID, we only have 3 ages per category to balance with.
+df_folded %>% 
+  group_by(.folds) %>% 
+  summarize(mean_age = mean(age),
+            sd_age = sd(age)) %>% 
+  kable()
+```
+
+| .folds | mean\_age |  sd\_age |
+| :----- | --------: | -------: |
+| 1      |      26.5 | 7.120393 |
+| 2      |      28.5 | 3.834058 |
+| 3      |      24.0 | 3.286335 |
+
+**Notice**, that the we now have the opportunity to include the
+*session* variable and/or use *participant* as a random effect in our
+model when doing cross-validation, as any participant will only appear
+in one fold.
+
+We also have a balance in the representation of each diagnosis, which
+could give us better, more consistent results.
+
+### balance()
 
 Uses up- and/or downsampling to fix the group sizes to the min, max,
 mean, or median group size or to a specific number of rows. Balancing
 can also happen on the ID level, e.g. to ensure the same number of IDs
 in each category.
+
+``` r
+# Lets first unbalance the dataset by removing some rows
+df_b <- df_medium %>% 
+  arrange(diagnosis) %>% 
+  filter(!row_number() %in% c(5,7,8,13,14,16,17,18))
+
+# Show distribution of diagnoses and participants
+df_b %>% 
+  count(diagnosis, participant) %>% 
+  kable()
+```
+
+| diagnosis | participant | n |
+| :-------- | :---------- | -: |
+| a         | 1           | 3 |
+| a         | 3           | 2 |
+| a         | 6           | 1 |
+| b         | 2           | 3 |
+| b         | 4           | 1 |
+
+``` r
+# First set seed to ensure reproducibility
+set.seed(1)
+
+# Downsampling by diagnosis
+balance(
+  data = df_b, 
+  size = "min", 
+  cat_col = "diagnosis"
+) %>% 
+  count(diagnosis, participant) %>% 
+  kable()
+```
+
+| diagnosis | participant | n |
+| :-------- | :---------- | -: |
+| a         | 1           | 2 |
+| a         | 3           | 1 |
+| a         | 6           | 1 |
+| b         | 2           | 3 |
+| b         | 4           | 1 |
+
+``` r
+# Downsampling the IDs
+balance(
+  data = df_b, 
+  size = "min", 
+  cat_col = "diagnosis", 
+  id_col = "participant", 
+  id_method = "n_ids"
+) %>% 
+  count(diagnosis, participant) %>% 
+  kable()
+```
+
+| diagnosis | participant | n |
+| :-------- | :---------- | -: |
+| a         | 1           | 3 |
+| a         | 3           | 2 |
+| b         | 2           | 3 |
+| b         | 4           | 1 |
+
+### rearrange()
+
+Orders the data by a set of methods. Currently one of: “pair\_extremes”,
+“center\_max”, “center\_min”.
+
+See also the wrappers: `pair_extremes()`, `center_max()`,
+`center_min()`.
+
+``` r
+# Pair extreme scores 
+# I.e.: highest, lowest, second highest, second lowest, etc.
+# See also the pair_extremes() wrapper
+rearr <- rearrange(
+  data = df_b,
+  col = "score",
+  method = "pair_extremes",
+  keep_factor = TRUE
+)
+
+rearr$score
+#>  [1] 10 78 15 67 24 45 24 40 30 40
+rearr$.rearrange_factor
+#>  [1] 1 1 2 2 3 3 4 4 5 5
+#> Levels: 1 2 3 4 5
+```
+
+``` r
+# Center the highest score
+# See also the center_max() wrapper
+rearr <- rearrange(
+  data = df_b, 
+  col = "score", 
+  method = "center_max"
+)
+
+rearr$score
+#>  [1] 10 24 30 40 67 78 45 40 24 15
+```
+
+``` r
+# Center the lowest score
+# See also the center_min() wrapper
+rearr <- rearrange(
+  data = df_b, 
+  col = "score", 
+  method = "center_min"
+)
+
+rearr$score
+#>  [1] 78 45 40 24 15 10 24 30 40 67
+```
 
 ## Grouping Methods
 
@@ -237,245 +684,3 @@ row more/less than the others.
 
 Balances the IDs within their categories, meaning that all IDs in a
 category will have the same number of rows.
-
-## Examples
-
-``` r
-# Attach packages
-library(groupdata2)
-library(dplyr)
-library(knitr)
-```
-
-``` r
-# Create data frame
-df <- data.frame(
-  "x" = c(1:12),
-  "species" = factor(rep(c('cat', 'pig', 'human'), 4)),
-  "age" = sample(c(1:100), 12)
-)
-```
-
-### `group()`
-
-``` r
-# Using group()
-group(df, n = 5, method = 'n_dist') %>%
-  kable()
-```
-
-|  x | species | age | .groups |
-| -: | :------ | --: | :------ |
-|  1 | cat     |  68 | 1       |
-|  2 | pig     |  39 | 1       |
-|  3 | human   |   1 | 2       |
-|  4 | cat     |  34 | 2       |
-|  5 | pig     |  87 | 3       |
-|  6 | human   |  43 | 3       |
-|  7 | cat     |  14 | 3       |
-|  8 | pig     |  82 | 4       |
-|  9 | human   |  59 | 4       |
-| 10 | cat     |  51 | 5       |
-| 11 | pig     |  85 | 5       |
-| 12 | human   |  21 | 5       |
-
-``` r
-
-# Using group() with dplyr pipeline to get mean age
-df %>%
-  group(n = 5, method = 'n_dist') %>% 
-  dplyr::summarise(mean_age = mean(age)) %>%
-  kable()
-```
-
-| .groups | mean\_age |
-| :------ | --------: |
-| 1       |  53.50000 |
-| 2       |  17.50000 |
-| 3       |  48.00000 |
-| 4       |  70.50000 |
-| 5       |  52.33333 |
-
-``` r
-
-# Using group() with 'l_starts' method
-# Starts group at the first 'cat', 
-# then skips to the second appearance of "pig" after "cat",
-# then starts at the following "cat".
-df %>%
-  group(n = list("cat", c("pig", 2), "cat"),
-        method = 'l_starts',
-        starts_col = "species") %>%
-  kable()
-#> Warning in assign_starts_col(data = data, starts_col = starts_col):
-#> 'data[[starts_col]]' is factor. Converting to character.
-```
-
-|  x | species | age | .groups |
-| -: | :------ | --: | :------ |
-|  1 | cat     |  68 | 1       |
-|  2 | pig     |  39 | 1       |
-|  3 | human   |   1 | 1       |
-|  4 | cat     |  34 | 1       |
-|  5 | pig     |  87 | 2       |
-|  6 | human   |  43 | 2       |
-|  7 | cat     |  14 | 3       |
-|  8 | pig     |  82 | 3       |
-|  9 | human   |  59 | 3       |
-| 10 | cat     |  51 | 3       |
-| 11 | pig     |  85 | 3       |
-| 12 | human   |  21 | 3       |
-
-### `fold()`
-
-``` r
-# Create data frame
-df <- data.frame(
-  "participant" = factor(rep(c('1', '2', '3', '4', '5', '6'), 3)),
-  "age" = rep(c(20, 33, 27, 21, 32, 25), 3),
-  "diagnosis" = factor(rep(c('a', 'b', 'a', 'b', 'b', 'a'), 3)),
-  "score" = c(10, 24, 15, 35, 24, 14, 24, 40, 30, 
-              50, 54, 25, 45, 67, 40, 78, 62, 30))
-df <- df %>% arrange(participant)
-df$session <- rep(c('1','2', '3'), 6)
-```
-
-``` r
-# Using fold() 
-
-# First set seed to ensure reproducibility
-set.seed(1)
-
-# Use fold() with cat_col, num_col and id_col
-df_folded <- fold(df, k = 3, 
-                  cat_col = 'diagnosis',
-                  num_col = "age", 
-                  id_col = 'participant')
-
-# Show df_folded ordered by folds
-df_folded %>% 
-  arrange(.folds) %>%
-  kable()
-```
-
-| participant | age | diagnosis | score | session | .folds |
-| :---------- | --: | :-------- | ----: | :------ | :----- |
-| 1           |  20 | a         |    10 | 1       | 1      |
-| 1           |  20 | a         |    24 | 2       | 1      |
-| 1           |  20 | a         |    45 | 3       | 1      |
-| 2           |  33 | b         |    24 | 1       | 1      |
-| 2           |  33 | b         |    40 | 2       | 1      |
-| 2           |  33 | b         |    67 | 3       | 1      |
-| 5           |  32 | b         |    24 | 1       | 2      |
-| 5           |  32 | b         |    54 | 2       | 2      |
-| 5           |  32 | b         |    62 | 3       | 2      |
-| 6           |  25 | a         |    14 | 1       | 2      |
-| 6           |  25 | a         |    25 | 2       | 2      |
-| 6           |  25 | a         |    30 | 3       | 2      |
-| 3           |  27 | a         |    15 | 1       | 3      |
-| 3           |  27 | a         |    30 | 2       | 3      |
-| 3           |  27 | a         |    40 | 3       | 3      |
-| 4           |  21 | b         |    35 | 1       | 3      |
-| 4           |  21 | b         |    50 | 2       | 3      |
-| 4           |  21 | b         |    78 | 3       | 3      |
-
-``` r
-
-# Show distribution of diagnoses and participants
-df_folded %>% 
-  group_by(.folds) %>% 
-  count(diagnosis, participant) %>% 
-  kable()
-```
-
-| .folds | diagnosis | participant | n |
-| :----- | :-------- | :---------- | -: |
-| 1      | a         | 1           | 3 |
-| 1      | b         | 2           | 3 |
-| 2      | a         | 6           | 3 |
-| 2      | b         | 5           | 3 |
-| 3      | a         | 3           | 3 |
-| 3      | b         | 4           | 3 |
-
-``` r
-
-# Show age representation in folds
-# Notice that we would get a more even distribution if we had more data.
-# As age is fixed per ID, we only have 3 ages per category to balance with.
-df_folded %>% 
-  group_by(.folds) %>% 
-  summarize(mean_age = mean(age),
-            sd_age = sd(age)) %>% 
-  kable()
-```
-
-| .folds | mean\_age |  sd\_age |
-| :----- | --------: | -------: |
-| 1      |      26.5 | 7.120393 |
-| 2      |      28.5 | 3.834058 |
-| 3      |      24.0 | 3.286335 |
-
-**Notice**, that the we now have the opportunity to include the
-*session* variable and/or use *participant* as a random effect in our
-model when doing cross-validation, as any participant will only appear
-in one fold.
-
-We also have a balance in the representation of each diagnosis, which
-could give us better, more consistent results.
-
-### `balance()`
-
-``` r
-# Lets first unbalance the dataset by removing some rows
-df_b <- df %>% 
-  arrange(diagnosis) %>% 
-  filter(!row_number() %in% c(5,7,8,13,14,16,17,18))
-
-# Show distribution of diagnoses and participants
-df_b %>% 
-  count(diagnosis, participant) %>% 
-  kable()
-```
-
-| diagnosis | participant | n |
-| :-------- | :---------- | -: |
-| a         | 1           | 3 |
-| a         | 3           | 2 |
-| a         | 6           | 1 |
-| b         | 2           | 3 |
-| b         | 4           | 1 |
-
-``` r
-
-# First set seed to ensure reproducibility
-set.seed(1)
-
-# Downsampling by diagnosis
-balance(df_b, size = "min", cat_col = "diagnosis") %>% 
-  count(diagnosis, participant) %>% 
-  kable()
-```
-
-| diagnosis | participant | n |
-| :-------- | :---------- | -: |
-| a         | 1           | 2 |
-| a         | 3           | 1 |
-| a         | 6           | 1 |
-| b         | 2           | 3 |
-| b         | 4           | 1 |
-
-``` r
-
-# Downsampling the IDs
-balance(df_b, size = "min", cat_col = "diagnosis", 
-        id_col = "participant", id_method = "n_ids") %>% 
-  count(diagnosis, participant) %>% 
-  kable()
-```
-
-| diagnosis | participant | n |
-| :-------- | :---------- | -: |
-| a         | 1           | 3 |
-| a         | 3           | 2 |
-| b         | 2           | 3 |
-| b         | 4           | 1 |
