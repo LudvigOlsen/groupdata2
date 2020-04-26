@@ -29,7 +29,6 @@ R package for dividing data into groups.
   - Perform time series **windowing** and general **grouping** and
     **splitting** of data.
   - **Balance** existing groups with **up- and downsampling**.
-  - **Rearrange data** by a set of methods.
   - Finds values, or indices of values, that **differ** from the
     previous value by some threshold(s).
   - Check if two grouping factors have the same groups,
@@ -45,7 +44,6 @@ R package for dividing data into groups.
 | `partition()`    | Splits data into partitions. Balances a given categorical variable and/or numerical variable between partitions and keeps all data points with a shared ID in the same partition.         |
 | `fold()`         | Creates folds for (repeated) cross-validation. Balances a given categorical variable and/or numerical variable between folds and keeps all data points with a shared ID in the same fold. |
 | `balance()`      | Uses up- and/or downsampling to equalize group sizes. Can balance on ID level. See wrappers: `downsample()`, `upsample()`.                                                                |
-| `rearrange()`    | Arrange/order data by a set of methods. See wrappers: `pair_extremes()`, `center_max()`, `center_min()`.                                                                                  |
 
 ### Other tools
 
@@ -74,7 +72,6 @@ R package for dividing data into groups.
           - [partition()](#partition\(\))
           - [fold()](#fold\(\))
           - [balance()](#balance\(\))
-          - [rearrange()](#rearrange\(\))
       - [Grouping Methods](#grouping-methods)
           - [Specify group size](#specify-group-size)
           - [Specify number of groups](#specify-number-of-groups)
@@ -515,58 +512,6 @@ balance(
 | a         | 3           | 2 |
 | b         | 2           | 3 |
 | b         | 4           | 1 |
-
-### rearrange()
-
-Orders the data by a set of methods. Currently one of: “pair\_extremes”,
-“center\_max”, “center\_min”.
-
-See also the wrappers: `pair_extremes()`, `center_max()`,
-`center_min()`.
-
-``` r
-# Pair extreme scores 
-# I.e.: highest, lowest, second highest, second lowest, etc.
-# See also the pair_extremes() wrapper
-rearr <- rearrange(
-  data = df_b,
-  col = "score",
-  method = "pair_extremes",
-  keep_factor = TRUE
-)
-
-rearr$score
-#>  [1] 10 78 15 67 24 45 24 40 30 40
-rearr$.rearrange_factor
-#>  [1] 1 1 2 2 3 3 4 4 5 5
-#> Levels: 1 2 3 4 5
-```
-
-``` r
-# Center the highest score
-# See also the center_max() wrapper
-rearr <- rearrange(
-  data = df_b, 
-  col = "score", 
-  method = "center_max"
-)
-
-rearr$score
-#>  [1] 10 24 30 40 67 78 45 40 24 15
-```
-
-``` r
-# Center the lowest score
-# See also the center_min() wrapper
-rearr <- rearrange(
-  data = df_b, 
-  col = "score", 
-  method = "center_min"
-)
-
-rearr$score
-#>  [1] 78 45 40 24 15 10 24 30 40 67
-```
 
 ## Grouping Methods
 

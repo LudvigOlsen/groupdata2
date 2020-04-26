@@ -48,7 +48,6 @@ R package for dividing data into groups.
 * Create **balanced partitions** and cross-validation **folds**. 
 * Perform time series **windowing** and general **grouping** and **splitting** of data. 
 * **Balance** existing groups with **up- and downsampling**.
-* **Rearrange data** by a set of methods.
 * Finds values, or indices of values, that **differ** from the previous value by some threshold(s).
 * Check if two grouping factors have the same groups, **memberwise**.
 
@@ -63,7 +62,6 @@ R package for dividing data into groups.
 |`partition()`         |Splits data into partitions. Balances a given categorical variable and/or numerical variable between partitions and keeps all data points with a shared ID in the same partition.  |
 |`fold()`              |Creates folds for (repeated) cross-validation. Balances a given categorical variable and/or numerical variable between folds and keeps all data points with a shared ID in the same fold. |
 |`balance()`           |Uses up- and/or downsampling to equalize group sizes. Can balance on ID level. See wrappers: `downsample()`, `upsample()`.|
-|`rearrange()`         |Arrange/order data by a set of methods. See wrappers: `pair_extremes()`, `center_max()`, `center_min()`.|
 
 ### Other tools
 
@@ -319,53 +317,6 @@ balance(
   kable()
   
 ```
- 
-
-### rearrange()
-
-Orders the data by a set of methods. Currently one of: "pair_extremes", "center_max", "center_min". 
-
-See also the wrappers: `pair_extremes()`, `center_max()`, `center_min()`.
-
-```{r}
-# Pair extreme scores 
-# I.e.: highest, lowest, second highest, second lowest, etc.
-# See also the pair_extremes() wrapper
-rearr <- rearrange(
-  data = df_b,
-  col = "score",
-  method = "pair_extremes",
-  keep_factor = TRUE
-)
-
-rearr$score
-rearr$.rearrange_factor
-```
-
-```{r}
-# Center the highest score
-# See also the center_max() wrapper
-rearr <- rearrange(
-  data = df_b, 
-  col = "score", 
-  method = "center_max"
-)
-
-rearr$score
-```
-
-```{r}
-# Center the lowest score
-# See also the center_min() wrapper
-rearr <- rearrange(
-  data = df_b, 
-  col = "score", 
-  method = "center_min"
-)
-
-rearr$score
-```
-
  
 ## Grouping Methods
 There are currently 9 methods available. They can be divided into 5 categories.  

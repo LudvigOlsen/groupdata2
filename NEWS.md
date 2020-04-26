@@ -1,6 +1,5 @@
 # groupdata2 1.2.0.9000
 
-* Adds `rearrange()` and the wrappers `pair_extremes()`, `center_max()`, and `center_min()` for arranging data by a set of methods.
 
 # groupdata2 1.2.0
 

@@ -171,13 +171,8 @@ For an easier experience and usage examples, see the relevant wrapper functions:
 \code{\link[groupdata2:center_max]{center_max()}}, or
 \code{\link[groupdata2:center_min]{center_min()}}.
 }
-\seealso{
-Other rearrange functions: 
-\code{\link{center_max}()},
-\code{\link{center_min}()},
-\code{\link{pair_extremes}()}
-}
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 }
 \concept{rearrange functions}
+\keyword{internal}
