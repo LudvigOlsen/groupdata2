@@ -52,6 +52,8 @@ df <- data.frame(
   "A" = sample(1:10),
   "B" = runif(10),
   "C" = LETTERS[1:10],
+  "G" = c(1, 1, 1, 2, 2,
+          2, 3, 3, 3, 3),
   stringsAsFactors = FALSE
 )
 
@@ -65,6 +67,11 @@ center_max(df, col = "C")
 
 # Randomize which elements are left and right of the center
 center_max(df, col = "A", shuffle_members = TRUE)
+
+# Grouped by G
+df \%>\%
+  dplyr::group_by(G) \%>\%
+  center_max(col = "A")
 
 # Plot the centered values
 plot(x = 1:10, y = center_max(df, col = "B")$B)

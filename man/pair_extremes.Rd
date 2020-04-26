@@ -141,6 +141,8 @@ df <- data.frame(
   "A" = sample(1:10),
   "B" = runif(10),
   "C" = LETTERS[1:10],
+  "G" = c(1, 1, 1, 2, 2,
+          2, 3, 3, 3, 3),
   stringsAsFactors = FALSE
 )
 
@@ -157,6 +159,11 @@ pair_extremes(df, col = "A", shuffle_members = TRUE)
 
 # Shuffle the order of the pairs
 pair_extremes(df, col = "A", shuffle_pairs = TRUE)
+
+# Grouped by G
+df \%>\%
+  dplyr::group_by(G) \%>\%
+  pair_extremes(col = "A")
 
 # Plot the extreme pairs
 plot(x = 1:10,

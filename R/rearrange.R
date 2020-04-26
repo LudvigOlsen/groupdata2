@@ -214,40 +214,59 @@ rearrange <- function(data,
   checkmate::reportAssertions(assert_collection)
   # End of argument checks ####
 
-  # Note, pre-sorting of data must happen outside rearrange.
-
   local_tmp_rearrange_var <- create_tmp_var(data, ".rearrange_factor_")
   rm_col <- is.null(col)
-
   if (is.null(col)){
     col <- create_tmp_var(data, ".tmp_col_")
-    data[[col]] <- seq_len(nrow(data))
-  } else {
-    # , drop is required for working with single-column data frames
-    data <- data[order(data[[col]]), , drop = FALSE]
   }
 
-  # We might get future methods that don't require extreme pairing
-  if (method == "pair_extremes"){
-    data[[local_tmp_rearrange_var]] <- create_rearrange_factor_pair_extremes_(
-      size = nrow(data), unequal_method = unequal_method
-    )
+  # Extract and add group indices
+  tmp_grp_indices <- create_tmp_var(data, tmp_var = "grp_indices")
+  data[[tmp_grp_indices]] <- dplyr::group_indices(data)
+  data <- dplyr::ungroup(data)
 
-    # Order data by the pairs
-    data <- order_by_group(data = data,
-                           group_col = local_tmp_rearrange_var,
-                           shuffle_members = shuffle_members,
-                           shuffle_pairs = shuffle_pairs)
+  # Rearrange per group
+  data <- plyr::ldply(unique(data[[tmp_grp_indices]]), function(grp_ind){
 
-  } else if (method %in% c("center_max", "center_min")){
-    data <- rearrange_center_by(
-      data = data,
-      col = col,
-      shuffle_members = shuffle_members,
-      what = ifelse(method == "center_max", "max", "min")
-    )
-    data[[local_tmp_rearrange_var]] <- seq_len(nrow(data))
-  }
+    # Subset current group
+    current_data <- data[data[[tmp_grp_indices]] == grp_ind, ]
+
+    if (isTRUE(rm_col)){
+      current_data[[col]] <- seq_len(nrow(current_data))
+    } else {
+      # , drop is required for working with single-column data frames
+      current_data <- current_data[order(current_data[[col]]),
+                                   , drop = FALSE]
+    }
+
+    # We might get future methods that don't require extreme pairing
+    if (method == "pair_extremes"){
+      current_data[[local_tmp_rearrange_var]] <- create_rearrange_factor_pair_extremes_(
+        size = nrow(current_data), unequal_method = unequal_method
+      )
+
+      # Order current_data by the pairs
+      current_data <- order_by_group(
+        data = current_data,
+        group_col = local_tmp_rearrange_var,
+        shuffle_members = shuffle_members,
+        shuffle_pairs = shuffle_pairs)
+
+    } else if (method %in% c("center_max", "center_min")){
+      current_data <- rearrange_center_by(
+        data = current_data,
+        col = col,
+        shuffle_members = shuffle_members,
+        what = ifelse(method == "center_max", "max", "min")
+      )
+      current_data[[local_tmp_rearrange_var]] <- seq_len(nrow(current_data))
+    }
+
+    current_data
+
+  }) %>%
+    base_deselect(cols = tmp_grp_indices)
+
 
   # Remove rearrange factor if it shouldn't be returned
   if (!isTRUE(keep_factor)) {
@@ -323,6 +342,8 @@ rearrange <- function(data,
 #'   "A" = sample(1:10),
 #'   "B" = runif(10),
 #'   "C" = LETTERS[1:10],
+#'   "G" = c(1, 1, 1, 2, 2,
+#'           2, 3, 3, 3, 3),
 #'   stringsAsFactors = FALSE
 #' )
 #'
@@ -339,6 +360,11 @@ rearrange <- function(data,
 #'
 #' # Shuffle the order of the pairs
 #' pair_extremes(df, col = "A", shuffle_pairs = TRUE)
+#'
+#' # Grouped by G
+#' df %>%
+#'   dplyr::group_by(G) %>%
+#'   pair_extremes(col = "A")
 #'
 #' # Plot the extreme pairs
 #' plot(x = 1:10,
@@ -412,6 +438,8 @@ pair_extremes <- function(data,
 #'   "A" = sample(1:10),
 #'   "B" = runif(10),
 #'   "C" = LETTERS[1:10],
+#'   "G" = c(1, 1, 1, 2, 2,
+#'           2, 3, 3, 3, 3),
 #'   stringsAsFactors = FALSE
 #' )
 #'
@@ -425,6 +453,11 @@ pair_extremes <- function(data,
 #'
 #' # Randomize which elements are left and right of the center
 #' center_max(df, col = "A", shuffle_members = TRUE)
+#'
+#' # Grouped by G
+#' df %>%
+#'   dplyr::group_by(G) %>%
+#'   center_max(col = "A")
 #'
 #' # Plot the centered values
 #' plot(x = 1:10, y = center_max(df, col = "B")$B)
@@ -485,6 +518,8 @@ center_max <- function(data,
 #'   "A" = sample(1:10),
 #'   "B" = runif(10),
 #'   "C" = LETTERS[1:10],
+#'   "G" = c(1, 1, 1, 2, 2,
+#'           2, 3, 3, 3, 3),
 #'   stringsAsFactors = FALSE
 #' )
 #'
@@ -498,6 +533,11 @@ center_max <- function(data,
 #'
 #' # Randomize which elements are left and right of the center
 #' center_min(df, col = "A", shuffle_members = TRUE)
+#'
+#' # Grouped by G
+#' df %>%
+#'   dplyr::group_by(G) %>%
+#'   center_min(col = "A")
 #'
 #' # Plot the centered values
 #' plot(x = 1:10, y = center_min(df, col = "B")$B)

@@ -780,7 +780,7 @@ insert_row <- function(data, new_row, after) {
   data <- rbind(data, new_row)
   data <- data[order(c(seq_len(nrow(data) - 1), after + 0.5)),
                , drop = FALSE] # extra comma on purpose
-  row.names(data) <- seq_len(nrow(data))
+  row.names(data) <- NULL
   data
 }
 
