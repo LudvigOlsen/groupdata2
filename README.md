@@ -64,21 +64,21 @@ R package for dividing data into groups.
       - [Overview](#overview)
           - [Main functions](#main-functions)
           - [Other tools](#other-tools)
-      - [Installation](#installation-)
-      - [Vignettes](#vignettes-)
+      - [Installation](#installation)
+      - [Vignettes](#vignettes)
       - [Data for examples](#data-for-examples)
-      - [Functions](#functions-)
+      - [Functions](#functions)
           - [group\_factor()](#group_factor\(\))
-          - [group()](#group\(\)-)
-          - [splt()](#splt\(\)-)
-          - [partition()](#partition\(\)-)
-          - [fold()](#fold\(\)-)
+          - [group()](#group\(\))
+          - [splt()](#splt\(\))
+          - [partition()](#partition\(\))
+          - [fold()](#fold\(\))
           - [balance()](#balance\(\))
           - [rearrange()](#rearrange\(\))
       - [Grouping Methods](#grouping-methods)
           - [Specify group size](#specify-group-size)
           - [Specify number of groups](#specify-number-of-groups)
-          - [Specify list](#specify-list-)
+          - [Specify list](#specify-list)
           - [Specify step size](#specify-step-size)
           - [Specify start at](#specify-start-at)
       - [Balancing ID Methods](#balancing-id-methods)
@@ -96,8 +96,8 @@ Development version:
 
 ## Vignettes
 
-groupdata2 contains a number of vignettes with relevant use cases and
-descriptions.
+`groupdata2` contains a number of vignettes with relevant use cases and
+descriptions:
 
 > `vignette(package = "groupdata2")` \# for an overview  
 > `vignette("introduction_to_groupdata2")` \# begin here
@@ -112,7 +112,7 @@ library(knitr)       # kable()
 ```
 
 ``` r
-# Create data frame
+# Create small data frame
 df_small <- data.frame(
   "x" = c(1:12),
   "species" = rep(c(
@@ -124,7 +124,7 @@ df_small <- data.frame(
 ```
 
 ``` r
-# Create data frame
+# Create medium data frame
 df_medium <- data.frame(
   "participant" = factor(rep(c('1', '2', '3', '4', '5', '6'), 3)),
   "age" = rep(c(20, 33, 27, 21, 32, 25), 3),

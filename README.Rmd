@@ -43,7 +43,7 @@ rvers <- substring(dep, 7, nchar(dep)-1)
 
 ## Overview
 
-R package for dividing data into groups. 
+R package for dividing data into groups.
 
 * Create **balanced partitions** and cross-validation **folds**. 
 * Perform time series **windowing** and general **grouping** and **splitting** of data. 
@@ -83,7 +83,8 @@ groupdata2:::render_toc("README.Rmd")
 ```
 
 
-## Installation  
+## Installation
+
 CRAN version:
 
 > `install.packages("groupdata2")`  
@@ -93,8 +94,9 @@ Development version:
 > `install.packages("devtools")`  
 > `devtools::install_github("LudvigOlsen/groupdata2")`  
 
-## Vignettes  
-groupdata2 contains a number of vignettes with relevant use cases and descriptions.  
+## Vignettes
+
+`groupdata2` contains a number of vignettes with relevant use cases and descriptions:  
   
 > `vignette(package = "groupdata2")` # for an overview   
 > `vignette("introduction_to_groupdata2")` # begin here   
@@ -109,7 +111,7 @@ library(knitr)       # kable()
 ```
 
 ```{r}
-# Create data frame
+# Create small data frame
 df_small <- data.frame(
   "x" = c(1:12),
   "species" = rep(c(
@@ -120,9 +122,8 @@ df_small <- data.frame(
 )
 ```
 
-
 ```{r}
-# Create data frame
+# Create medium data frame
 df_medium <- data.frame(
   "participant" = factor(rep(c('1', '2', '3', '4', '5', '6'), 3)),
   "age" = rep(c(20, 33, 27, 21, 32, 25), 3),
@@ -135,7 +136,7 @@ df_medium$session <- rep(c('1','2', '3'), 6)
 ```
 
 
-## Functions  
+## Functions
 
 ### group_factor()
 
@@ -157,7 +158,7 @@ group_factor(
 ```
 
 
-### group()  
+### group()
 
 Creates a grouping factor and adds it to the given data frame. The data frame is grouped by the grouping factor for easy use in `magrittr` (`%>%`) pipelines.  
 
@@ -190,7 +191,7 @@ df_small %>%
 ```
 
 
-### splt()  
+### splt()
 
 Creates the specified groups with `group_factor()` and splits the given data by the grouping factor with `base::split`. Returns the splits in a list.  
 
@@ -202,7 +203,7 @@ splt(data = df_small,
 ```
 
 
-### partition()  
+### partition()
 
 Creates (optionally) balanced partitions (e.g. training/test sets). Balance partitions on categorical variable(s) and/or a numerical variable. Make sure that all datapoints sharing an ID is in the same partition.
 
@@ -225,7 +226,7 @@ df_partitioned %>%
 ```
 
 
-### fold()  
+### fold()
 
 Creates (optionally) balanced folds for use in cross-validation. Balance folds on categorical variable(s) and/or a numerical variable. Ensure that all datapoints sharing an ID is in the same fold. Create multiple unique fold columns at once, e.g. for repeated cross-validation.  
 
@@ -403,7 +404,7 @@ Excess data points are placed randomly in groups (only 1 per group).
 
 E.g. group sizes: 12, 11, 11, 11, 12  
 
-### Specify list  
+### Specify list
 ##### Method: l_sizes
 Uses a list / vector of group sizes to divide up the data.  
 Excess data points are placed in an extra group.  
