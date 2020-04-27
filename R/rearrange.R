@@ -11,10 +11,7 @@
 #'  Creates a special sorting factor and sorts by it. Current methods are
 #'  \code{"pair_extremes"}, \code{"center_max"}, and \code{"center_min"}.
 #'
-#'  For an easier experience and usage examples, see the relevant wrapper functions:
-#'  \code{\link[groupdata2:pair_extremes]{pair_extremes()}},
-#'  \code{\link[groupdata2:center_max]{center_max()}}, or
-#'  \code{\link[groupdata2:center_min]{center_min()}}.
+#'  For an easier experience and usage examples, see the relevant wrapper functions: ...
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @keywords internal
 #' @family rearrange functions
