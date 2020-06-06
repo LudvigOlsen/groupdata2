@@ -1,5 +1,8 @@
-# groupdata2 1.2.0.9000
+# groupdata2 1.2.1
 
+* `checkmate` compatibility.
+
+* Small speed up of `n_dist` grouping method.
 
 # groupdata2 1.2.0
 
