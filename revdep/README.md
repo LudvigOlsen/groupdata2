@@ -10,13 +10,13 @@
 |collate  |en_US.UTF-8                  |
 |ctype    |en_US.UTF-8                  |
 |tz       |Europe/Copenhagen            |
-|date     |2020-03-07                   |
+|date     |2020-06-06                   |
 
 # Dependencies
 
 |package    |old   |new   |Δ  |
 |:----------|:-----|:-----|:--|
-|groupdata2 |1.1.2 |1.2.0 |*  |
+|groupdata2 |1.2.0 |1.2.1 |*  |
 
 # Revdeps
 
