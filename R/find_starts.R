@@ -1,28 +1,28 @@
 ## find_starts
-#' @title Find start positions of groups in data.
+#' @title Find start positions of groups in data
 #' @description
 #'  \Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}
 #'
 #'  Finds values or indices of values that are not the same
 #'  as the previous value.
 #'
-#'  E.g. to use with the \code{l_starts} method.
+#'  E.g. to use with the \code{"l_starts"} method.
 #'
 #'  Wraps \code{\link{differs_from_previous}()}.
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
-#' @param data Data frame or Vector
+#' @param data \code{data.frame} or \code{vector}.
 #'
-#'  N.B. If checking a factor, it is converted to a character vector.
+#'  N.B. If checking a \code{factor}, it is converted to a \code{character vector}.
 #'  Conversion will generate a warning, which can be turned off by
-#'  setting \code{factor_conversion_warning} to \code{FALSE}.
-#' @param return_index Return indices of starts. (Logical)
-#' @param col Name of column to find starts in. Used when data is
-#'  data frame. (Character)
+#'  setting \code{`factor_conversion_warning`} to \code{FALSE}.
+#' @param return_index Whether to return indices of starts. (Logical)
+#' @param col Name of column to find starts in. Used when \code{`data`} is
+#'  a \code{data.frame}. (Character)
 #' @inheritParams differs_from_previous
-#' @param factor_conversion_warning Generate warning when
-#'  converting factor to character. (Logical)
-#' @return Vector with either start values or indices of start values.
+#' @param factor_conversion_warning Throw warning when
+#'  converting \code{factor} to \code{character}. (Logical)
+#' @return \code{vector} with either the start values or the indices of the start values.
 #' @family l_starts tools
 #' @examples
 #' # Attach packages

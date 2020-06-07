@@ -1,6 +1,6 @@
 
 ## splt
-#' @title Split data by a range of methods.
+#' @title Split data by a range of methods
 #' @description
 #'  \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
 #'
@@ -9,7 +9,7 @@
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @inheritParams group_factor
-#' @return List of the split data
+#' @return \code{list} of the split \code{`data`}.
 #' @family grouping functions
 #' @examples
 #' # Attach packages

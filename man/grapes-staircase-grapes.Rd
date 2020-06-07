@@ -3,7 +3,7 @@
 \name{\%staircase\%}
 \alias{\%staircase\%}
 \alias{staircase}
-\title{Find remainder from 'staircase' method.}
+\title{Find remainder from 'staircase' method}
 \usage{
 size \%staircase\% step_size
 }
@@ -19,7 +19,7 @@ Returns \code{0} if the last group has the size of the second last group + step 
 \description{
 \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
 
-When using the \code{staircase} method,
+When using the \code{"staircase"} method,
 the last group might not have the size of the second last
 group + step size. Use \code{\%staircase\%} to find this remainder.
 }

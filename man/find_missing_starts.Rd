@@ -2,34 +2,36 @@
 % Please edit documentation in R/find_missing_starts.R
 \name{find_missing_starts}
 \alias{find_missing_starts}
-\title{Find start positions that cannot be found in data.}
+\title{Find start positions that cannot be found in \code{`data`}}
 \usage{
 find_missing_starts(data, n, starts_col = NULL, return_skip_numbers = TRUE)
 }
 \arguments{
-\item{data}{Data frame or Vector}
+\item{data}{\code{data.frame} or \code{vector}.}
 
 \item{n}{List of starting positions.
 
-Skip values by c(value, skip_to_number) where skip_to_number is the nth appearance of the value in the vector.
+Skip values by \code{c(value, skip_to_number)} where \code{skip_to_number}
+is the nth appearance of the value in the vector.
 
-See \link{group_factor} for explanations and examples of using the \code{l_starts} method.}
+See \code{\link[groupdata2:group_factor]{group_factor()}} for explanations and
+examples of using the \code{"l_starts"} method.}
 
 \item{starts_col}{Name of column with values to match
-when data is a data frame. Pass 'index' to use row names. (Character)}
+when \code{`data`} is a \code{data.frame}. Pass \code{'index'} to use row names. (Character)}
 
-\item{return_skip_numbers}{Return skip_to numbers along with values (Logical).}
+\item{return_skip_numbers}{Return \code{skip-to-numbers} along with values (Logical).}
 }
 \value{
-List of start values and skip_to numbers or vector of the start values.
-Returns NULL if no values found.
+List of start values and \code{skip-to-numbers} or a \code{vector} with the start values.
+Returns \code{NULL} if no values were found.
 }
 \description{
 \Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}
 
-Tells you which values and (optionally) skip_to numbers that are
-recursively removed when using the \code{l_starts} method with remove_missing_starts
-set to TRUE.
+Tells you which values and (optionally) \code{skip-to-numbers} that are
+recursively removed when using the \code{"l_starts"} method with \code{`remove_missing_starts`}
+set to \code{TRUE}.
 }
 \examples{
 # Attach packages

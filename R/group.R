@@ -1,6 +1,6 @@
 
 ## group
-#' @title Create groups from your data.
+#' @title Create groups from your data
 #' @description
 #'  \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
 #'

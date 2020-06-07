@@ -2,7 +2,7 @@
 % Please edit documentation in R/sampling.R
 \name{balance}
 \alias{balance}
-\title{Balance groups by up- and downsampling.}
+\title{Balance groups by up- and downsampling}
 \usage{
 balance(
   data,
@@ -15,7 +15,7 @@ balance(
 )
 }
 \arguments{
-\item{data}{Data frame.}
+\item{data}{\code{data.frame}.}
 
 \item{size}{Size to fix group sizes to.
 Can be a specific number, given as a whole number, or one of the following strings:
@@ -47,7 +47,7 @@ Uses downsampling for groups with too many rows and upsampling for groups with t
 \item{id_col}{Name of factor with IDs. (Character)
 
 IDs are considered entities, e.g. allowing us to add or remove all rows for an ID.
-How this is used is up to the \code{id_method}.
+How this is used is up to the \code{`id_method`}.
 
 E.g. If we have measured a participant multiple times and
 want make sure that we keep all these measurements. Then we would either
@@ -56,7 +56,7 @@ all measurements for the participant.}
 
 \item{id_method}{Method for balancing the IDs. (Character)
 
-\code{n_ids}, \code{n_rows_c}, \code{distributed}, or \code{nested}.
+\code{"n_ids"}, \code{"n_rows_c"}, \code{"distributed"}, or \code{"nested"}.
 \subsection{n_ids (default)}{
 Balances on ID level only. It makes sure there are the same number of IDs for each category.
 This might lead to a different number of rows between categories.
@@ -88,8 +88,8 @@ I.e. if size is \code{"min"}, IDs will have the size of the smallest ID in their
 \item{new_rows_col_name}{Name of column marking new rows. Defaults to \code{".new_row"}.}
 }
 \value{
-Data frame with added and/or deleted rows.
-Ordered by \code{cat_col} and (potentially) \code{id_col}.
+\code{data.frame} with added and/or deleted rows.
+Ordered by \code{`cat_col`} and (potentially) \code{`id_col`}.
 }
 \description{
 \Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}
@@ -100,10 +100,10 @@ to a specific number of rows. Has a range of methods for balancing on
 ID level.
 }
 \details{
-\subsection{Without \code{id_col}}{Upsampling is done with replacement for added rows,
+\subsection{Without \code{`id_col`}}{Upsampling is done with replacement for added rows,
 while the original data remains intact.
 Downsampling is done without replacement, meaning that rows are not duplicated but only removed.}
-\subsection{With \code{id_col}}{See \code{id_method} description.}
+\subsection{With \code{`id_col`}}{See \code{`id_method`} description.}
 }
 \examples{
 # Attach packages

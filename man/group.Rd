@@ -5,7 +5,7 @@
 \alias{window}
 \alias{binning}
 \alias{split}
-\title{Create groups from your data.}
+\title{Create groups from your data}
 \usage{
 group(
   data,
@@ -22,72 +22,73 @@ group(
 )
 }
 \arguments{
-\item{data}{Data frame or vector.}
+\item{data}{\code{data.frame} or \code{vector}.}
 
-\item{n}{\emph{Dependent on method.}
+\item{n}{\emph{Depends on \code{`method`}.}
 
 Number of groups (default), group size, list of group sizes,
-list of group starts, step size or prime number to start at. See \code{method}.
+list of group starts, step size or prime number to start at. See \code{`method`}.
 
 Passed as whole number(s) and/or percentage(s) (\code{0} < \code{n} < \code{1})
 and/or character.
 
-Method \code{l_starts} allows \code{'auto'}.}
+Method \code{"l_starts"} allows \code{'auto'}.}
 
-\item{method}{\code{greedy}, \code{n_dist}, \code{n_fill}, \code{n_last},
-\code{n_rand}, \code{l_sizes}, \code{l_starts}, \code{staircase}, or
-\code{primes}.
+\item{method}{\code{"greedy"}, \code{"n_dist"}, \code{"n_fill"}, \code{"n_last"},
+\code{"n_rand"}, \code{"l_sizes"}, \code{"l_starts"}, \code{"staircase"}, or
+\code{"primes"}.
 
-\strong{Notice}: examples are sizes of the generated groups
-based on a vector with 57 elements.
+\strong{Note}: examples are sizes of the generated groups
+based on a vector with \code{57} elements.
 
 \subsection{greedy}{Divides up the data greedily given a specified group size
 \eqn{(e.g. 10, 10, 10, 10, 10, 7)}.
 
-\code{n} is group size}
+\code{`n`} is group size}
 
 \subsection{n_dist (default)}{Divides the data into a specified number of groups and
 distributes excess data points across groups
 \eqn{(e.g. 11, 11, 12, 11, 12)}.
 
-\code{n} is number of groups}
+\code{`n`} is number of groups}
 
 \subsection{n_fill}{Divides the data into a specified number of groups and
 fills up groups with excess data points from the beginning
 \eqn{(e.g. 12, 12, 11, 11, 11)}.
 
-\code{n} is number of groups}
+\code{`n`} is number of groups}
 
 \subsection{n_last}{Divides the data into a specified number of groups.
 It finds the most equal group sizes possible,
 using all data points. Only the last group is able to differ in size
 \eqn{(e.g. 11, 11, 11, 11, 13)}.
 
-\code{n} is number of groups}
+\code{`n`} is number of groups}
 
 \subsection{n_rand}{Divides the data into a specified number of groups.
 Excess data points are placed randomly in groups (only 1 per group)
 \eqn{(e.g. 12, 11, 11, 11, 12)}.
 
-\code{n} is number of groups}
+\code{`n`} is number of groups}
 
 \subsection{l_sizes}{Divides up the data by a list of group sizes.
 Excess data points are placed in an extra group at the end.
-\eqn{(e.g. n = list(0.2,0.3) outputs groups with sizes (11,17,29))}.
 
-\code{n} is a list of group sizes}
+\eqn{E.g. n = list(0.2, 0.3) outputs groups with sizes (11, 17, 29)}.
+
+\code{`n`} is a list of group sizes}
 
 \subsection{l_starts}{Starts new groups at specified values of vector.
 
 \code{n} is a list of starting positions.
-Skip values by c(value, skip_to_number) where skip_to_number is the nth appearance of the value
+Skip values by \code{c(value, skip_to_number)} where skip_to_number is the nth appearance of the value
 in the vector.
 Groups automatically start from first data point.
 
-\eqn{E.g. n = c(1,3,7,25,50) outputs groups with sizes (2,4,18,25,8)}.
+\eqn{E.g. n = c(1, 3, 7, 25, 50) outputs groups with sizes (2, 4, 18, 25, 8)}.
 
 To skip: \eqn{given vector c("a", "e", "o", "a", "e", "o"), n = list("a", "e", c("o", 2))
- outputs groups with sizes (1,4,1)}.}
+ outputs groups with sizes (1, 4, 1)}.}
 
 If passing \eqn{n = 'auto'} the starting positions are automatically found with
 \code{\link{find_starts}()}. Note that all \code{NA}s are first replaced by a single unique value,
@@ -98,22 +99,22 @@ Group size increases with 1 step for every group,
 until there is no more data
 \eqn{(e.g. 5, 10, 15, 20, 7)}.
 
-\code{n} is step size}
+\code{`n`} is step size}
 
 \subsection{primes}{Uses prime numbers as group sizes.
 Group size increases to the next prime number
 until there is no more data.
 \eqn{(e.g. 5, 7, 11, 13, 17, 4)}.
 
-\code{n} is the prime number to start at}}
+\code{`n`} is the prime number to start at}}
 
-\item{starts_col}{Name of column with values to match in method \code{l_starts}
-when data is a data frame. Pass \code{'index'} to use row names. (Character)}
+\item{starts_col}{Name of column with values to match in method \code{"l_starts"}
+when \code{`data`} is a \code{data.frame}. Pass \code{'index'} to use row names. (Character)}
 
 \item{force_equal}{Create equal groups by discarding excess data points.
 Implementation varies between methods. (Logical)}
 
-\item{allow_zero}{Whether \code{n} can be passed as \code{0}. (Logical)}
+\item{allow_zero}{Whether \code{`n`} can be passed as \code{0}. (Logical)}
 
 \item{return_factor}{Return only grouping factor. (Logical)}
 
@@ -126,7 +127,7 @@ Implementation varies between methods. (Logical)}
 
 \item{remove_missing_starts}{Recursively remove elements from the
 list of starts that are not found.
-For method \code{l_starts} only.
+For method \code{"l_starts"} only.
 (Logical)}
 }
 \value{

@@ -15,7 +15,7 @@
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @keywords internal
 #' @family rearrange functions
-#' @param data Data frame or vector. When a vector, it is converted to a data frame.
+#' @param data \code{data.frame} or \code{vector}. When a \code{vector}, it is converted to a \code{data.frame}.
 #' @param col Column to create sorting factor by. When \code{NULL} and \code{data} is a data frame,
 #'  it uses the row numbers.
 #' @param method Sorting method.

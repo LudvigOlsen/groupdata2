@@ -2,19 +2,19 @@
 % Please edit documentation in R/sampling.R
 \name{downsample}
 \alias{downsample}
-\title{Downsampling of rows in a data frame.}
+\title{Downsampling of rows in a data frame}
 \usage{
 downsample(data, cat_col, id_col = NULL, id_method = "n_ids")
 }
 \arguments{
-\item{data}{Data frame.}
+\item{data}{\code{data.frame}.}
 
 \item{cat_col}{Name of categorical variable to balance by. (Character)}
 
 \item{id_col}{Name of factor with IDs. (Character)
 
 IDs are considered entities, e.g. allowing us to add or remove all rows for an ID.
-How this is used is up to the \code{id_method}.
+How this is used is up to the \code{`id_method`}.
 
 E.g. If we have measured a participant multiple times and
 want make sure that we keep all these measurements. Then we would either
@@ -23,7 +23,7 @@ all measurements for the participant.}
 
 \item{id_method}{Method for balancing the IDs. (Character)
 
-\code{n_ids}, \code{n_rows_c}, \code{distributed}, or \code{nested}.
+\code{"n_ids"}, \code{"n_rows_c"}, \code{"distributed"}, or \code{"nested"}.
 \subsection{n_ids (default)}{
 Balances on ID level only. It makes sure there are the same number of IDs for each category.
 This might lead to a different number of rows between categories.
@@ -51,20 +51,21 @@ I.e. if size is \code{"min"}, IDs will have the size of the smallest ID in their
 }}
 }
 \value{
-Data frame with some rows removed. Ordered by \code{cat_col} and (potentially) \code{id_col}.
+\code{data.frame} with some rows removed.
+Ordered by \code{`cat_col`} and (potentially) \code{`id_col`}.
 }
 \description{
 \Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}
 
 Uses random downsampling to fix the group sizes to the
-smallest group in the data frame.
+smallest group in the \code{data.frame}.
 
 Wraps \code{\link{balance}()}.
 }
 \details{
-\subsection{Without \code{id_col}}{
+\subsection{Without \code{`id_col`}}{
 Downsampling is done without replacement, meaning that rows are not duplicated but only removed.}
-\subsection{With \code{id_col}}{See \code{id_method} description.}
+\subsection{With \code{`id_col`}}{See \code{`id_method`} description.}
 }
 \examples{
 # Attach packages

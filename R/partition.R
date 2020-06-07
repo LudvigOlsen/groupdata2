@@ -1,6 +1,6 @@
 
 ## partition
-#' @title Create balanced partitions.
+#' @title Create balanced partitions
 #' @description
 #'  \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
 #'
@@ -10,7 +10,7 @@
 #' @details
 #'  \subsection{cat_col}{
 #'    \enumerate{
-#'      \item Data is subset by \code{cat_col}.
+#'      \item \code{`data`} is subset by \code{`cat_col`}.
 #'      \item Subsets are partitioned and merged.
 #'    }
 #'  }
@@ -23,28 +23,26 @@
 #'
 #'  \subsection{num_col}{
 #'    \enumerate{
-#'      \item Rows are shuffled.
-#'
-#'      \strong{Note} that this will only affect rows with the same value in \code{num_col}.
-#'      \item Extreme pairing 1: Rows are ordered as smallest, largest, second smallest, second largest, etc.
-#'      Each pair get a group identifier.
-#'      \item If \code{extreme_pairing_levels > 1}: The group identifiers are reordered as smallest,
-#'      largest, second smallest, second largest, etc., by the sum of \code{num_col} in the represented rows.
+#'      \item{Rows are shuffled. \strong{Note} that this will only affect rows with the same value in \code{`num_col`}.}
+#'      \item{Extreme pairing 1: Rows are ordered as \emph{smallest, largest, second smallest, second largest}, etc.
+#'      Each pair get a group identifier.}
+#'      \item{If \code{`extreme_pairing_levels` > 1}: The group identifiers are reordered as \emph{smallest,
+#'      largest, second smallest, second largest}, etc., by the sum of \code{`num_col`} in the represented rows.
 #'      These pairs (of pairs) get a new set of group identifiers, and the process is repeated
-#'       \code{extreme_pairing_levels-2} times. Note that the group identifiers at the last level will represent
-#'       \code{2^extreme_pairing_levels} rows, why you should be careful when choosing that setting.
-#'      \item The final group identifiers are shuffled, and their order is applied to the full dataset.
-#'      \item The ordered dataset is split by the sizes in \code{p}.
+#'       \code{`extreme_pairing_levels`-2} times. Note that the group identifiers at the last level will represent
+#'       \code{2^`extreme_pairing_levels`} rows, why you should be careful when choosing that setting.}
+#'      \item{The final group identifiers are shuffled, and their order is applied to the full dataset.}
+#'      \item{The ordered dataset is split by the sizes in \code{`p`}.}
 #'    }
 #'
 #'  N.B. When doing extreme pairing of an unequal number of rows,
 #'  the row with the largest value is placed in a group by itself, and the order is instead:
-#'  smallest, second largest, second smallest, third largest, ... , largest.
+#'  \emph{smallest, second largest, second smallest, third largest, ...} , largest.
 #'  }
 #'
 #'  \subsection{cat_col AND id_col}{
 #'    \enumerate{
-#'      \item Data is subset by \code{cat_col}.
+#'      \item \code{`data`} is subset by \code{`cat_col`}.
 #'      \item Partitions are created from unique IDs in each subset.
 #'      \item Subsets are merged.
 #'    }
@@ -52,15 +50,15 @@
 #'
 #'  \subsection{cat_col AND num_col}{
 #'    \enumerate{
-#'      \item Data is subset by \code{cat_col}.
-#'      \item Subsets are partitioned by \code{num_col}.
+#'      \item \code{`data`} is subset by \code{`cat_col`}.
+#'      \item Subsets are partitioned by \code{`num_col`}.
 #'      \item Subsets are merged.
 #'    }
 #'  }
 #'
 #'  \subsection{num_col AND id_col}{
 #'    \enumerate{
-#'      \item Values in \code{num_col} are aggregated for each ID, using \code{id_aggregation_fn}.
+#'      \item Values in \code{`num_col`} are aggregated for each ID, using \code{id_aggregation_fn}.
 #'      \item The IDs are partitioned, using the aggregated values as "\code{num_col}".
 #'      \item The partition identifiers are transferred to the rows of the IDs.
 #'    }
@@ -68,8 +66,8 @@
 #'
 #'  \subsection{cat_col AND num_col AND id_col}{
 #'    \enumerate{
-#'      \item Values in \code{num_col} are aggregated for each ID, using \code{id_aggregation_fn}.
-#'      \item IDs are subset by \code{cat_col}.
+#'      \item Values in \code{`num_col`} are aggregated for each ID, using \code{id_aggregation_fn}.
+#'      \item IDs are subset by \code{`cat_col`}.
 #'      \item The IDs for each subset are partitioned,
 #'      by using the aggregated values as "\code{num_col}".
 #'      \item The partition identifiers are transferred to the rows of the IDs.
@@ -79,49 +77,50 @@
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @family grouping functions
-#' @param data Data frame.
+#' @param data \code{data.frame}.
 #' @param p List or vector of partition sizes.
-#'  Given as whole number(s) and/or percentage(s) (\code{0} < \code{n} < \code{1}).
+#'  Given as whole number(s) and/or percentage(s) (\code{0} < \code{`p`} < \code{1}).
+#'
 #'  E.g. \eqn{c(0.2, 3, 0.1)}.
 #' @param cat_col Name of categorical variable to balance between partitions.
 #'
 #'  E.g. when training and testing a model for predicting a binary variable (a or b),
 #'  we usually want both classes represented in both the training set and the test set.
 #'
-#'  N.B. If also passing an \code{id_col}, \code{cat_col} should be constant within each ID.
+#'  N.B. If also passing an \code{`id_col`}, \code{`cat_col`} should be constant within each ID.
 #' @param num_col Name of numerical variable to balance between partitions.
 #'
-#'  N.B. When used with \code{id_col}, values in \code{num_col} for each ID are
-#'  aggregated using \code{id_aggregation_fn} before being balanced.
+#'  N.B. When used with \code{`id_col`}, values in \code{`num_col`} for each ID are
+#'  aggregated using \code{`id_aggregation_fn`} before being balanced.
 #' @param id_col Name of factor with IDs. Used to keep all rows that share an ID in
 #'  the same partition (if possible).
 #'
 #'  E.g. If we have measured a participant multiple times and want to see the
 #'  effect of time, we want to have all observations of this participant in
 #'  the same partition.
-#' @param id_aggregation_fn Function for aggregating values in \code{num_col} for each ID,
-#'  before balancing \code{num_col}.
+#' @param id_aggregation_fn Function for aggregating values in \code{`num_col`} for each ID,
+#'  before balancing \code{`num_col`}.
 #'
-#'  N.B. Only used when \code{num_col} and \code{id_col} are both specified.
+#'  N.B. Only used when \code{`num_col`} and \code{`id_col`} are both specified.
 #' @param extreme_pairing_levels How many levels of extreme pairing to do
-#'  when balancing partitions by a numerical column (i.e. \code{num_col} is specified).
+#'  when balancing partitions by a numerical column (i.e. \code{`num_col`} is specified).
 #'
-#'  \strong{Extreme pairing}: Rows/pairs are ordered as smallest, largest,
-#'  second smallest, second largest, etc. If \code{extreme_pairing_levels > 1},
-#'  this is done "recursively" on the extreme pairs. See \code{"Details/num_col"} for more.
+#'  \strong{Extreme pairing}: Rows/pairs are ordered as \emph{smallest, largest,
+#'  second smallest, second largest}, etc. If \code{`extreme_pairing_levels` > 1},
+#'  this is done "recursively" on the extreme pairs. See \code{`Details/num_col`} for more.
 #'
 #'  N.B. Larger values work best with large datasets. If set too high,
 #'  the result might not be stochastic. Always check if an increase
-#'  actually makes the partitions more balanced. See example.
-#' @param list_out Return partitions in a list. (Logical)
-#' @param force_equal Discard excess data. (Logical)
-#' @return If \code{list_out is TRUE}:
+#'  actually makes the partitions more balanced. See \code{`Examples`}.
+#' @param list_out Return partitions in a \code{list}. (Logical)
+#' @param force_equal Whether to discard excess data. (Logical)
+#' @return If \code{`list_out`} is \code{TRUE}:
 #'
-#' A list of partitions where partitions are data frames.
+#' A \code{list} of partitions where partitions are \code{data.frame}s.
 #'
-#' If \code{list_out is FALSE}:
+#' If \code{`list_out`} is \code{FALSE}:
 #'
-#' A data frame with grouping factor for subsetting.
+#' A \code{data.frame} with grouping factor for subsetting.
 #' @examples
 #' # Attach packages
 #' library(groupdata2)

@@ -16,7 +16,7 @@ rearrange(
 )
 }
 \arguments{
-\item{data}{Data frame or vector. When a vector, it is converted to a data frame.}
+\item{data}{\code{data.frame} or \code{vector}. When a \code{vector}, it is converted to a \code{data.frame}.}
 
 \item{col}{Column to create sorting factor by. When \code{NULL} and \code{data} is a data frame,
 it uses the row numbers.}
