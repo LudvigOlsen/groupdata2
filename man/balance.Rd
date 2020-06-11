@@ -15,7 +15,8 @@ balance(
 )
 }
 \arguments{
-\item{data}{\code{data.frame}.}
+\item{data}{\code{data.frame}. Can be \emph{grouped}, in which case
+the function is applied group-wise.}
 
 \item{size}{Size to fix group sizes to.
 Can be a specific number, given as a whole number, or one of the following strings:
@@ -89,7 +90,7 @@ I.e. if size is \code{"min"}, IDs will have the size of the smallest ID in their
 }
 \value{
 \code{data.frame} with added and/or deleted rows.
-Ordered by \code{`cat_col`} and (potentially) \code{`id_col`}.
+Ordered by potential grouping variables, \code{`cat_col`} and (potentially) \code{`id_col`}.
 }
 \description{
 \Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}

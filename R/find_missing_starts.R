@@ -10,6 +10,12 @@
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @param data \code{data.frame} or \code{vector}.
+#'
+#'  \strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame},
+#'  the function is applied group-wise and the output is a
+#'  \code{list} of either \code{vector}s or \code{list}s.
+#'  The names are based on the group indices
+#'  (see \code{\link[dplyr:group_indices]{dplyr::group_indices()}}).
 #' @param n List of starting positions.
 #'
 #'  Skip values by \code{c(value, skip_to_number)} where \code{skip_to_number}
@@ -22,6 +28,12 @@
 #' @param return_skip_numbers Return \code{skip-to-numbers} along with values (Logical).
 #' @return List of start values and \code{skip-to-numbers} or a \code{vector} with the start values.
 #'  Returns \code{NULL} if no values were found.
+#'
+#'  \strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame},
+#'  the function is applied group-wise and the output is a
+#'  \code{list} of either \code{vector}s or \code{list}s.
+#'  The names are based on the group indices
+#'  (see \code{\link[dplyr:group_indices]{dplyr::group_indices()}}).
 #' @family l_starts tools
 #' @examples
 #' # Attach packages
@@ -54,6 +66,20 @@ find_missing_starts <- function(data, n, starts_col = NULL,
     starts_col = starts_col,
     return_skip_numbers = return_skip_numbers
   )
+
+  # Apply by group (recursion)
+  if (dplyr::is_grouped_df(data)) {
+    warn_once_about_group_by("find_missing_starts")
+    return(
+      run_by_group_list(
+        data = data,
+        .fn = find_missing_starts,
+        n = n,
+        starts_col = starts_col,
+        return_skip_numbers = return_skip_numbers
+      )
+    )
+  }
 
   starts_col <- assign_starts_col(data, starts_col)
 

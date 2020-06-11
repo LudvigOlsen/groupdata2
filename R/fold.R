@@ -83,7 +83,8 @@ if (getRversion() >= "2.15.1") utils::globalVariables(c("."))
 #'  }
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
-#' @param data \code{data.frame}.
+#' @param data \code{data.frame}. Can be \emph{grouped}, in which case
+#'  the function is applied group-wise.
 #' @param k \emph{Depends on \code{`method`}.}
 #'
 #'  Number of folds (default), fold size, with more (see \code{`method`}).
@@ -319,12 +320,13 @@ fold <- function(data,
                  handle_existing_fold_cols = "keep_warn",
                  parallel = FALSE) {
 
+  # Apply by group (recursion)
   if (dplyr::is_grouped_df(data)) {
     warn_once_about_group_by("fold")
     return(
-      run_by_group(
+      run_by_group_df(
         data = data,
-        fn = fold,
+        .fn = fold,
         k = k,
         cat_col = cat_col,
         num_col = num_col,

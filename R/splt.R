@@ -10,6 +10,10 @@
 #' @export
 #' @inheritParams group_factor
 #' @return \code{list} of the split \code{`data`}.
+#'
+#'  \strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame}, there's an outer list
+#'  for each group. The names are based on the group indices
+#'  (see \code{\link[dplyr:group_indices]{dplyr::group_indices()}}).
 #' @family grouping functions
 #' @examples
 #' # Attach packages
@@ -34,6 +38,25 @@ splt <- function(data,
                  descending = FALSE,
                  randomize = FALSE,
                  remove_missing_starts = FALSE) {
+
+  # Apply by group (recursion)
+  if (dplyr::is_grouped_df(data)) {
+    warn_once_about_group_by("splt")
+    return(
+      run_by_group_list(
+        data = data,
+        .fn = splt,
+        n = n,
+        method = method,
+        starts_col = starts_col,
+        force_equal = force_equal,
+        allow_zero = allow_zero,
+        descending = descending,
+        randomize = randomize,
+        remove_missing_starts = remove_missing_starts
+      )
+    )
+  }
 
   #
   # Takes data frame or vector

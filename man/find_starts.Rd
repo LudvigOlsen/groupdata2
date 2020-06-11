@@ -15,9 +15,14 @@ find_starts(
 \arguments{
 \item{data}{\code{data.frame} or \code{vector}.
 
-N.B. If checking a \code{factor}, it is converted to a \code{character vector}.
+\strong{N.B.} If checking a \code{factor}, it is converted to a \code{character vector}.
 Conversion will generate a warning, which can be turned off by
-setting \code{`factor_conversion_warning`} to \code{FALSE}.}
+setting \code{`factor_conversion_warning`} to \code{FALSE}.
+
+\strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame},
+the function is applied group-wise and the output is a \code{list} of \code{vector}s.
+The names are based on the group indices
+(see \code{\link[dplyr:group_indices]{dplyr::group_indices()}}).}
 
 \item{col}{Name of column to find starts in. Used when \code{`data`} is
 a \code{data.frame}. (Character)}
@@ -46,6 +51,11 @@ converting \code{factor} to \code{character}. (Logical)}
 }
 \value{
 \code{vector} with either the start values or the indices of the start values.
+
+\strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame},
+the output is a \code{list} of \code{vector}s.
+The names are based on the group indices
+(see \code{\link[dplyr:group_indices]{dplyr::group_indices()}}).
 }
 \description{
 \Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}

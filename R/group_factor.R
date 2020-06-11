@@ -10,6 +10,7 @@
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @param data \code{data.frame} or \code{vector}.
+#'  When a \emph{grouped} \code{data.frame}, the function is applied group-wise.
 #' @param n \emph{Depends on \code{`method`}.}
 #'
 #'  Number of groups (default), group size, list of group sizes,
@@ -105,6 +106,10 @@
 #'  For method \code{"l_starts"} only.
 #'  (Logical)
 #' @return Grouping factor with \code{1}s for group 1, \code{2}s for group 2, etc.
+#'
+#'  \strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame},
+#'  the output is a \code{data.frame} with the existing groupings
+#'  and the generated grouping factor. The row order from \code{`data`} is maintained.
 #' @family grouping functions
 #' @family staircase tools
 #' @family l_starts tools
@@ -141,10 +146,25 @@ group_factor <- function(data, n, method = "n_dist", starts_col = NULL, force_eq
                          allow_zero = FALSE, descending = FALSE,
                          randomize = FALSE, remove_missing_starts = FALSE) {
 
-  #
-  # Takes data frame or vector
-  # Returns a grouping factor
-  #
+  # Apply by group (recursion)
+  if (dplyr::is_grouped_df(data)) {
+    warn_once_about_group_by("group_factor")
+    return(
+      run_by_group_col(
+        data = data,
+        .fn = group_factor,
+        .col_name = ".groups",
+        n = n,
+        method = method,
+        starts_col = starts_col,
+        force_equal = force_equal,
+        allow_zero = allow_zero,
+        descending = descending,
+        randomize = randomize,
+        remove_missing_starts = remove_missing_starts
+      )
+    )
+  }
 
   # Check and prep inputs
   checks <- check_group_factor(

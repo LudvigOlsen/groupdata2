@@ -77,7 +77,8 @@
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @family grouping functions
-#' @param data \code{data.frame}.
+#' @param data \code{data.frame}. Can be \emph{grouped}, in which case
+#'  the function is applied group-wise.
 #' @param p List or vector of partition sizes.
 #'  Given as whole number(s) and/or percentage(s) (\code{0} < \code{`p`} < \code{1}).
 #'
@@ -112,15 +113,21 @@
 #'  N.B. Larger values work best with large datasets. If set too high,
 #'  the result might not be stochastic. Always check if an increase
 #'  actually makes the partitions more balanced. See \code{`Examples`}.
-#' @param list_out Return partitions in a \code{list}. (Logical)
+#' @param list_out Whether to return partitions in a \code{list}. (Logical)
+#'
+#'  \strong{N.B.} When \code{`data`} is a grouped \code{data.frame}, the output is always a \code{data.frame}
+#'  with partition identifiers.
 #' @param force_equal Whether to discard excess data. (Logical)
 #' @return If \code{`list_out`} is \code{TRUE}:
 #'
-#' A \code{list} of partitions where partitions are \code{data.frame}s.
+#'  A \code{list} of partitions where partitions are \code{data.frame}s.
 #'
-#' If \code{`list_out`} is \code{FALSE}:
+#'  If \code{`list_out`} is \code{FALSE}:
 #'
-#' A \code{data.frame} with grouping factor for subsetting.
+#'  A \code{data.frame} with grouping factor for subsetting.
+#'
+#'  \strong{N.B.} When \code{`data`} is a grouped \code{data.frame},
+#'  the output is always a \code{data.frame} with a grouping factor.
 #' @examples
 #' # Attach packages
 #' library(groupdata2)
@@ -212,28 +219,24 @@ partition <- function(data,
                       force_equal = FALSE,
                       list_out = TRUE) {
 
-  # TODO We need to split the list_out afterwards!
-  # if (dplyr::is_grouped_df(data)) {
-  #   warn_once_about_group_by("partition")
-  #   return(
-  #     run_by_group(
-  #       data = data,
-  #       fn = partition,
-  #       k = k,
-  #       cat_col = cat_col,
-  #       num_col = num_col,
-  #       id_col = id_col,
-  #       method = method,
-  #       id_aggregation_fn = id_aggregation_fn,
-  #       extreme_pairing_levels = extreme_pairing_levels,
-  #       num_fold_cols = num_fold_cols,
-  #       unique_fold_cols_only = unique_fold_cols_only,
-  #       max_iters = max_iters,
-  #       handle_existing_fold_cols = handle_existing_fold_cols,
-  #       parallel = parallel
-  #     )
-  #   )
-  # }
+  # Apply by group (recursion)
+  if (dplyr::is_grouped_df(data)) {
+    warn_once_about_group_by("partition")
+    return(
+      run_by_group_df(
+        data = data,
+        .fn = partition,
+        p = p,
+        cat_col = cat_col,
+        num_col = num_col,
+        id_col = id_col,
+        id_aggregation_fn = id_aggregation_fn,
+        extreme_pairing_levels = extreme_pairing_levels,
+        force_equal = force_equal,
+        list_out = FALSE
+      )
+    )
+  }
 
   #
   # Balanced partitioning

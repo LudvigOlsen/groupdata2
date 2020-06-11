@@ -14,7 +14,8 @@ upsample(
 )
 }
 \arguments{
-\item{data}{\code{data.frame}.}
+\item{data}{\code{data.frame}. Can be \emph{grouped}, in which case
+the function is applied group-wise.}
 
 \item{cat_col}{Name of categorical variable to balance by. (Character)}
 
@@ -62,7 +63,7 @@ I.e. if size is \code{"min"}, IDs will have the size of the smallest ID in their
 \item{new_rows_col_name}{Name of column marking new rows. Defaults to \code{".new_row"}.}
 }
 \value{
-\code{data.frame} with added rows. Ordered by \code{`cat_col`} and (potentially) \code{`id_col`}.
+\code{data.frame} with added rows. Ordered by potential grouping variables, \code{`cat_col`} and (potentially) \code{`id_col`}.
 }
 \description{
 \Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}

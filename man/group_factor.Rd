@@ -17,7 +17,8 @@ group_factor(
 )
 }
 \arguments{
-\item{data}{\code{data.frame} or \code{vector}.}
+\item{data}{\code{data.frame} or \code{vector}.
+When a \emph{grouped} \code{data.frame}, the function is applied group-wise.}
 
 \item{n}{\emph{Depends on \code{`method`}.}
 
@@ -123,6 +124,10 @@ For method \code{"l_starts"} only.
 }
 \value{
 Grouping factor with \code{1}s for group 1, \code{2}s for group 2, etc.
+
+\strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame},
+the output is a \code{data.frame} with the existing groupings
+and the generated grouping factor. The row order from \code{`data`} is maintained.
 }
 \description{
 \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}

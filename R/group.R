@@ -6,14 +6,14 @@
 #'
 #'  Divides data into groups by a range of methods.
 #'  Creates a grouping factor with \code{1}s for group 1, \code{2}s for group 2, etc.
-#'  Returns a data frame grouped by the grouping factor for easy use in
+#'  Returns a \code{data.frame} grouped by the grouping factor for easy use in
 #'  \code{\link[magrittr]{\%>\%}} pipelines.
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @inheritParams group_factor
 #' @param return_factor Return only grouping factor. (Logical)
 #' @param col_name Name of added grouping factor
-#' @return Data frame grouped by new grouping factor
+#' @return \code{data.frame} grouped by existing grouping variables and the new grouping factor.
 #' @family grouping functions
 #' @family staircase tools
 #' @family l_starts tools
@@ -68,6 +68,29 @@ group <- function(data, n, method = "n_dist", starts_col = NULL,
   checkmate::assert_string(x = col_name, min.chars = 1, add = assert_collection)
   checkmate::reportAssertions(assert_collection)
   # End of argument checks ####
+
+  # Apply by group (recursion)
+  if (dplyr::is_grouped_df(data)) {
+    warn_once_about_group_by("group")
+    group_col_names <- c(colnames(dplyr::group_keys(data)), col_name)
+    return(
+      run_by_group_df(
+        data = data,
+        .fn = group,
+        n = n,
+        method = method,
+        starts_col = starts_col,
+        force_equal = force_equal,
+        allow_zero = allow_zero,
+        return_factor = return_factor,
+        descending = descending,
+        randomize = randomize,
+        col_name = col_name,
+        remove_missing_starts = remove_missing_starts
+      ) %>%
+        dplyr::group_by(!!!rlang::syms(group_col_names))
+    )
+  }
 
   # Create grouping factor
   grouping_factor <- group_factor(

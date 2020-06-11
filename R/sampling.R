@@ -17,7 +17,7 @@
 #' @inheritParams balance
 #' @family sampling functions
 #' @return \code{data.frame} with some rows removed.
-#'  Ordered by \code{`cat_col`} and (potentially) \code{`id_col`}.
+#'  Ordered by potential grouping variables, \code{`cat_col`} and (potentially) \code{`id_col`}.
 #' @examples
 #' # Attach packages
 #' library(groupdata2)
@@ -92,7 +92,7 @@ downsample <- function(data,
 #' @export
 #' @inheritParams balance
 #' @family sampling functions
-#' @return \code{data.frame} with added rows. Ordered by \code{`cat_col`} and (potentially) \code{`id_col`}.
+#' @return \code{data.frame} with added rows. Ordered by potential grouping variables, \code{`cat_col`} and (potentially) \code{`id_col`}.
 #' @examples
 #' # Attach packages
 #' library(groupdata2)
@@ -176,7 +176,8 @@ upsample <- function(data,
 #' \subsection{With \code{`id_col`}}{See \code{`id_method`} description.}
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
-#' @param data \code{data.frame}.
+#' @param data \code{data.frame}. Can be \emph{grouped}, in which case
+#'  the function is applied group-wise.
 #' @param size Size to fix group sizes to.
 #'  Can be a specific number, given as a whole number, or one of the following strings:
 #'  \code{"min"}, \code{"max"}, \code{"mean"}, \code{"median"}.
@@ -243,7 +244,7 @@ upsample <- function(data,
 #' @param new_rows_col_name Name of column marking new rows. Defaults to \code{".new_row"}.
 #' @family sampling functions
 #' @return \code{data.frame} with added and/or deleted rows.
-#'  Ordered by \code{`cat_col`} and (potentially) \code{`id_col`}.
+#'  Ordered by potential grouping variables, \code{`cat_col`} and (potentially) \code{`id_col`}.
 #' @examples
 #' # Attach packages
 #' library(groupdata2)
@@ -311,9 +312,26 @@ balance <- function(data,
                     mark_new_rows = FALSE,
                     new_rows_col_name = ".new_row") {
 
+  # Apply by group (recursion)
+  if (dplyr::is_grouped_df(data)) {
+    warn_once_about_group_by("balance")
+    return(
+      run_by_group_df(
+        data = data,
+        .fn = balance,
+        size = size,
+        cat_col = cat_col,
+        id_col = id_col,
+        id_method = id_method,
+        mark_new_rows = mark_new_rows,
+        new_rows_col_name = new_rows_col_name
+      )
+    )
+  }
+
   # Check arguments ####
   assert_collection <- checkmate::makeAssertCollection()
-  checkmate::assert_data_frame(x = data,min.rows = 1, add = assert_collection)
+  checkmate::assert_data_frame(x = data, min.rows = 1, add = assert_collection)
   if (!(
     (checkmate::test_string(size) && size %in% c("min", "max", "mean", "median")) ||
     checkmate::test_count(x = size, positive = TRUE))){

@@ -17,7 +17,8 @@ splt(
 )
 }
 \arguments{
-\item{data}{\code{data.frame} or \code{vector}.}
+\item{data}{\code{data.frame} or \code{vector}.
+When a \emph{grouped} \code{data.frame}, the function is applied group-wise.}
 
 \item{n}{\emph{Depends on \code{`method`}.}
 
@@ -123,6 +124,10 @@ For method \code{"l_starts"} only.
 }
 \value{
 \code{list} of the split \code{`data`}.
+
+\strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame}, there's an outer list
+for each group. The names are based on the group indices
+(see \code{\link[dplyr:group_indices]{dplyr::group_indices()}}).
 }
 \description{
 \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}

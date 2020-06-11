@@ -17,7 +17,8 @@ partition(
 )
 }
 \arguments{
-\item{data}{\code{data.frame}.}
+\item{data}{\code{data.frame}. Can be \emph{grouped}, in which case
+the function is applied group-wise.}
 
 \item{p}{List or vector of partition sizes.
 Given as whole number(s) and/or percentage(s) (\code{0} < \code{`p`} < \code{1}).
@@ -61,7 +62,10 @@ actually makes the partitions more balanced. See \code{`Examples`}.}
 
 \item{force_equal}{Whether to discard excess data. (Logical)}
 
-\item{list_out}{Return partitions in a \code{list}. (Logical)}
+\item{list_out}{Whether to return partitions in a \code{list}. (Logical)
+
+\strong{N.B.} When \code{`data`} is a grouped \code{data.frame}, the output is always a \code{data.frame}
+with partition identifiers.}
 }
 \value{
 If \code{`list_out`} is \code{TRUE}:
@@ -71,6 +75,9 @@ A \code{list} of partitions where partitions are \code{data.frame}s.
 If \code{`list_out`} is \code{FALSE}:
 
 A \code{data.frame} with grouping factor for subsetting.
+
+\strong{N.B.} When \code{`data`} is a grouped \code{data.frame},
+the output is always a \code{data.frame} with a grouping factor.
 }
 \description{
 \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}

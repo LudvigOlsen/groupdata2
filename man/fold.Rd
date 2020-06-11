@@ -22,7 +22,8 @@ fold(
 )
 }
 \arguments{
-\item{data}{\code{data.frame}.}
+\item{data}{\code{data.frame}. Can be \emph{grouped}, in which case
+the function is applied group-wise.}
 
 \item{k}{\emph{Depends on \code{`method`}.}
 

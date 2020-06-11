@@ -19,9 +19,14 @@ differs_from_previous(
 \arguments{
 \item{data}{\code{data.frame} or \code{vector}.
 
-N.B. If checking a \code{factor}, it is converted to a \code{character vector}.
+\strong{N.B.} If checking a \code{factor}, it is converted to a \code{character vector}.
 This means that factors can only be used when \code{`threshold`} is \code{NULL}.
-Conversion will generate a warning, which can be turned off by setting \code{`factor_conversion_warning`} to \code{FALSE}.}
+Conversion will generate a warning, which can be turned off by setting \code{`factor_conversion_warning`} to \code{FALSE}.
+
+\strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame},
+the function is applied group-wise and the output is a \code{list} of \code{vector}s.
+The names are based on the group indices
+(see \code{\link[dplyr:group_indices]{dplyr::group_indices()}}).}
 
 \item{col}{Name of column to find values that differ in. Used when \code{`data`} is
 \code{data.frame}. (Character)}
@@ -98,6 +103,11 @@ A numeric value to replace \code{NA}s with.
 }
 \value{
 \code{vector} with either the differing values or the indices of the differing values.
+
+\strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame},
+the output is a \code{list} of \code{vector}s
+with the differing values. The names are based on the group indices
+(see \code{\link[dplyr:group_indices]{dplyr::group_indices()}}).
 }
 \description{
 \Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}

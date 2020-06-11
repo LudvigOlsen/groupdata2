@@ -22,7 +22,8 @@ group(
 )
 }
 \arguments{
-\item{data}{\code{data.frame} or \code{vector}.}
+\item{data}{\code{data.frame} or \code{vector}.
+When a \emph{grouped} \code{data.frame}, the function is applied group-wise.}
 
 \item{n}{\emph{Depends on \code{`method`}.}
 
@@ -131,14 +132,14 @@ For method \code{"l_starts"} only.
 (Logical)}
 }
 \value{
-Data frame grouped by new grouping factor
+\code{data.frame} grouped by existing grouping variables and the new grouping factor.
 }
 \description{
 \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
 
 Divides data into groups by a range of methods.
 Creates a grouping factor with \code{1}s for group 1, \code{2}s for group 2, etc.
-Returns a data frame grouped by the grouping factor for easy use in
+Returns a \code{data.frame} grouped by the grouping factor for easy use in
 \code{\link[magrittr]{\%>\%}} pipelines.
 }
 \examples{

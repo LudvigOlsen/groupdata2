@@ -17,9 +17,14 @@
 #' @export
 #' @param data \code{data.frame} or \code{vector}.
 #'
-#'  N.B. If checking a \code{factor}, it is converted to a \code{character vector}.
+#'  \strong{N.B.} If checking a \code{factor}, it is converted to a \code{character vector}.
 #'  This means that factors can only be used when \code{`threshold`} is \code{NULL}.
 #'  Conversion will generate a warning, which can be turned off by setting \code{`factor_conversion_warning`} to \code{FALSE}.
+#'
+#'  \strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame},
+#'  the function is applied group-wise and the output is a \code{list} of \code{vector}s.
+#'  The names are based on the group indices
+#'  (see \code{\link[dplyr:group_indices]{dplyr::group_indices()}}).
 #'
 #' @param threshold Threshold to check difference to previous value to.
 #'
@@ -90,6 +95,11 @@
 #'  }
 #' @param factor_conversion_warning Whether to throw a warning when converting a \code{factor} to a \code{character}. (Logical)
 #' @return \code{vector} with either the differing values or the indices of the differing values.
+#'
+#'  \strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame},
+#'  the output is a \code{list} of \code{vector}s
+#'  with the differing values. The names are based on the group indices
+#'  (see \code{\link[dplyr:group_indices]{dplyr::group_indices()}}).
 #' @aliases not_previous
 #' @family l_starts tools
 #' @examples
@@ -126,6 +136,7 @@ differs_from_previous <- function(data,
                                   include_first = FALSE,
                                   handle_na = "ignore",
                                   factor_conversion_warning = TRUE) {
+
   #
   # Run find_different_from_previous_vec_ for either a vector or data frame
   #
@@ -140,6 +151,24 @@ differs_from_previous <- function(data,
     include_first = include_first,
     handle_na = handle_na,
     factor_conversion_warning = factor_conversion_warning)
+
+  # Apply by group (recursion)
+  if (dplyr::is_grouped_df(data)) {
+    warn_once_about_group_by("differs_from_previous")
+    return(
+      run_by_group_list(
+        data = data,
+        .fn = differs_from_previous,
+        col = col,
+        threshold = threshold,
+        direction = direction,
+        return_index = return_index,
+        include_first = include_first,
+        handle_na = handle_na,
+        factor_conversion_warning = factor_conversion_warning
+      )
+    )
+  }
 
   # If data is a data frame
   if (is.data.frame(data)) {
@@ -234,7 +263,7 @@ check_differs_from_previous <- function(data,
       assert_collection$push("when 'threshold' has length 2, 'threshold[[1]]' must be a negative number.")
     }
     if (threshold[[2]] <= 0){
-      assert_collection$push("'threshold[[2]]' must be a positive number.")
+      assert_collection8push("'threshold[[2]]' must be a positive number.")
     }
   }
   checkmate::assert(
@@ -257,8 +286,7 @@ check_differs_from_previous <- function(data,
 }
 
 
-find_different_from_previous_vec_ <- function(
-                                              v,
+find_different_from_previous_vec_ <- function(v,
                                               threshold = NULL,
                                               direction = "both",
                                               return_index = FALSE,
@@ -397,17 +425,17 @@ find_different_from_previous_vec_ <- function(
 
   if (isTRUE(include_first)) {
     # Set first value to TRUE
-    df$new[1] <- TRUE
+    df[["new"]][1] <- TRUE
   }
 
   # Add back NA rows
   if (isTRUE(contains_na) && handle_na == "ignore") {
-    df$orig_indices <- not_na_indices
+    df[["orig_indices"]] <- not_na_indices
     # Get indices where v contains a new value
-    new_indices <- df$orig_indices[df$new]
+    new_indices <- df[["orig_indices"]][df[["new"]]]
   } else {
     # Get indices where v contains a new value
-    new_indices <- which(df$new)
+    new_indices <- which(df[["new"]])
   }
 
   # If return_index is TRUE
