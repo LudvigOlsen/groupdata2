@@ -784,3 +784,37 @@ insert_row <- function(data, new_row, after) {
   data
 }
 
+# Warn user once per session
+warn_once = function(msg,
+                     id = msg,
+                     sys.parent.n = 0L) {
+  stopifnot(rlang::is_string(id))
+  # If we already threw the warning, ignore
+  if (rlang::env_has(warning_env, id)) {
+    return(invisible(NULL))
+  }
+  # Register the ID
+  warning_env[[id]] = TRUE
+  # Throw warning
+  msg <- paste0(msg,
+                "\nNOTE: This message is displayed once per session.")
+  warning(simpleWarning(msg,
+                        call = if (p <- sys.parent(sys.parent.n + 1))
+                          sys.call(p)))
+}
+# Create warning environment
+warning_env = rlang::env()
+
+warn_once_about_group_by <- function(fn_name, sys.parent.n = 1L) {
+  fn_name <- paste0("'", fn_name, "()'")
+  warn_once(
+    paste0(
+      fn_name,
+      " now detects grouped data.frames and is applied group-wise (since v1.3.0). ",
+      "If this is unwanted, use 'dplyr::ungroup()' before ",
+      fn_name,
+      "."
+    ),
+    sys.parent.n = sys.parent.n
+  )
+}

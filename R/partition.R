@@ -212,6 +212,29 @@ partition <- function(data,
                       force_equal = FALSE,
                       list_out = TRUE) {
 
+  # TODO We need to split the list_out afterwards!
+  # if (dplyr::is_grouped_df(data)) {
+  #   warn_once_about_group_by("partition")
+  #   return(
+  #     run_by_group(
+  #       data = data,
+  #       fn = partition,
+  #       k = k,
+  #       cat_col = cat_col,
+  #       num_col = num_col,
+  #       id_col = id_col,
+  #       method = method,
+  #       id_aggregation_fn = id_aggregation_fn,
+  #       extreme_pairing_levels = extreme_pairing_levels,
+  #       num_fold_cols = num_fold_cols,
+  #       unique_fold_cols_only = unique_fold_cols_only,
+  #       max_iters = max_iters,
+  #       handle_existing_fold_cols = handle_existing_fold_cols,
+  #       parallel = parallel
+  #     )
+  #   )
+  # }
+
   #
   # Balanced partitioning
   # data: data frame or vector
