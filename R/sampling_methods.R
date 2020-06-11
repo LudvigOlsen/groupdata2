@@ -187,7 +187,7 @@ id_method_nested <- function(data, size, cat_col, id_col,
                    tmp_var = paste0(new_rows_col_name, "Cat"))
 
   balanced <- plyr::ldply(unique(data[[cat_col]]), function(category) {
-    data[data[[cat_col]] == category, ] %>%
+    data[data[[cat_col]] == category, , drop=FALSE] %>%
       balance(
         size = size,
         cat_col = id_col,
@@ -328,18 +328,18 @@ id_method_distributed <- function(data,
   plyr::ldply(unique(balanced_ids[[id_col]]), function(id) {
     # Subset data with current category
     data_for_id <- data[
-      data[[id_col]] == id,
+      data[[id_col]] == id, , drop=FALSE
     ]
 
     # Get the number of rows to keep for this ID
     to_keep <- balanced_ids[
-      balanced_ids[[id_col]] == id,
+      balanced_ids[[id_col]] == id, , drop=FALSE
     ][[".to_keep_"]]
 
     # Call balance on the subset, to get the balanced (up-/downsampled) ID
     if (to_keep == 0){
       # balance() don't accept 0
-      return(data_for_id[0, ])
+      return(data_for_id[0, , drop=FALSE])
     }
     data_for_id %>%
       balance(

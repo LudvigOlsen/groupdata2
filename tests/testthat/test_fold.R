@@ -1356,9 +1356,8 @@ test_that("arg check fuzz tests for fold()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(fold_2(data = df, k = 3, cat_col = "diagnosis", num_col = NULL, id_col = "score", method = "n_dist", id_aggregation_fn = sum, extreme_pairing_levels = 1, num_fold_cols = 1, unique_fold_cols_only = TRUE, max_iters = 5, handle_existing_fold_cols = "keep_warn", parallel = FALSE)),
-    xpectr::strip(paste0("2 assertions failed:\n * Variable 'data[[id_col]]': Must be",
-                         " of type 'factor', not 'double'.\n * The value in 'data[[cat",
-                         "_col]]' must be constant within each ID.")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'data[[id_col]]': Must be",
+                         " of type 'factor', not 'double'.")),
     fixed = TRUE)
 
   # Testing fold_2(data = df, k = 3, cat_col = "diagnosis"...

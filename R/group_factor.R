@@ -146,28 +146,8 @@ group_factor <- function(data, n, method = "n_dist", starts_col = NULL, force_eq
                          allow_zero = FALSE, descending = FALSE,
                          randomize = FALSE, remove_missing_starts = FALSE) {
 
-  # Apply by group (recursion)
-  if (dplyr::is_grouped_df(data)) {
-    warn_once_about_group_by("group_factor")
-    return(
-      run_by_group_col(
-        data = data,
-        .fn = group_factor,
-        .col_name = ".groups",
-        n = n,
-        method = method,
-        starts_col = starts_col,
-        force_equal = force_equal,
-        allow_zero = allow_zero,
-        descending = descending,
-        randomize = randomize,
-        remove_missing_starts = remove_missing_starts
-      )
-    )
-  }
-
   # Check and prep inputs
-  checks <- check_group_factor(
+  checks <- check_group_factor_once(
     data = data, n = n,
     method = method,
     starts_col = starts_col,
@@ -177,8 +157,42 @@ group_factor <- function(data, n, method = "n_dist", starts_col = NULL, force_eq
     randomize = randomize,
     remove_missing_starts = remove_missing_starts)
 
-  n <- checks[["n"]]
   starts_col <- checks[["starts_col"]]
+
+  # Apply by group (recursion)
+  if (dplyr::is_grouped_df(data)) {
+    warn_once_about_group_by("group_factor")
+  }
+
+  run_by_group_col(
+    data = data,
+    .fn = run_group_factor_,
+    .col_name = ".groups",
+    n = n,
+    method = method,
+    starts_col = starts_col,
+    force_equal = force_equal,
+    allow_zero = allow_zero,
+    descending = descending,
+    randomize = randomize,
+    remove_missing_starts = remove_missing_starts
+  )
+
+}
+
+run_group_factor_ <- function(data, n, method, starts_col, force_equal,
+                              allow_zero, descending,
+                              randomize, remove_missing_starts){
+
+  # Checks and conversion of 'n'
+  checks <- group_factor_check_convert_n(
+    data = data,
+    n = n,
+    method = method,
+    allow_zero = allow_zero
+  )
+
+  n <- checks[["n"]]
 
   ### Allow zero ###
 
@@ -294,15 +308,15 @@ group_factor <- function(data, n, method = "n_dist", starts_col = NULL, force_eq
   groups
 }
 
-check_group_factor <- function(data, n, method, starts_col, force_equal,
-                               allow_zero, descending,
-                               randomize, remove_missing_starts,
-                               available_methods = c(
-                                 "greedy", "n_dist", "n_fill", "n_last", "n_rand",
-                                 "l_sizes", "l_starts", "staircase", "primes")){
-
+check_group_factor_once <- function(data, n, method, starts_col, force_equal,
+                                    allow_zero, descending,
+                                    randomize, remove_missing_starts,
+                                    available_methods = c(
+                                      "greedy", "n_dist", "n_fill", "n_last", "n_rand",
+                                      "l_sizes", "l_starts", "staircase", "primes")){
   # Check arguments ####
   assert_collection <- checkmate::makeAssertCollection()
+
   if (is.null(n)){
     assert_collection$push("'n' cannot be 'NULL'")
   }
@@ -338,17 +352,15 @@ check_group_factor <- function(data, n, method, starts_col, force_equal,
   checkmate::assert_flag(x = remove_missing_starts, add = assert_collection)
 
   checkmate::reportAssertions(assert_collection)
+
   checkmate::assert_names(x = method, subset.of = available_methods,
                           what = "method", add = assert_collection)
-  if (!isTRUE(allow_zero) &&
-      checkmate::test_number(n) &&
-      n == 0){
-    assert_collection$push("'n' was 0. If this is on purpose, set 'allow_zero' to 'TRUE'.")
-    checkmate::reportAssertions(assert_collection)
-  }
+
+  checkmate::reportAssertions(assert_collection)
+
   if (!is.null(starts_col)) {
     if (!is.data.frame(data)){
-      assert_collection$push("when 'starts_col' is specified, 'data' must be a data frame.")
+      assert_collection$push("when 'starts_col' is specified, 'data' must be a data.frame.")
       checkmate::reportAssertions(assert_collection)
     }
     if (is.character(starts_col) && starts_col %ni% c(colnames(data), "index", ".index")){
@@ -384,25 +396,49 @@ check_group_factor <- function(data, n, method, starts_col, force_equal,
   if (method == "l_starts" &&
       is.data.frame(data) &&
       is.null(starts_col)){
-    assert_collection$push("when 'method' is 'l_starts' and 'data' is a data frame, 'starts_col' must be specified.")
+    assert_collection$push("when 'method' is 'l_starts' and 'data' is a data.frame, 'starts_col' must be specified.")
+  }
+
+  checkmate::reportAssertions(assert_collection)
+
+  list("starts_col" = starts_col)
+
+}
+
+
+group_factor_check_convert_n <- function(data, n, method,
+                                         allow_zero) {
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+
+  if (!isTRUE(allow_zero) &&
+      checkmate::test_number(n) &&
+      n == 0) {
+    assert_collection$push("'n' was 0. If this is on purpose, set 'allow_zero' to 'TRUE'.")
+    checkmate::reportAssertions(assert_collection)
   }
 
   # Convert n if given as single percentage
-  n <- convert_n(n = n, data = data, method = method, allow_zero = allow_zero)
+  n <-
+    convert_n(
+      n = n,
+      data = data,
+      method = method,
+      allow_zero = allow_zero
+    )
 
   # Check number of elements in n
-  if (is.data.frame(data)){
-    if (length(n) > nrow(data)){
+  if (is.data.frame(data)) {
+    if (length(n) > nrow(data)) {
       assert_collection$push("'n' cannot have more elements than the number of rows in 'data'.")
     }
-  } else if (length(n) > length(data)){
+  } else if (length(n) > length(data)) {
     assert_collection$push("'n' cannot have more elements than 'data'.")
   }
 
   checkmate::reportAssertions(assert_collection)
   # End of argument checks ####
 
-  list("starts_col" = starts_col,
-       "n" = n)
+  list("n" = n)
 
 }

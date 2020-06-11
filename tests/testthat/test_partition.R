@@ -838,9 +838,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(partition_2(data = df, p = 0.5, cat_col = "diagnosis", num_col = NULL, id_col = "score", id_aggregation_fn = sum, extreme_pairing_levels = 1, force_equal = FALSE, list_out = FALSE)),
-    xpectr::strip(paste0("2 assertions failed:\n * Variable 'data[[id_col]]': Must be",
-                         " of type 'factor', not 'double'.\n * The value in 'data[[cat",
-                         "_col]]' must be constant within each ID.")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'data[[id_col]]': Must be",
+                         " of type 'factor', not 'double'.")),
     fixed = TRUE)
 
   # Testing partition_2(data = df, p = 0.5, cat_col = "dia...

@@ -67,22 +67,25 @@ test_that("differs_from_previous() find the right values and indices", {
   fixed = TRUE
   )
 
-  expect_error(
-    check_differs_from_previous("v3",
-      threshold = 2, return_index = TRUE,
-      factor_conversion_warning = TRUE
-    ),
-    "'col' is factor. 'threshold' must be 'NULL'. Alternatively, convert factor to numeric vector.",
-    fixed = TRUE
-  )
+  #
+  side_effects_12655 <- xpectr::capture_side_effects(check_differs_from_previous("v3",
+                                threshold = 2, return_index = TRUE,
+                                factor_conversion_warning = TRUE
+    ), reset_seed = TRUE)
+  expect_equal(
+    xpectr::strip(side_effects_12655[['error']]),
+    xpectr::strip("1 assertions failed:\n * 'col' is factor. 'threshold' must be 'NULL'. Alternatively, convert factor to numeric\n * vector."),
+    fixed = TRUE)
 
-  expect_error(differs_from_previous(df),
-    "'col' must be specified when 'data' is data frame",
+
+  expect_error(
+    xpectr::strip_msg(differs_from_previous(df)),
+    xpectr::strip("1 assertions failed:\n * 'col' must be specified when 'data' is data.frame."),
     fixed = TRUE
   )
 
   expect_warning(differs_from_previous(v, col = "a"),
-    "'col' not used as 'data' is not a data frame",
+    "'col' is ignored when 'data' is not a data.frame.",
     fixed = TRUE
   )
 
@@ -386,7 +389,7 @@ test_that("fuzz testing input checks for differs_from_previous()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(differs_from_previous(data = df, col = NULL, threshold = NULL, direction = "both", return_index = FALSE, include_first = TRUE, handle_na = "ignore", factor_conversion_warning = TRUE)),
-    xpectr::strip("'col' must be specified when 'data' is data frame."),
+    xpectr::strip("1 assertions failed:\n * 'col' must be specified when 'data' is data.frame."),
     fixed = TRUE)
 
   # Testing differs_from_previous(data = df$a, col = "n", ...
@@ -397,7 +400,7 @@ test_that("fuzz testing input checks for differs_from_previous()", {
   side_effects_17920 <- xpectr::capture_side_effects(differs_from_previous(data = df$a, col = "n", threshold = NULL, direction = "both", return_index = FALSE, include_first = TRUE, handle_na = "ignore", factor_conversion_warning = TRUE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_17920[['warnings']]),
-    xpectr::strip(c("'data' is factor. Using as character.", "'col' not used as 'data' is not a data frame")),
+    xpectr::strip(c("'col' is ignored when 'data' is not a data.frame", "'data' is factor. Using as character")),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_17920[['messages']]),
@@ -441,7 +444,7 @@ test_that("fuzz testing input checks for differs_from_previous()", {
   side_effects_13400 <- xpectr::capture_side_effects(differs_from_previous(data = df$n, col = "n", threshold = NULL, direction = "both", return_index = FALSE, include_first = TRUE, handle_na = "ignore", factor_conversion_warning = TRUE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_13400[['warnings']]),
-    xpectr::strip("'col' not used as 'data' is not a data frame"),
+    xpectr::strip("'col' is ignored when 'data' is not a data.frame"),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_13400[['messages']]),

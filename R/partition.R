@@ -1,4 +1,5 @@
 
+
 ## partition
 #' @title Create balanced partitions
 #' @description
@@ -218,38 +219,7 @@ partition <- function(data,
                       extreme_pairing_levels = 1,
                       force_equal = FALSE,
                       list_out = TRUE) {
-
-  # Apply by group (recursion)
-  if (dplyr::is_grouped_df(data)) {
-    warn_once_about_group_by("partition")
-    return(
-      run_by_group_df(
-        data = data,
-        .fn = partition,
-        p = p,
-        cat_col = cat_col,
-        num_col = num_col,
-        id_col = id_col,
-        id_aggregation_fn = id_aggregation_fn,
-        extreme_pairing_levels = extreme_pairing_levels,
-        force_equal = force_equal,
-        list_out = FALSE
-      )
-    )
-  }
-
-  #
-  # Balanced partitioning
-  # data: data frame or vector
-  # p: list of partitions given as percentage (0-1) or group sizes (wholenumber)
-  # cat_col: Categorical variable to balance by
-  # num_col: Numerical variable to balance by
-  # id_col: ID column to keep rows with shared IDs in the same partition
-  # force_equal: Whether you only want the inputted partitions or the exceeding values gets a partition (logical)
-  #        FALSE allows you to pass "p = 0.2" and get 2 partitions - 0.2 and 0.8
-  #
-
-  check_partition(
+  check_partition_once(
     data = data,
     p = p,
     cat_col = cat_col,
@@ -259,6 +229,42 @@ partition <- function(data,
     extreme_pairing_levels = extreme_pairing_levels,
     force_equal = force_equal,
     list_out = list_out
+  )
+
+  # Apply by group (recursion)
+  if (dplyr::is_grouped_df(data)) {
+    warn_once_about_group_by("partition")
+  }
+
+  run_by_group_df(
+    data = data,
+    .fn = run_partition_,
+    p = p,
+    cat_col = cat_col,
+    num_col = num_col,
+    id_col = id_col,
+    id_aggregation_fn = id_aggregation_fn,
+    extreme_pairing_levels = extreme_pairing_levels,
+    force_equal = force_equal,
+    list_out = list_out && !dplyr::is_grouped_df(data)
+  )
+
+}
+
+run_partition_ <- function(data,
+                           p,
+                           cat_col,
+                           num_col,
+                           id_col,
+                           id_aggregation_fn,
+                           extreme_pairing_levels,
+                           force_equal,
+                           list_out) {
+  check_partition_always(
+    data = data,
+    p = p,
+    cat_col = cat_col,
+    id_col = id_col
   )
 
   # If num_col is not NULL
@@ -278,13 +284,10 @@ partition <- function(data,
       pre_randomize = TRUE
     )
   } else {
-
     # If cat_col is not NULL
     if (!is.null(cat_col)) {
-
       # If id_col is not NULL
       if (!is.null(id_col)) {
-
         # Group by cat_col
         # For each group:
         # .. create groups of the unique IDs (e.g. subjects)
@@ -293,41 +296,42 @@ partition <- function(data,
 
         data <- data %>%
           group_by(!!as.name(cat_col)) %>%
-          do(group_uniques_(
-            data = .,
-            n = p,
-            id_col,
-            method = "l_sizes",
-            col_name = ".partitions",
-            force_equal = force_equal
-          )) %>%
+          do(
+            group_uniques_(
+              data = .,
+              n = p,
+              id_col,
+              method = "l_sizes",
+              col_name = ".partitions",
+              force_equal = force_equal
+            )
+          ) %>%
           group_by(!!as.name(".partitions"))
 
         # If id_col is NULL
       } else {
-
         # Group by cat_col
         # Create groups from data
         # .. and add grouping factor to data
 
         data <- data %>%
           group_by(!!as.name(cat_col)) %>%
-          do(group(
-            data = .,
-            n = p,
-            method = "l_sizes",
-            randomize = TRUE,
-            col_name = ".partitions",
-            force_equal = force_equal
-          ))
+          do(
+            group(
+              data = .,
+              n = p,
+              method = "l_sizes",
+              randomize = TRUE,
+              col_name = ".partitions",
+              force_equal = force_equal
+            )
+          )
       }
 
       # If cat_col is NULL
     } else {
-
       # If id_col is not NULL
       if (!is.null(id_col)) {
-
         # Create groups of unique IDs
         # .. and add grouping factor to data
 
@@ -342,8 +346,6 @@ partition <- function(data,
 
         # If id_col is NULL
       } else {
-
-
         # Create groups from all the data points
         # .. and add grouping factor to data
 
@@ -360,23 +362,20 @@ partition <- function(data,
   }
 
   if (isTRUE(list_out)) {
-
     # If we have any NAs in .partitions
     if (anyNA(data$.partitions)) {
       stop("NA in .partitions column.")
     } else if (is.null(data[[".partitions"]])) {
       stop("Column .partitions does not exist")
     } else {
-      return(
-        plyr::llply(c(1:max(as.integer(data[[".partitions"]]))), function(part) {
-          temp_data <- data[data$.partitions == part,]
-
-          temp_data$.partitions <- NULL
-
-          temp_data %>%
-            dplyr::ungroup()
-      })
-      )
+      return(plyr::llply(c(1:max(
+        as.integer(data[[".partitions"]])
+      )), function(part) {
+        temp_data <- data[data$.partitions == part, , drop=FALSE]
+        temp_data$.partitions <- NULL
+        temp_data %>%
+          dplyr::ungroup()
+      }))
     }
   }
 
@@ -384,51 +383,101 @@ partition <- function(data,
 }
 
 
-check_partition <- function(data,
-                            p,
-                            cat_col,
-                            num_col,
-                            id_col,
-                            id_aggregation_fn,
-                            extreme_pairing_levels,
-                            force_equal,
-                            list_out){
-
+check_partition_always <- function(data, p, cat_col, id_col) {
   # Check arguments ####
   assert_collection <- checkmate::makeAssertCollection()
-  checkmate::assert_data_frame(x = data, min.rows = 1, add = assert_collection)
+  checkmate::assert_data_frame(x = data,
+                               min.rows = 1,
+                               add = assert_collection)
   checkmate::reportAssertions(assert_collection)
-  checkmate::assert_numeric(x = p, lower = 1/nrow(data), upper = nrow(data), any.missing = FALSE,
-                            finite = TRUE, add = assert_collection)
-  checkmate::assert_count(x = extreme_pairing_levels, positive = TRUE, add = assert_collection)
-  checkmate::assert_character(x = cat_col, min.len = 1, any.missing = FALSE,
-                              null.ok = TRUE, unique = TRUE,
-                              names = "unnamed", add = assert_collection)
-  checkmate::assert_string(x = num_col, na.ok = FALSE, min.chars = 1,
-                           null.ok = TRUE,  add = assert_collection)
-  checkmate::assert_string(x = id_col, na.ok = FALSE, min.chars = 1,
-                           null.ok = TRUE,  add = assert_collection)
+  checkmate::assert_numeric(
+    x = p,
+    lower = 1 / nrow(data),
+    upper = nrow(data),
+    any.missing = FALSE,
+    finite = TRUE,
+    add = assert_collection
+  )
+
+  if (!is.null(id_col) && !is.null(cat_col)) {
+    # Check that cat_col is constant within each ID
+    # Note: I tested and count() is faster than group_keys()
+    counts <-
+      dplyr::count(data,!!as.name(id_col),!!as.name(cat_col))
+    if (nrow(counts) != length(unique(counts[[id_col]]))) {
+      assert_collection$push("The value in 'data[[cat_col]]' must be constant within each ID.")
+    }
+  }
+
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
+}
+
+check_partition_once <- function(data,
+                                 p,
+                                 cat_col,
+                                 num_col,
+                                 id_col,
+                                 id_aggregation_fn,
+                                 extreme_pairing_levels,
+                                 force_equal,
+                                 list_out) {
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+  checkmate::assert_data_frame(x = data,
+                               min.rows = 1,
+                               add = assert_collection)
+  checkmate::reportAssertions(assert_collection)
+  checkmate::assert_count(x = extreme_pairing_levels,
+                          positive = TRUE,
+                          add = assert_collection)
+  checkmate::assert_character(
+    x = cat_col,
+    min.len = 1,
+    any.missing = FALSE,
+    null.ok = TRUE,
+    unique = TRUE,
+    names = "unnamed",
+    add = assert_collection
+  )
+  checkmate::assert_string(
+    x = num_col,
+    na.ok = FALSE,
+    min.chars = 1,
+    null.ok = TRUE,
+    add = assert_collection
+  )
+  checkmate::assert_string(
+    x = id_col,
+    na.ok = FALSE,
+    min.chars = 1,
+    null.ok = TRUE,
+    add = assert_collection
+  )
   checkmate::assert_function(x = id_aggregation_fn, add = assert_collection)
   checkmate::assert_flag(x = force_equal, add = assert_collection)
   checkmate::assert_flag(x = list_out, add = assert_collection)
   checkmate::reportAssertions(assert_collection)
   # TODO Could have a helper for adding this kind of message:
-  if (!is.null(cat_col) && length(setdiff(cat_col, colnames(data))) != 0){
-    assert_collection$push(paste0("'cat_col' column(s), '",
-                                  paste0(setdiff(cat_col, colnames(data)), collapse = ", "),
-                                  "', not found in 'data'."))
+  if (!is.null(cat_col) &&
+      length(setdiff(cat_col, colnames(data))) != 0) {
+    assert_collection$push(paste0(
+      "'cat_col' column(s), '",
+      paste0(setdiff(cat_col, colnames(data)), collapse = ", "),
+      "', not found in 'data'."
+    ))
   }
-  if (!is.null(num_col)){
-    if (num_col %ni% colnames(data)){
+  if (!is.null(num_col)) {
+    if (num_col %ni% colnames(data)) {
       assert_collection$push(paste0("'num_col' column, '", num_col, "', not found in 'data'."))
     }
     checkmate::reportAssertions(assert_collection)
-    if (!checkmate::test_numeric(data[[num_col]])){
+    if (!checkmate::test_numeric(data[[num_col]])) {
       assert_collection$push(paste0("'num_col' column must be numeric."))
     }
   }
   if (!is.null(id_col)) {
-    if (id_col %ni% colnames(data)){
+    if (id_col %ni% colnames(data)) {
       assert_collection$push(paste0("'id_col' column, '", id_col, "', not found in 'data'."))
     }
     checkmate::reportAssertions(assert_collection)
@@ -437,16 +486,9 @@ check_partition <- function(data,
       if (id_col %in% cat_col) {
         assert_collection$push("'id_col' and 'cat_col' cannot contain the same column name.")
       }
-      # Check that cat_col is constant within each ID
-      # Note: I tested and count() is faster than group_keys()
-      counts <- dplyr::count(data, !!as.name(id_col), !!as.name(cat_col))
-      if (nrow(counts) != length(unique(counts[[id_col]]))) {
-        assert_collection$push("The value in 'data[[cat_col]]' must be constant within each ID.")
-      }
     }
   }
   checkmate::reportAssertions(assert_collection)
   # End of argument checks ####
 
 }
-

@@ -1236,7 +1236,7 @@ test_that("fuzz testing input checks for n_dist method in group_factor()", {
   expect_error(
     xpectr::strip_msg(group_counts(data = df, n = 3, method = "l_starts", starts_col = NULL, force_equal = FALSE, allow_zero = FALSE, descending = FALSE, randomize = FALSE, remove_missing_starts = FALSE)),
     xpectr::strip(paste0("1 assertions failed:\n * when 'method' is 'l_starts' and 'd",
-                         "ata' is a data frame, 'starts_col' must be specified.")),
+                         "ata' is a data.frame, 'starts_col' must be specified.")),
     fixed = TRUE)
 
   # Testing group_counts(data = df, n = 3, method = NULL, ...
@@ -1297,7 +1297,7 @@ test_that("fuzz testing input checks for n_dist method in group_factor()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(group_counts(data = df, n = "hej", method = "n_dist", starts_col = NULL, force_equal = FALSE, allow_zero = FALSE, descending = FALSE, randomize = FALSE, remove_missing_starts = FALSE)),
-    xpectr::strip("when 'method' is 'n_dist', 'n' must be numeric scalar."),
+    xpectr::strip("1 assertions failed:\n * 'n' can only be character when method is 'l_starts'."),
     fixed = TRUE)
 
   # Testing group_counts(data = df, n = "auto", method = "...
@@ -1306,7 +1306,7 @@ test_that("fuzz testing input checks for n_dist method in group_factor()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(group_counts(data = df, n = "auto", method = "n_dist", starts_col = NULL, force_equal = FALSE, allow_zero = FALSE, descending = FALSE, randomize = FALSE, remove_missing_starts = FALSE)),
-    xpectr::strip("when 'method' is 'n_dist', 'n' must be numeric scalar."),
+    xpectr::strip("1 assertions failed:\n * 'n' can only be character when method is 'l_starts'."),
     fixed = TRUE)
 
   # Testing group_counts(data = df, n = NULL, method = "n_...
@@ -1549,7 +1549,7 @@ test_that("fuzz testing input checks for l_starts method in group_factor()", {
   expect_error(
     xpectr::strip_msg(group_counts(data = df$s, n = "auto", method = "l_starts", starts_col = "s", force_equal = FALSE, allow_zero = FALSE, descending = FALSE, randomize = FALSE, remove_missing_starts = FALSE)),
     xpectr::strip(paste0("1 assertions failed:\n * when 'starts_col' is specified, 'd",
-                         "ata' must be a data frame.")),
+                         "ata' must be a data.frame.")),
     fixed = TRUE)
 
   # Testing group_counts(data = df$c, n = "auto", method =...
@@ -1559,7 +1559,7 @@ test_that("fuzz testing input checks for l_starts method in group_factor()", {
   expect_error(
     xpectr::strip_msg(group_counts(data = df$c, n = "auto", method = "l_starts", starts_col = "s", force_equal = FALSE, allow_zero = FALSE, descending = FALSE, randomize = FALSE, remove_missing_starts = FALSE)),
     xpectr::strip(paste0("1 assertions failed:\n * when 'starts_col' is specified, 'd",
-                         "ata' must be a data frame.")),
+                         "ata' must be a data.frame.")),
     fixed = TRUE)
 
   # Testing group_counts(data = df$f, n = "auto", method =...
@@ -1569,7 +1569,7 @@ test_that("fuzz testing input checks for l_starts method in group_factor()", {
   expect_error(
     xpectr::strip_msg(group_counts(data = df$f, n = "auto", method = "l_starts", starts_col = "s", force_equal = FALSE, allow_zero = FALSE, descending = FALSE, randomize = FALSE, remove_missing_starts = FALSE)),
     xpectr::strip(paste0("1 assertions failed:\n * when 'starts_col' is specified, 'd",
-                         "ata' must be a data frame.")),
+                         "ata' must be a data.frame.")),
     fixed = TRUE)
 
   # Testing group_counts(data = NA, n = "auto", method = "...
@@ -1588,7 +1588,7 @@ test_that("fuzz testing input checks for l_starts method in group_factor()", {
   expect_error(
     xpectr::strip_msg(group_counts(data = 1, n = "auto", method = "l_starts", starts_col = "s", force_equal = FALSE, allow_zero = FALSE, descending = FALSE, randomize = FALSE, remove_missing_starts = FALSE)),
     xpectr::strip(paste0("1 assertions failed:\n * when 'starts_col' is specified, 'd",
-                         "ata' must be a data frame.")),
+                         "ata' must be a data.frame.")),
     fixed = TRUE)
 
   # Testing group_counts(data = NULL, n = "auto", method =...
@@ -1703,7 +1703,7 @@ test_that("fuzz testing input checks for l_starts method in group_factor()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(group_counts(data = df, n = "auto", method = "n_dist", starts_col = "s", force_equal = FALSE, allow_zero = FALSE, descending = FALSE, randomize = FALSE, remove_missing_starts = FALSE)),
-    xpectr::strip("when 'method' is 'n_dist', 'n' must be numeric scalar."),
+    xpectr::strip("2 assertions failed:\n * 'n' can only be character when method is 'l_starts'.\n * when method is not 'l_starts', 'starts_col' must be 'NULL'."),
     fixed = TRUE)
 
   # Testing group_counts(data = df, n = "auto", method = N...
@@ -1989,7 +1989,7 @@ test_that("fuzz testing input checks for l_starts method in group_factor()", {
   expect_error(
     xpectr::strip_msg(group_counts(data = df, n = "auto", method = "l_starts", starts_col = NULL, force_equal = FALSE, allow_zero = FALSE, descending = FALSE, randomize = FALSE, remove_missing_starts = FALSE)),
     xpectr::strip(paste0("1 assertions failed:\n * when 'method' is 'l_starts' and 'd",
-                         "ata' is a data frame, 'starts_col' must be specified.")),
+                         "ata' is a data.frame, 'starts_col' must be specified.")),
     fixed = TRUE)
 
   ## Finished testing 'group_counts'                                          ####
