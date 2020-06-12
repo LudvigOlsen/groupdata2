@@ -1,6 +1,8 @@
 
 # groupdata2 1.2.1.9000
 
+* Breaking: The following functions now work with grouped data.frames (meaning that they are applied group-wise): `fold()`, `partition()`, `group()`, `group_factor()`, `splt()`, `balance()`, `upsample()`, `downsample()`, `differs_from_previous()`, and `find_missing_starts()`. NOTE: A warning is generated *once per session*, when the input is grouped, to help users understand why their code is breaking.
+
 # groupdata2 1.2.1
 
 * `checkmate` compatibility.
