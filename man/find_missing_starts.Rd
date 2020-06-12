@@ -13,7 +13,7 @@ find_missing_starts(data, n, starts_col = NULL, return_skip_numbers = TRUE)
 the function is applied group-wise and the output is a
 \code{list} of either \code{vector}s or \code{list}s.
 The names are based on the group indices
-(see \code{\link[dplyr:group_indices]{dplyr::group_indices()}}).}
+(see \code{\link[dplyr:group_data]{dplyr::group_indices()}}).}
 
 \item{n}{List of starting positions.
 
@@ -36,7 +36,7 @@ Returns \code{NULL} if no values were found.
 the function is applied group-wise and the output is a
 \code{list} of either \code{vector}s or \code{list}s.
 The names are based on the group indices
-(see \code{\link[dplyr:group_indices]{dplyr::group_indices()}}).
+(see \code{\link[dplyr:group_data]{dplyr::group_indices()}}).
 }
 \description{
 \Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}

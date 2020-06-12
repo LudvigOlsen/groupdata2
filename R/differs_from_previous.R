@@ -25,7 +25,7 @@
 #'  \strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame},
 #'  the function is applied group-wise and the output is a \code{list} of \code{vector}s.
 #'  The names are based on the group indices
-#'  (see \code{\link[dplyr:group_indices]{dplyr::group_indices()}}).
+#'  (see \code{\link[dplyr:group_data]{dplyr::group_indices()}}).
 #'
 #' @param threshold Threshold to check difference to previous value to.
 #'
@@ -100,7 +100,7 @@
 #'  \strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame},
 #'  the output is a \code{list} of \code{vector}s
 #'  with the differing values. The names are based on the group indices
-#'  (see \code{\link[dplyr:group_indices]{dplyr::group_indices()}}).
+#'  (see \code{\link[dplyr:group_data]{dplyr::group_indices()}}).
 #' @aliases not_previous
 #' @family l_starts tools
 #' @examples

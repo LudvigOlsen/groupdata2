@@ -16,7 +16,7 @@
 #'  the function is applied group-wise and the output is a
 #'  \code{list} of either \code{vector}s or \code{list}s.
 #'  The names are based on the group indices
-#'  (see \code{\link[dplyr:group_indices]{dplyr::group_indices()}}).
+#'  (see \code{\link[dplyr:group_data]{dplyr::group_indices()}}).
 #' @param n List of starting positions.
 #'
 #'  Skip values by \code{c(value, skip_to_number)} where \code{skip_to_number}
@@ -34,7 +34,7 @@
 #'  the function is applied group-wise and the output is a
 #'  \code{list} of either \code{vector}s or \code{list}s.
 #'  The names are based on the group indices
-#'  (see \code{\link[dplyr:group_indices]{dplyr::group_indices()}}).
+#'  (see \code{\link[dplyr:group_data]{dplyr::group_indices()}}).
 #' @family l_starts tools
 #' @examples
 #' # Attach packages

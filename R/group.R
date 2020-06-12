@@ -8,7 +8,7 @@
 #'  Divides data into groups by a range of methods.
 #'  Creates a grouping factor with \code{1}s for group 1, \code{2}s for group 2, etc.
 #'  Returns a \code{data.frame} grouped by the grouping factor for easy use in
-#'  \code{\link[magrittr]{\%>\%}} pipelines.
+#'  \code{magrittr `\%>\%`} pipelines.
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @inheritParams group_factor
