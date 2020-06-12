@@ -100,6 +100,10 @@
 #'  E.g. If we have measured a participant multiple times and want to see the
 #'  effect of time, we want to have all observations of this participant in
 #'  the same partition.
+#'
+#'  N.B. When \code{`data`} is a \emph{grouped} \code{data.frame}
+#'  (see \code{\link[dplyr:group_by]{dplyr::group_by()}}), IDs that appear in multiple
+#'  groupings might end up in different partitions in those groupings.
 #' @param id_aggregation_fn Function for aggregating values in \code{`num_col`} for each ID,
 #'  before balancing \code{`num_col`}.
 #'

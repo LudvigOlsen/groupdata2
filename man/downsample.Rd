@@ -20,7 +20,11 @@ How this is used is up to the \code{`id_method`}.
 E.g. If we have measured a participant multiple times and
 want make sure that we keep all these measurements. Then we would either
 remove/add all measurements for the participant or leave in
-all measurements for the participant.}
+all measurements for the participant.
+
+N.B. When \code{`data`} is a \emph{grouped} \code{data.frame}
+(see \code{\link[dplyr:group_by]{dplyr::group_by()}}), IDs that appear in multiple
+groupings are considered separate entities within those groupings.}
 
 \item{id_method}{Method for balancing the IDs. (Character)
 
