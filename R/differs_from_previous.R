@@ -1,4 +1,5 @@
 
+
 ## differs_from_previous
 #' @title Find values in a vector that differ from the previous value
 #' @description
@@ -17,9 +18,14 @@
 #' @export
 #' @param data \code{data.frame} or \code{vector}.
 #'
-#'  N.B. If checking a \code{factor}, it is converted to a \code{character vector}.
+#'  \strong{N.B.} If checking a \code{factor}, it is converted to a \code{character vector}.
 #'  This means that factors can only be used when \code{`threshold`} is \code{NULL}.
 #'  Conversion will generate a warning, which can be turned off by setting \code{`factor_conversion_warning`} to \code{FALSE}.
+#'
+#'  \strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame},
+#'  the function is applied group-wise and the output is a \code{list} of \code{vector}s.
+#'  The names are based on the group indices
+#'  (see \code{\link[dplyr:group_data]{dplyr::group_indices()}}).
 #'
 #' @param threshold Threshold to check difference to previous value to.
 #'
@@ -90,6 +96,11 @@
 #'  }
 #' @param factor_conversion_warning Whether to throw a warning when converting a \code{factor} to a \code{character}. (Logical)
 #' @return \code{vector} with either the differing values or the indices of the differing values.
+#'
+#'  \strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame},
+#'  the output is a \code{list} of \code{vector}s
+#'  with the differing values. The names are based on the group indices
+#'  (see \code{\link[dplyr:group_data]{dplyr::group_indices()}}).
 #' @aliases not_previous
 #' @family l_starts tools
 #' @examples
@@ -131,7 +142,7 @@ differs_from_previous <- function(data,
   #
 
   # Check inputs
-  check_differs_from_previous(
+  checks <- check_differs_from_previous_once(
     data = data,
     col = col,
     threshold = threshold,
@@ -139,88 +150,88 @@ differs_from_previous <- function(data,
     return_index = return_index,
     include_first = include_first,
     handle_na = handle_na,
-    factor_conversion_warning = factor_conversion_warning)
+    factor_conversion_warning = factor_conversion_warning
+  )
 
-  # If data is a data frame
+  data <- checks[["data"]]
+
+  # Apply by group (recursion)
+  if (dplyr::is_grouped_df(data)) {
+    message_once_about_group_by("differs_from_previous")
+  }
+
+  run_by_group_list(
+    data = data,
+    .fn = run_differs_from_previous_,
+    col = col,
+    threshold = threshold,
+    direction = direction,
+    return_index = return_index,
+    include_first = include_first,
+    handle_na = handle_na,
+    factor_conversion_warning = factor_conversion_warning
+  )
+
+}
+
+
+run_differs_from_previous_ <- function(data,
+                                       col,
+                                       threshold,
+                                       direction,
+                                       return_index,
+                                       include_first,
+                                       handle_na,
+                                       factor_conversion_warning) {
+
+  check_differs_from_previous_always(data = data)
+
   if (is.data.frame(data)) {
-    # Check if col is specified
-    if (is.null(col)) {
-      # If not, raise error
-      stop("'col' must be specified when 'data' is data frame.")
-    }
-    if (col %ni% colnames(data)) {
-      stop("'col' was not found in 'data'.")
-    }
-
-    # If col is a factor
-    if (is.factor(data[[col]])) {
-      if (!is.null(threshold)) {
-        stop("'col' is factor. 'threshold' must be 'NULL'. Alternatively, convert factor to numeric vector.")
-      }
-      if (isTRUE(factor_conversion_warning)) {
-        warning("'col' is factor. Using as character.")
-      }
-
-      # Convert col to character
-      data[[col]] <- as.character(data[[col]])
-    }
-
     v <- data[[col]]
   } else {
-    # If data is a factor
-    if (is.factor(data)) {
-      if (isTRUE(factor_conversion_warning)) {
-        warning("'data' is factor. Using as character.")
-      }
-
-      # Convert data to character
-      data <- as.character(data)
-    }
-
-    # Check if col is specified.
-    if (!is.null(col)) {
-      # If it is, warn the user that it won't be used
-      warning("'col' not used as 'data' is not a data frame")
-    }
-
     v <- data
   }
 
   # Create and return start values or indices of values that differ from the previous value
-  return(
-    find_different_from_previous_vec_(
-      v,
-      threshold = threshold,
-      direction = direction,
-      return_index = return_index,
-      include_first = include_first,
-      handle_na = handle_na
-    )
+
+  find_different_from_previous_vec_(
+    v,
+    threshold = threshold,
+    direction = direction,
+    return_index = return_index,
+    include_first = include_first,
+    handle_na = handle_na
   )
+
 }
 
 
-check_differs_from_previous <- function(data,
-                                        col,
-                                        threshold,
-                                        direction,
-                                        return_index,
-                                        include_first,
-                                        handle_na,
-                                        factor_conversion_warning){
+check_differs_from_previous_once <- function(data,
+                                             col,
+                                             threshold,
+                                             direction,
+                                             return_index,
+                                             include_first,
+                                             handle_na,
+                                             factor_conversion_warning) {
   # Check arguments ####
   assert_collection <- checkmate::makeAssertCollection()
-  if (is.null(data)){
+  if (is.null(data)) {
     assert_collection$push("'data' cannot be 'NULL'")
   }
-  if (!is.data.frame(data) && length(data) == 1 && is.na(data)){
+  if (!is.data.frame(data) && length(data) == 1 && is.na(data)) {
     assert_collection$push("'data' cannot be 'NA'.")
   }
   checkmate::assert_flag(x = return_index, add = assert_collection)
   checkmate::assert_flag(x = include_first, add = assert_collection)
   checkmate::assert_flag(x = factor_conversion_warning, add = assert_collection)
-  checkmate::assert_numeric(x = threshold, min.len = 1, max.len = 2,
-                            null.ok = TRUE, add = assert_collection)
+  checkmate::assert_numeric(
+    x = threshold,
+    min.len = 1,
+    max.len = 2,
+    null.ok = TRUE,
+    add = assert_collection
+  )
   checkmate::assert_string(x = col, null.ok = TRUE, add = assert_collection)
   checkmate::assert_string(x = direction, add = assert_collection)
   checkmate::assert(
@@ -229,42 +240,118 @@ check_differs_from_previous <- function(data,
     .var.name = "handle_na"
   )
   checkmate::reportAssertions(assert_collection)
-  if (length(threshold) == 2){
-    if (threshold[[1]] >= 0){
+  if (length(threshold) == 2) {
+    if (threshold[[1]] >= 0) {
       assert_collection$push("when 'threshold' has length 2, 'threshold[[1]]' must be a negative number.")
     }
-    if (threshold[[2]] <= 0){
+    if (threshold[[2]] <= 0) {
       assert_collection$push("'threshold[[2]]' must be a positive number.")
     }
   }
   checkmate::assert(
-    checkmate::check_data_frame(x = data, min.cols = 1, min.rows = 1),
-    checkmate::check_vector(x = data, min.len = 1, strict = TRUE),
+    checkmate::check_data_frame(
+      x = data,
+      min.cols = 1,
+      min.rows = 1
+    ),
+    checkmate::check_vector(
+      x = data,
+      min.len = 1,
+      strict = TRUE
+    ),
     checkmate::check_factor(x = data, min.len = 1),
-    .var.name = "data")
-  checkmate::assert_names(x = direction,
-                          subset.of = c("both", "positive", "negative"),
-                          add = assert_collection)
-  if (checkmate::test_string(x = handle_na)){
-    checkmate::assert_names(x = handle_na,
-                            subset.of = c("ignore", "as_element"),
-                            add = assert_collection)
+    .var.name = "data"
+  )
+  checkmate::assert_names(
+    x = direction,
+    subset.of = c("both", "positive", "negative"),
+    add = assert_collection
+  )
+  if (checkmate::test_string(x = handle_na)) {
+    checkmate::assert_names(
+      x = handle_na,
+      subset.of = c("ignore", "as_element"),
+      add = assert_collection
+    )
   }
 
   checkmate::reportAssertions(assert_collection)
+
+  # If data is a data frame
+  if (is.data.frame(data)) {
+    if (is.null(col)) {
+      # If not, raise error
+      assert_collection$push("'col' must be specified when 'data' is data.frame.")
+      checkmate::reportAssertions(assert_collection)
+    }
+    if (col %ni% colnames(data)) {
+      assert_collection$push("'col' was not found in 'data'.")
+      checkmate::reportAssertions(assert_collection)
+    }
+
+    # If col is a factor
+    if (is.factor(data[[col]])) {
+      if (!is.null(threshold)) {
+        assert_collection$push(
+          "'col' is factor. 'threshold' must be 'NULL'. Alternatively, convert factor to numeric vector."
+        )
+      }
+      if (isTRUE(factor_conversion_warning)) {
+        warning("'col' is factor. Using as character.")
+      }
+      # Convert col to character
+      data[[col]] <- as.character(data[[col]])
+    }
+  } else {
+    if (!is.null(col)){
+      warning("'col' is ignored when 'data' is not a data.frame.")
+    }
+    # If data is a factor
+    if (is.factor(data)) {
+      if (isTRUE(factor_conversion_warning)) {
+        warning("'data' is factor. Using as character.")
+      }
+      # Convert data to character
+      data <- as.character(data)
+    }
+  }
+  checkmate::reportAssertions(assert_collection)
   # End of argument checks ####
+
+  list("data" = data)
 
 }
 
 
-find_different_from_previous_vec_ <- function(
-                                              v,
+check_differs_from_previous_always <- function(data) {
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+
+  checkmate::assert(
+    checkmate::check_data_frame(
+      x = data,
+      min.cols = 1,
+      min.rows = 1
+    ),
+    checkmate::check_vector(
+      x = data,
+      min.len = 1,
+      strict = TRUE
+    ),
+    checkmate::check_factor(x = data, min.len = 1),
+    .var.name = "data"
+  )
+
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
+}
+
+find_different_from_previous_vec_ <- function(v,
                                               threshold = NULL,
                                               direction = "both",
                                               return_index = FALSE,
                                               handle_na = "ignore",
                                               include_first = FALSE) {
-
   #
   # Find values or index at which
   # value changes in vector
@@ -306,7 +393,7 @@ find_different_from_previous_vec_ <- function(
     stop("'handle_na' had length > 1.")
   }
   if (handle_na == "as_element" &&
-    !is.null(threshold)) {
+      !is.null(threshold)) {
     stop("when 'handle_na' is 'as_element', 'threshold' must be NULL.")
   }
 
@@ -375,39 +462,36 @@ find_different_from_previous_vec_ <- function(
       )
     } else if (direction == "positive") {
       df <- data.frame(v,
-        v2,
-        new = v - v2 >= threshold,
-        stringsAsFactors = FALSE
-      )
+                       v2,
+                       new = v - v2 >= threshold,
+                       stringsAsFactors = FALSE)
     } else if (direction == "negative") {
       df <- data.frame(v,
-        v2,
-        new = v - v2 <= neg_threshold,
-        stringsAsFactors = FALSE
-      )
+                       v2,
+                       new = v - v2 <= neg_threshold,
+                       stringsAsFactors = FALSE)
     } else {
       stop("'direction' must be one of 'both', 'negative', and 'positive'.")
     }
   } else {
     df <- data.frame(v, v2,
-      new = v != v2,
-      stringsAsFactors = FALSE
-    )
+                     new = v != v2,
+                     stringsAsFactors = FALSE)
   }
 
   if (isTRUE(include_first)) {
     # Set first value to TRUE
-    df$new[1] <- TRUE
+    df[["new"]][1] <- TRUE
   }
 
   # Add back NA rows
   if (isTRUE(contains_na) && handle_na == "ignore") {
-    df$orig_indices <- not_na_indices
+    df[["orig_indices"]] <- not_na_indices
     # Get indices where v contains a new value
-    new_indices <- df$orig_indices[df$new]
+    new_indices <- df[["orig_indices"]][df[["new"]]]
   } else {
     # Get indices where v contains a new value
-    new_indices <- which(df$new)
+    new_indices <- which(df[["new"]])
   }
 
   # If return_index is TRUE

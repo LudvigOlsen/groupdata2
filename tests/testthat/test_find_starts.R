@@ -39,18 +39,14 @@ test_that("find_starts() find the right starts", {
   fixed = TRUE
   )
 
-  expect_error(find_starts(df),
-    "'col' must be specified when 'data' is data frame",
-    fixed = TRUE
-  )
-
-  expect_error(find_starts(df),
-    "'col' must be specified when 'data' is data frame",
+  expect_error(
+    xpectr::strip_msg(find_starts(df)),
+    xpectr::strip("1 assertions failed:\n * 'col' must be specified when 'data' is data.frame."),
     fixed = TRUE
   )
 
   expect_warning(find_starts(v, col = "a"),
-    "'col' not used as 'data' is not a data frame",
+    "'col' is ignored when 'data' is not a data.frame",
     fixed = TRUE
   )
 

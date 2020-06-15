@@ -7,7 +7,13 @@
 find_missing_starts(data, n, starts_col = NULL, return_skip_numbers = TRUE)
 }
 \arguments{
-\item{data}{\code{data.frame} or \code{vector}.}
+\item{data}{\code{data.frame} or \code{vector}.
+
+\strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame},
+the function is applied group-wise and the output is a
+\code{list} of either \code{vector}s or \code{list}s.
+The names are based on the group indices
+(see \code{\link[dplyr:group_data]{dplyr::group_indices()}}).}
 
 \item{n}{List of starting positions.
 
@@ -25,6 +31,12 @@ when \code{`data`} is a \code{data.frame}. Pass \code{'index'} to use row names.
 \value{
 List of start values and \code{skip-to-numbers} or a \code{vector} with the start values.
 Returns \code{NULL} if no values were found.
+
+\strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame},
+the function is applied group-wise and the output is a
+\code{list} of either \code{vector}s or \code{list}s.
+The names are based on the group indices
+(see \code{\link[dplyr:group_data]{dplyr::group_indices()}}).
 }
 \description{
 \Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}

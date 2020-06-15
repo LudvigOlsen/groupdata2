@@ -1,4 +1,5 @@
 
+
 ## group
 #' @title Create groups from your data
 #' @description
@@ -6,14 +7,14 @@
 #'
 #'  Divides data into groups by a range of methods.
 #'  Creates a grouping factor with \code{1}s for group 1, \code{2}s for group 2, etc.
-#'  Returns a data frame grouped by the grouping factor for easy use in
-#'  \code{\link[magrittr]{\%>\%}} pipelines.
+#'  Returns a \code{data.frame} grouped by the grouping factor for easy use in
+#'  \code{magrittr `\%>\%`} pipelines.
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @inheritParams group_factor
 #' @param return_factor Return only grouping factor. (Logical)
 #' @param col_name Name of added grouping factor
-#' @return Data frame grouped by new grouping factor
+#' @return \code{data.frame} grouped by existing grouping variables and the new grouping factor.
 #' @family grouping functions
 #' @family staircase tools
 #' @family l_starts tools
@@ -46,12 +47,17 @@
 #'   method = "l_starts",
 #'   starts_col = "species"
 #' )
-group <- function(data, n, method = "n_dist", starts_col = NULL,
-                  force_equal = FALSE, allow_zero = FALSE,
-                  return_factor = FALSE, descending = FALSE,
-                  randomize = FALSE, col_name = ".groups",
+group <- function(data,
+                  n,
+                  method = "n_dist",
+                  starts_col = NULL,
+                  force_equal = FALSE,
+                  allow_zero = FALSE,
+                  return_factor = FALSE,
+                  descending = FALSE,
+                  randomize = FALSE,
+                  col_name = ".groups",
                   remove_missing_starts = FALSE) {
-
   #
   # Takes data frame or vector
   # Creates a grouping factor
@@ -65,10 +71,55 @@ group <- function(data, n, method = "n_dist", starts_col = NULL,
   # Check arguments ####
   assert_collection <- checkmate::makeAssertCollection()
   checkmate::assert_flag(x = return_factor, add = assert_collection)
-  checkmate::assert_string(x = col_name, min.chars = 1, add = assert_collection)
+  checkmate::assert_string(x = col_name,
+                           min.chars = 1,
+                           add = assert_collection)
   checkmate::reportAssertions(assert_collection)
   # End of argument checks ####
 
+  # Apply by group (recursion)
+  if (dplyr::is_grouped_df(data)) {
+    message_once_about_group_by("group")
+    group_col_names <- c(colnames(dplyr::group_keys(data)), col_name)
+  } else {
+    group_col_names <- col_name
+  }
+
+  out <- run_by_group_df(
+    data = data,
+    .fn = run_group_,
+    n = n,
+    method = method,
+    starts_col = starts_col,
+    force_equal = force_equal,
+    allow_zero = allow_zero,
+    return_factor = return_factor,
+    descending = descending,
+    randomize = randomize,
+    col_name = col_name,
+    remove_missing_starts = remove_missing_starts
+  )
+
+  if (is.data.frame(out)){
+    out <- out %>%
+      dplyr::group_by(!!!rlang::syms(group_col_names))
+  }
+
+  out
+
+}
+
+run_group_ <- function(data,
+                       n,
+                       method,
+                       starts_col,
+                       force_equal,
+                       allow_zero,
+                       return_factor,
+                       descending,
+                       randomize,
+                       col_name,
+                       remove_missing_starts) {
   # Create grouping factor
   grouping_factor <- group_factor(
     data = data,
@@ -88,65 +139,22 @@ group <- function(data, n, method = "n_dist", starts_col = NULL,
     return(grouping_factor)
   }
 
+  # If force_equal is TRUE
+  if (isTRUE(force_equal)) {
+    # Shorten data to the length of the grouping factor
+    data <- head(data, length(grouping_factor))
 
-  # If data is a data frame
-  # .. Check if force_equal is TRUE
-  # .... if so, shorten data to the length of the
-  # .... grouping factor
-  # .. Add grouping factor to data
-  # .. Group by grouping factor and return data
+  }
+
   # If data is a vector
-  # .. Check if force_equal is TRUE
-  # .... if so, shorten data to the length of the
-  # .... grouping factor
-  # .. Create a data frame
-  # .... with data and the grouping factor
-  # .. Group by grouping factor and return data
-
-  # Create local tmp variable name
-  local_tmp_var <- create_tmp_var(data, ".TempGroupsName")
-
-  # If data is data frame
-  if (is.data.frame(data)) {
-
-    # If force_equal is TRUE
-    if (isTRUE(force_equal)) {
-
-      # Shorten data to the length of the grouping factor
-      data <- head(data, length(grouping_factor))
-    }
-
-    # Add the grouping factor to data
-    # data$.groups <- grouping_factor
-    data[[local_tmp_var]] <- grouping_factor
-
-    # Replace temporary column name with passed column name
-    # e.g. '.groups'
-    if (col_name != local_tmp_var)
-      data <- base_rename(data, before = local_tmp_var, after = col_name)
-
-    # Return data grouped by the grouping factor
-    return(dplyr::group_by(data, !!as.name(col_name)))
-
-  } else { # If 'data' is vector
-
-    # If force_equal is TRUE
-    if (isTRUE(force_equal)) {
-
-      # Shorten data to the length of the grouping factor
-      data <- head(data, length(grouping_factor))
-    }
-
+  if (!is.data.frame(data)) {
     # Create data frame with data and the grouping factor
     data <- data.frame(data, stringsAsFactors = FALSE)
-    data[[local_tmp_var]] <- grouping_factor
 
-    # Replace temporary column name with passed column name
-    # e.g. '.groups'
-    if (local_tmp_var != col_name)
-      data <- base_rename(data, before = local_tmp_var, after = col_name)
-
-    # Return data grouped by the grouping factor
-    return(dplyr::group_by(data, !!as.name(col_name)))
   }
+
+  # Add grouping factor
+  data[[col_name]] <- grouping_factor
+
+  data
 }

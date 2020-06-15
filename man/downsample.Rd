@@ -7,7 +7,8 @@
 downsample(data, cat_col, id_col = NULL, id_method = "n_ids")
 }
 \arguments{
-\item{data}{\code{data.frame}.}
+\item{data}{\code{data.frame}. Can be \emph{grouped}, in which case
+the function is applied group-wise.}
 
 \item{cat_col}{Name of categorical variable to balance by. (Character)}
 
@@ -19,7 +20,11 @@ How this is used is up to the \code{`id_method`}.
 E.g. If we have measured a participant multiple times and
 want make sure that we keep all these measurements. Then we would either
 remove/add all measurements for the participant or leave in
-all measurements for the participant.}
+all measurements for the participant.
+
+N.B. When \code{`data`} is a \emph{grouped} \code{data.frame}
+(see \code{\link[dplyr:group_by]{dplyr::group_by()}}), IDs that appear in multiple
+groupings are considered separate entities within those groupings.}
 
 \item{id_method}{Method for balancing the IDs. (Character)
 
@@ -52,7 +57,7 @@ I.e. if size is \code{"min"}, IDs will have the size of the smallest ID in their
 }
 \value{
 \code{data.frame} with some rows removed.
-Ordered by \code{`cat_col`} and (potentially) \code{`id_col`}.
+Ordered by potential grouping variables, \code{`cat_col`} and (potentially) \code{`id_col`}.
 }
 \description{
 \Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}

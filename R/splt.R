@@ -10,6 +10,10 @@
 #' @export
 #' @inheritParams group_factor
 #' @return \code{list} of the split \code{`data`}.
+#'
+#'  \strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame}, there's an outer list
+#'  for each group. The names are based on the group indices
+#'  (see \code{\link[dplyr:group_data]{dplyr::group_indices()}}).
 #' @family grouping functions
 #' @examples
 #' # Attach packages
@@ -35,15 +39,10 @@ splt <- function(data,
                  randomize = FALSE,
                  remove_missing_starts = FALSE) {
 
-  #
-  # Takes data frame or vector
-  # Splits into the specified windows
-  # Returns list with the windows (data frames or vectors)
-  #
-
   # Check and prep inputs
-  checks <- check_group_factor(
-    data = data, n = n,
+  checks <- check_group_factor_once(
+    data = data,
+    n = n,
     method = method,
     starts_col = starts_col,
     force_equal = force_equal,
@@ -52,8 +51,47 @@ splt <- function(data,
     randomize = randomize,
     remove_missing_starts = remove_missing_starts)
 
-  n <- checks[["n"]]
   starts_col <- checks[["starts_col"]]
+
+  # Apply by group (recursion)
+  if (dplyr::is_grouped_df(data)) {
+    message_once_about_group_by("splt")
+  }
+
+  run_by_group_list(
+    data = data,
+    .fn = run_splt_,
+    n = n,
+    method = method,
+    starts_col = starts_col,
+    force_equal = force_equal,
+    allow_zero = allow_zero,
+    descending = descending,
+    randomize = randomize,
+    remove_missing_starts = remove_missing_starts
+  )
+
+}
+
+run_splt_ <- function(data,
+                      n,
+                      method,
+                      starts_col,
+                      force_equal,
+                      allow_zero,
+                      descending,
+                      randomize,
+                      remove_missing_starts){
+
+  # Checks and conversion of 'n'
+  checks <- group_factor_check_convert_n(
+    data = data,
+    n = n,
+    method = method,
+    allow_zero = allow_zero
+  )
+
+  n <- checks[["n"]]
 
   # If allow_zero is TRUE, and n is 0
   # .. Return the given data in a list
@@ -131,4 +169,5 @@ splt <- function(data,
   }
 
   spl
+
 }

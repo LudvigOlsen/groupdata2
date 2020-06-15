@@ -22,7 +22,8 @@ fold(
 )
 }
 \arguments{
-\item{data}{\code{data.frame}.}
+\item{data}{\code{data.frame}. Can be \emph{grouped}, in which case
+the function is applied group-wise.}
 
 \item{k}{\emph{Depends on \code{`method`}.}
 
@@ -50,7 +51,11 @@ This will be used to keep all rows that share an ID in the same fold
 
 E.g. If we have measured a participant multiple times and want to see the
 effect of time, we want to have all observations of this participant in
-the same fold.}
+the same fold.
+
+N.B. When \code{`data`} is a \emph{grouped} \code{data.frame}
+(see \code{\link[dplyr:group_by]{dplyr::group_by()}}), IDs that appear in multiple
+groupings might end up in different folds in those groupings.}
 
 \item{method}{\code{"n_dist"}, \code{"n_fill"}, \code{"n_last"},
 \code{"n_rand"}, \code{"greedy"}, or \code{"staircase"}.
