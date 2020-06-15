@@ -237,7 +237,7 @@ partition <- function(data,
 
   # Apply by group (recursion)
   if (dplyr::is_grouped_df(data)) {
-    warn_once_about_group_by("partition")
+    message_once_about_group_by("partition")
   }
 
   run_by_group_df(

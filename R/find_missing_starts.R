@@ -71,7 +71,7 @@ find_missing_starts <- function(data,
 
   # Apply by group (recursion)
   if (dplyr::is_grouped_df(data)) {
-    warn_once_about_group_by("find_missing_starts")
+    message_once_about_group_by("find_missing_starts")
   }
 
   run_by_group_list(

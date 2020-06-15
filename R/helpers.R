@@ -785,7 +785,7 @@ insert_row <- function(data, new_row, after) {
 }
 
 # Warn user once per session
-warn_once = function(msg,
+warn_once <- function(msg,
                      id = msg,
                      sys.parent.n = 0L) {
   stopifnot(rlang::is_string(id))
@@ -794,7 +794,7 @@ warn_once = function(msg,
     return(invisible(NULL))
   }
   # Register the ID
-  warning_env[[id]] = TRUE
+  warning_env[[id]] <- TRUE
   # Throw warning
   msg <- paste0(msg,
                 "\nNOTE: This message is displayed once per session.")
@@ -803,11 +803,32 @@ warn_once = function(msg,
                           sys.call(p)))
 }
 # Create warning environment
-warning_env = rlang::env()
+warning_env <- rlang::env()
 
-warn_once_about_group_by <- function(fn_name, sys.parent.n = 1L) {
+# message user once per session
+message_once <- function(msg,
+                     id = msg,
+                     sys.parent.n = 0L) {
+  stopifnot(rlang::is_string(id))
+  # If we already threw the message, ignore
+  if (rlang::env_has(message_env, id)) {
+    return(invisible(NULL))
+  }
+  # Register the ID
+  message_env[[id]] <- TRUE
+  # Throw warning
+  msg <- paste0(msg,
+                "\nNOTE: This message is displayed once per session.")
+  message(simpleMessage(msg,
+                        call = if (p <- sys.parent(sys.parent.n + 1))
+                          sys.call(p)))
+}
+# Create warning environment
+message_env <- rlang::env()
+
+message_once_about_group_by <- function(fn_name, sys.parent.n = 1L) {
   fn_name <- paste0("'", fn_name, "()'")
-  warn_once(
+  message_once(
     paste0(
       fn_name,
       " now detects grouped data.frames and is applied group-wise (since v1.3.0). ",

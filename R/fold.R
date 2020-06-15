@@ -343,7 +343,7 @@ fold <- function(data,
   )
 
   if (dplyr::is_grouped_df(data)) {
-    warn_once_about_group_by("fold")
+    message_once_about_group_by("fold")
   }
 
   # Apply by group (recursion)

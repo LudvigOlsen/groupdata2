@@ -79,7 +79,7 @@ group <- function(data,
 
   # Apply by group (recursion)
   if (dplyr::is_grouped_df(data)) {
-    warn_once_about_group_by("group")
+    message_once_about_group_by("group")
     group_col_names <- c(colnames(dplyr::group_keys(data)), col_name)
   } else {
     group_col_names <- col_name

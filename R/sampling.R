@@ -327,7 +327,7 @@ balance <- function(data,
   )
 
   if (dplyr::is_grouped_df(data)) {
-    warn_once_about_group_by("balance")
+    message_once_about_group_by("balance")
   }
 
   # Apply by group (recursion)

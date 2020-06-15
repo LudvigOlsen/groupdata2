@@ -181,50 +181,28 @@ for (step_size in c(1:30)){
 So our step size could be 2, 4 or 12. We pick a step size of 2, because it will yield the most subgroups for the example.  
 
 Now we will first make the greedy groups like before, then we will create subgroups with the staircase method.  
-In order not to overwrite the '.groups' column from the first use of **group()**, we will use the **col_name** argument in **group()**.  
-We will also need to use dplyr's **do()** when using **group()** on every greedy group inside the pipeline.  
-
+In order not to overwrite the '.groups' column from the first use of **group()**, we will use the **col_name** argument in **group()**. As **group()** groups the data frame by the generated grouping factor (what a sentence!), a second call to it will create subgroups within the initial groups. Note that versions previous to `v1.3.0` did not detect these groupings, why you had to run the second **group()** call inside dplyr's **do()**.
 
 ```{r}
 ts <- timeSeriesFrame %>%
   
   # Group data
-  group(n = 12, method='greedy') %>%
+  group(n = 12, method = 'greedy') %>% 
   
   # Create subgroups
-  do(group(., n = 2, method='staircase', col_name = '.subgroups'))
+  group(n = 2, method = 'staircase', col_name = '.subgroups')
 
 # Show head of new data
 ts %>% head(24) %>% kable() 
 
 ```
 
-Notice the warning in the previous code.  
-
->   
-> Warning in bind_rows_(x, .id): Unequal factor levels: coercing to character  
->   
-
-On some time series the do() step converts the column '.subgroups' from the type *factor* into the type *character* because of unequal factor levels. This is likely because the last greedy group contains less elements than the other groups, and so we are able to make fewer subgroups. Let's check the tail of the new data frame.
-
-```{r}
-# Show tail of new data
-ts %>% tail(17) %>% kable()
-
-```
-
-Sure enough, the last greedy group (8) is smaller. This means that there are only 2 subgroups instead of 3. To solve this we first convert .subgroups to an integer and then to a factor.  
-
-We could also get the means of each subgroup. To do this, we first group by .groups and then .subgroups. Then we find the mean number of residents for each subgroup. If we had just grouped by .subgroups, we would have taken the mean of all the datapoints in each subgroup level. This would have left us with (in this case) 3 means, instead of 1 per subgroup level per main group level.  
+We can get the means of each subgroup. To do this, we first group by .groups and then .subgroups. Then we find the mean number of residents for each subgroup. If we had just grouped by .subgroups, we would have taken the mean of all the data points in each subgroup level. This would have left us with (in this case) 3 means, instead of 1 per subgroup level per main group level.  
 Now that we are at it, we might as well find the ranges for each subgroup as well.  
 
 ```{r warning=FALSE}
 ts_means <- ts %>%
-  
-  # Convert .subgroups to an integer and then to a factor
-  mutate(.subgroups = as.integer(.subgroups),
-         .subgroups = as.factor(.subgroups)) %>%
-  
+
   # Group by first .groups, then .subgroups
   group_by(.groups, .subgroups) %>%
   

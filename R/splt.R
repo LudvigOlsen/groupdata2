@@ -55,7 +55,7 @@ splt <- function(data,
 
   # Apply by group (recursion)
   if (dplyr::is_grouped_df(data)) {
-    warn_once_about_group_by("splt")
+    message_once_about_group_by("splt")
   }
 
   run_by_group_list(

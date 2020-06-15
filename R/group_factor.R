@@ -161,7 +161,7 @@ group_factor <- function(data, n, method = "n_dist", starts_col = NULL, force_eq
 
   # Apply by group (recursion)
   if (dplyr::is_grouped_df(data)) {
-    warn_once_about_group_by("group_factor")
+    message_once_about_group_by("group_factor")
   }
 
   run_by_group_col(
