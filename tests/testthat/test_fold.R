@@ -64,11 +64,11 @@ test_that("errors and warnings are correct with fold()", {
   # k
   expect_error(
     xpectr::strip_msg(fold(df, k = c(5, 4))),
-    xpectr::strip("1 assertions failed:\n * Variable 'k': Must have length 1."),
+    xpectr::strip("1 assertions failed:\n when length(k) > 1 it must have precisely num_fold_cols elements"),
     fixed = TRUE)
   expect_error(
     xpectr::strip_msg(fold(df, k = c(-3, 4))),
-    xpectr::strip("1 assertions failed:\n * Variable 'k': Must have length 1."),
+    xpectr::strip("1 assertions failed:\n * Variable 'k': Element 1 is not > 0."),
     fixed = TRUE)
   expect_error(
     xpectr::strip_msg(fold(df, k = -3)),
@@ -1462,7 +1462,7 @@ test_that("arg check fuzz tests for fold()", {
   # Testing side effects
   expect_error(
     xpectr::strip_msg(fold_2(data = df, k = NA, cat_col = "diagnosis", num_col = NULL, id_col = "participant", method = "n_dist", id_aggregation_fn = sum, extreme_pairing_levels = 1, num_fold_cols = 1, unique_fold_cols_only = TRUE, max_iters = 5, handle_existing_fold_cols = "keep_warn", parallel = FALSE)),
-    xpectr::strip("1 assertions failed:\n * Variable 'k': May not be NA."),
+    xpectr::strip("1 assertions failed:\n * Variable 'k': Contains missing values element 1."),
     fixed = TRUE)
 
   # Testing fold_2(data = df, k = "hej", cat_col = "diagno...
@@ -1472,7 +1472,7 @@ test_that("arg check fuzz tests for fold()", {
   expect_error(
     xpectr::strip_msg(fold_2(data = df, k = "hej", cat_col = "diagnosis", num_col = NULL, id_col = "participant", method = "n_dist", id_aggregation_fn = sum, extreme_pairing_levels = 1, num_fold_cols = 1, unique_fold_cols_only = TRUE, max_iters = 5, handle_existing_fold_cols = "keep_warn", parallel = FALSE)),
     xpectr::strip(paste0("1 assertions failed:\n * Variable 'k': Must be of type 'num",
-                         "ber', not 'character'.")),
+                         "eric', not 'character'.")),
     fixed = TRUE)
 
   # Testing fold_2(data = df, k = 40, cat_col = "diagnosis...
@@ -1491,7 +1491,7 @@ test_that("arg check fuzz tests for fold()", {
   expect_error(
     xpectr::strip_msg(fold_2(data = df, k = NULL, cat_col = "diagnosis", num_col = NULL, id_col = "participant", method = "n_dist", id_aggregation_fn = sum, extreme_pairing_levels = 1, num_fold_cols = 1, unique_fold_cols_only = TRUE, max_iters = 5, handle_existing_fold_cols = "keep_warn", parallel = FALSE)),
     xpectr::strip(paste0("1 assertions failed:\n * Variable 'k': Must be of type 'num",
-                         "ber', not 'NULL'.")),
+                         "eric', not 'NULL'.")),
     fixed = TRUE)
 
   # Testing fold_2(data = df, k = 3, cat_col = "diagnosis"...
@@ -1967,7 +1967,6 @@ test_that("arg check fuzz tests for fold()", {
 
 })
 
-
 test_that("fold() works with group_by()", {
   xpectr::set_test_seed(42)
 
@@ -2040,6 +2039,361 @@ test_that("fold() works with group_by()", {
     ".folds",
     fixed = TRUE)
   ## Finished testing 'xpectr::suppress_mw( df %>% dplyr::group_by(...'     ####
+
+
+})
+
+test_that("multiple k values in repeated folding()", {
+  xpectr::set_test_seed(1)
+
+  #
+  # We can have a different number of folds per fold column.
+  #
+
+  df <- data.frame(
+    "participant" = factor(rep(c("1", "2", "3", "4", "5", "6"), 3)),
+    "age" = rep(c(25, 65, 34), 3),
+    "diagnosis" = factor(rep(c("a", "b", "a", "a", "b", "b"), 3)),
+    "score" = c(34, 23, 54, 23, 56, 76, 43, 56, 76, 42, 54, 1, 5, 76, 34, 76, 23, 65)
+  )
+  df <- df[order(df$participant), ]
+
+  # Add session info
+  df$session <- rep(c("1", "2", "3"), 6)
+
+  # Four fold columns with three different number of folds settings (k)
+
+  xpectr::set_test_seed(7)
+  df_folded <- fold(
+    data = df,
+    k = c(1, 2, 3, 3),
+    cat_col = "diagnosis",
+    id_col = "participant",
+    num_fold_cols = 4,
+    unique_fold_cols_only = TRUE,
+    max_iters = 4
+  )
+
+  expect_equal(
+    colnames(df_folded),
+    c("participant", "age", "diagnosis", "score", "session", ".folds_1",
+      ".folds_2", ".folds_3", ".folds_4"),
+    fixed = TRUE)
+
+  expect_equal(as.character(unique(df_folded$.folds_1)), "1")
+  expect_equal(sort(as.character(unique(df_folded$.folds_2))),
+               as.character(c(1, 2)))
+  expect_equal(sort(as.character(unique(df_folded$.folds_3))),
+               as.character(c(1, 2, 3)))
+  expect_equal(sort(as.character(unique(df_folded$.folds_4))),
+               as.character(c(1, 2, 3)))
+
+  expect_equal(
+    as.character(df_folded$.folds_2),
+    c("2", "2", "2", "2", "2", "2", "1", "1", "1", "2", "2", "2", "1",
+      "1", "1", "2", "2", "2"),
+    fixed = TRUE)
+
+  expect_equal(
+    as.character(df_folded$.folds_3),
+    c("3", "3", "3", "1", "1", "1", "2", "2", "2", "1", "1", "1", "2",
+      "2", "2", "3", "3", "3"),
+    fixed = TRUE)
+
+  expect_equal(
+    as.character(df_folded$.folds_4),
+    c("3", "3", "3", "1", "1", "1", "2", "2", "2", "2", "2", "2",
+    "3", "3", "3", "1", "1", "1"),
+    fixed = TRUE)
+
+
+  # Where k is mix of counts and percentages
+  # and no id_col
+
+  xpectr::set_test_seed(7)
+  df_folded <- fold(
+    data = df,
+    k = c(2, 0.4, 0.2),
+    cat_col = "diagnosis",
+    num_fold_cols = 3,
+    unique_fold_cols_only = TRUE,
+    max_iters = 4
+  )
+
+  # 0.4 should equal 3 groups
+  # i.e. ceiling(nrow(df_folded) / floor((nrow(df_folded) * 0.4)))
+
+  # 0.2 should equal 6 groups
+  # i.e. ceiling(nrow(df_folded) / floor((nrow(df_folded) * 0.2)))
+
+  expect_equal(
+    colnames(df_folded),
+    c("participant", "age", "diagnosis", "score", "session", ".folds_1",
+      ".folds_2", ".folds_3"),
+    fixed = TRUE)
+
+  expect_equal(sort(as.character(unique(df_folded$.folds_1))),
+               as.character(c(1, 2)))
+  expect_equal(sort(as.character(unique(df_folded$.folds_2))),
+               as.character(c(1, 2, 3)))
+  expect_equal(sort(as.character(unique(df_folded$.folds_3))),
+               as.character(c(1, 2, 3, 4, 5, 6)))
+
+
+  ## Testing 'df_folded'                                                    ####
+  ## Initially generated by xpectr
+  xpectr::set_test_seed(42)
+  # Testing class
+  expect_equal(
+    class(df_folded),
+    c("tbl_df", "tbl", "data.frame"),
+    fixed = TRUE)
+  # Testing column values
+  expect_equal(
+    df_folded[["participant"]],
+    structure(c(1L, 1L, 1L, 3L, 3L, 3L, 4L, 4L, 4L, 2L, 2L, 2L, 5L,
+      5L, 5L, 6L, 6L, 6L), .Label = c("1", "2", "3", "4", "5", "6"),
+      class = "factor"))
+  expect_equal(
+    df_folded[["age"]],
+    c(25, 25, 25, 34, 34, 34, 25, 25, 25, 65, 65, 65, 65, 65, 65, 34,
+      34, 34),
+    tolerance = 1e-4)
+  expect_equal(
+    df_folded[["diagnosis"]],
+    structure(c(1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L,
+      2L, 2L, 2L, 2L, 2L), .Label = c("a", "b"), class = "factor"))
+  expect_equal(
+    df_folded[["score"]],
+    c(34, 43, 5, 54, 76, 34, 23, 42, 76, 23, 56, 76, 56, 54, 23, 76,
+      1, 65),
+    tolerance = 1e-4)
+  expect_equal(
+    df_folded[["session"]],
+    c("1", "2", "3", "1", "2", "3", "1", "2", "3", "1", "2", "3", "1",
+      "2", "3", "1", "2", "3"),
+    fixed = TRUE)
+  expect_equal(
+    df_folded[[".folds_1"]],
+    structure(c(2L, 1L, 1L, 2L, 1L, 2L, 2L, 1L, 2L, 2L, 1L, 2L, 2L,
+      1L, 2L, 2L, 1L, 1L), .Label = c("1", "2"), class = "factor"))
+  expect_equal(
+    df_folded[[".folds_2"]],
+    structure(c(3L, 1L, 2L, 1L, 3L, 2L, 3L, 1L, 2L, 2L, 3L, 1L, 3L,
+      1L, 1L, 2L, 3L, 2L), .Label = c("1", "2", "3"), class = "factor"))
+  expect_equal(
+    df_folded[[".folds_3"]],
+    structure(c(4L, 5L, 4L, 2L, 3L, 2L, 6L, 1L, 6L, 2L, 1L, 4L, 5L,
+      4L, 6L, 3L, 2L, 6L), .Label = c("1", "2", "3", "4", "5", "6"),
+      class = "factor"))
+  # Testing column names
+  expect_equal(
+    names(df_folded),
+    c("participant", "age", "diagnosis", "score", "session", ".folds_1",
+      ".folds_2", ".folds_3"),
+    fixed = TRUE)
+  # Testing column classes
+  expect_equal(
+    xpectr::element_classes(df_folded),
+    c("factor", "numeric", "factor", "numeric", "character", "factor",
+      "factor", "factor"),
+    fixed = TRUE)
+  # Testing column types
+  expect_equal(
+    xpectr::element_types(df_folded),
+    c("integer", "double", "integer", "double", "character", "integer",
+      "integer", "integer"),
+    fixed = TRUE)
+  # Testing dimensions
+  expect_equal(
+    dim(df_folded),
+    c(18L, 8L))
+  # Testing group keys
+  expect_equal(
+    colnames(dplyr::group_keys(df_folded)),
+    character(0),
+    fixed = TRUE)
+  ## Finished testing 'df_folded'                                           ####
+
+
+  # Without cat_col
+
+  xpectr::set_test_seed(7)
+  df_folded <- fold(
+    data = df,
+    k = c(2, 3),
+    num_fold_cols = 2,
+    unique_fold_cols_only = TRUE,
+    max_iters = 4
+  )
+
+  ## Testing 'df_folded'                                                    ####
+  ## Initially generated by xpectr
+  xpectr::set_test_seed(42)
+  # Testing class
+  expect_equal(
+    class(df_folded),
+    c("tbl_df", "tbl", "data.frame"),
+    fixed = TRUE)
+  # Testing column values
+  expect_equal(
+    df_folded[[".folds_1"]],
+    structure(c(2L, 1L, 1L, 2L, 1L, 2L, 1L, 2L, 2L, 2L, 2L, 1L, 1L,
+      1L, 2L, 1L, 2L, 1L), .Label = c("1", "2"), class = "factor"))
+  expect_equal(
+    df_folded[[".folds_2"]],
+    structure(c(3L, 1L, 2L, 1L, 3L, 2L, 3L, 1L, 2L, 3L, 2L, 1L, 2L,
+      1L, 3L, 1L, 2L, 3L), .Label = c("1", "2", "3"), class = "factor"))
+  # Testing column names
+  expect_equal(
+    names(df_folded),
+    c("participant", "age", "diagnosis", "score", "session", ".folds_1",
+      ".folds_2"),
+    fixed = TRUE)
+  # Testing column classes
+  expect_equal(
+    xpectr::element_classes(df_folded),
+    c("factor", "numeric", "factor", "numeric", "character", "factor",
+      "factor"),
+    fixed = TRUE)
+  # Testing column types
+  expect_equal(
+    xpectr::element_types(df_folded),
+    c("integer", "double", "integer", "double", "character", "integer",
+      "integer"),
+    fixed = TRUE)
+  # Testing dimensions
+  expect_equal(
+    dim(df_folded),
+    c(18L, 7L))
+  # Testing group keys
+  expect_equal(
+    colnames(dplyr::group_keys(df_folded)),
+    character(0),
+    fixed = TRUE)
+  ## Finished testing 'df_folded'                                           ####
+
+
+  # With num_col
+  # Without cat_col
+
+  xpectr::set_test_seed(7)
+  df_folded <- fold(
+    data = df,
+    k = c(3, 2),
+    num_col = "score",
+    num_fold_cols = 2,
+    unique_fold_cols_only = TRUE,
+    max_iters = 4
+  )
+
+  balanced_avg_scores <- df_folded %>%
+    dplyr::group_by(.folds_1) %>%
+    dplyr::summarise(mean_score = mean(score))
+
+  expect_equal(
+    balanced_avg_scores[[".folds_1"]],
+    structure(1:3, .Label = c("1", "2", "3"), class = "factor"))
+  expect_equal(
+    balanced_avg_scores[["mean_score"]],
+    c(46, 47.66667, 42.5),
+    tolerance = 1e-4)
+
+
+  ## Testing 'df_folded'                                                    ####
+  ## Initially generated by xpectr
+  xpectr::set_test_seed(42)
+  # Testing class
+  expect_equal(
+    class(df_folded),
+    c("tbl_df", "tbl", "data.frame"),
+    fixed = TRUE)
+  # Testing column values
+  expect_equal(
+    df_folded[["participant"]],
+    structure(c(1L, 1L, 1L, 2L, 2L, 2L, 3L, 3L, 3L, 4L, 4L, 4L, 5L,
+      5L, 5L, 6L, 6L, 6L), .Label = c("1", "2", "3", "4", "5", "6"),
+      class = "factor"))
+  expect_equal(
+    df_folded[["age"]],
+    c(25, 25, 25, 65, 65, 65, 34, 34, 34, 25, 25, 25, 65, 65, 65, 34,
+      34, 34),
+    tolerance = 1e-4)
+  expect_equal(
+    df_folded[["diagnosis"]],
+    structure(c(1L, 1L, 1L, 2L, 2L, 2L, 1L, 1L, 1L, 1L, 1L, 1L, 2L,
+      2L, 2L, 2L, 2L, 2L), .Label = c("a", "b"), class = "factor"))
+  expect_equal(
+    df_folded[["score"]],
+    c(34, 43, 5, 23, 56, 76, 54, 76, 34, 23, 42, 76, 56, 54, 23, 76,
+      1, 65),
+    tolerance = 1e-4)
+  expect_equal(
+    df_folded[["session"]],
+    c("1", "2", "3", "1", "2", "3", "1", "2", "3", "1", "2", "3", "1",
+      "2", "3", "1", "2", "3"),
+    fixed = TRUE)
+  expect_equal(
+    df_folded[[".folds_1"]],
+    structure(c(3L, 2L, 1L, 2L, 3L, 3L, 2L, 1L, 2L, 3L, 1L, 2L, 2L,
+      1L, 1L, 1L, 3L, 3L), .Label = c("1", "2", "3"), class = "factor"))
+  expect_equal(
+    df_folded[[".folds_2"]],
+    structure(c(1L, 2L, 2L, 1L, 1L, 2L, 2L, 1L, 1L, 2L, 1L, 2L, 1L,
+      1L, 2L, 2L, 1L, 2L), .Label = c("1", "2"), class = "factor"))
+  # Testing column names
+  expect_equal(
+    names(df_folded),
+    c("participant", "age", "diagnosis", "score", "session", ".folds_1",
+      ".folds_2"),
+    fixed = TRUE)
+  # Testing column classes
+  expect_equal(
+    xpectr::element_classes(df_folded),
+    c("factor", "numeric", "factor", "numeric", "character", "factor",
+      "factor"),
+    fixed = TRUE)
+  # Testing column types
+  expect_equal(
+    xpectr::element_types(df_folded),
+    c("integer", "double", "integer", "double", "character", "integer",
+      "integer"),
+    fixed = TRUE)
+  # Testing dimensions
+  expect_equal(
+    dim(df_folded),
+    c(18L, 7L))
+  # Testing group keys
+  expect_equal(
+    colnames(dplyr::group_keys(df_folded)),
+    character(0),
+    fixed = TRUE)
+  ## Finished testing 'df_folded'                                           ####
+
+
+  # Error when wrong number of k's
+
+
+  ## Testing 'fold( data = df, k = c(3, 2, 3), num_col = "...'              ####
+  ## Initially generated by xpectr
+  xpectr::set_test_seed(42)
+  # Testing side effects
+  # Assigning side effects
+  side_effects_19889 <- xpectr::capture_side_effects(fold(
+      data = df,
+      k = c(3, 2, 3),
+      num_col = "score",
+      num_fold_cols = 2
+    ), reset_seed = TRUE)
+  expect_equal(
+    xpectr::strip(side_effects_19889[['error']]),
+    xpectr::strip("1 assertions failed:\n * when `length(k) > 1`, it must have precisely `num_fold_cols` elements."),
+    fixed = TRUE)
+  expect_equal(
+    xpectr::strip(side_effects_19889[['error_class']]),
+    xpectr::strip(c("simpleError", "error", "condition")),
+    fixed = TRUE)
+  ## Finished testing 'fold( data = df, k = c(3, 2, 3), num_col = "...'     ####
 
 
 })
