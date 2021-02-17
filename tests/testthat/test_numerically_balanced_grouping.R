@@ -98,6 +98,8 @@ test_that("numerically_balanced_group_factor_() works with n=3", {
 test_that("numerically_balanced_group_factor_() unequal method on small datasets (nrow < n*2)", {
   testthat::skip(message = "Skipping bootstrapped numerical balancing test")
 
+  xpectr::set_test_seed(1)
+
   # In this section we check the unequal_method options on the
   # possible combinations of n_rows and n_folds
   # We find that "first" is best in almost all cases.
@@ -244,7 +246,6 @@ test_that("numerically_balanced_group_factor_() unequal method on small datasets
   # num_combinations <- dplyr::filter(expand.grid(3:20, 2:19), Var2<Var1)
 })
 
-
 test_that("numerically_balanced_group_factor_() work method='l_sizes'", {
 
   # Create data frame
@@ -338,7 +339,6 @@ test_that("numerically_balanced_group_factor_() on large datasets", {
   expect_equal(group_summaries$group_sum, c(99.95, 100.15, 100.05, 99.01, 100.24), tolerance = 1e-4)
   expect_equal(group_summaries$group_count, c(200, 200, 200, 199, 200), tolerance = 1e-3)
 })
-
 
 test_that("experiment: numerically_balanced_group_factor_() optimizes for sd", {
   testthat::skip("Simulation that runs for a long time")

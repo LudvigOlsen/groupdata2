@@ -279,7 +279,6 @@ We could have a hypothesis that people with the diagnosis 'b' tend to be better 
 
 ```{r}
 lm(score~diagnosis, df) %>%
-  summary() %>%
   tidy()
 ```
 

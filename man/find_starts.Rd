@@ -2,7 +2,7 @@
 % Please edit documentation in R/find_starts.R
 \name{find_starts}
 \alias{find_starts}
-\title{Find start positions of groups in data.}
+\title{Find start positions of groups in data}
 \usage{
 find_starts(
   data,
@@ -13,16 +13,21 @@ find_starts(
 )
 }
 \arguments{
-\item{data}{Data frame or Vector
+\item{data}{\code{data.frame} or \code{vector}.
 
-N.B. If checking a factor, it is converted to a character vector.
+\strong{N.B.} If checking a \code{factor}, it is converted to a \code{character vector}.
 Conversion will generate a warning, which can be turned off by
-setting \code{factor_conversion_warning} to \code{FALSE}.}
+setting \code{`factor_conversion_warning`} to \code{FALSE}.
 
-\item{col}{Name of column to find starts in. Used when data is
-data frame. (Character)}
+\strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame},
+the function is applied group-wise and the output is a \code{list} of \code{vector}s.
+The names are based on the group indices
+(see \code{\link[dplyr:group_data]{dplyr::group_indices()}}).}
 
-\item{return_index}{Return indices of starts. (Logical)}
+\item{col}{Name of column to find starts in. Used when \code{`data`} is
+a \code{data.frame}. (Character)}
+
+\item{return_index}{Whether to return indices of starts. (Logical)}
 
 \item{handle_na}{How to handle \code{NA}s in the column.
 
@@ -41,11 +46,16 @@ This means, that \code{threshold} must be \code{NULL} when using this method.
 A numeric value to replace \code{NA}s with.
 }}
 
-\item{factor_conversion_warning}{Generate warning when
-converting factor to character. (Logical)}
+\item{factor_conversion_warning}{Throw warning when
+converting \code{factor} to \code{character}. (Logical)}
 }
 \value{
-Vector with either start values or indices of start values.
+\code{vector} with either the start values or the indices of the start values.
+
+\strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame},
+the output is a \code{list} of \code{vector}s.
+The names are based on the group indices
+(see \code{\link[dplyr:group_data]{dplyr::group_indices()}}).
 }
 \description{
 \Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}
@@ -53,7 +63,7 @@ Vector with either start values or indices of start values.
 Finds values or indices of values that are not the same
 as the previous value.
 
-E.g. to use with the \code{l_starts} method.
+E.g. to use with the \code{"l_starts"} method.
 
 Wraps \code{\link{differs_from_previous}()}.
 }

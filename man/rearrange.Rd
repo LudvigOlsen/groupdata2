@@ -2,56 +2,174 @@
 % Please edit documentation in R/rearrange.R
 \name{rearrange}
 \alias{rearrange}
-\title{Rearrange data by a set of methods.}
+\title{Arrange a data frame by a set of methods}
 \usage{
 rearrange(
   data,
+  col = NULL,
   method = "pair_extremes",
   unequal_method = "middle",
-  drop_rearrange_factor = TRUE,
-  rearrange_factor_name = ".rearrange_factor"
+  shuffle_members = FALSE,
+  shuffle_pairs = FALSE,
+  keep_factor = FALSE,
+  factor_name = ".rearrange_factor"
 )
 }
 \arguments{
-\item{data}{Data frame or Vector.}
+\item{data}{\code{data.frame} or \code{vector}. When a \code{vector}, it is converted to a \code{data.frame}.}
 
-\item{method}{Name of method used to create rearrange factor.
-Currently only \code{pair_extremes}.
+\item{col}{Column to create sorting factor by. When \code{NULL} and \code{data} is a data frame,
+it uses the row numbers.}
+
+\item{method}{Sorting method.
+
+One of: \code{"pair_extremes"}, \code{"center_max"}, or \code{"center_min"}.
+
 \subsection{pair_extremes}{
-The first and last rows are grouped. The second and the second last rows are grouped. Etc.
+The values are paired/grouped such that the highest and lowest values form the first group,
+the second highest and the second lowest values form the second group, and so on.
+The values are then sorted by these groups/pairs.
 
-E.g.: 1,2,3,2,1
+When \code{data} has an uneven number of rows,
+the \code{unequal_method} argument determines which group should have only 1 element.
+
+\strong{Example}:
+
+The column values:
+
+\code{c(1, 2, 3, 4, 5, 6)}
+
+Creates the \strong{sorting factor}:
+
+\code{c(1, 2, 3, 3, 2, 1)}
+
+And are \strong{ordered as}:
+
+\code{c(1, 6, 2, 5, 3, 4)}
+}
+
+\subsection{center_max}{
+The highest value is positioned in the middle with
+values decreasing around it.
+
+\strong{Example}:
+
+The column values:
+
+\code{c(1, 2, 3, 4,} \strong{\code{5}}\code{)}
+
+are \strong{ordered as}:
+
+\code{c(1, 3,} \strong{\code{5}}\code{, 4, 2)}
+
+}
+
+\subsection{center_min}{
+The lowest value is positioned in the middle with
+values increasing around it.
+
+\strong{Example}:
+
+The column values:
+
+\code{c(}\strong{\code{1}}\code{, 2, 3, 4, 5)}
+
+are \strong{ordered as}:
+
+\code{c(5, 3,} \strong{\code{1}}\code{, 2, 4)}
+
 }}
 
-\item{unequal_method}{Name of method to use for dealing with unequal number of rows/elements in data.
-\code{first}, \code{middle} or \code{last}
+\item{unequal_method}{Method for dealing with an unequal number of rows
+in \code{data} when \code{method} is \code{"pair_extremes"}.
+
+One of: \code{first}, \code{middle} or \code{last}
+
 \subsection{first}{
-The first group will have size 1.
+The first group will have size \code{1}.
 
-E.g. \strong{1},2,3,4,4,3,2.
+\strong{Example}:
+
+The column values:
+
+\code{c(1, 2, 3, 4, 5)}
+
+Creates the \strong{sorting factor}:
+
+\code{c(}\strong{\code{1}}\code{, 2, 3, 3, 2)}
+
+And are \strong{ordered as}:
+
+\code{c(}\strong{\code{1}}\code{, 2, 5, 3, 4)}
+
 }
-\subsection{middle}{
-The middle group will have size 1.
 
-E.g. 1,2,4,5,\strong{3},5,4,2,1.
+\subsection{middle}{
+The middle group will have size \code{1}.
+
+\strong{Example}:
+
+The column values:
+
+\code{c(1, 2, 3, 4, 5)}
+
+Creates the \strong{sorting factor}:
+
+\code{c(1, 3, }\strong{\code{2}}\code{, 3, 1)}
+
+And are \strong{ordered as}:
+
+\code{c(1, 5, } \strong{\code{3}}\code{, 2, 4)}
+
 }
 \subsection{last}{
-The last group will have size 1.
+The last group will have size \code{1}.
 
-E.g. 1,2,3,4,4,3,2,1,\strong{5}.
+\strong{Example}:
+
+The column values:
+
+\code{c(1, 2, 3, 4, 5)}
+
+Creates the \strong{sorting factor}:
+
+\code{c(1, 2, 2, 1, }\strong{\code{3}}\code{)}
+
+And are \strong{ordered as}:
+
+\code{c(1, 4, 2, 3,} \strong{\code{5}}\code{)}
+
 }}
 
-\item{drop_rearrange_factor}{Whether to drop rearrange factor after sorting dataset. \code{Logical}.}
+\item{shuffle_members}{Whether to shuffle the pair members. (Logical)
 
-\item{rearrange_factor_name}{Name of rearrange factor.
+For the \code{"center_*"} methods, this randomizes which values are
+to the right and left of the center.}
 
-N.B. Only used when \code{drop_rearrange_factor} is FALSE.}
+\item{shuffle_pairs}{Whether to shuffle the pairs when
+\code{method} is \code{"pair_extremes"}. (Logical)}
+
+\item{keep_factor}{Whether to keep the sorting factor in the data frame. \code{Logical}.
+
+This is mostly useful with the \code{"pair_extremes"} method.}
+
+\item{factor_name}{Name of sorting factor.
+
+N.B. Only used when \code{keep_factor} is \code{TRUE}.}
+}
+\value{
+The sorted data frame. Optionally with the sorting factor added.
 }
 \description{
-\strong{Internal}: Creates a rearrange factor and sorts the data by it.
-A rearrange factor is simply a vector of integers to sort by.
+\Sexpr[results=rd, stage=render]{lifecycle::badge("experimental")}
+
+Creates a special sorting factor and sorts by it. Current methods are
+\code{"pair_extremes"}, \code{"center_max"}, and \code{"center_min"}.
+
+For an easier experience and usage examples, see the relevant wrapper functions: ...
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 }
+\concept{rearrange functions}
 \keyword{internal}

@@ -27,7 +27,7 @@ stair_split_group_factor_ <- function(v, step_size, force_equal = FALSE, descend
 
   # Get the first row where cumsum is larger or equal to the vector
   # This contains info on how many groups we need for our staircasing
-  last_group_row <- group_data[group_data[["cumsum"]] >= length(v), ][1, ]
+  last_group_row <- group_data[group_data[["cumsum"]] >= length(v), , drop=FALSE][1, ]
 
   # Find how many rows we need for staircasing
   n_needed_groups <- last_group_row[1, 1]
@@ -49,7 +49,7 @@ stair_split_group_factor_ <- function(v, step_size, force_equal = FALSE, descend
 
       # We will remove the last group
       group_data <- group_data[
-        group_data[["groups"]] <= n_needed_groups - 1,
+        group_data[["groups"]] <= n_needed_groups - 1, , drop=FALSE
       ]
 
       # Get the new last row in group_data
@@ -67,7 +67,7 @@ stair_split_group_factor_ <- function(v, step_size, force_equal = FALSE, descend
       # If there are no excess elements
       # subset group_data to get the needed groups only
       group_data <- group_data[
-        group_data[["groups"]] <= n_needed_groups,
+        group_data[["groups"]] <= n_needed_groups, , drop=FALSE
       ]
     }
   } else {
@@ -76,7 +76,7 @@ stair_split_group_factor_ <- function(v, step_size, force_equal = FALSE, descend
     # subset group_data to get the needed groups only
 
     group_data <- group_data[
-      group_data[["groups"]] <= n_needed_groups,
+      group_data[["groups"]] <= n_needed_groups, , drop=FALSE
     ]
   }
 
@@ -124,7 +124,7 @@ primes_split_group_factor_ <- function(v,
 
   # Get the first row where cumsum is larger or equal to the length of
   # the vector. This contains info on how many groups we need.
-  last_group_row <- group_data[group_data[["cumsum"]] >= length(v), ][1, ]
+  last_group_row <- group_data[group_data[["cumsum"]] >= length(v), , drop=FALSE][1, ]
 
   # Find how many rows we need
   n_needed_groups <- last_group_row[1, 1]
@@ -146,7 +146,7 @@ primes_split_group_factor_ <- function(v,
 
       # We will remove the last group
       group_data <- group_data[
-        group_data[["groups"]] <= n_needed_groups - 1,
+        group_data[["groups"]] <= n_needed_groups - 1, , drop=FALSE
       ]
 
       # Get the new last row in group_data
@@ -164,7 +164,7 @@ primes_split_group_factor_ <- function(v,
       # If there are no excess elements
       # subset group_data to get the needed groups only
       group_data <- group_data[
-        group_data[["groups"]] <= n_needed_groups,
+        group_data[["groups"]] <= n_needed_groups, , drop=FALSE
       ]
     }
   } else {

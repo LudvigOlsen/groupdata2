@@ -3,7 +3,7 @@
 \name{\%primes\%}
 \alias{\%primes\%}
 \alias{primes}
-\title{Find remainder from 'primes' method.}
+\title{Find remainder from 'primes' method}
 \usage{
 size \%primes\% start_at
 }
@@ -20,7 +20,7 @@ has the size of the associated prime number.
 \description{
 \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
 
-When using the \code{primes} method,
+When using the \code{"primes"} method,
 the last group might not have the size of the associated prime number
 if there are not enough elements left. Use \code{\%primes\%} to find this remainder.
 }

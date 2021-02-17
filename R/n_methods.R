@@ -200,7 +200,7 @@ n_dist_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending =
   } else {
 
     # Create grouping factor with distributed excess elements
-    grouping_factor <- factor(ceiling(seq_along(v) / (length(v) / n_windows)))
+    grouping_factor <- ceiling(seq_along(v) / (length(v) / n_windows))
 
     # Sometimes a value of e.g. 7.0000.. is rounded up to 8
     # in the above ceiling(). This means that we get 8 groups
@@ -209,10 +209,10 @@ n_dist_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending =
     # --> This should be tested! <--
 
     # If there are too many groups
-    if (max_num_factor(grouping_factor) > n_windows) {
+    if (max(grouping_factor) > n_windows) {
 
       # Get the largest number in grouping factor
-      max_value <- max_num_factor(grouping_factor)
+      max_value <- max(grouping_factor)
 
       # Get the size of the last group
       last_group_size <- length(grouping_factor[grouping_factor == max_value])
@@ -223,11 +223,7 @@ n_dist_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending =
 
         # Replace the level of the factor containing the max_value
         # with the value of the second last group instead (max_value - 1)
-        grouping_factor <- replace_level(
-          f = grouping_factor,
-          match = max_value,
-          replace = max_value - 1
-        )
+        grouping_factor[grouping_factor == max_value] <- max_value - 1
 
         # Else, stop the script as something has gone wrong
         # and I need to know about it!
@@ -240,6 +236,6 @@ n_dist_group_factor_ <- function(v, n_windows, force_equal = FALSE, descending =
       }
     }
 
-    return(grouping_factor)
+    factor(grouping_factor)
   }
 }

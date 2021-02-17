@@ -1,10 +1,10 @@
 
 ## %primes%
-#' @title Find remainder from 'primes' method.
+#' @title Find remainder from 'primes' method
 #' @description
 #'  \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
 #'
-#'  When using the \code{primes} method,
+#'  When using the \code{"primes"} method,
 #'  the last group might not have the size of the associated prime number
 #'  if there are not enough elements left. Use \code{\%primes\%} to find this remainder.
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}

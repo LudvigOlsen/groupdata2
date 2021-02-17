@@ -5,8 +5,6 @@ test_that("groups are correctly compared with all_groups_identical()", {
   x1 <- factor(rep(c(1, 2, 3, 4, 5), each = 5))
   x2 <- factor(rep(rev(c(1, 2, 3, 4, 5)), each = 5))
 
-  # NOTE: dplyr 1.0.0 will probably make dplyr::all_equal fail in this function
-  # as it removes support for all_equal.tbl_df
   expect_true(all_groups_identical(x1, x2))
 
   x3 <- factor(rep(rev(c(1, 2, 3, 4, 6)), each = 5))

@@ -1,78 +1,80 @@
 
 ## group_factor
-#' @title Create grouping factor for subsetting your data.
+#' @title Create grouping factor for subsetting your data
 #' @description
 #'  \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
 #'
 #'  Divides data into groups by a range of methods.
 #'  Creates and returns a grouping factor
-#'  with 1s for group 1, 2s for group 2, etc.
+#'  with \code{1}s for \emph{group 1}, \code{2}s for \emph{group 2}, etc.
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
-#' @param data Data frame or vector.
-#' @param n \emph{Dependent on method.}
+#' @param data \code{data.frame} or \code{vector}.
+#'  When a \emph{grouped} \code{data.frame}, the function is applied group-wise.
+#' @param n \emph{Depends on \code{`method`}.}
 #'
 #'  Number of groups (default), group size, list of group sizes,
-#'  list of group starts, step size or prime number to start at. See \code{method}.
+#'  list of group starts, step size or prime number to start at. See \code{`method`}.
 #'
 #'  Passed as whole number(s) and/or percentage(s) (\code{0} < \code{n} < \code{1})
 #'  and/or character.
 #'
-#'  Method \code{l_starts} allows \code{'auto'}.
-#' @param method \code{greedy}, \code{n_dist}, \code{n_fill}, \code{n_last},
-#'  \code{n_rand}, \code{l_sizes}, \code{l_starts}, \code{staircase}, or
-#'  \code{primes}.
+#'  Method \code{"l_starts"} allows \code{'auto'}.
+#' @param method \code{"greedy"}, \code{"n_dist"}, \code{"n_fill"}, \code{"n_last"},
+#'  \code{"n_rand"}, \code{"l_sizes"}, \code{"l_starts"}, \code{"staircase"}, or
+#'  \code{"primes"}.
 #'
-#'  \strong{Notice}: examples are sizes of the generated groups
-#'  based on a vector with 57 elements.
+#'  \strong{Note}: examples are sizes of the generated groups
+#'  based on a vector with \code{57} elements.
 #'
 #'  \subsection{greedy}{Divides up the data greedily given a specified group size
 #'  \eqn{(e.g. 10, 10, 10, 10, 10, 7)}.
 #'
-#'  \code{n} is group size}
+#'  \code{`n`} is group size}
 #'
 #'  \subsection{n_dist (default)}{Divides the data into a specified number of groups and
 #'  distributes excess data points across groups
 #'  \eqn{(e.g. 11, 11, 12, 11, 12)}.
 #'
-#'  \code{n} is number of groups}
+#'  \code{`n`} is number of groups}
 #'
 #'  \subsection{n_fill}{Divides the data into a specified number of groups and
 #'  fills up groups with excess data points from the beginning
 #'  \eqn{(e.g. 12, 12, 11, 11, 11)}.
 #'
-#'  \code{n} is number of groups}
+#'  \code{`n`} is number of groups}
 #'
 #'  \subsection{n_last}{Divides the data into a specified number of groups.
 #'  It finds the most equal group sizes possible,
 #'  using all data points. Only the last group is able to differ in size
 #'  \eqn{(e.g. 11, 11, 11, 11, 13)}.
 #'
-#'  \code{n} is number of groups}
+#'  \code{`n`} is number of groups}
 #'
 #'  \subsection{n_rand}{Divides the data into a specified number of groups.
 #'  Excess data points are placed randomly in groups (only 1 per group)
 #'  \eqn{(e.g. 12, 11, 11, 11, 12)}.
 #'
-#'  \code{n} is number of groups}
+#'  \code{`n`} is number of groups}
 #'
 #'  \subsection{l_sizes}{Divides up the data by a list of group sizes.
 #'  Excess data points are placed in an extra group at the end.
-#'  \eqn{(e.g. n = list(0.2,0.3) outputs groups with sizes (11,17,29))}.
 #'
-#'  \code{n} is a list of group sizes}
+#'  \eqn{E.g. n = list(0.2, 0.3) outputs groups with sizes (11, 17, 29)}.
+#'
+#'  \code{`n`} is a list of group sizes}
 #'
 #'  \subsection{l_starts}{Starts new groups at specified values of vector.
 #'
 #'  \code{n} is a list of starting positions.
-#'  Skip values by c(value, skip_to_number) where skip_to_number is the nth appearance of the value
+#'  Skip values by \code{c(value, skip_to_number)} where skip_to_number is the nth appearance of the value
 #'  in the vector.
 #'  Groups automatically start from first data point.
 #'
-#'  \eqn{E.g. n = c(1,3,7,25,50) outputs groups with sizes (2,4,18,25,8)}.
+#'  \eqn{E.g. n = c(1, 3, 7, 25, 50) outputs groups with sizes (2, 4, 18, 25, 8)}.
 #'
 #'  To skip: \eqn{given vector c("a", "e", "o", "a", "e", "o"), n = list("a", "e", c("o", 2))
-#'  outputs groups with sizes (1,4,1)}.}
+#'  outputs groups with sizes (1, 4, 1)}.}
 #'
 #'  If passing \eqn{n = 'auto'} the starting positions are automatically found with
 #'  \code{\link{find_starts}()}. Note that all \code{NA}s are first replaced by a single unique value,
@@ -83,27 +85,31 @@
 #'  until there is no more data
 #'  \eqn{(e.g. 5, 10, 15, 20, 7)}.
 #'
-#'  \code{n} is step size}
+#'  \code{`n`} is step size}
 #'
 #'  \subsection{primes}{Uses prime numbers as group sizes.
 #'  Group size increases to the next prime number
 #'  until there is no more data.
 #'  \eqn{(e.g. 5, 7, 11, 13, 17, 4)}.
 #'
-#'  \code{n} is the prime number to start at}
-#' @param starts_col Name of column with values to match in method \code{l_starts}
-#' when data is a data frame. Pass \code{'index'} to use row names. (Character)
+#'  \code{`n`} is the prime number to start at}
+#' @param starts_col Name of column with values to match in method \code{"l_starts"}
+#' when \code{`data`} is a \code{data.frame}. Pass \code{'index'} to use row names. (Character)
 #' @param force_equal Create equal groups by discarding excess data points.
 #'  Implementation varies between methods. (Logical)
-#' @param allow_zero Whether \code{n} can be passed as \code{0}. (Logical)
+#' @param allow_zero Whether \code{`n`} can be passed as \code{0}. (Logical)
 #' @param descending Change direction of method. (Not fully implemented)
 #'  (Logical)
 #' @param randomize Randomize the grouping factor (Logical)
 #' @param remove_missing_starts Recursively remove elements from the
 #'  list of starts that are not found.
-#'  For method \code{l_starts} only.
+#'  For method \code{"l_starts"} only.
 #'  (Logical)
-#' @return Grouping factor with 1s for group 1, 2s for group 2, etc.
+#' @return Grouping factor with \code{1}s for group 1, \code{2}s for group 2, etc.
+#'
+#'  \strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame},
+#'  the output is a \code{data.frame} with the existing groupings
+#'  and the generated grouping factor. The row order from \code{`data`} is maintained.
 #' @family grouping functions
 #' @family staircase tools
 #' @family l_starts tools
@@ -140,13 +146,8 @@ group_factor <- function(data, n, method = "n_dist", starts_col = NULL, force_eq
                          allow_zero = FALSE, descending = FALSE,
                          randomize = FALSE, remove_missing_starts = FALSE) {
 
-  #
-  # Takes data frame or vector
-  # Returns a grouping factor
-  #
-
   # Check and prep inputs
-  checks <- check_group_factor(
+  checks <- check_group_factor_once(
     data = data, n = n,
     method = method,
     starts_col = starts_col,
@@ -156,8 +157,42 @@ group_factor <- function(data, n, method = "n_dist", starts_col = NULL, force_eq
     randomize = randomize,
     remove_missing_starts = remove_missing_starts)
 
-  n <- checks[["n"]]
   starts_col <- checks[["starts_col"]]
+
+  # Apply by group (recursion)
+  if (dplyr::is_grouped_df(data)) {
+    message_once_about_group_by("group_factor")
+  }
+
+  run_by_group_col(
+    data = data,
+    .fn = run_group_factor_,
+    .col_name = ".groups",
+    n = n,
+    method = method,
+    starts_col = starts_col,
+    force_equal = force_equal,
+    allow_zero = allow_zero,
+    descending = descending,
+    randomize = randomize,
+    remove_missing_starts = remove_missing_starts
+  )
+
+}
+
+run_group_factor_ <- function(data, n, method, starts_col, force_equal,
+                              allow_zero, descending,
+                              randomize, remove_missing_starts){
+
+  # Checks and conversion of 'n'
+  checks <- group_factor_check_convert_n(
+    data = data,
+    n = n,
+    method = method,
+    allow_zero = allow_zero
+  )
+
+  n <- checks[["n"]]
 
   ### Allow zero ###
 
@@ -273,15 +308,15 @@ group_factor <- function(data, n, method = "n_dist", starts_col = NULL, force_eq
   groups
 }
 
-check_group_factor <- function(data, n, method, starts_col, force_equal,
-                               allow_zero, descending,
-                               randomize, remove_missing_starts,
-                               available_methods = c(
-                                 "greedy", "n_dist", "n_fill", "n_last", "n_rand",
-                                 "l_sizes", "l_starts", "staircase", "primes")){
-
+check_group_factor_once <- function(data, n, method, starts_col, force_equal,
+                                    allow_zero, descending,
+                                    randomize, remove_missing_starts,
+                                    available_methods = c(
+                                      "greedy", "n_dist", "n_fill", "n_last", "n_rand",
+                                      "l_sizes", "l_starts", "staircase", "primes")){
   # Check arguments ####
   assert_collection <- checkmate::makeAssertCollection()
+
   if (is.null(n)){
     assert_collection$push("'n' cannot be 'NULL'")
   }
@@ -317,17 +352,15 @@ check_group_factor <- function(data, n, method, starts_col, force_equal,
   checkmate::assert_flag(x = remove_missing_starts, add = assert_collection)
 
   checkmate::reportAssertions(assert_collection)
+
   checkmate::assert_names(x = method, subset.of = available_methods,
                           what = "method", add = assert_collection)
-  if (!isTRUE(allow_zero) &&
-      checkmate::test_number(n) &&
-      n == 0){
-    assert_collection$push("'n' was 0. If this is on purpose, set 'allow_zero' to 'TRUE'.")
-    checkmate::reportAssertions(assert_collection)
-  }
+
+  checkmate::reportAssertions(assert_collection)
+
   if (!is.null(starts_col)) {
     if (!is.data.frame(data)){
-      assert_collection$push("when 'starts_col' is specified, 'data' must be a data frame.")
+      assert_collection$push("when 'starts_col' is specified, 'data' must be a data.frame.")
       checkmate::reportAssertions(assert_collection)
     }
     if (is.character(starts_col) && starts_col %ni% c(colnames(data), "index", ".index")){
@@ -363,25 +396,49 @@ check_group_factor <- function(data, n, method, starts_col, force_equal,
   if (method == "l_starts" &&
       is.data.frame(data) &&
       is.null(starts_col)){
-    assert_collection$push("when 'method' is 'l_starts' and 'data' is a data frame, 'starts_col' must be specified.")
+    assert_collection$push("when 'method' is 'l_starts' and 'data' is a data.frame, 'starts_col' must be specified.")
+  }
+
+  checkmate::reportAssertions(assert_collection)
+
+  list("starts_col" = starts_col)
+
+}
+
+
+group_factor_check_convert_n <- function(data, n, method,
+                                         allow_zero) {
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+
+  if (!isTRUE(allow_zero) &&
+      checkmate::test_number(n) &&
+      n == 0) {
+    assert_collection$push("'n' was 0. If this is on purpose, set 'allow_zero' to 'TRUE'.")
+    checkmate::reportAssertions(assert_collection)
   }
 
   # Convert n if given as single percentage
-  n <- convert_n(n = n, data = data, method = method, allow_zero = allow_zero)
+  n <-
+    convert_n(
+      n = n,
+      data = data,
+      method = method,
+      allow_zero = allow_zero
+    )
 
   # Check number of elements in n
-  if (is.data.frame(data)){
-    if (length(n) > nrow(data)){
+  if (is.data.frame(data)) {
+    if (length(n) > nrow(data)) {
       assert_collection$push("'n' cannot have more elements than the number of rows in 'data'.")
     }
-  } else if (length(n) > length(data)){
+  } else if (length(n) > length(data)) {
     assert_collection$push("'n' cannot have more elements than 'data'.")
   }
 
   checkmate::reportAssertions(assert_collection)
   # End of argument checks ####
 
-  list("starts_col" = starts_col,
-       "n" = n)
+  list("n" = n)
 
 }

@@ -5,26 +5,26 @@
 #' Perform time series windowing and general grouping and splitting of data.
 #' Balance existing groups with up- and downsampling.
 #'
-#' The groupdata2 package provides six main functions:
-#' \code{group}, \code{group_factor}, \code{splt}, \code{partition}, \code{fold}, and \code{balance}.
+#' The \code{groupdata2} package provides six main functions:
+#' \code{group()}, \code{group_factor()}, \code{splt()}, \code{partition()}, \code{fold()}, and \code{balance()}.
 #'
 #' @section group:
 #' Create groups from your data.
 #'
 #' Divides data into groups by a range of methods.
-#' Creates a grouping factor with 1s for group 1, 2s for group 2, etc.
-#' Returns a data frame grouped by the grouping factor for easy use in dplyr pipelines.
+#' Creates a grouping factor with \code{1}s for group 1, \code{2}s for group 2, etc.
+#' Returns a \code{data.frame} grouped by the grouping factor for easy use in \code{magrittr} pipelines.
 #'
-#' Go to \code{\link{group}}
+#' Go to \code{\link{group}()}
 #'
 #' @section group_factor:
 #' Create grouping factor for subsetting your data.
 #'
 #' Divides data into groups by a range of methods.
 #' Creates and returns a grouping factor
-#' with 1s for group 1, 2s for group 2, etc.
+#' with \code{1}s for group 1, \code{2}s for group 2, etc.
 #'
-#' Go to \code{\link{group_factor}}
+#' Go to \code{\link{group_factor}()}
 #'
 #' @section splt:
 #' Split data by a range of methods.
@@ -32,7 +32,7 @@
 #' Divides data into groups by a range of methods.
 #' Splits data by these groups.
 #'
-#' Go to \code{\link{splt}}
+#' Go to \code{\link{splt}()}
 #'
 #' @section partition:
 #' Create balanced partitions (e.g. training/test sets).
@@ -42,7 +42,7 @@
 #' and keeps (if possible) all data points with a shared ID
 #' (e.g. participant_id) in the same partition.
 #'
-#' Go to \code{\link{partition}}
+#' Go to \code{\link{partition}()}
 #'
 #' @section fold:
 #' Create balanced folds for cross-validation.
@@ -51,7 +51,7 @@
 #' Balances a given categorical variable between folds and keeps (if possible)
 #' all data points with the same ID (e.g. participant_id) in the same fold.
 #'
-#' Go to \code{\link{fold}}
+#' Go to \code{\link{fold}()}
 #'
 #' @section balance:
 #' Balance the sizes of your groups with up- and downsampling.
@@ -61,8 +61,16 @@
 #'  to a specific number of rows. Has a range of methods for balancing on
 #'  ID level.
 #'
-#' Go to \code{\link{balance}}
+#' Go to \code{\link{balance}()}
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @docType package
 #' @name groupdata2
 NULL
+
+
+
+# Never used, but removes R CMD check NOTEs
+rcmd_import_handler <- function(){
+  lifecycle::deprecate_soft()
+}
+

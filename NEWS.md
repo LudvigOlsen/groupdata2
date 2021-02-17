@@ -1,12 +1,27 @@
-# groupdata2 1.1.2.9000
+
+# groupdata2 1.3.0.9000
+
+# groupdata2 1.3.0
+
+* Breaking: The following functions now work with *grouped* `data.frames` (meaning that they are applied group-wise): `fold()`, `partition()`, `group()`, `group_factor()`, `splt()`, `balance()`, `upsample()`, `downsample()`, `differs_from_previous()`, and `find_missing_starts()`. A message is generated *once per session*, when the input is grouped, to help users understand why their code is breaking.
+
+# groupdata2 1.2.1
+
+* `checkmate` compatibility.
+
+* Small speed up of `n_dist` grouping method.
+
+# groupdata2 1.2.0
 
 * Adds Zenodo DOI for easier citation.
+
+* Adds `lifecycle` badges to function documentation.
 
 * Adds argument `handle_na` to `differs_from_previous()` and `find_starts()`.
 
 * Bug fix: In grouping functions with method `l_starts` and `n = "auto"`, `NA`s are now replaced by a unique value before finding group starts. E.g. `c(1,1,1,2,2,NA,NA,4,4)` yields 4 groups.
 
-* The `data` argument in `fold()` takes a data frame, not vectors.
+* More explicit: the `data` argument in `fold()` and `participant` takes a data frame, not a vector.
 
 * Possibly breaking change: Adds `checkmate` input checks. Improves error messages but also restricts behavior.
 
@@ -22,6 +37,7 @@ looking only at the group members, allowing for different group names / identifi
 
 * Adds badges to README, including travis-ci status, AppVeyor status, 
 Codecov, min. required R version, CRAN version and monthly CRAN downloads. Note: Zenodo badge will be added post release.
+
 
 # groupdata2 1.1.1  
 

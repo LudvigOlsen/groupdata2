@@ -3,7 +3,7 @@
 \name{differs_from_previous}
 \alias{differs_from_previous}
 \alias{not_previous}
-\title{Find values in a vector that differ from the previous value.}
+\title{Find values in a vector that differ from the previous value}
 \usage{
 differs_from_previous(
   data,
@@ -17,23 +17,28 @@ differs_from_previous(
 )
 }
 \arguments{
-\item{data}{Data frame or Vector
+\item{data}{\code{data.frame} or \code{vector}.
 
-N.B. If checking a factor, it is converted to a character vector.
-This means that factors can only be used when \code{threshold} is \code{NULL}.
-Conversion will generate a warning, which can be turned off by setting \code{factor_conversion_warning} to \code{FALSE}.}
+\strong{N.B.} If checking a \code{factor}, it is converted to a \code{character vector}.
+This means that factors can only be used when \code{`threshold`} is \code{NULL}.
+Conversion will generate a warning, which can be turned off by setting \code{`factor_conversion_warning`} to \code{FALSE}.
 
-\item{col}{Name of column to find values that differ in. Used when data is
-data frame. (Character)}
+\strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame},
+the function is applied group-wise and the output is a \code{list} of \code{vector}s.
+The names are based on the group indices
+(see \code{\link[dplyr:group_data]{dplyr::group_indices()}}).}
+
+\item{col}{Name of column to find values that differ in. Used when \code{`data`} is
+\code{data.frame}. (Character)}
 
 \item{threshold}{Threshold to check difference to previous value to.
 
-\code{NULL}, numeric scalar or numeric vector with length 2.
+\code{NULL}, \emph{numeric scalar} or \emph{numeric vector with length \code{2}}.
 
 \subsection{NULL}{
 Checks if the value is different from the previous value.
 
-Ignores \code{direction}.
+Ignores \code{`direction`}.
 
 N.B. Works for both numeric and character vectors.
 }
@@ -75,7 +80,7 @@ Checks whether the difference to the previous value is
 
 \item{return_index}{Return indices of values that differ. (Logical)}
 
-\item{include_first}{Whether to include first element in vector in output. (Logical)}
+\item{include_first}{Whether to include the first element of the vector in the output. (Logical)}
 
 \item{handle_na}{How to handle \code{NA}s in the column.
 
@@ -94,10 +99,15 @@ This means, that \code{threshold} must be \code{NULL} when using this method.
 A numeric value to replace \code{NA}s with.
 }}
 
-\item{factor_conversion_warning}{Generate warning when converting factor to character. (Logical)}
+\item{factor_conversion_warning}{Whether to throw a warning when converting a \code{factor} to a \code{character}. (Logical)}
 }
 \value{
-Vector with either differing values or indices of differing values.
+\code{vector} with either the differing values or the indices of the differing values.
+
+\strong{N.B.} If \code{`data`} is a \emph{grouped} \code{data.frame},
+the output is a \code{list} of \code{vector}s
+with the differing values. The names are based on the group indices
+(see \code{\link[dplyr:group_data]{dplyr::group_indices()}}).
 }
 \description{
 \Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}
@@ -105,7 +115,7 @@ Vector with either differing values or indices of differing values.
 Finds values, or indices of values, that differ from the previous value by some threshold(s).
 
 Operates with both a positive and a negative threshold.
-Depending on \code{direction}, it checks if the difference to the previous value is:
+Depending on \code{`direction`}, it checks if the difference to the previous value is:
 \itemize{
 \item greater than or equal to the positive threshold.
 \item less than or equal to the negative threshold.

@@ -67,8 +67,8 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method = "n_fil
     rearrange(
       method = "pair_extremes",
       unequal_method = unequal_method,
-      drop_rearrange_factor = FALSE,
-      rearrange_factor_name = local_tmp_rearrange_var
+      keep_factor = TRUE,
+      factor_name = local_tmp_rearrange_var
     ) # Not actually a factor....
 
   # Perform the rearranging of extreme pairs again if specified
@@ -119,9 +119,10 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method = "n_fil
       # Rearrange again
       tmp_rearrange <- tmp_group_scores_sorted %>%
         rearrange(
-          method = "pair_extremes", unequal_method = unequal_method,
-          drop_rearrange_factor = FALSE,
-          rearrange_factor_name = local_tmp_rearrange_2_var
+          method = "pair_extremes",
+          unequal_method = unequal_method,
+          keep_factor = TRUE,
+          factor_name = local_tmp_rearrange_2_var
         ) %>%
         base_select(cols = c(local_tmp_rearrange_var, local_tmp_rearrange_2_var))
 

@@ -1,21 +1,21 @@
-#' @title Test if two grouping factors contain the same groups.
+#' @title Test if two grouping factors contain the same groups
 #' @description
 #'  \Sexpr[results=rd, stage=render]{lifecycle::badge("maturing")}
 #'
 #'  Checks whether two grouping factors contain the same groups,
 #'  looking only at the group members, allowing for different group names / identifiers.
-#' @param x,y Two grouping factors (vectors/factors with group identifiers) to compare.
+#' @param x,y Two grouping factors (\code{vector}s/\code{factor}s with group identifiers) to compare.
 #'
-#'  \strong{N.B.} Both are converted to character vectors.
+#'  \strong{N.B.} Both are converted to \code{character vectors}.
 #' @details
-#'  Both factors are sorted by \code{x}.
+#'  Both factors are sorted by \code{`x`}.
 #'  A grouping factor is created with new groups starting at the values in
-#'  \code{y} which differ from the previous row
+#'  \code{`y`} which differ from the previous row
 #'  (i.e. \code{\link{group}()} with \code{method = "l_starts"} and \code{n = "auto"}).
-#'  A similar grouping factor is created for \code{x},
+#'  A similar grouping factor is created for \code{`x`},
 #'  to have group identifiers range from \code{1} to the number of groups.
 #'  The two generated grouping factors are tested for equality.
-#' @return Whether \strong{all} groups in \code{x} are the same in \code{y}, \emph{memberwise}. (logical)
+#' @return Whether \strong{all} groups in \code{`x`} are the same in \code{`y`}, \emph{memberwise}. (logical)
 #' @family grouping functions
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
@@ -81,7 +81,6 @@ all_groups_identical <- function(x, y) {
         starts_col = "col_1"
       ) %>%
       dplyr::ungroup()
-    return(isTRUE(dplyr::all_equal(d[[".groups_1"]], d[[".groups_2"]],
-                                   ignore_row_order = FALSE)))
+    all(as.character(d[[".groups_1"]]) == as.character(d[[".groups_2"]]))
   }
 }
