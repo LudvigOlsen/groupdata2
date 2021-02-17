@@ -417,9 +417,17 @@ run_fold_ <- function(data,
             " will NOT be replaced. ",
             "Change 'handle_existing_fold_cols' to 'remove' if you want to replace ",
             warn_terms__[3],
-            "."
+            "or 'keep' to remove the warning."
           )
         )
+      }
+
+      if (num_existing_fold_colnames == 1 &&
+          length(dplyr::group_vars(data)) == 1 &&
+          dplyr::group_vars(data) == existing_fold_colnames){
+        warning(paste0("*Potential* issue: `data` is grouped by the existing fold column. ",
+                       "The new folds are created within these groups. If this is ",
+                       "unwanted, use `dplyr::ungroup()` before `fold`."))
       }
 
       # Rename the existing fold columns to have consecutive numbering and start from 1
