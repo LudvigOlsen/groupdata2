@@ -517,7 +517,7 @@ test_that("bootstrap test of num_col works", {
     )
 
     age_distribution <- df_folded %>%
-      group_by(.folds) %>%
+      dplyr::group_by(.folds) %>%
       dplyr::summarise(
         mean_age = mean(age),
         sd_age = sd(age)
@@ -579,7 +579,7 @@ test_that("bootstrap test of num_col works", {
     )
 
     age_distribution <- df_folded %>%
-      group_by(.folds) %>%
+      dplyr::group_by(.folds) %>%
       dplyr::summarise(
         mean_age = mean(age),
         sd_age = sd(age)
@@ -657,7 +657,7 @@ test_that("bootstrap test of num_col works", {
     )
 
     age_distribution <- df_folded %>%
-      group_by(.folds) %>%
+      dplyr::group_by(.folds) %>%
       dplyr::summarise(
         mean_age = mean(age),
         sd_age = sd(age)
@@ -740,7 +740,7 @@ test_that("bootstrap test of num_col works", {
     )
 
     age_distribution <- df_folded %>%
-      group_by(.folds) %>%
+      dplyr::group_by(.folds) %>%
       dplyr::summarise(
         mean_age = mean(age),
         sd_age = sd(age)
@@ -819,7 +819,7 @@ test_that("bootstrap test of num_col works", {
     )
 
     age_distribution <- df_folded %>%
-      group_by(.folds) %>%
+      dplyr::group_by(.folds) %>%
       dplyr::summarise(
         mean_age = mean(age),
         sd_age = sd(age)
@@ -833,7 +833,7 @@ test_that("bootstrap test of num_col works", {
     )
 
     age_distribution <- df_folded %>%
-      group_by(.folds) %>%
+      dplyr::group_by(.folds) %>%
       dplyr::summarise(
         mean_age = mean(age),
         sd_age = sd(age)
@@ -847,7 +847,7 @@ test_that("bootstrap test of num_col works", {
     )
 
     age_distribution <- df_folded %>%
-      group_by(.folds) %>%
+      dplyr::group_by(.folds) %>%
       dplyr::summarise(
         mean_age = mean(age),
         sd_age = sd(age)
@@ -922,7 +922,7 @@ test_that("bootstrap test of num_col works", {
   #                   cat_col="diagnosis", num_col="age",
   #                   extreme_pairing_levels = 4)
   #
-  # age_distribution <- df_folded %>% group_by(.folds) %>%
+  # age_distribution <- df_folded %>% dplyr::group_by(.folds) %>%
   #   dplyr::summarise(mean_age = mean(age),
   #                    sd_age = sd(age))
 })

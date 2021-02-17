@@ -307,7 +307,7 @@ if (getRversion() >= "2.15.1")
 #'     sum_score = sum(score),
 #'     mean_score = mean(score)
 #'   )
-#' @importFrom dplyr group_by_ do %>%
+#' @importFrom dplyr %>%
 #' @importFrom utils combn
 #' @importFrom rlang .data
 #' @importFrom stats runif
@@ -480,8 +480,8 @@ run_fold_ <- function(data,
           # for (r in 1:fold_cols_to_generate){ # Replace with different loop fn
           plyr::l_ply(1:fold_cols_to_generate, function(r) {
             data <<- data %>%
-              group_by(!!as.name(cat_col)) %>%
-              do(group_uniques_(
+              dplyr::group_by(!!as.name(cat_col)) %>%
+              dplyr::do(group_uniques_(
                 .,
                 k,
                 id_col,
@@ -505,8 +505,8 @@ run_fold_ <- function(data,
           # for (r in 1:fold_cols_to_generate){
           plyr::l_ply(1:fold_cols_to_generate, function(r) {
             data <<- data %>%
-              group_by(!!as.name(cat_col)) %>%
-              do(
+              dplyr::group_by(!!as.name(cat_col)) %>%
+              dplyr::do(
                 group(
                   .,
                   k,
@@ -594,11 +594,12 @@ run_fold_ <- function(data,
       data <- data_and_comparisons[["updated_data"]]
       removed_cols <- data_and_comparisons[["removed_cols"]]
       completed_comparisons <- completed_comparisons %>%
-        dplyr::bind_rows(data_and_comparisons[["comparisons"]] %>%
-                           # If they were identical,
-                           # we removed one and the comparison isn't useful to save
-                           filter(!identical,
-                                  .data$V2 %ni% removed_cols))
+        dplyr::bind_rows(
+          data_and_comparisons[["comparisons"]] %>%
+            # If they were identical,
+            # we removed one and the comparison isn't useful to save
+            dplyr::filter(!identical, .data$V2 %ni% removed_cols)
+          )
 
       folds_colnames <- extract_fold_colnames(data)
 
@@ -635,7 +636,7 @@ run_fold_ <- function(data,
   if (num_fold_cols == 1 && expected_total_num_fold_cols == 1) {
     # Group by .folds
     data <- data %>%
-      group_by(!!as.name(".folds"))
+      dplyr::group_by(!!as.name(".folds"))
   } else {
     # Rename the fold columns to have consecutive number
     folds_colnames <- extract_fold_colnames(data)

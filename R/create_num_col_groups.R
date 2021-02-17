@@ -150,7 +150,7 @@ create_num_col_groups <- function(data, n, num_col,
 
       # aggregate val col per ID
       ids_aggregated <- data %>%
-        group_by(!!as.name(id_col)) %>%
+        dplyr::group_by(!!as.name(id_col)) %>%
         dplyr::summarize(aggr_val = id_aggregation_fn(!!as.name(num_col))) %>%
         dplyr::ungroup()
 

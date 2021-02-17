@@ -306,7 +306,7 @@ test_that("bootstrap test of num_col works", {
     )
 
     age_distribution <- df_partitioned %>%
-      group_by(.partitions) %>%
+      dplyr::group_by(.partitions) %>%
       dplyr::summarise(
         mean_age = mean(age),
         sd_age = sd(age)
@@ -324,7 +324,7 @@ test_that("bootstrap test of num_col works", {
     )
 
     age_distribution <- df_partitioned %>%
-      group_by(.partitions) %>%
+      dplyr::group_by(.partitions) %>%
       dplyr::summarise(
         mean_age = mean(age),
         sd_age = sd(age)
@@ -348,7 +348,7 @@ test_that("bootstrap test of num_col works", {
     )
 
     age_distribution <- df_partitioned %>%
-      group_by(.partitions) %>%
+      dplyr::group_by(.partitions) %>%
       dplyr::summarise(
         mean_age = mean(age),
         sd_age = sd(age)
@@ -372,7 +372,7 @@ test_that("bootstrap test of num_col works", {
     )
 
     age_distribution <- df_partitioned %>%
-      group_by(.partitions) %>%
+      dplyr::group_by(.partitions) %>%
       dplyr::summarise(
         mean_age = mean(age),
         sd_age = sd(age)
