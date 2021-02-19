@@ -448,7 +448,7 @@ run_fold_ <- function(data,
             " will NOT be replaced. ",
             "Change 'handle_existing_fold_cols' to 'remove' if you want to replace ",
             warn_terms__[3],
-            "or 'keep' to remove the warning."
+            " or 'keep' to remove the warning."
           )
         )
       }

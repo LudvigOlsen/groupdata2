@@ -24,6 +24,16 @@ create_num_col_groups <- function(data, n, num_col,
   # If method is n_*, we are doing folding
   is_n_method <- substring(method, 1, 2) == "n_"
 
+  if (!is.null(cat_col)){
+    # In case of >1 cat columns
+    # We work with the group indices
+    local_tmp_cat_col_var <- create_tmp_var(data, tmp_var = ".__cat_col")
+    data[[local_tmp_cat_col_var]] <- data %>%
+      dplyr::group_by(!!!rlang::syms(cat_col)) %>%
+      dplyr::group_indices()
+    cat_col <- local_tmp_cat_col_var
+  }
+
   # Sample data frame before use.
   if (isTRUE(pre_randomize)) {
 
@@ -204,6 +214,12 @@ create_num_col_groups <- function(data, n, num_col,
   # replace column name
   if (col_name != "._new_groups_")
     data <- base_rename(data, before = "._new_groups_", after = col_name)
+
+  # Remove temporary cat_col
+  if (!is.null(cat_col)){
+      data <- data %>%
+        base_deselect(cat_col)
+  }
 
   dplyr::as_tibble(data)
 }

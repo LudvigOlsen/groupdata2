@@ -102,7 +102,7 @@ test_that("errors and warnings are correct with fold()", {
   df$.folds_1 <- 1
   df$.folds_2 <- 1
   expect_warning(fold(df, k = 5, handle_existing_fold_cols = "keep_warn"),
-    "Found 2 existing fold columns. These will NOT be replaced. Change 'handle_existing_fold_cols' to 'remove' if you want to replace them.",
+    "Found 2 existing fold columns. These will NOT be replaced. Change 'handle_existing_fold_cols' to 'remove' if you want to replace them or 'keep' to remove the warning.",
     fixed = TRUE
   )
 })
@@ -414,6 +414,32 @@ test_that("values are decently balanced in num_col in fold()", {
 
   expect_equal(aggregated_scores$group_sums, c(378, 439))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
+})
+
+test_that("num_col works with multiple cat_col strings in fold()", {
+
+  xpectr::set_test_seed(1)
+  df <- data.frame(
+    "cat_a" = factor(rep(c("a", "b", "c"), each=10)),
+    "cat_b" = factor(rep(rep(c("a", "b"), each=5), 3)),
+    "num" = runif(30)
+  )
+
+  # With num_col
+  df_folded <- fold(df, 3, cat_col=c("cat_a", "cat_b"), num_col = "num")
+  aggregated_scores <- df_folded %>%
+    dplyr::group_by(.folds) %>%
+    dplyr::summarize(num = sum(num))
+
+  # Testing column values
+  expect_equal(
+    aggregated_scores[[".folds"]],
+    structure(1:3, .Label = c("1", "2", "3"), class = "factor"))
+  expect_equal(
+    aggregated_scores[["num"]],
+    c(4.37881, 4.84393, 6.06384),
+    tolerance = 1e-4)
+
 })
 
 test_that("repeated folding works in fold()", {
