@@ -90,6 +90,10 @@ if (getRversion() >= "2.15.1")
 #'
 #'  Number of folds (default), fold size, with more (see \code{`method`}).
 #'
+#'  When \code{`num_fold_cols` > 1}, \code{`k`} can also be a vector
+#'  with one k per fold column. This allows trying multiple \code{`k`} settings at a time. Note
+#'  that the generated fold columns are not guaranteed to be in the order of \code{`k`}.
+#'
 #'  Given as whole number or percentage (\code{0 < `k` < 1}).
 #' @param cat_col Name of categorical variable to balance between folds.
 #'
@@ -239,32 +243,40 @@ if (getRversion() >= "2.15.1")
 #' # Using fold()
 #'
 #' ## Without balancing
-#' df_folded <- fold(df, 3, method = "n_dist")
+#' df_folded <- fold(data = df, k = 3, method = "n_dist")
 #'
 #' ## With cat_col
-#' df_folded <- fold(df, 3,
+#' df_folded <- fold(
+#'   data = df,
+#'   k = 3,
 #'   cat_col = "diagnosis",
 #'   method = "n_dist"
 #' )
 #'
 #' ## With id_col
-#' df_folded <- fold(df, 3,
+#' df_folded <- fold(
+#'   data = df,
+#'   k = 3,
 #'   id_col = "participant",
 #'   method = "n_dist"
 #' )
 #'
 #' ## With num_col
 #' # Note: 'method' would not be used in this case
-#' df_folded <- fold(df, 3, num_col = "score")
+#' df_folded <- fold(data = df, k = 3, num_col = "score")
 #'
 #' # With cat_col and id_col
-#' df_folded <- fold(df, 3,
+#' df_folded <- fold(
+#'   data = df,
+#'   k = 3,
 #'   cat_col = "diagnosis",
 #'   id_col = "participant", method = "n_dist"
 #' )
 #'
 #' ## With cat_col, id_col and num_col
-#' df_folded <- fold(df, 3,
+#' df_folded <- fold(
+#'   data = df,
+#'   k = 3,
 #'   cat_col = "diagnosis",
 #'   id_col = "participant", num_col = "score"
 #' )
@@ -275,17 +287,34 @@ if (getRversion() >= "2.15.1")
 #' ## Multiple fold columns
 #' # Useful for repeated cross-validation
 #' # Note: Consider running in parallel
-#' df_folded <- fold(df, 3,
+#' df_folded <- fold(
+#'   data = df,
+#'   k = 3,
 #'   cat_col = "diagnosis",
-#'   id_col = "participant", num_fold_cols = 5,
+#'   id_col = "participant",
+#'   num_fold_cols = 5,
 #'   unique_fold_cols_only = TRUE,
 #'   max_iters = 4
 #' )
 #'
-#' ## Check if additional extreme_pairing_levels
+#' # Different `k` per fold column
+#' # Note: `length(k) == num_fold_cols`
+#' df_folded <- fold(
+#'   data = df,
+#'   k = c(2, 3),
+#'   cat_col = "diagnosis",
+#'   id_col = "participant",
+#'   num_fold_cols = 2,
+#'   unique_fold_cols_only = TRUE,
+#'   max_iters = 4
+#' )
+#'
+#' ## Check if additional `extreme_pairing_levels`
 #' ## improve the numerical balance
 #' set.seed(2) # try with seed 1 as well
-#' df_folded_1 <- fold(df, 3,
+#' df_folded_1 <- fold(
+#'   data = df,
+#'   k = 3,
 #'   num_col = "score",
 #'   extreme_pairing_levels = 1
 #' )
@@ -296,8 +325,10 @@ if (getRversion() >= "2.15.1")
 #'     mean_score = mean(score)
 #'   )
 #'
-#' set.seed(2) # try with seed 1 as well
-#' df_folded_2 <- fold(df, 3,
+#' set.seed(2)  # Try with seed 1 as well
+#' df_folded_2 <- fold(
+#'   data = df,
+#'   k = 3,
 #'   num_col = "score",
 #'   extreme_pairing_levels = 2
 #' )
