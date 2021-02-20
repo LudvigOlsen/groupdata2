@@ -306,7 +306,7 @@ upsample <- function(data,
 #'   id_method = "nested",
 #'   mark_new_rows = TRUE
 #' )
-#' @importFrom dplyr filter sample_n %>%
+#' @importFrom dplyr %>%
 #' @importFrom rlang :=
 balance <- function(data,
                     size,
@@ -405,7 +405,7 @@ run_balance_ <- function(data,
     balanced <-
       plyr::ldply(unique(data[[cat_col]]), function(category) {
         data_for_cat <- data %>%
-          filter(!!as.name(cat_col) == category)
+          dplyr::filter(!!as.name(cat_col) == category)
 
         n_rows <- nrow(data_for_cat)
 
@@ -421,7 +421,7 @@ run_balance_ <- function(data,
           )
         } else {
           return(data_for_cat %>%
-                   sample_n(size = to_size, replace = FALSE))
+                   dplyr::sample_n(size = to_size, replace = FALSE))
         }
       })
   }

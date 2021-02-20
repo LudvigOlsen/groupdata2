@@ -10,13 +10,14 @@
 |collate  |en_US.UTF-8                  |
 |ctype    |en_US.UTF-8                  |
 |tz       |Europe/Copenhagen            |
-|date     |2020-06-15                   |
+|date     |2021-02-19                   |
 
 # Dependencies
 
-|package    |old   |new        |Δ  |
-|:----------|:-----|:----------|:--|
-|groupdata2 |1.2.1 |1.2.1.9000 |*  |
+|package    |old   |new   |Δ  |
+|:----------|:-----|:-----|:--|
+|groupdata2 |1.3.0 |1.4.0 |*  |
+|lifecycle  |NA    |1.0.0 |*  |
 
 # Revdeps
 

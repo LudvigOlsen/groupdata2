@@ -579,8 +579,9 @@ find_identical_cols <- function(data, cols = NULL, exclude_comparisons = NULL,
 # Remove all but one of these identical columns
 # If return_all_comparisons is TRUE, return list with 1. data, 2. all comparisons
 # If group_wise: 1,1,2,2 == 2,2,1,1 (identical groups with different names)
+# When keep_cols is a character vector, those columns will not be removed
 remove_identical_cols <- function(data, cols = NULL, exclude_comparisons = NULL,
-                                  return_all_comparisons = FALSE,
+                                  return_all_comparisons = FALSE, keep_cols = NULL,
                                   group_wise = FALSE, parallel = FALSE) {
   if (is.null(cols)) {
     cols <- colnames(data)
@@ -603,7 +604,19 @@ remove_identical_cols <- function(data, cols = NULL, exclude_comparisons = NULL,
   comparisons <- identicals_and_comparisons[[2]]
 
   # Find the columns to remove
-  to_remove <- unique(identicals[[2]])
+  if (!is.null(keep_cols)){
+    # In this case, we might know which of the two to keep
+    identicals <- identicals %>%
+      dplyr::mutate(remove = dplyr::case_when(
+        V1 %in% keep_cols & V2 %in% keep_cols ~ ".__NA__",
+        V2 %in% keep_cols ~ V1,
+        TRUE ~ V2
+      ))
+    to_remove <- unique(identicals[["remove"]])
+    to_remove <- to_remove[to_remove != ".__NA__"]
+  } else {
+    to_remove <- unique(identicals[[2]])
+  }
 
   # Remove
   if (is.character(to_remove)) {
@@ -624,13 +637,21 @@ remove_identical_cols <- function(data, cols = NULL, exclude_comparisons = NULL,
 }
 
 
-rename_with_consecutive_numbering <- function(data, cols, base_name) {
+rename_with_consecutive_numbering <- function(data, cols, base_name, warn_at_rename=FALSE, warning_msg=NULL) {
+
+  if (isTRUE(warn_at_rename) && is.null(warning_msg))
+    stop("please supply `warning_msg` when `warn_at_rename` is enabled.")
+
   if (is.integer(cols)) {
     cols <- colnames(data)[cols]
   }
 
   num_names_to_create <- length(cols)
   new_names <- paste0(base_name, seq_len(num_names_to_create))
+
+  if (isTRUE(warn_at_rename) && !all(cols == new_names)){
+    warning(warning_msg)
+  }
 
   dplyr::rename_at(data,
                    dplyr::vars(cols),

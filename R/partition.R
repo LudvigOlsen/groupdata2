@@ -213,7 +213,7 @@
 #'     sum_score = sum(score),
 #'     mean_score = mean(score)
 #'   )
-#' @importFrom dplyr group_by do %>%
+#' @importFrom dplyr %>%
 partition <- function(data,
                       p = 0.2,
                       cat_col = NULL,
@@ -299,8 +299,8 @@ run_partition_ <- function(data,
         # Group by new grouping factor '.partitions'
 
         data <- data %>%
-          group_by(!!as.name(cat_col)) %>%
-          do(
+          dplyr::group_by(!!as.name(cat_col)) %>%
+          dplyr::do(
             group_uniques_(
               data = .,
               n = p,
@@ -310,7 +310,7 @@ run_partition_ <- function(data,
               force_equal = force_equal
             )
           ) %>%
-          group_by(!!as.name(".partitions"))
+          dplyr::group_by(!!as.name(".partitions"))
 
         # If id_col is NULL
       } else {
@@ -319,8 +319,8 @@ run_partition_ <- function(data,
         # .. and add grouping factor to data
 
         data <- data %>%
-          group_by(!!as.name(cat_col)) %>%
-          do(
+          dplyr::group_by(!!as.name(cat_col)) %>%
+          dplyr::do(
             group(
               data = .,
               n = p,
