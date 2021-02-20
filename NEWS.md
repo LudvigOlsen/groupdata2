@@ -1,4 +1,6 @@
 
+# groupdata2 1.4.0.9000
+
 # groupdata2 1.4.0
 
 * Breaking: In `fold()`, the `k` argument can now be a multi-element vector with one `k` (number of folds) per fold column. This functionality required a minor rewrite, why you might see interchanged fold column names in comparison to the previous versions.
