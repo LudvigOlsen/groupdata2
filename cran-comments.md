@@ -9,4 +9,3 @@ There were no ERRORs, WARNINGs or NOTEs.
 ## Downstream dependencies
 I used revdepcheck::revdep_check() to run R CMD check on all downstream dependencies 
 and it found no problems.
-
