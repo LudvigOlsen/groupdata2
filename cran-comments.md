@@ -6,7 +6,8 @@
 ## R CMD check results  
 There were no ERRORs, WARNINGs or NOTEs.  
 
+I removed the faulty part of the URL.
+
 ## Downstream dependencies
 I used revdepcheck::revdep_check() to run R CMD check on all downstream dependencies 
 and it found no problems.
-

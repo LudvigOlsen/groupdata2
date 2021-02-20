@@ -5,7 +5,7 @@
 #' A simple function to extract headers from an RMarkdown or Markdown document
 #' and build a table of contents. Returns a markdown list with links to the
 #' headers using
-#' [pandoc header identifiers](http://pandoc.org/MANUAL.html#header-identifiers).
+#' [pandoc header identifiers](http://pandoc.org/MANUAL.html).
 #'
 #' WARNING: This function only works with hash-tag headers.
 #'
