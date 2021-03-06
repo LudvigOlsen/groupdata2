@@ -1,7 +1,11 @@
 
 # groupdata2 1.4.0.9000
 
+* Adds `summarize_group_cols()` for finding the number of groups per fold column along with statistics about the number of rows per group.
+
 * Breaking: Fixes internal sorting of fold columns. This sometimes changes the order of fold columns, compared to the previous version.
+
+* Adds `tidyr` as a required dependency. Previously, it was suggested.
 
 # groupdata2 1.4.0
 

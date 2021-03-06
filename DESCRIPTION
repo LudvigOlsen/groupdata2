@@ -23,6 +23,7 @@ Imports:
     rlang (>= 0.4.4),
     stats,
     tibble (>= 2.1.3),
+    tidyr,
     utils
 RoxygenNote: 7.1.1
 Suggests:
@@ -34,7 +35,6 @@ Suggests:
     lmerTest,
     rmarkdown,
     testthat,
-    tidyr,
     xpectr (>= 0.4.0)
 RdMacros: 
     lifecycle
