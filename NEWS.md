@@ -1,6 +1,8 @@
 
 # groupdata2 1.4.0.9000
 
+* Breaking: Fixes internal sorting of fold columns. This sometimes changes the order of fold columns, compared to the previous version.
+
 # groupdata2 1.4.0
 
 * Breaking: In `fold()`, the `k` argument can now be a multi-element vector with one `k` (number of folds) per fold column. This functionality required a minor rewrite, why you might see interchanged fold column names in comparison to the previous versions.
