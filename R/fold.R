@@ -669,9 +669,11 @@ run_fold_ <- function(data,
     data <- data %>%
       dplyr::group_by(!!as.name(".folds"))
   } else {
-    # Order fold columns
+    # Order fold columns by their tail number (.folds_'##')
     all_colnames <- colnames(data)
-    fold_colnames <- sort(extract_fold_colnames(data))
+    fold_colnames <- extract_fold_colnames(data)
+    fold_idx_order <- order(as.integer(substring(fold_colnames, 8)))
+    fold_colnames <- fold_colnames[fold_idx_order]  # Sort by tail number
     non_fold_colnames <- setdiff(all_colnames, fold_colnames)
     new_order <- c(non_fold_colnames, fold_colnames)
     data <- data[, new_order]
