@@ -339,6 +339,13 @@ df_folded <- fold(
   max_iters = 4
 )
 
+# Check the generated columns
+# with `summarize_group_cols()`
+summarize_group_cols(
+  data = df_folded,
+  group_cols = paste0('.folds_', 1:2)
+)
+
 ## Check if additional `extreme_pairing_levels`
 ## improve the numerical balance
 set.seed(2) # try with seed 1 as well

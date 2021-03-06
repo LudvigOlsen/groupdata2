@@ -53,6 +53,7 @@ R package for dividing data into groups.
 | `differs_from_previous()` | Finds values, or indices of values, that differ from the previous value by some threshold(s). |
 | `find_starts()`           | Finds values or indices of values that are not the same as the previous value.                |
 | `find_missing_starts()`   | Finds missing starts for the `l_starts` method.                                               |
+| `summarize_group_cols()`  | Calculates summary statistics about group columns (i.e. `factor`s).                           |
 | `%primes%`                | Finds remainder for the `primes` method.                                                      |
 | `%staircase%`             | Finds remainder for the `staircase` method.                                                   |
 
@@ -112,9 +113,7 @@ library(knitr)       # kable()
 # Create small data frame
 df_small <- data.frame(
   "x" = c(1:12),
-  "species" = rep(c(
-    'cat', 'pig', 'human'
-  ), 4),
+  "species" = rep(c('cat', 'pig', 'human'), 4),
   "age" = sample(c(1:100), 12),
   stringsAsFactors = FALSE
 )
@@ -260,7 +259,7 @@ splt(data = df_small,
 <td>
 
 |   | x | species | age |
-| - | -: | :------ | --: |
+| :- | -: | :------ | --: |
 | 5 | 5 | pig     |  87 |
 | 6 | 6 | human   |  43 |
 | 7 | 7 | cat     |  14 |
@@ -271,7 +270,7 @@ splt(data = df_small,
 <td>
 
 |    |  x | species | age |
-| -- | -: | :------ | --: |
+| :- | -: | :------ | --: |
 | 9  |  9 | human   |  59 |
 | 10 | 10 | cat     |  51 |
 | 11 | 11 | pig     |  85 |
