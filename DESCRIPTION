@@ -1,6 +1,6 @@
 Package: groupdata2
 Title: Creating Groups from Data
-Version: 1.4.1
+Version: 1.4.1.9000
 Authors@R: person("Ludvig Renbo", "Olsen", email = "r-pkgs@ludvigolsen.dk", role = c("aut", "cre"))
 Description: Methods for dividing data into groups. 
     Create balanced partitions and cross-validation folds. 
