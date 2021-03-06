@@ -1,4 +1,6 @@
 
+# groupdata2 1.4.1.9000
+
 # groupdata2 1.4.1
 
 * Adds `summarize_group_cols()` for finding the number of groups per fold column along with statistics about the number of rows per group.
