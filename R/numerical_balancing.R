@@ -2,6 +2,7 @@
 
 # TODO Currently, it is very confusing what is going on and why
 # So make an overview before the code and up the commenting game a lot
+# TODO Answer: why is the "grouped by ID" different every time? No shuffling in that?
 
 # Either called by fold() with a n_* method
 # or partition() with the l_sizes method
