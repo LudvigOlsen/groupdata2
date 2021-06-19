@@ -6,14 +6,16 @@
 #' Balance existing groups with up- and downsampling.
 #'
 #' The \code{groupdata2} package provides six main functions:
-#' \code{group()}, \code{group_factor()}, \code{splt()}, \code{partition()}, \code{fold()}, and \code{balance()}.
+#' \code{group()}, \code{group_factor()}, \code{splt()}, \code{partition()},
+#' \code{fold()}, and \code{balance()}.
 #'
 #' @section group:
 #' Create groups from your data.
 #'
 #' Divides data into groups by a wide range of methods.
 #' Creates a grouping factor with \code{1}s for group 1, \code{2}s for group 2, etc.
-#' Returns a \code{data.frame} grouped by the grouping factor for easy use in \code{magrittr} pipelines.
+#' Returns a \code{data.frame} grouped by the grouping factor
+#' for easy use in \code{magrittr} pipelines.
 #'
 #' Go to \code{\link{group}()}
 #'
