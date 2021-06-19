@@ -4,7 +4,7 @@
 #' @description
 #'  \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
 #'
-#'  Divides data into groups by a range of methods.
+#'  Divides data into groups by a set of methods.
 #'  Splits data by these groups.
 #'
 #'  Wraps \code{\link[groupdata2:group]{group()}} with \code{\link[base:split()]{split()}}.
