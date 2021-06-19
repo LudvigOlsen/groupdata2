@@ -143,7 +143,7 @@ for each group. The names are based on the group indices
 Divides data into groups by a wide range of methods.
 Splits data by these groups.
 
-Wraps \code{\link[groupdata2:group]{group()}} with \code{\link[base:split()]{split()}}.
+Wraps \code{\link[groupdata2:group]{group()}} with \code{\link[base:split]{split()}}.
 }
 \examples{
 # Attach packages

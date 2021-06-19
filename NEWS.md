@@ -1,5 +1,5 @@
 
-# groupdata2 1.4.1.9000
+# groupdata2 1.4.2
 
 * Improves documentation for core grouping functions.
 
