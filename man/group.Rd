@@ -145,7 +145,7 @@ For method \code{"l_starts"} only.
 \description{
 \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
 
-Divides data into groups by a set of methods.
+Divides data into groups by a wide range of methods.
 Creates a grouping factor with \code{1}s for group 1, \code{2}s for group 2, etc.
 Returns a \code{data.frame} grouped by the grouping factor for easy use in
 \code{magrittr `\%>\%`} pipelines.

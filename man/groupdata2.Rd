@@ -18,7 +18,7 @@ The \code{groupdata2} package provides six main functions:
 
 Create groups from your data.
 
-Divides data into groups by a range of methods.
+Divides data into groups by a wide range of methods.
 Creates a grouping factor with \code{1}s for group 1, \code{2}s for group 2, etc.
 Returns a \code{data.frame} grouped by the grouping factor for easy use in \code{magrittr} pipelines.
 
@@ -29,7 +29,7 @@ Go to \code{\link{group}()}
 
 Create grouping factor for subsetting your data.
 
-Divides data into groups by a range of methods.
+Divides data into groups by a wide range of methods.
 Creates and returns a grouping factor
 with \code{1}s for group 1, \code{2}s for group 2, etc.
 
@@ -38,9 +38,9 @@ Go to \code{\link{group_factor}()}
 
 \section{splt}{
 
-Split data by a range of methods.
+Split data by a wide range of methods.
 
-Divides data into groups by a range of methods.
+Divides data into groups by a wide range of methods.
 Splits data by these groups.
 
 Go to \code{\link{splt}()}
@@ -62,7 +62,7 @@ Go to \code{\link{partition}()}
 
 Create balanced folds for cross-validation.
 
-Divides data into groups (folds) by a range of methods.
+Divides data into groups (folds) by a wide range of methods.
 Balances a given categorical variable between folds and keeps (if possible)
 all data points with the same ID (e.g. participant_id) in the same fold.
 
@@ -75,7 +75,7 @@ Balance the sizes of your groups with up- and downsampling.
 
 Uses up- and/or downsampling to fix the group sizes to the
 \code{min}, \code{max}, \code{mean}, or \code{median} group size or
-to a specific number of rows. Has a range of methods for balancing on
+to a specific number of rows. Has a set of methods for balancing on
 ID level.
 
 Go to \code{\link{balance}()}
