@@ -5,15 +5,37 @@
 #' @description
 #'  \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
 #'
-#'  Divides data into groups by a range of methods.
+#'  Divides data into groups by a wide range of methods.
 #'  Creates a grouping factor with \code{1}s for group 1, \code{2}s for group 2, etc.
 #'  Returns a \code{data.frame} grouped by the grouping factor for easy use in
 #'  \code{magrittr `\%>\%`} pipelines.
+#'
+#'  By default, the data points in a group are connected sequentially (e.g. \code{c(1, 1, 2, 2, 3, 3)})
+#'  and splitting is done from top to bottom.
+#'
+#'  There are \strong{four} types of grouping methods:
+#'
+#'  The \code{"n_*"} methods split the data into a given \emph{number of groups}.
+#'  They differ in how they handle excess data points.
+#'
+#'  The \code{"greedy"} method uses a \emph{group size} to split the data into groups,
+#'  greedily grabbing \code{`n`} data points from the top.
+#'  The last group may thus differ in size (e.g. \code{c(1, 1, 2, 2, 3)}).
+#'
+#'  The \code{"l_*"} methods use a \emph{list} of either starting points (\code{"l_starts"})
+#'  or group sizes (\code{"l_sizes"}). The \code{"l_starts"} method can also auto-detect group starts
+#'  (when a value differs from the previous value).
+#'
+#'  The step methods \code{"staircase"} and \code{"primes"} increase the group size by a step for each group.
+#'
+#'  \strong{Note}: To create groups balanced by a categorical and/or numerical variable, see the
+#'  \code{\link[groupdata2:fold]{fold()}} and \code{\link[groupdata2:partition]{partition()}} functions.
+#'
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @inheritParams group_factor
-#' @param return_factor Return only grouping factor. (Logical)
-#' @param col_name Name of added grouping factor
+#' @param return_factor Only return the grouping factor. (Logical)
+#' @param col_name Name of the added grouping factor.
 #' @return \code{data.frame} grouped by existing grouping variables and the new grouping factor.
 #' @family grouping functions
 #' @family staircase tools
@@ -32,21 +54,30 @@
 #' )
 #'
 #' # Using group()
-#' df_grouped <- group(df, 5, method = "n_dist")
+#' df_grouped <- group(df, n = 5, method = "n_dist")
 #'
-#' # Using group() with dplyr pipeline to get mean age
+#' # Using group() in pipeline to get mean age
 #' df_means <- df %>%
-#'   group(5, method = "n_dist") %>%
+#'   group(n = 5, method = "n_dist") %>%
 #'   dplyr::summarise(mean_age = mean(age))
 #'
-#' # Using group_factor() with l_starts
-#' # "c('pig',2)" skips to the second appearance of
-#' # "pig" after the first appearance of "cat"
-#' df_grouped <- group(df,
-#'   list("cat", c("pig", 2), "human"),
+#' # Using group() with `l_sizes`
+#' df_grouped <- group(
+#'   data = df,
+#'   n = list(0.2, 0.3),
+#'   method = "l_sizes"
+#' )
+#'
+#' # Using group_factor() with `l_starts`
+#' # `c('pig', 2)` skips to the second appearance of
+#' # 'pig' after the first appearance of 'cat'
+#' df_grouped <- group(
+#'   data = df,
+#'   n = list("cat", c("pig", 2), "human"),
 #'   method = "l_starts",
 #'   starts_col = "species"
 #' )
+#'
 group <- function(data,
                   n,
                   method = "n_dist",

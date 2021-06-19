@@ -4,9 +4,31 @@
 #' @description
 #'  \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
 #'
-#'  Divides data into groups by a range of methods.
+#'  Divides data into groups by a wide range of methods.
 #'  Creates and returns a grouping factor
 #'  with \code{1}s for \emph{group 1}, \code{2}s for \emph{group 2}, etc.
+#'
+#'  By default, the data points in a group are connected sequentially (e.g. \code{c(1, 1, 2, 2, 3, 3)})
+#'  and splitting is done from top to bottom.
+#'
+#'  There are \strong{four} types of grouping methods:
+#'
+#'  The \code{"n_*"} methods split the data into a given \emph{number of groups}.
+#'  They differ in how they handle excess data points.
+#'
+#'  The \code{"greedy"} method uses a \emph{group size} to split the data into groups,
+#'  greedily grabbing \code{`n`} data points from the top.
+#'  The last group may thus differ in size (e.g. \code{c(1, 1, 2, 2, 3)}).
+#'
+#'  The \code{"l_*"} methods use a \emph{list} of either starting points (\code{"l_starts"})
+#'  or group sizes (\code{"l_sizes"}). The \code{"l_starts"} method can also auto-detect group starts
+#'  (when a value differs from the previous value).
+#'
+#'  The step methods \code{"staircase"} and \code{"primes"} increase the group size by a step for each group.
+#'
+#'  \strong{Note}: To create groups balanced by a categorical and/or numerical variable, see the
+#'  \code{\link[groupdata2:fold]{fold()}} and \code{\link[groupdata2:partition]{partition()}} functions.
+#'
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @param data \code{data.frame} or \code{vector}.
@@ -52,33 +74,40 @@
 #'  \code{`n`} is number of groups}
 #'
 #'  \subsection{n_rand}{Divides the data into a specified number of groups.
-#'  Excess data points are placed randomly in groups (only 1 per group)
+#'  Excess data points are placed randomly in groups (max. 1 per group)
 #'  \eqn{(e.g. 12, 11, 11, 11, 12)}.
 #'
 #'  \code{`n`} is number of groups}
 #'
-#'  \subsection{l_sizes}{Divides up the data by a list of group sizes.
+#'  \subsection{l_sizes}{Divides up the data by a \code{list} of group sizes.
 #'  Excess data points are placed in an extra group at the end.
 #'
 #'  \eqn{E.g. n = list(0.2, 0.3) outputs groups with sizes (11, 17, 29)}.
 #'
-#'  \code{`n`} is a list of group sizes}
+#'  \code{`n`} is a \code{list} of group sizes}
 #'
-#'  \subsection{l_starts}{Starts new groups at specified values of vector.
+#'  \subsection{l_starts}{Starts new groups at specified values in the \code{`starts_col`} vector.
 #'
-#'  \code{n} is a list of starting positions.
-#'  Skip values by \code{c(value, skip_to_number)} where skip_to_number is the nth appearance of the value
-#'  in the vector.
-#'  Groups automatically start from first data point.
+#'  \code{n} is a \code{list} of starting positions.
+#'  Skip values by \code{c(value, skip_to_number)} where \code{skip_to_number} is the
+#'  nth appearance of the value in the vector after the previous group start.
+#'  The first data point is automatically a starting position.
 #'
 #'  \eqn{E.g. n = c(1, 3, 7, 25, 50) outputs groups with sizes (2, 4, 18, 25, 8)}.
 #'
 #'  To skip: \eqn{given vector c("a", "e", "o", "a", "e", "o"), n = list("a", "e", c("o", 2))
 #'  outputs groups with sizes (1, 4, 1)}.}
 #'
-#'  If passing \eqn{n = 'auto'} the starting positions are automatically found with
-#'  \code{\link{find_starts}()}. Note that all \code{NA}s are first replaced by a single unique value,
+#'  If passing \eqn{n = 'auto'} the starting positions are automatically found
+#'  such that a group is started whenever a value differs from the previous value
+#'  (see \code{\link{find_starts}()}).
+#'  Note that all \code{NA}s are first replaced by a single unique value,
 #'  meaning that they will also cause group starts.
+#'  See \code{\link{differs_from_previous}()}
+#'  to set a threshold for what is considered "different".
+#'
+#'  \eqn{E.g. n = "auto" for c(10, 10, 7, 8, 8, 9) would start groups at
+#'  the first 10, 7, 8 and 9, and give c(1, 1, 2, 3, 3, 4).}
 #'
 #'  \subsection{staircase}{Uses step size to divide up the data.
 #'  Group size increases with 1 step for every group,
@@ -97,10 +126,11 @@
 #' when \code{`data`} is a \code{data.frame}. Pass \code{'index'} to use row names. (Character)
 #' @param force_equal Create equal groups by discarding excess data points.
 #'  Implementation varies between methods. (Logical)
-#' @param allow_zero Whether \code{`n`} can be passed as \code{0}. (Logical)
-#' @param descending Change direction of method. (Not fully implemented)
+#' @param allow_zero Whether \code{`n`} can be passed as \code{0}.
+#' Can be useful when programmatically finding `n`. (Logical)
+#' @param descending Change the direction of the method. (Not fully implemented)
 #'  (Logical)
-#' @param randomize Randomize the grouping factor (Logical)
+#' @param randomize Randomize the grouping factor. (Logical)
 #' @param remove_missing_starts Recursively remove elements from the
 #'  list of starts that are not found.
 #'  For method \code{"l_starts"} only.

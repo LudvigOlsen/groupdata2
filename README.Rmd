@@ -56,7 +56,7 @@ R package for dividing data into groups.
 
 |Function              |Description                                                        |
 |:---------------------|:------------------------------------------------------------------|
-|`group_factor()`      |Divides data into groups by a range of methods.                    |
+|`group_factor()`      |Divides data into groups by a wide range of methods.                    |
 |`group()`             |Creates grouping factor and adds to the given data frame.          |
 |`splt()`              |Creates grouping factor and splits the data by these groups.       |
 |`partition()`         |Splits data into partitions. Balances a given categorical variable and/or numerical variable between partitions and keeps all data points with a shared ID in the same partition.  |

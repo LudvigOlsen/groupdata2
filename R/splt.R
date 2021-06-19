@@ -4,8 +4,10 @@
 #' @description
 #'  \Sexpr[results=rd, stage=render]{lifecycle::badge("stable")}
 #'
-#'  Divides data into groups by a range of methods.
+#'  Divides data into groups by a wide range of methods.
 #'  Splits data by these groups.
+#'
+#'  Wraps \code{\link[groupdata2:group]{group()}} with \code{\link[base:split]{split()}}.
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @inheritParams group_factor
