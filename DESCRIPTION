@@ -20,6 +20,7 @@ Imports:
     lifecycle,
     plyr (>= 1.8.5),
     purrr,
+    rearrr (>= 0.2.0),
     rlang (>= 0.4.4),
     stats,
     tibble (>= 2.1.3),

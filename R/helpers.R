@@ -684,27 +684,36 @@ create_tmp_val <- function(v, tmp_val = ".tmp_val_", disallowed = NULL) {
   tmp_val
 }
 
-# Used in create_num_col_groups
+# Rename groups to the names in the given rank summary
+# The largest group becomes part of the smallest group in the given rank summary
+# Used in create_num_col_groups and numerically_balanced_group_factor_
 rename_levels_by_reverse_rank_summary <- function(data, rank_summary, levels_col, num_col) {
+  # Calculate current rank summary
   current_rank_summary <- create_rank_summary(data, levels_col, num_col)
   colnames(current_rank_summary) <- paste0(colnames(current_rank_summary), "_current")
 
+  # Reverse the given rank summary
+  # and combine with rank summary for the given data
   reverse_rank_bind <- rank_summary %>%
     dplyr::arrange(dplyr::desc(.data$sum_)) %>%
     dplyr::bind_cols(current_rank_summary)
 
+  # Find mapping for groups in the two rank summaries
   pattern_and_replacement <- reverse_rank_bind %>%
     base_select(cols = c(levels_col, paste0(levels_col, "_current")))
 
+  # Add the mapping to the given data
   data <- data %>%
     dplyr::left_join(pattern_and_replacement, by = levels_col) %>%
     base_deselect(cols = levels_col) %>%
     base_rename(before = paste0(levels_col, "_current"), after = levels_col)
 
+  # Update the given rank summary with the sums in the rank summary for the given data
   updated_rank_summary <- reverse_rank_bind %>%
     dplyr::mutate(sum_ = .data$sum_ + .data$sum__current) %>%
     base_select(cols = c(levels_col, "sum_"))
 
+  # Return updated rank summary and the regrouped data
   list(
     "updated_rank_summary" = updated_rank_summary,
     "updated_data" = data

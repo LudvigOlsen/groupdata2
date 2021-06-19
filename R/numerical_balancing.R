@@ -1,209 +1,185 @@
 
-numerically_balanced_group_factor_ <- function(data, n, num_col, method = "n_fill",
-                                               unequal_method = "first",
-                                               # Internal for now ("mean" or "sd" or (alternating) list)
-                                               optimize_for = "mean",
-                                               extreme_pairing_levels = 1,
-                                               force_equal = FALSE) {
+
+# TODO Currently, it is very confusing what is going on and why
+# So make an overview before the code and up the commenting game a lot
+
+# Either called by fold() with a n_* method
+# or partition() with the l_sizes method
+
+numerically_balanced_group_factor_ <- function(
+  data,
+  n,
+  num_col,
+  method = "n_fill",
+  unequal_method = "first",
+  # Internal for now ("mean" or "sd" or (alternating) list)
+  optimize_for = "mean",
+  extreme_pairing_levels = 1,
+  force_equal = FALSE) {
 
   # Create unique local temporary index variable name
   local_tmp_index_var <- create_tmp_var(data, ".tmp_index_")
-  local_tmp_index_2_var <- create_tmp_var(data, ".tmp_index_2_")
   local_tmp_groups_var <- create_tmp_var(data, ".groups")
   local_tmp_rearrange_var <- create_tmp_var(data, ".rearrange_factor_")
-  local_tmp_rearrange_2_var <- create_tmp_var(data, ".rearrange_factor_2_")
 
-  # If method is n_*, we are doing folding
+  # If method is n_*, it was called from fold()
   is_n_method <- substring(method, 1, 2) == "n_"
 
+  # Check method is allowed
+  if (!is_n_method && method != "l_sizes"){
+    stop(paste0("method `", method, "` is currently not supported with num_col balancing."))
+  }
+
+  # Whether we have an equal number of rows (relevant for pairing)
   equal_nrows <- nrow(data) %% 2 == 0
 
   # Check if we have enough data for pairwise folding
   # or if we are running partitioning (l_sizes)
+
+  # TODO: explain group_by_rearrange_id
+  # In partitioning, we group directly on the rows, as that is the way to get
+  # those specific group sizes
+  # In folding, we group the final pair indices (rearrange IDs) (when enough data points)
+  # When the number of rearrange IDs do not divide appropriately, why we have a distribution step
+  # for "excessive" rows. (THIS MIGHT BE WRONG, CHECK!)
+
   if (method == "l_sizes") {
     group_by_rearrange_id <- FALSE
     num_final_groups <- length(n)
   } else if (isTRUE(is_n_method)) {
     if (length(n) > 1) {
-      stop(paste0("n contained more than one element with method '", method, "'."))
+      stop(paste0("`n` contained more than one element with method `", method, "`."))
     }
     if (n < 1) {
       n <- ceiling(nrow(data) / convert_percentage_(n, data))
     }
     num_final_groups <- n
-    group_by_rearrange_id <- ifelse(nrow(data) < n * 2, FALSE, TRUE)
-  } else {
-    stop(paste0("method '", method, "' is currently not supported with num_col balancing."))
+    # If we have enough data to create >=n pairs
+    # we group the pairs, otherwise the rows
+    group_by_rearrange_id <- nrow(data) >= n * 2
   }
 
   # Check if extreme_pairing_levels is too big for the dataset
-  # TODO: Check that this calculation holds in all usecases
+  # when grouping on rearrange IDs
+  # TODO: Check that this calculation holds in all use cases
   # e.g. is it enough with one group level per fold when isTRUE(group_by_rearrange_id)?
   if (group_by_rearrange_id && extreme_pairing_levels > 1 &&
     nrow(data) < num_final_groups * 2^extreme_pairing_levels) {
     stop(paste0(
-      "num_col: The (subset of) data is too small to perform ",
+      "`num_col`: The (subset of) data is too small to perform ",
       extreme_pairing_levels,
-      " levels of extreme pairing. Decrease 'extreme_pairing_levels'."
+      " levels of extreme pairing. Decrease `extreme_pairing_levels`."
     ))
   }
 
+  # Check when grouping on rows
   # If method="l_sizes" for instance, we want the last pairing to have at least one pair (two sub pairs)
   if (!group_by_rearrange_id && extreme_pairing_levels > 1 &&
     nrow(data) < 2 * 2^extreme_pairing_levels) {
     stop(paste0(
-      "num_col: The (subset of) data is too small to perform ", extreme_pairing_levels,
-      " levels of extreme pairing. Decrease 'extreme_pairing_levels'."
+      "`num_col`: The (subset of) data is too small to perform ", extreme_pairing_levels,
+      " levels of extreme pairing. Decrease `extreme_pairing_levels`."
     ))
   }
+
+  # Save the order of the data frame
+  data[[local_tmp_index_var]] <- seq_len(nrow(data))
 
   # Arrange by smallest, biggest, 2nd smallest, 2nd biggest, etc.
   # If the number of rows is unequal, the row with the smallest value is alone
   # This is done, as it is the one with the least effect on sum of values in a group
-  data_sorted <- data # TODO is this renaming necessary?
-  data_sorted[[local_tmp_index_var]] <- seq_len(nrow(data_sorted))
-  data_sorted <- data_sorted %>%
-    dplyr::arrange(!!as.name(num_col)) %>%
-    rearrange(
-      method = "pair_extremes",
+  data <- data %>%
+    rearrr::pair_extremes(
+      col = num_col,
       unequal_method = unequal_method,
-      keep_factor = TRUE,
+      num_pairings = extreme_pairing_levels,
+      balance = optimize_for,
+      shuffle_members = FALSE,
+      shuffle_pairs = FALSE,
       factor_name = local_tmp_rearrange_var
-    ) # Not actually a factor....
+    )
 
-  # Perform the rearranging of extreme pairs again if specified
-  # We do it on the rearrange factor levels, so a pair consists of the rows from two
-  # rearrange factor levels
-  if (extreme_pairing_levels > 1) {
-
-    # print(paste0("n: ",n,
-    #              " num_final_groups: ",num_final_groups,
-    #              " extreme_pairing_levels: ",extreme_pairing_levels,
-    #              " num_final_groups*2^extreme_pairing_levels: ", num_final_groups*2^extreme_pairing_levels,
-    #              " nrows: ",nrow(data_sorted),
-    #              " num rearrange factor levels: ", nlevels(data_sorted$rearrange_factor)))
-
-
-    plyr::l_ply(seq_len(extreme_pairing_levels - 1), function(i) {
-      if (length(optimize_for) > 1) {
-        current_optimize_for <- optimize_for[[i]]
-      } else {
-        current_optimize_for <- optimize_for
-      }
-
-      if (current_optimize_for == "mean") {
-        tmp_group_scores <- data_sorted %>%
-          dplyr::group_by(!!as.name(local_tmp_rearrange_var)) %>%
-          dplyr::summarize(group_aggr = sum(!!as.name(num_col)))
-      } else if (current_optimize_for == "sd") {
-
-        # Note: Only works for pairs, right?
-        tmp_group_scores <- data_sorted %>%
-          dplyr::group_by(!!as.name(local_tmp_rearrange_var)) %>%
-          dplyr::summarize(group_aggr = sum(abs(diff(!!as.name(num_col)))))
-      }
-
-      if (!equal_nrows & unequal_method == "first") {
-
-        # Reorder with first group always first (otherwise doesn't work with negative numbers)
-        tmp_group_scores_sorted <- tmp_group_scores %>%
-          dplyr::filter(dplyr::row_number() == 1) %>%
-          dplyr::bind_rows(tmp_group_scores %>%
-            dplyr::filter(dplyr::row_number() != 1) %>%
-            dplyr::arrange(.data$group_aggr))
-      } else {
-        tmp_group_scores_sorted <- tmp_group_scores %>%
-          dplyr::arrange(.data$group_aggr)
-      }
-
-      # Rearrange again
-      tmp_rearrange <- tmp_group_scores_sorted %>%
-        rearrange(
-          method = "pair_extremes",
-          unequal_method = unequal_method,
-          keep_factor = TRUE,
-          factor_name = local_tmp_rearrange_2_var
-        ) %>%
-        base_select(cols = c(local_tmp_rearrange_var, local_tmp_rearrange_2_var))
-
-      data_sorted <<- data_sorted %>%
-        dplyr::left_join(tmp_rearrange, by = local_tmp_rearrange_var) %>%
-        dplyr::arrange(
-          !!as.name(local_tmp_rearrange_2_var),
-          !!as.name(local_tmp_rearrange_var),
-          !!as.name(num_col)
-        ) %>%
-        base_deselect(cols = local_tmp_rearrange_var) %>%
-        base_rename(
-          before = local_tmp_rearrange_2_var,
-          after = local_tmp_rearrange_var
-        )
-    })
+  # Names of the pairing factors
+  if (extreme_pairing_levels == 1){
+    pairing_factors <- local_tmp_rearrange_var
+  } else {
+    pairing_factors <- paste0(local_tmp_rearrange_var, "_", seq_len(extreme_pairing_levels))
   }
+  final_rearrange_var <- tail(pairing_factors, 1)
 
+  # If we are grouping the rearrange IDs
+  # I.e. for n_* methods with >= 2*n data points
   if (isTRUE(group_by_rearrange_id)) {
-    num_excessive_rearrange_levels <- nlevels(factor(
-      data_sorted[[local_tmp_rearrange_var]])) %% num_final_groups
-    has_excessive_rearrange_levels <- num_excessive_rearrange_levels > 0
+    num_excessive_rearrange_ids <-
+      nlevels(factor(data[[final_rearrange_var]])) %% num_final_groups
+    has_excessive_rearrange_ids <- num_excessive_rearrange_ids > 0
 
-    if (has_excessive_rearrange_levels) {
+    # We have extra rearrange IDs to distribute the rows of
+    if (has_excessive_rearrange_ids) {
       if (!equal_nrows) {
-        groups_to_distribute <- dplyr::case_when(
+        # Add index of unequal row to a list of IDs to distribute
+        ids_to_distribute <- dplyr::case_when(
           unequal_method == "first" ~ as.numeric(1),
-          unequal_method == "last" ~ as.numeric(floor(nrow(data_sorted) / 2) + 1),
-          unequal_method == "middle" ~ as.numeric(ceiling(nrow(data_sorted) / 4) + 1)
+          unequal_method == "last" ~ as.numeric(floor(nrow(data) / 2) + 1),
+          unequal_method == "middle" ~ as.numeric(ceiling(nrow(data) / 4) + 1)
         )
-        if (num_excessive_rearrange_levels > 1) {
-          # Add the remaining number of excess groups
-          rearrange_levels <- unique(data_sorted[[local_tmp_rearrange_var]])
-          choices <- rearrange_levels[rearrange_levels != groups_to_distribute]
-          groups_to_distribute <- c(
-            groups_to_distribute,
-            sample(choices, num_excessive_rearrange_levels - 1)
+        if (num_excessive_rearrange_ids > 1) {
+          # Add indices for the remaining number of excess IDs
+          rearrange_ids <- unique(data[[final_rearrange_var]])
+          possible_choices <- rearrange_ids[rearrange_ids != ids_to_distribute]
+          ids_to_distribute <- c(
+            ids_to_distribute,
+            sample(possible_choices, num_excessive_rearrange_ids - 1)
           )
         }
       } else {
-        groups_to_distribute <- sample(
-          unique(data_sorted[[local_tmp_rearrange_var]]),
-          num_excessive_rearrange_levels
+        ids_to_distribute <- sample(
+          unique(data[[final_rearrange_var]]),
+          num_excessive_rearrange_ids
         )
       }
 
-      rows_to_distribute <- data_sorted[
-        data_sorted[[local_tmp_rearrange_var]] %in% groups_to_distribute,
+      # Extract the actual rows to distribute
+      rows_to_distribute <- data[
+        data[[final_rearrange_var]] %in% ids_to_distribute,
       ] %>%
         dplyr::arrange(!!as.name(num_col))
 
-      data_sorted <- data_sorted[
-        data_sorted[[local_tmp_rearrange_var]] %ni% groups_to_distribute,
+      # Remove the rows that will be distributed after grouping
+      data <- data[
+        data[[final_rearrange_var]] %ni% ids_to_distribute,
       ]
     }
 
-    # Create groups
-    data_sorted <- data_sorted %>%
+    # Group the IDs
+    data <- data %>%
       group_uniques_(
         n = n,
-        id_col = local_tmp_rearrange_var,
+        id_col = final_rearrange_var,
         method = method,
         col_name = local_tmp_groups_var
       )
 
-    if (has_excessive_rearrange_levels) {
+    if (has_excessive_rearrange_ids) {
       # Calculate sums of the other pairs
       # Get the smallest (and second smallest if we have 2 rows to distribute)
       # TODO What if extreme_pairing_levels > 1 ???
-
-      data_sorted_rank_summary <- create_rank_summary(
-        data_sorted,
+      data_rank_summary <- create_rank_summary(
+        data = data,
         levels_col = local_tmp_groups_var,
         num_col = num_col
       )
 
-      if (nrow(data_sorted_rank_summary) >= nrow(rows_to_distribute)) {
-        rows_to_distribute[[local_tmp_groups_var]] <- data_sorted_rank_summary %>%
+      if (nrow(data_rank_summary) >= nrow(rows_to_distribute)) {
+        # When there are fewer rows to distribute than number of groups
+        # Add group IDs to the excess rows
+        # such that the smallest groups get the additional rows
+        rows_to_distribute[[local_tmp_groups_var]] <- data_rank_summary %>%
           dplyr::filter(dplyr::row_number() %in% seq_len(nrow(rows_to_distribute))) %>%
           dplyr::pull(!!as.name(local_tmp_groups_var))
       } else {
+        # When there are more rows to distribute than number of groups
+        # we run the balancing again
         # Given that this will mostly happen with a few excess datapoints
         # the following might not be the optimal approach
         rows_to_distribute[[local_tmp_groups_var]] <- numerically_balanced_group_factor_(
@@ -220,21 +196,26 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method = "n_fil
           extreme_pairing_levels = 1
         )
 
+        # Rename the groups for the excess rows such that
+        # the biggest group becomes part of the smallest group in the data
         renaming_levels_list <- rename_levels_by_reverse_rank_summary(
           data = rows_to_distribute,
-          rank_summary = data_sorted_rank_summary,
+          rank_summary = data_rank_summary,
           levels_col = local_tmp_groups_var,
           num_col = num_col
         )
 
+        # Extract regrouped rows
         rows_to_distribute <- renaming_levels_list[["updated_data"]]
       }
 
-      data_sorted <- data_sorted %>%
+      # Add the now distributed rows
+      data <- data %>%
         dplyr::bind_rows(rows_to_distribute)
     }
 
-    data_sorted <- data_sorted %>%
+    # Reorder the data to the original order
+    data <- data %>%
       dplyr::ungroup() %>%
       dplyr::arrange(!!as.name(local_tmp_index_var))
 
@@ -246,54 +227,47 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method = "n_fil
     # we have reordered the pairs
     if (is_n_method && !equal_nrows) {
       if (unequal_method == "last") {
-        excessive_row <- data_sorted[
-          data_sorted[[local_tmp_rearrange_var]] ==
-            max(data_sorted[[local_tmp_rearrange_var]]),
+        excessive_row <- data[
+          data[[final_rearrange_var]] ==
+            max(data[[final_rearrange_var]]),
         ]
-        data_sorted <- data_sorted[
-          data_sorted[[local_tmp_rearrange_var]] !=
-            max(data_sorted[[local_tmp_rearrange_var]]),
+        data <- data[
+          data[[final_rearrange_var]] !=
+            max(data[[final_rearrange_var]]),
         ]
       } else if (unequal_method == "first") {
-        excessive_row <- data_sorted[
-          data_sorted[[local_tmp_rearrange_var]] ==
-            min(data_sorted[[local_tmp_rearrange_var]]),
+        excessive_row <- data[
+          data[[final_rearrange_var]] ==
+            min(data[[final_rearrange_var]]),
         ]
-        data_sorted <- data_sorted[
-          data_sorted[[local_tmp_rearrange_var]] !=
-            min(data_sorted[[local_tmp_rearrange_var]]),
+        data <- data[
+          data[[final_rearrange_var]] !=
+            min(data[[final_rearrange_var]]),
         ]
       }
     }
 
-    # Sample rearrange levels
-    # Order pairs by this shuffled order
-    rearrange_factor_levels <- tibble::enframe(
-      x = unique(data_sorted[[local_tmp_rearrange_var]]),
-      name = NULL, value = local_tmp_rearrange_var
-    ) %>%
-      dplyr::ungroup() %>%
-      dplyr::sample_frac()
-    rearrange_factor_levels[[local_tmp_index_2_var]] <- seq_len(nrow(rearrange_factor_levels))
-    data_sorted <- data_sorted %>%
-      dplyr::left_join(rearrange_factor_levels,
-        by = local_tmp_rearrange_var
-      ) %>%
-      dplyr::arrange(!!as.name(local_tmp_index_2_var))
+    # Shuffle hierarchy of pairs and pair members
+    shuffle_cols <- c(rev(pairing_factors), local_tmp_index_var)
+    data <- rearrr::shuffle_hierarchy(
+      data = data,
+      group_cols = shuffle_cols,
+      leaf_has_groups = FALSE
+    )
 
     # Insert the excess row again
     if (isTRUE(is_n_method) && !isTRUE(equal_nrows)) {
       if (unequal_method == "last") {
-        data_sorted <- data_sorted %>%
+        data <- data %>%
           dplyr::bind_rows(excessive_row)
       } else if (unequal_method == "first") {
-        data_sorted <- excessive_row %>%
-          dplyr::bind_rows(data_sorted)
+        data <- excessive_row %>%
+          dplyr::bind_rows(data)
       }
     }
 
     # Create the groups and get original order
-    data_sorted <- data_sorted %>%
+    data <- data %>%
       group(
         n = n,
         method = method,
@@ -304,7 +278,7 @@ numerically_balanced_group_factor_ <- function(data, n, num_col, method = "n_fil
       dplyr::arrange(!!as.name(local_tmp_index_var))
   }
 
-  data_sorted %>%
+  data %>%
     dplyr::pull(!!as.name(local_tmp_groups_var)) %>%
     as.factor()
 }
