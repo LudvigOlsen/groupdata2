@@ -1,8 +1,8 @@
 
 
-# TODO Currently, it is very confusing what is going on and why
-# So make an overview before the code and up the commenting game a lot
-# TODO Answer: why is the "grouped by ID" different every time? No shuffling in that?
+#   __________________ #< 55d8c930d88d3c93ad6e3c22a6f18fa4 ># __________________
+#   Numerically balanced group factor                                       ####
+
 
 # Either called by fold() with a n_* method
 # or partition() with the l_sizes method
@@ -37,7 +37,6 @@ numerically_balanced_group_factor_ <- function(
   # Check if we have enough data for pairwise folding
   # or if we are running partitioning (l_sizes)
 
-  # TODO: explain group_by_rearrange_id
   # In partitioning, we group directly on the rows, as that is the way to get
   # those specific group sizes
   # In folding, we group the final pair indices (rearrange IDs) (when enough data points)
@@ -152,9 +151,9 @@ numerically_balanced_group_factor_ <- function(
       ]
     }
 
-    # Group the IDs
+    # Group the IDs randomly
     data <- data %>%
-      group_uniques_(
+      group_uniques_randomly_(
         n = n,
         id_col = final_rearrange_var,
         method = method,
@@ -221,6 +220,8 @@ numerically_balanced_group_factor_ <- function(
       dplyr::arrange(!!as.name(local_tmp_index_var))
 
   } else {
+    # Either using in partition()
+    # or fold() with small number of data points <n*2
 
     # If we are working with fold() and an unequal dataset
     # we want to make sure the unequal_method is followed.
@@ -230,20 +231,20 @@ numerically_balanced_group_factor_ <- function(
       if (unequal_method == "last") {
         excessive_row <- data[
           data[[final_rearrange_var]] ==
-            max(data[[final_rearrange_var]]),
+            max(factor_to_num(data[[final_rearrange_var]])),
         ]
         data <- data[
           data[[final_rearrange_var]] !=
-            max(data[[final_rearrange_var]]),
+            max(factor_to_num(data[[final_rearrange_var]])),
         ]
       } else if (unequal_method == "first") {
         excessive_row <- data[
           data[[final_rearrange_var]] ==
-            min(data[[final_rearrange_var]]),
+            min(factor_to_num(data[[final_rearrange_var]])),
         ]
         data <- data[
           data[[final_rearrange_var]] !=
-            min(data[[final_rearrange_var]]),
+            min(factor_to_num(data[[final_rearrange_var]])),
         ]
       }
     }
@@ -267,7 +268,7 @@ numerically_balanced_group_factor_ <- function(
       }
     }
 
-    # Create the groups and get original order
+    # Create the groups
     data <- data %>%
       group(
         n = n,
@@ -275,10 +276,14 @@ numerically_balanced_group_factor_ <- function(
         col_name = local_tmp_groups_var,
         force_equal = force_equal
       ) %>%
-      dplyr::ungroup() %>%
+      dplyr::ungroup()
+
+    # Restore original order
+    data <- data %>%
       dplyr::arrange(!!as.name(local_tmp_index_var))
   }
 
+  # Extract grouping factor
   data %>%
     dplyr::pull(!!as.name(local_tmp_groups_var)) %>%
     as.factor()
