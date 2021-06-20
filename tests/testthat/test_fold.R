@@ -168,8 +168,7 @@ test_that(".folds is correct in fold()", {
     cat_col = "diagnosis", num_col = "score",
     id_col = "participant", col = ".folds_1", num_fold_cols = 2
   ))
-  # Here they were identical and the .folds_2 was removed
-  expect_true(!col_is_factor(df, 3,
+  expect_true(col_is_factor(df, 3,
     cat_col = "diagnosis", num_col = "score",
     id_col = "participant", col = ".folds_2", num_fold_cols = 2
   ))
@@ -317,7 +316,6 @@ test_that(".folds is correct in fold()", {
 })
 
 test_that("values are decently balanced in num_col in fold()", {
-  xpectr::set_test_seed(1)
 
   xpectr::set_test_seed(1)
   df <- data.frame(
@@ -367,7 +365,7 @@ test_that("values are decently balanced in num_col in fold()", {
     dplyr::group_by(.folds) %>%
     dplyr::summarize(group_sums = sum(score))
 
-  expect_equal(aggregated_scores$group_sums, c(288, 246, 283))
+  expect_equal(aggregated_scores$group_sums, c(288, 283, 246))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
   df_folded <- fold(df, 4, num_col = "score", id_col = "participant")
@@ -375,7 +373,7 @@ test_that("values are decently balanced in num_col in fold()", {
     dplyr::group_by(.folds) %>%
     dplyr::summarize(group_sums = sum(score))
 
-  expect_equal(aggregated_scores$group_sums, c(283, 246, 133, 155))
+  expect_equal(aggregated_scores$group_sums, c(283, 288, 82, 164))
   expect_equal(sum(aggregated_scores$group_sums), sum(df_folded$score))
 
   xpectr::set_test_seed(1)
@@ -437,7 +435,7 @@ test_that("num_col works with multiple cat_col strings in fold()", {
     structure(1:3, .Label = c("1", "2", "3"), class = "factor"))
   expect_equal(
     aggregated_scores[["num"]],
-    c(4.37881, 4.84393, 6.06384),
+    c(5.1269665339496, 5.57825285824947, 4.58135238196701),
     tolerance = 1e-4)
 
 })

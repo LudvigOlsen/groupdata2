@@ -1,6 +1,10 @@
 
 # groupdata2 1.4.2.9000
 
+* Breaking: Rewrites large parts of the numerical balancing engine used in `fold()` and `partition()`. This produces different groups in some cases. Outsources extreme pairing to `rearrr::pair_extremes()`. Now uses hierarchical shuffling (`rearrr::shuffle_hierarchy()`) in `partition()` and some cases of `fold()` (relevant when `extreme_pairing_levels` > 1).
+
+* Imports `rearrr` for use in numerical balancing.
+
 # groupdata2 1.4.2
 
 * Improves documentation for core grouping functions.

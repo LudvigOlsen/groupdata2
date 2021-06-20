@@ -119,8 +119,6 @@ test_that("numerically_balanced_group_factor_() unequal method on small datasets
         df$score <- rnorm(n_rows)
       }
 
-
-
       df_grouped <- df %>%
         dplyr::mutate(
           .groups = numerically_balanced_group_factor_(., n_folds,
@@ -197,7 +195,8 @@ test_that("numerically_balanced_group_factor_() unequal method on small datasets
         mean_sd_sum_ = mean(sd_sum),
         sd_sd_sum_ = sd(sd_sum, na.rm = TRUE),
         mean_count_ = mean(mean_count),
-        sd_count_ = sd(mean_count, na.rm = TRUE)
+        sd_count_ = sd(mean_count, na.rm = TRUE),
+        .groups = "drop"
       ) %>%
       dplyr::full_join(hparams_grid, by = "combination")
 
@@ -263,8 +262,8 @@ test_that("numerically_balanced_group_factor_() work method='l_sizes'", {
     dplyr::group_by(.groups) %>%
     dplyr::summarize(group_sum = sum(score))
 
-  expect_equal(vbf, factor(c(1, 2, 1, 1, 2, 2)))
-  expect_equal(group_sums$group_sum, c(288, 264))
+  expect_equal(vbf, factor(c(2, 2, 1, 1, 2, 1)))
+  expect_equal(group_sums$group_sum, c(301, 251))
 
   xpectr::set_test_seed(4)
   vbf <- numerically_balanced_group_factor_(df, 0.2, num_col = "score", method = "l_sizes")
@@ -275,8 +274,8 @@ test_that("numerically_balanced_group_factor_() work method='l_sizes'", {
     dplyr::group_by(.groups) %>%
     dplyr::summarize(group_sum = sum(score))
 
-  expect_equal(vbf, factor(c(1, 2, 2, 2, 2, 2)))
-  expect_equal(group_sums$group_sum, c(79, 473))
+  expect_equal(vbf, factor(c(2L, 2L, 2L, 2L, 1L, 2L)))
+  expect_equal(group_sums$group_sum, c(87, 465))
 
   xpectr::set_test_seed(19)
   # With 3 partitions
