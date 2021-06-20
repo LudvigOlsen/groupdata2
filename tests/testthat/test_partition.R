@@ -53,8 +53,6 @@ test_that(".partitions is correct in partition() with list_out == FALSE", {
     return(is.factor(partitioned_df[[col]]))
   }
 
-
-
   group_counts <- function(df, n, cat_col = NULL, num_col = NULL, id_col = NULL, force_equal = FALSE) {
     xpectr::set_test_seed(1)
     partitioned_df <- partition(df, n,
@@ -133,7 +131,7 @@ test_that(".partitions is correct in partition() with list_out == FALSE", {
     cat_col = "diagnosis",
     num_col = "score"
   ), c(6, 11))
-  expect_equal(group_counts(df_unequal, 0.4, num_col = "score", id_col = "participant"), c(6, 11))
+  expect_equal(group_counts(df_unequal, 0.4, num_col = "score", id_col = "participant"), c(5, 12))
   expect_equal(group_counts(df_unequal, 0.4,
     cat_col = "diagnosis", num_col = "score",
     id_col = "participant"
@@ -149,7 +147,7 @@ test_that(".partitions is correct in partition() with list_out == FALSE", {
   expect_equal(group_counts(df_unequal, c(2, 4, 6), num_col = "score"), c(2, 4, 6, 5))
   expect_equal(group_counts(df_unequal, 2, cat_col = "diagnosis", num_col = "score"), c(4, 13))
   expect_equal(group_counts(df_unequal, 2, cat_col = "diagnosis", num_col = "score"), c(4, 13))
-  expect_equal(group_counts(df_unequal, 2, id_col = "participant", num_col = "score"), c(6, 11))
+  expect_equal(group_counts(df_unequal, 2, id_col = "participant", num_col = "score"), c(5, 12))
   expect_equal(group_counts(df_unequal, 2, cat_col = "diagnosis", id_col = "participant", num_col = "score"), c(11, 6))
   expect_equal(group_counts(df_unequal, 1, cat_col = "diagnosis", id_col = "participant", num_col = "score"), c(6, 11))
 
@@ -996,8 +994,8 @@ test_that("input checks fuzz testing of partition()", {
   # Testing column values
   expect_equal(
     output_13881[[".partitions"]],
-    structure(c(1L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
-      2L, 2L, 2L, 2L, 2L), .Label = c("1", "2"), class = "factor"))
+    structure(c(1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 1L, 1L, 1L), .Label = c("1", "2"), class = "factor"))
   # Testing column names
   expect_equal(
     names(output_13881),
