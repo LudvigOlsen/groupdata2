@@ -177,9 +177,15 @@ replace_level <- function(f, match, replace) {
   f
 }
 
-group_uniques_ <- function(data, n, id_col, method, starts_col = NULL,
-                           col_name = ".groups", force_equal = FALSE,
-                           remove_missing_starts = FALSE) {
+group_uniques_randomly_ <- function(
+  data,
+  n,
+  id_col,
+  method,
+  starts_col = NULL,
+  col_name = ".groups",
+  force_equal = FALSE,
+  remove_missing_starts = FALSE) {
 
   #
   # Creates groups of unique IDs (e.g. subjects)

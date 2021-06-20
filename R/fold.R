@@ -549,7 +549,7 @@ run_fold_ <- function(data,
             current_fold_info <- upcoming_fold_idxs[r,]
             data <<- data %>%
               dplyr::group_by(!!as.name(cat_col)) %>%
-              dplyr::do(group_uniques_(
+              dplyr::do(group_uniques_randomly_(
                 data = .,
                 n = get_k(k, current_fold_info[["rel_idx"]]),
                 id_col = id_col,
@@ -592,7 +592,7 @@ run_fold_ <- function(data,
           plyr::l_ply(seq_len(nrow(upcoming_fold_idxs)), function(r) {
             current_fold_info <- upcoming_fold_idxs[r,]
             data <<- data %>%
-              group_uniques_(
+              group_uniques_randomly_(
                 n = get_k(k, current_fold_info[["rel_idx"]]),
                 id_col = id_col,
                 method = method,

@@ -301,7 +301,7 @@ run_partition_ <- function(data,
         data <- data %>%
           dplyr::group_by(!!as.name(cat_col)) %>%
           dplyr::do(
-            group_uniques_(
+            group_uniques_randomly_(
               data = .,
               n = p,
               id_col,
@@ -340,7 +340,7 @@ run_partition_ <- function(data,
         # .. and add grouping factor to data
 
         data <- data %>%
-          group_uniques_(
+          group_uniques_randomly_(
             n = p,
             id_col = id_col,
             method = "l_sizes",
