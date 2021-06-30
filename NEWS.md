@@ -5,6 +5,8 @@
 
 * Imports `rearrr` for use in numerical balancing.
 
+* Minor improvements to vignettes.
+
 # groupdata2 1.4.2
 
 * Improves documentation for core grouping functions.
