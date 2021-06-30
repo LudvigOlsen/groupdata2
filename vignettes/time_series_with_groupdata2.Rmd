@@ -237,7 +237,8 @@ ggplot(ts_means, aes(seq_along(mean), mean)) +
 
 # Outro
 
-Well done, you made it to the end of this introduction to `groupdata2`! If you want to know more about the various methods and arguments, you can read the [Description of groupdata2](description_of_groupdata2.html).  
+Well done, you made it to the end of this introduction to `groupdata2`! If you want to know more about the various methods and arguments, you can read the [Description of groupdata2](description_of_groupdata2.html).
+
 If you have any questions or comments to this vignette (tutorial) or `groupdata2`, please send them to me at  
 r-pkgs@ludvigolsen.dk, or open an issue on the github page https://github.com/LudvigOlsen/groupdata2 so I can make improvements.  
 
