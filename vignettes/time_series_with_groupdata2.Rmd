@@ -4,10 +4,10 @@ author:
   - "Ludvig Renbo Olsen"
 date: "`r Sys.Date()`"
 abstract: |
-  This vignette is an introduction to the package groupdata2.  
-  groupdata2 is a set of methods for easy grouping, windowing, folding, partitioning, splitting and balancing of data.  
-  We will go through dividing up a time series into windows.
-  &nbsp;  
+  This vignette introduces time series windowing with the R package `groupdata2`.
+  
+  `groupdata2` has a set of methods for easy grouping, windowing, folding, partitioning, splitting and balancing of data.
+
   For a more extensive description of groupdata2, please see [Description of groupdata2](description_of_groupdata2.html)
   &nbsp;  
   &nbsp;  
@@ -50,7 +50,7 @@ options(tibble.print_min = 4L, tibble.print_max = 4L)
 
 # Windowing time series
 
-When working with time series, groupdata2 allows us to quickly divide them into groups / windows.  
+When working with time series, `groupdata2` allows us to quickly divide them into groups / windows.  
 
 
 ## Attach packages
@@ -66,12 +66,12 @@ library(knitr) # kable
 
 ## Load time series data
 
-We will use the dataset **austres** for this vignette. It contains numbers (in thousands) of Australian residents measured *quarterly* from March 1971 to March 1994.  
+We will use the `austres` dataset for this vignette. It contains numbers (in thousands) of Australian residents measured *quarterly* from March 1971 to March 1994.  
 
 Let's load the data and take a look at the first values.  
 
 ```{r}
-timeSeriesFrame = data.frame('residents' = austres)
+timeSeriesFrame <- data.frame('residents' = austres)
 
 # Show structure of data frame
 str(timeSeriesFrame) 
@@ -99,8 +99,9 @@ ggplot(timeSeriesFrame, aes(seq_along(residents), residents)) +
 ## Reduce number of datapoints
 
 Let's say, that instead of having four measures per year, we want 1 measure every 3 years.  
-We can do this by making groups of 12 elements each with the 'greedy' method and use the means of each group as our measurements.  
-When using the method 'greedy', we specify the desired group size. Every group, except the last, is guaranteed to have this size. The last group gets the elements that are left, i.e. it might be smaller or of the same size as the other groups.
+We can do this by making groups of 12 elements each with the `greedy` method and use the means of each group as our measurements.
+
+When using the `greedy` method, we specify the desired group size. Every group, except the last, is guaranteed to have this size. The last group gets the elements that are left, i.e. it might be smaller or of the same size as the other groups.
 
 
 ```{r}
@@ -118,7 +119,7 @@ ts %>% kable()
 
 &nbsp;  
 &nbsp;  
-A visualization of the data.  
+A visualization of the data.
 
 ```{r echo=FALSE, message=FALSE}
 # Plot of time series
@@ -131,12 +132,12 @@ ggplot(ts, aes(.groups, mean)) +
 
 ```
 
-This procedure has left us with fewer datapoints, which could be useful if we had a very large data frame to start with, or if we just wanted to describe the change in residents every 3rd year (or every year for that matter, by simply changing n to 4).  
+This procedure has left us with fewer datapoints, which could be useful if we had a very large `data frame` to start with, or if we just wanted to describe the change in residents every 3rd year (or every year for that matter, by simply changing `n` to `4`).  
 
 If we wanted to know which group had the largest increase in residents, we could find the range (difference between the max and min value) within each group instead of taking the mean.  
 
 ```{r}
-ts = timeSeriesFrame %>%
+ts <- timeSeriesFrame %>%
   
   # Group data
   group(n = 12, method = 'greedy') %>%
@@ -154,10 +155,11 @@ ts %>% kable()
 ## Staircase groups 
 
 For the fun of it, let's say we want to make staircased groups inside the greedy groups, we just created.  
-When using the method 'staircase' we specify **step size**. Every group is 1 step larger than the previous group (e.g. with a step size of 5, group sizes would be 5,10,15,...).  
-By creating subgroups for every greedy group, the group size will 'start over' for each greedy group.  
+When using the `staircase` method we specify **step size**. Every group is 1 step larger than the previous group (e.g. with a step size of 5, group sizes would be 5,10,15,...).
 
-When using the staircase method, the last group might not have the size of the second last group + step size. We want to make sure that it does have such size, so we use the helper tool **%staircase%** to find a step size with a remainder of 0.  
+By creating subgroups for every greedy group, the group size will "start over" for each greedy group.  
+
+When using the staircase method, the last group might not have the size of the second last group + step size. We want to make sure that it does have such size, so we use the helper tool `%staircase%` to find a step size with a remainder of 0.  
 
 
 ```{r}
@@ -180,8 +182,9 @@ for (step_size in c(1:30)){
 
 So our step size could be 2, 4 or 12. We pick a step size of 2, because it will yield the most subgroups for the example.  
 
-Now we will first make the greedy groups like before, then we will create subgroups with the staircase method.  
-In order not to overwrite the '.groups' column from the first use of **group()**, we will use the **col_name** argument in **group()**. As **group()** groups the data frame by the generated grouping factor (what a sentence!), a second call to it will create subgroups within the initial groups. Note that versions previous to `v1.3.0` did not detect these groupings, why you had to run the second **group()** call inside dplyr's **do()**.
+Now we will first make the greedy groups like before, then we will create subgroups with the staircase method.
+
+In order not to overwrite the `.groups` column from the first use of `group()`, we will use the `col_name` argument in `group()`. As `group()` groups the `data frame` by the generated grouping factor (what a sentence!), a second call to it will create subgroups within the initial groups. Note that versions previous to `v1.3.0` did not detect these groupings, why you had to run the second `group()` call inside `dplyr`'s `do()` function.
 
 ```{r}
 ts <- timeSeriesFrame %>%
@@ -197,7 +200,8 @@ ts %>% head(24) %>% kable()
 
 ```
 
-We can get the means of each subgroup. To do this, we first group by .groups and then .subgroups. Then we find the mean number of residents for each subgroup. If we had just grouped by .subgroups, we would have taken the mean of all the data points in each subgroup level. This would have left us with (in this case) 3 means, instead of 1 per subgroup level per main group level.  
+We can get the means of each subgroup. To do this, we first group by `.groups` and then `.subgroups`. Then, we find the mean number of residents for each subgroup. If we had just grouped by `.subgroups`, we would have taken the mean of all the data points in each subgroup level. This would have left us with (in this case) 3 means, instead of 1 per subgroup level per main group level.
+
 Now that we are at it, we might as well find the ranges for each subgroup as well.  
 
 ```{r warning=FALSE}
@@ -216,8 +220,9 @@ ts_means %>% head(9) %>% kable()
 
 &nbsp;  
 
-The differences in range follows the differences in number of measurements per subgroup.  
-Here is a visualization of the means per subgroup:  
+The differences in range follows the differences in number of measurements per subgroup.
+
+Here is a visualization of the means per subgroup:
 
 ```{r echo=FALSE, message=FALSE}
 # Plot of time series
@@ -232,8 +237,8 @@ ggplot(ts_means, aes(seq_along(mean), mean)) +
 
 # Outro
 
-Well done, you made it to the end of this introduction to groupdata2! If you want to know more about the various methods and arguments, you can read the [Description of groupdata2](description_of_groupdata2.html).  
-If you have any questions or comments to this vignette (tutorial) or groupdata2, please send them to me at  
+Well done, you made it to the end of this introduction to `groupdata2`! If you want to know more about the various methods and arguments, you can read the [Description of groupdata2](description_of_groupdata2.html).  
+If you have any questions or comments to this vignette (tutorial) or `groupdata2`, please send them to me at  
 r-pkgs@ludvigolsen.dk, or open an issue on the github page https://github.com/LudvigOlsen/groupdata2 so I can make improvements.  
 
 &nbsp; 
