@@ -807,7 +807,7 @@ test_that("both wrapper functions, upsample() and downsample() work", {
 test_that("balance() works in dplyr pipeline", {
   xpectr::set_test_seed(1)
 
-  library(dplyr)
+  xpectr::suppress_mw(library(dplyr))
   # Create data frame
   xpectr::set_test_seed(1)
   df <- data.frame(
