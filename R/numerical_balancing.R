@@ -28,7 +28,7 @@ numerically_balanced_group_factor_ <- function(
 
   # Check method is allowed
   if (!is_n_method && method != "l_sizes"){
-    stop(paste0("method `", method, "` is currently not supported with num_col balancing."))
+    stop(paste0("method `", method, "` is currently not supported with `num_col` balancing."))
   }
 
   # Whether we have an equal number of rows (relevant for pairing)
@@ -41,7 +41,7 @@ numerically_balanced_group_factor_ <- function(
   # those specific group sizes
   # In folding, we group the final pair indices (rearrange IDs) (when enough data points)
   # When the number of rearrange IDs do not divide appropriately, why we have a distribution step
-  # for "excessive" rows. (THIS MIGHT BE WRONG, CHECK!)
+  # for "excessive" rows.
 
   if (method == "l_sizes") {
     group_by_rearrange_id <- FALSE
@@ -175,7 +175,7 @@ numerically_balanced_group_factor_ <- function(
         # Add group IDs to the excess rows
         # such that the smallest groups get the additional rows
         rows_to_distribute[[local_tmp_groups_var]] <- data_rank_summary %>%
-          dplyr::filter(dplyr::row_number() %in% seq_len(nrow(rows_to_distribute))) %>%
+          head(nrow(rows_to_distribute)) %>%
           dplyr::pull(!!as.name(local_tmp_groups_var))
       } else {
         # When there are more rows to distribute than number of groups
@@ -250,6 +250,7 @@ numerically_balanced_group_factor_ <- function(
     }
 
     # Shuffle hierarchy of pairs and pair members
+    # We're grouping the rows so we shuffle the indices as well
     shuffle_cols <- c(rev(pairing_factors), local_tmp_index_var)
     data <- rearrr::shuffle_hierarchy(
       data = data,
