@@ -30,7 +30,7 @@ the function is applied group-wise.}
 Number of folds (default), fold size, with more (see \code{`method`}).
 
 When \code{`num_fold_cols` > 1}, \code{`k`} can also be a vector
-with one k per fold column. This allows trying multiple \code{`k`} settings at a time. Note
+with one \code{`k`} per fold column. This allows trying multiple \code{`k`} settings at a time. Note
 that the generated fold columns are not guaranteed to be in the order of \code{`k`}.
 
 Given as whole number or percentage (\code{0 < `k` < 1}).}
@@ -156,7 +156,7 @@ when specifying \code{`cat_col`}, \code{`id_col`} and \code{`num_col`}.
 \code{`max_iters`} specifies when to stop trying.
 Note that we can end up with fewer columns than specified in \code{`num_fold_cols`}.
 
-N.B. Only used \code{`num_fold_cols` > 1}.}
+N.B. Only used when \code{`num_fold_cols` > 1}.}
 
 \item{handle_existing_fold_cols}{How to handle existing fold columns.
 Either \code{"keep_warn"}, \code{"keep"}, or \code{"remove"}.
@@ -381,6 +381,7 @@ df_folded_2 \%>\%
 
 Other grouping functions: 
 \code{\link{all_groups_identical}()},
+\code{\link{collapse_groups}()},
 \code{\link{group_factor}()},
 \code{\link{group}()},
 \code{\link{partition}()},
