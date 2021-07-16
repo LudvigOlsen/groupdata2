@@ -108,14 +108,62 @@ test_that("numerical balancing works with collapse_groups()", {
 
   #### CAT COL DEV ####
 
-  df_collapsed <-
+  xpectr::set_test_seed(1)
+  df_collapsed <- df_folded %>%
+    dplyr::ungroup() %>%
+    dplyr::sample_frac(size = 0.8) %>%
     collapse_groups(
-      dplyr::ungroup(df_folded),
       n = 4,
       group_cols = ".folds",
-      cat_col = "age",
-      cat_method = "balance",
-      cat_selection_method = "majority"
-    )
+      num_col = "age",
+      cat_col = "diagnosis",
+      cat_levels = ".majority",
+      col_name = ".cg1"
+    ) %>%
+    dplyr::ungroup() %>%
+    collapse_groups(
+      n = 4,
+      group_cols = ".folds",
+      num_col = "age",
+      cat_col = "diagnosis",
+      cat_levels = NULL,
+      col_name = ".cg2"
+    ) %>%
+    dplyr::ungroup() %>%
+    collapse_groups(
+      n = 4,
+      group_cols = ".folds",
+      num_col = "age",
+      col_name = ".cg3"
+    ) %>%
+    dplyr::ungroup() %>%
+    collapse_groups(
+      n = 4,
+      group_cols = ".folds",
+      cat_col = "diagnosis",
+      cat_levels = ".majority",
+      col_name = ".cg4"
+    ) %>%
+    dplyr::ungroup() %>%
+    collapse_groups(
+      n = 4,
+      group_cols = ".folds",
+      col_name = ".cg5"
+    ) %>%
+    dplyr::ungroup()  %>%
+    collapse_groups(
+      n = 4,
+      balance_size = FALSE,
+      group_cols = ".folds",
+      col_name = ".cg6"
+    ) %>%
+    dplyr::ungroup()
+
+  score_group_balances(
+    df_collapsed,
+    group_col = paste0(".cg", 1:6),
+    cat_col = "diagnosis",
+    num_col = "age"
+  )
 
 })

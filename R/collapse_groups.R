@@ -8,6 +8,11 @@
 
 # TODO handle existing .coll_group* columns!
 
+# TODO When there's any balancing we can often only create 1 fold column
+# so is it worth having the num_***_cols arg? Of course people
+# might not always want balancing? And with different n's, they will
+# be different!
+
 #' @title Collapse groups with categorical, numerical, and size balancing
 #' @description
 #'  \Sexpr[results=rd, stage=render]{lifecycle::badge("experimental")}
@@ -215,13 +220,6 @@ collapse_groups <- function(
     col_name = col_name
   )
 
-  # Edge case when n == 1
-  if (n == 1){
-    data[[col_name]] <- 1
-    data[[col_name]] <- factor(data[[col_name]])
-    return(data)
-  }
-
   #### Prepare data and names ####
 
   data_group_cols <- character()
@@ -281,9 +279,11 @@ collapse_groups <- function(
     group_cols <- updated[["group_cols"]]
   }
 
-  # Group by the new groups
-  data <- data %>%
-    dplyr::group_by(!!!rlang::syms(c(data_group_cols, col_name)))
+  if (num_new_group_cols == 1){
+    # Group by the new groups
+    data <- data %>%
+      dplyr::group_by(!!!rlang::syms(c(data_group_cols, col_name)))
+  }
 
   data
 
@@ -434,7 +434,7 @@ run_collapse_groups_ <- function(
       dplyr::left_join(cat_summary, by = tmp_old_group_var)
 
     # In case of NAs, set them to
-    # summaries[["cat_levels_combined"]][is.na(summaries[["cat_levels_combined"]])] <- 0
+    summaries[["cat_levels_combined"]][is.na(summaries[["cat_levels_combined"]])] <- 0
   }
   if (!is.null(num_summary)){
     summaries <- summaries %>%
@@ -474,7 +474,8 @@ run_collapse_groups_ <- function(
          unique_fold_cols_only =  unique_new_group_cols_only,
          max_iters = max_iters,
          parallel = parallel
-         )
+         ) %>%
+    dplyr::arrange(!!as.name(tmp_old_group_var))
 
   # Replace .folds with the col_name
   # By doing it this way, it works with multiple fold columns
@@ -590,23 +591,20 @@ combine_scaled_cols_ <- function(summaries, combine_weights, include_flags, scal
 
   # Standardize each column, multiply with weight and add to combined
 
-  if ("cat_levels_n" %in% names(summaries)) {
-    summaries[["cat_levels_combined_std"]] <-
+  if ("cat_levels_combined" %in% names(summaries)) {
+    summaries[["combined"]] <- summaries[["combined"]] + (
       scale_fn(summaries[["cat_levels_combined"]]) * combine_weights[["cat"]]
-    summaries[["combined"]] <-
-      summaries[["combined"]] + summaries[["cat_levels_combined_std"]]
+    )
   }
   if ("num_aggr" %in% names(summaries)) {
-    summaries[["num_aggr_std"]] <-
+    summaries[["combined"]] <- summaries[["combined"]] + (
       scale_fn(summaries[["num_aggr"]]) * combine_weights[["num"]]
-    summaries[["combined"]] <-
-      summaries[["combined"]] + summaries[["num_aggr_std"]]
+    )
   }
-  if ("cat_levels_n" %in% names(summaries)) {
-    summaries[["size_std"]] <-
+  if ("size" %in% names(summaries)) {
+    summaries[["combined"]] <- summaries[["combined"]] + (
       scale_fn(summaries[["size"]]) * combine_weights[["size"]]
-    summaries[["combined"]] <-
-      summaries[["combined"]] + summaries[["size_std"]]
+    )
   }
 
   summaries

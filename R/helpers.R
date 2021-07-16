@@ -97,6 +97,10 @@ int_to_perc_ <- function(data, int) {
   }
 }
 
+nth_root <- function(x, root) {
+  (abs(x) ^ (1 / root)) * sign(x)
+}
+
 is_between_ <- function(x, a, b) {
 
   # Checks if x is between a and b
