@@ -10,7 +10,7 @@ collapse_groups(
   group_cols,
   balance_size = TRUE,
   cat_col = NULL,
-  cat_level = ".majority",
+  cat_levels = ".majority",
   num_col = NULL,
   group_aggregation_fn = mean,
   extreme_pairing_levels = 1,
@@ -30,8 +30,9 @@ the function is applied group-wise.}
 \item{n}{Number of new groups.
 
 When \code{`num_new_group_cols` > 1}, \code{`n`} can also be a vector
-with one \code{`n`} per fold column. This allows trying multiple \code{`n`} settings at a time. Note
-that the generated group columns are not guaranteed to be in the order of \code{`n`}.}
+with one \code{`n`} per new group column. This allows trying multiple \code{`n`}
+settings at a time. Note that the generated group columns are not guaranteed
+to be in the order of \code{`n`}.}
 
 \item{group_cols}{Name(s) of factor(s) in \code{`data`} for identifying the existing groups
 that should be collapsed.
@@ -56,8 +57,14 @@ of a chosen level of between groups.
 Note: I have not yet identified a way to quickly and robustly balance frequencies of
 multiple levels at once. This may change in the future.}
 
-\item{cat_level}{Name of level in the \code{`cat_col`} column to balance the average frequency
-of.}
+\item{cat_levels}{Names of the levels in the \code{`cat_col`} column to balance the average frequency
+of. When \code{NULL}, all levels are balanced. The balancing is likely to work best with a few levels.
+
+Can be a named numeric vector, where the names are the levels and the values are weights
+of importance in the balancing.
+
+Can be \code{".minority"} or \code{".majority"}, in which cases the minority/majority level
+are found and used.}
 
 \item{num_col}{Name of numerical column to balance between groups.
 
@@ -81,15 +88,14 @@ actually makes the groups more balanced. See example.}
 
 \item{num_new_group_cols}{Number of group columns to create.
 
-E.g. useful to perform the collapsing multiple times
-and find the most useful balancing for a use case.
-
 If \code{num_new_group_cols > 1}, columns will be named
 with a combination of \code{`col_name`} and \code{"_1"}, \code{"_2"}, etc.
 E.g. \eqn{".coll_groups_1"}, \eqn{".coll_groups_2"}, etc.
 
 N.B. If \code{`unique_new_group_cols_only`} is \code{TRUE},
-we can end up with fewer columns than specified, see \code{`max_iters`}.}
+we can end up with fewer columns than specified, see \code{`max_iters`}.
+E.g. when using balancing, the max. possible number of unique
+collapsings is often \code{1}.}
 
 \item{unique_new_group_cols_only}{Check if fold columns are identical and
 keep only unique columns.
@@ -125,7 +131,7 @@ the balancing dimensions. Can be used to favor balancing of
 either size, categorical, or numerical balancing.}
 
 \item{parallel}{Whether to parallelize the group column comparisons,
-when \code{`unique_fold_cols_only`} is \code{TRUE}.
+when \code{`unique_new_group_cols_only`} is \code{TRUE}.
 
 Requires a registered parallel backend.
 Like \code{doParallel::registerDoParallel}.}
@@ -138,8 +144,11 @@ Like \code{doParallel::registerDoParallel}.}
 
 Collapses a set of groups into a smaller set of groups.
 
-Balance the new groups by a numerical column, one class of a categorical column,
+Balance the new groups by a numerical column,
+one or more levels of a categorical column,
 and/or the number of rows (size).
+Note: The more of these you balance at a time,
+the less balanced each of them may become.
 
 Can create multiple unique collapsed group columns.
 }
@@ -203,7 +212,9 @@ df <- df \%>\% arrange(participant)
 df$session <- rep(c("1", "2", "3"), 6)
 }
 \seealso{
-\code{\link{partition}} for balanced partitions
+\code{\link[groupdata2:fold]{fold()}} for creating balanced folds/group.
+
+\code{\link[groupdata2:partition]{partition()}} for creating balanced partitions.
 
 Other grouping functions: 
 \code{\link{all_groups_identical}()},

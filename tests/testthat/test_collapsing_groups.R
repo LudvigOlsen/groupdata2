@@ -166,4 +166,9 @@ test_that("numerical balancing works with collapse_groups()", {
     num_col = "age"
   )
 
+  # Test for different test script
+  # When cat_col levels are already columns?
+  df_folded %>% dplyr::mutate(diagnosis2 = factor(ifelse(diagnosis == "a", "size", "group"))) %>%
+    summarize_group_balances(".folds", cat_col="diagnosis2", num_col="age", id_col="participant")
+
 })

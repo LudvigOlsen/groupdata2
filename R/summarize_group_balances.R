@@ -7,185 +7,309 @@
 # summarize_group_balances(df_collapsed, group_col = ".coll_groups",
 #                          cat_col="diagnosis", num_col="age")
 
-# TODO should work when cat_col or num_col are NULL
-summarize_group_balances <- function(data, group_cols, cat_col = NULL, num_col = NULL){
 
-  summarize_group_balances_single_ <- function(data, group_col, cat_col, num_col){
-    summaries <- dplyr::tibble(
-      !!group_col := unique(data[[group_col]])
-    )
+summarize_group_balances <- function(
+  data,
+  group_cols,
+  cat_cols = NULL,
+  num_cols = NULL,
+  id_cols = NULL,
+  include_normalized = TRUE,
+  max_cat_prefix_chars = "auto") {
 
-    size_summary <- data %>%
-      dplyr::group_by(!!as.name(group_col)) %>%
-      dplyr::summarise(size = dplyr::n())
+  #### Check arguments ####
 
-    summaries <- summaries %>%
-      dplyr::left_join(size_summary, by = group_col)
+  assert_collection <- checkmate::makeAssertCollection()
+  checkmate::assert_data_frame(x = data, min.rows = 1, add = assert_collection)
+  checkmate::assert_character(
+    x = group_cols,
+    min.len = 1,
+    min.chars = 1,
+    any.missing = FALSE,
+    unique = TRUE,
+    names = "unnamed",
+    add = assert_collection
+  )
+  checkmate::assert_character(
+    x = cat_cols,
+    min.len = 1,
+    min.chars = 1,
+    any.missing = FALSE,
+    unique = TRUE,
+    null.ok = TRUE,
+    names = "unnamed",
+    add = assert_collection
+  )
+  checkmate::assert_character(
+    x = num_cols,
+    min.len = 1,
+    min.chars = 1,
+    any.missing = FALSE,
+    unique = TRUE,
+    null.ok = TRUE,
+    names = "unnamed",
+    add = assert_collection
+  )
+  checkmate::assert_character(
+    x = id_cols,
+    min.len = 1,
+    min.chars = 1,
+    any.missing = FALSE,
+    unique = TRUE,
+    null.ok = TRUE,
+    names = "unnamed",
+    add = assert_collection
+  )
+  checkmate::assert_flag(x = include_normalized, add = assert_collection)
+  checkmate::assert(
+    checkmate::check_count(x = max_cat_prefix_chars, positive = TRUE),
+    checkmate::check_string(x = max_cat_prefix_chars, fixed = "auto", ignore.case = TRUE)
+  )
+  checkmate::reportAssertions(assert_collection)
+  checkmate::assert_names(
+    x = colnames(data),
+    must.include = c(group_cols, cat_cols, num_cols, id_cols),
+    add = assert_collection
+  )
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
 
-    if (!is.null(num_col)){
-      numeric_summaries <- data %>%
-        dplyr::group_by(!!as.name(group_col)) %>%
-        dplyr::summarise(avg_num = mean(!!as.name(num_col)),
-                         sum_num = sum(!!as.name(num_col)))
-      summaries <- summaries %>%
-        dplyr::left_join(numeric_summaries, by = group_col)
+  # Find the number of characters necessary to
+  # distinguish between names in `cat_cols`
+  if (!is.null(cat_cols) && max_cat_prefix_chars == "auto"){
+    for (i in 5:max(nchar(cat_cols))){
+      shorts <- substr(cat_cols, 1, i)
+      if (length(unique(cat_cols)) == length(cat_cols)){
+        max_cat_prefix_chars <- i
+      }
     }
-
-    if (!is.null(cat_col)){
-      cat_summary <- data %>%
-        dplyr::count(!!!rlang::syms(c(group_col, cat_col))) %>%
-        tidyr::spread(key = !!as.name(cat_col),
-                      value = .data$n,
-                      fill = 0)
-      summaries <- summaries %>%
-        dplyr::left_join(cat_summary, by = group_col)
-    }
-
-    summaries %>%
-      dplyr::rename(group = !!as.name(group_col))
   }
 
-  purrr::map_df(.x = group_cols, .f = ~ {
-    summarize_group_balances_single_(
-      data = data,
-      group_col = .x,
-      cat_col = cat_col,
-      num_col = num_col
-    ) %>% dplyr::mutate(group_col = .x)
-  }) %>%
-    dplyr::group_by(.data$group_col) %>%
-    # Ensure right types
-    dplyr::mutate(
-      group = factor(.data$group),
-      group_col = factor(.data$group_col)
-    ) %>%
-    position_first(col = "group_col")
-}
+  #### Create summaries ####
 
-score_group_balances <- function(data, group_cols, by_size = TRUE, cat_col=NULL, num_col=NULL){
-                                 #score_exponent = 2){
-
-  # Create summary
-  summary <-
-    summarize_group_balances(
+  # Create summaries
+  summaries <-
+    create_group_balance_summaries_(
       data = data,
       group_cols = group_cols,
-      cat_col = cat_col,
-      num_col = num_col
-    ) %>%
-    dplyr::ungroup()
+      cat_cols = cat_cols,
+      num_cols = num_cols,
+      id_cols = id_cols,
+      max_cat_prefix_chars = max_cat_prefix_chars
+    )
 
-  # Prepare normalized summary
-  normalized_summary <- summary %>%
-    dplyr::select(.data$group_col, .data$size, !dplyr::contains("_num"))
+  #### Combining summaries ####
 
-  # Create summary of the normalized (MinMax scaled) num_col
-
-  if (!is.null(num_col)){
-
-    # Normalize numeric column first
-    data <- data %>%
-      dplyr::mutate(!!num_col := rearrr::min_max_scale(
-        !!as.name(num_col), new_min = 0, new_max = 1))
-
-    # Summarise normalized num_col
-    normalized_num_summary <-
-      summarize_group_balances(data = data,
-                               group_cols = group_cols,
-                               num_col = num_col) %>%
-      dplyr::ungroup() %>%
-      dplyr::rename(avg_norm_num = .data$avg_num,
-                    sum_norm_num = .data$sum_num) %>%
-      dplyr::select(.data$avg_norm_num, .data$sum_norm_num)
-
-    # Add normalized summaries
-    normalized_summary <- normalized_summary %>%
-      dplyr::bind_cols(normalized_num_summary)
-  }
-
-  # Find columns with cat_col levels
-  cat_columns <- setdiff(
-    colnames(summary),
-    c("group", "group_col", "avg_num", "sum_num",
-      "avg_norm_num", "sum_norm_num", "size")
-  )
+  # We always have the size summary
+  summary <- summaries[["size"]] %>%
+    # When the arg is not NULL, add it's summary with a join
+    purrr::when(!is.null(id_cols) ~
+                  dplyr::left_join(., summaries[["id"]],
+                                   by = c("group_col", "group")),
+                ~ .) %>% # Else return the input
+    purrr::when(!is.null(num_cols) ~
+                  dplyr::left_join(., summaries[["num"]],
+                                   by = c("group_col", "group")),
+                ~ .) %>%
+    purrr::when(!is.null(cat_cols) ~
+                  dplyr::left_join(., summaries[["cat"]],
+                                   by = c("group_col", "group")),
+                ~ .)
 
   # Calculate standard deviations for all numeric columns
-  summary <- summary %>%
+  st_deviations <- summary %>%
     dplyr::group_by(.data$group_col) %>%
     dplyr::summarize(dplyr::across(where(is.numeric), sd))
 
-  # Apply log10 to counts and find standard deviation of all numeric columns
-  normalized_summary <- normalized_summary %>%
-    dplyr::mutate(dplyr::across(dplyr::one_of(c("size", cat_columns)), function(x) {
-      # In case of zero-frequencies
-      log10(1 + x)
-    })) %>%
-    dplyr::group_by(.data$group_col) %>%
-    dplyr::summarize(dplyr::across(where(is.numeric), sd))
+  #### Normalized summaries ####
 
-  # Move cat columns last
-  normalized_summary <- normalized_summary %>%
-    dplyr::select(!dplyr::one_of(cat_columns), dplyr::one_of(cat_columns))
+  if (isTRUE(include_normalized)){
 
-  # Fix names
-  colnames(normalized_summary)[
-    colnames(normalized_summary) %in% c("size", cat_columns)] <-
-    paste0("log_", colnames(normalized_summary)[
-      colnames(normalized_summary) %in% c("size", cat_columns)])
+    # Start with summary of size
+    normalized_summary <- summaries[["size"]] %>%
+      # Apply log10 to counts
+      dplyr::mutate(dplyr::across(where(is.numeric), function(x) {
+        # In case of zero-frequencies
+        log10(1 + x)
+      })) %>%
+      dplyr::rename_with( ~ paste0("log(", ., ")"), where(is.numeric))
 
-  colnames(normalized_summary)[
-    colnames(normalized_summary) %ni% c("group_col", "score")] <-
-    paste0("sd_", colnames(normalized_summary)[
-      colnames(normalized_summary) %ni% c("group_col", "score")])
+    # Add summary of ID columns
+    if (!is.null(id_cols)) {
+      normalized_id_summary <- summaries[["id"]] %>%
+        # Apply log10 to counts
+        dplyr::mutate(dplyr::across(where(is.numeric), function(x) {
+          # In case of zero-frequencies
+          log10(1 + x)
+        })) %>%
+        dplyr::rename_with( ~ paste0("log(", ., ")"), where(is.numeric))
 
-  colnames(summary)[colnames(summary) %ni% c("group_col")] <-
-    paste0("sd_", colnames(summary)[colnames(summary) %ni% c("group_col")])
+      normalized_summary <- normalized_summary %>%
+        dplyr::left_join(normalized_id_summary, by = c("group_col", "group"))
+    }
 
-  if (!is.null(num_col)){
-    colnames(summary) <- gsub("num", tolower(num_col), colnames(summary))
-    colnames(normalized_summary) <- gsub("num", tolower(num_col), colnames(normalized_summary))
+    # Add summary of normalized (MinMax scaled) numeric columns
+    if (!is.null(num_cols)) {
+      normalized_num_summary <- data %>%
+        dplyr::mutate(dplyr::across(dplyr::one_of(num_cols), function(x) {
+          rearrr::min_max_scale(x, new_min = 0, new_max = 1)
+        })) %>% create_group_balance_summaries_(group_cols = group_cols,
+                                                num_cols = num_cols) %>%
+        .[["num"]] %>%
+        dplyr::rename_with( ~ gsub(pattern = "(^.*\\()([[:alnum:]]*)\\)$" ,
+                                   replacement = "\\1norm(\\2))", x = .), where(is.numeric))
+
+      normalized_summary <- normalized_summary %>%
+        dplyr::left_join(normalized_num_summary, by = c("group_col", "group"))
+    }
+
+    # Add summary of categorical columns
+    if (!is.null(cat_cols)) {
+      normalized_cat_summary <- summaries[["cat"]] %>%
+        # Apply log10 to counts
+        dplyr::mutate(dplyr::across(where(is.numeric), function(x) {
+          # In case of zero-frequencies
+          log10(1 + x)
+        })) %>%
+        dplyr::rename_with( ~ paste0("log(", ., ")"), where(is.numeric))
+      # TODO perhaps add a row mean per cat_col after log?
+
+      normalized_summary <- normalized_summary %>%
+        dplyr::left_join(normalized_cat_summary, by = c("group_col", "group"))
+    }
+
+    # Calculate standard deviations
+    normalized_st_deviations <- normalized_summary %>%
+      dplyr::group_by(.data$group_col) %>%
+      dplyr::summarize(dplyr::across(where(is.numeric), sd))
   }
 
+  #### Preparing output ####
 
-  list("Normalized Summary" = normalized_summary,
-       "Summary" = summary)
+  # Prepare output list
+  out <- list(
+    "Summary" = summary,
+    "Standard Deviations" = st_deviations
+  )
+
+  # Add normalized standard deviations
+  if (isTRUE(include_normalized)){
+    out[["Normalized Standard Deviations"]] <- normalized_st_deviations
+  }
+
+  out
 }
 
-# Calculate score
+create_group_balance_summaries_ <-
+  function(data,
+           group_cols,
+           cat_cols = NULL,
+           num_cols = NULL,
+           id_cols = NULL,
+           max_cat_prefix_chars = 5) {
 
-# A meaningful single score is seemingly hard to create
-# so it's probably better to leave it out
-# score <- 0
-#
-# score_weights <- c("size" = 2, "num" = 1, "cat" = 1)
-# score_weights <- score_weights / sum(score_weights)
-#
-# if (isTRUE(by_size)){
-#   score <- score + (normalized_summary[["size"]] ^ score_exponent) * score_weights[["size"]]
-# } else {
-#   normalized_summary[["size"]] <- NULL
-#   summary[["size"]] <- NULL
-# }
-#
-# if (!is.null(cat_col)){
-#   cat_score <- base_select(normalized_summary, cols = cat_columns) %>%
-#     unlist(recursive = TRUE) %>%
-#     mean()
-#   score <- score + (cat_score ^ score_exponent) * score_weights[["cat"]]
-# }
-#
-# if (!is.null(num_col)){
-#   num_score <-
-#     mean(c(normalized_summary[["avg_norm_num"]] ^ score_exponent,
-#          (normalized_summary[["sum_norm_num"]] / 4) ^ score_exponent))
-#   score <- score + num_score * score_weights[["num"]]
-# }
-#
-# # Root the part-wise exponentiated score
-# normalized_summary["score"] <- nth_root(score, root = score_exponent)
-#
-# best_by_score <- normalized_summary %>%
-#   dplyr::slice(which.min(.data$score)) %>%
-#   dplyr::pull(.data$group_col) %>%
-#   as.character()
+  format_summary_ <- function(data){
+    data %>%
+      # Ensure right types
+      dplyr::mutate(
+        group = factor(.data$group),
+        group_col = factor(.data$group_col)
+      ) %>%
+      position_first(col = "group_col") %>%
+      dplyr::arrange(.data$group_col, .data$group)
+  }
+
+  out <- list("size" = NULL, "id" = NULL, "num" = NULL, "cat" = NULL)
+
+  out[["size"]] <- purrr::map_df(.x = group_cols, .f = ~ {
+    create_size_summary_(data = data, group_col = .x) %>%
+      dplyr::rename(group = !!as.name(.x)) %>%
+      dplyr::mutate(group_col = .x)
+  }) %>% format_summary_()
+
+  if (!is.null(id_cols)){
+    out[["id"]] <- purrr::map_df(.x = group_cols, .f = ~ {
+      create_id_summaries_(data = data,
+                           group_col = .x,
+                           id_cols = id_cols) %>%
+        dplyr::rename(group = !!as.name(.x)) %>%
+        dplyr::mutate(group_col = .x)
+    }) %>% format_summary_()
+  }
+
+  if (!is.null(num_cols)){
+    out[["num"]] <- purrr::map_df(.x = group_cols, .f = ~ {
+      create_num_summaries_(data = data,
+                            group_col = .x,
+                            num_cols = num_cols) %>%
+        dplyr::rename(group = !!as.name(.x)) %>%
+        dplyr::mutate(group_col = .x)
+    }) %>% format_summary_()
+  }
+
+  if (!is.null(cat_cols)){
+    out[["cat"]] <- purrr::map_df(.x = group_cols, .f = ~ {
+      create_cat_summaries_(
+        data = data,
+        group_col = .x,
+        cat_cols = cat_cols,
+        max_cat_prefix_chars = max_cat_prefix_chars # TODO allow user to specify this
+      ) %>%
+        dplyr::rename(group = !!as.name(.x)) %>%
+        dplyr::mutate(group_col = .x)
+    }) %>% format_summary_()
+  }
+
+  out
+}
+
+
+create_size_summary_ <- function(data, group_col){
+  data %>%
+    dplyr::group_by(!!as.name(group_col)) %>%
+    dplyr::summarise(`# rows` = dplyr::n())
+}
+
+create_id_summaries_ <- function(data, group_col, id_cols){
+  summary <- data %>%
+    dplyr::group_by(!!as.name(group_col)) %>%
+    dplyr::summarise(dplyr::across(dplyr::one_of(id_cols), function(x){length(unique(x))}))
+  colnames(summary)[colnames(summary) != group_col] <-
+    paste0("# ", colnames(summary)[colnames(summary) != group_col])
+  summary
+}
+
+create_num_summaries_ <- function(data, group_col, num_cols){
+  data %>%
+    dplyr::group_by(!!as.name(group_col)) %>%
+    dplyr::summarise(dplyr::across(dplyr::one_of(num_cols),
+                                   list("mean" = mean, "sum" = sum))) %>%
+    # Rename so `xxx_mean <- mean(xxx)` and `xxx_sum <- sum(xxx)`
+    dplyr::rename_with(
+      ~ gsub(
+        pattern = "(^.*)_([[:alnum:]]*)$",
+        replacement = "\\2(\\1)",
+        x = .
+      ),
+      where(is.numeric)
+    )
+}
+
+create_cat_summaries_ <- function(data, group_col, cat_cols, max_cat_prefix_chars = 5){
+  data %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(dplyr::across(dplyr::one_of(cat_cols), as.character)) %>%
+    tidyr::gather(key = "cat_col", value = "cat_val", cat_cols) %>%
+    dplyr::count(!!as.name(group_col), .data$cat_col, .data$cat_val) %>%
+    dplyr::mutate(
+      cat_col = tolower(.data$cat_col),
+      cat_val = tolower(.data$cat_val),
+      cat_col = substr(.data$cat_col, start = 1, stop = max_cat_prefix_chars),
+      cat_name = paste0(.data$cat_col, "_", .data$cat_val),
+      cat_name = gsub("^_", "", .data$cat_name)
+    ) %>%
+    dplyr::select(dplyr::one_of(group_col, "cat_name", "n")) %>%
+    tidyr::spread(key = .data$cat_name,
+                  value = .data$n,
+                  fill = 0)
+}

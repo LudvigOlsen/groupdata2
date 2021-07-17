@@ -19,8 +19,11 @@
 #'
 #'  Collapses a set of groups into a smaller set of groups.
 #'
-#'  Balance the new groups by a numerical column, one class of a categorical column,
+#'  Balance the new groups by a numerical column,
+#'  one or more levels of a categorical column,
 #'  and/or the number of rows (size).
+#'  Note: The more of these you balance at a time,
+#'  the less balanced each of them may become.
 #'
 #'  Can create multiple unique collapsed group columns.
 #' @details
@@ -123,15 +126,14 @@
 #'  actually makes the groups more balanced. See example.
 #' @param num_new_group_cols Number of group columns to create.
 #'
-#'  E.g. useful to perform the collapsing multiple times
-#'  and find the most useful balancing for a use case.
-#'
 #'  If \code{num_new_group_cols > 1}, columns will be named
 #'  with a combination of \code{`col_name`} and \code{"_1"}, \code{"_2"}, etc.
 #'  E.g. \eqn{".coll_groups_1"}, \eqn{".coll_groups_2"}, etc.
 #'
 #'  N.B. If \code{`unique_new_group_cols_only`} is \code{TRUE},
 #'  we can end up with fewer columns than specified, see \code{`max_iters`}.
+#'  E.g. when using balancing, the max. possible number of unique
+#'  collapsings is often \code{1}.
 #' @param unique_new_group_cols_only Check if fold columns are identical and
 #'  keep only unique columns.
 #'
@@ -163,14 +165,17 @@
 #'  the balancing dimensions. Can be used to favor balancing of
 #'  either size, categorical, or numerical balancing.
 #' @param parallel Whether to parallelize the group column comparisons,
-#'  when \code{`unique_fold_cols_only`} is \code{TRUE}.
+#'  when \code{`unique_new_group_cols_only`} is \code{TRUE}.
 #'
 #'  Requires a registered parallel backend.
 #'  Like \code{doParallel::registerDoParallel}.
 #'
 #' @family grouping functions
 #' @return \code{data.frame} with grouping factor for subsetting in cross-validation.
-#' @seealso \code{\link{partition}} for balanced partitions
+#' @seealso
+#'  \code{\link[groupdata2:fold]{fold()}} for creating balanced folds/groups.
+#'
+#'  \code{\link[groupdata2:partition]{partition()}} for creating balanced partitions.
 #' @examples
 #' # Attach packages
 #' library(groupdata2)
@@ -198,7 +203,7 @@ collapse_groups <- function(
   num_new_group_cols = 1,
   unique_new_group_cols_only = TRUE,
   max_iters = 5,
-  combine_method = "avg_standardized", # avg_min_max_scaled
+  combine_method = "avg_standardized",
   combine_weights = c("size" = 1, "cat" = 1, "num" = 1),
   col_name = ".coll_groups",
   parallel = FALSE) {
@@ -467,15 +472,15 @@ run_collapse_groups_ <- function(
 
   # Fold the summary
   new_groups <- summaries %>%
-    fold(k = n,
-         num_col = "combined",
-         extreme_pairing_levels = extreme_pairing_levels,
-         num_fold_cols = num_new_group_cols,
-         unique_fold_cols_only =  unique_new_group_cols_only,
-         max_iters = max_iters,
-         parallel = parallel
-         ) %>%
-    dplyr::arrange(!!as.name(tmp_old_group_var))
+    fold(
+      k = n,
+      num_col = "combined",
+      extreme_pairing_levels = extreme_pairing_levels,
+      num_fold_cols = num_new_group_cols,
+      unique_fold_cols_only =  unique_new_group_cols_only,
+      max_iters = max_iters,
+      parallel = parallel
+    )
 
   # Replace .folds with the col_name
   # By doing it this way, it works with multiple fold columns
