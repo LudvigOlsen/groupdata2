@@ -7,14 +7,164 @@
 # summarize_group_balances(df_collapsed, group_col = ".coll_groups",
 #                          cat_col="diagnosis", num_col="age")
 
+# TODO The names of the output are perhaps a bit confusing?
+# This requires really well-explained docs! And perhaps find better names?
 
-summarize_group_balances <- function(
+# Add more comments to code
+
+#' @title Summarize group balances
+#' @description
+#'  \Sexpr[results=rd, stage=render]{lifecycle::badge("experimental")}
+#'
+#'  Summarize the balances of numeric, categorical, and ID columns
+#'  in and between groups in one or more group columns.
+#'
+#'  This tools allows you to quickly and thorughly assess the balance
+#'  of different columns between groups. This is for instance useful
+#'  after creating groups with \code{\link[groupdata2:fold]{fold()}},
+#'  \code{\link[groupdata2:partition]{partition()}}, or
+#'  \code{\link[groupdata2:collapse_groups]{collapse_groups()}} to
+#'  check their performance on your data.
+#'
+#'  The output contains:
+#'  \enumerate{
+#'    \item \code{`Groups`}: a summary per group.
+#'    \item \code{`Summary`}: statistical descriptors of the group summaries.
+#'    \item \code{`Normalized Summary`}: statistical descriptors of a set of
+#'    "normalized" group summaries. (Disabled by default)
+#'  }
+#'
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
+#' @export
+#' @param data \code{data.frame}. Can be \emph{grouped}, in which case
+#'  the function is applied group-wise. !!!TODO Does this work currently?!!!
+#' @param group_cols Names of columns to with groups to summarize.
+#' @param cat_cols Names of categorical columns to summarize.
+#'
+#'  Each categorical level is counted per group.
+#'
+#'  To distinguish between levels with the same name from different
+#'  \code{`cat_col`} columns, we prefix the count column name for each
+#'  categorical level with parts of the name of the categorical column.
+#'  This amount can be controlled with \code{`max_cat_prefix_chars`}.
+#'
+#'  Normalization: The counts of each categorical level is normalized with \code{log(1 + count)}.
+#' @param num_cols Names of numerical columns to summarize.
+#'
+#'  For each column, the \code{mean} and \code{sum} is calculated per group.
+#'
+#'  Normalization: Each column is normalized with \code{`num_normalize_fn`} before
+#'  calculating the \code{mean} and \code{sum} per group.
+#' @param id_cols Names of factor columns with IDs to summarize.
+#'
+#'  The number of unique IDs are counted per group.
+#'
+#'  Normalization: The count of unique IDs is normalized with \code{log(1 + count)}.
+#' @param include_normalized Whether to calculate and include the
+#'  normalized summary in the output. (logical)
+#' @param num_normalize_fn Function for normalizing the \code{`num_cols`} columns before
+#'  calculating normalized group summaries.
+#'
+#'  Only used when \code{`include_normalized`} is enabled.
+#'
+#' @param max_cat_prefix_chars How many characters to prefix the categorical level
+#'  column names with.
+#'
+#'  TODO Improve this - explain why and what!
+#'
+#'  \code{"auto"} finds the number of characters \code{>=4} necessary to distinguish
+#'  between column names in \code{`cat_cols`}. E.g. if \code{`cat_cols`} contains the
+#'  column names \code{c("xxxxxxx","xxxxxyy")}, we need the 6 first characters to
+#'  distinguish them from each other.
+#' @family summarization functions
+#' @return \code{list} with three \code{data.frames}:
+#'
+#'  \subsection{Groups}{
+#'   A summary per group.
+#'
+#'   \code{`cat_cols`}: Each level has its own column with the count
+#'   of the level per group.
+#'
+#'   \code{`num_cols`}: The \code{mean} and \code{sum} per group.
+#'
+#'   \code{`id_cols`}: The count of unique IDs per group.
+#'  }
+#'
+#'  \subsection{Summary}{
+#'   Statistical descriptors of the columns in \code{`Group`}.
+#'
+#'   Contains the \code{mean}, \code{median}, standard deviation (\code{SD}),
+#'   interquartile range (\code{IQR}), \code{min}, and \code{max} measures.
+#'
+#'   Especially the standard deviations and IQR measures can tell us about how
+#'   balanced the groups are. When comparing multiple \code{`group_cols`},
+#'   the group column with the lowest \code{SD} and \code{IQR}
+#'   can be considered the most balanced.
+#'  }
+#'
+#'  \subsection{Normalized Summary}{
+#'   (Disabled by default)
+#'
+#'   Same statistical descriptors as in \code{`Summary`} but for a
+#'   "normalized" version of the group summaries. The motivation
+#'   is that these normalized measures can more easily be compared
+#'   or combined to a single "balance score".
+#'
+#'   First, we normalize each balance column:
+#'
+#'   \code{`cat_cols`}: The level counts in the original group summaries are
+#'   normalized with with \code{log(1 + count)}. This eases comparison
+#'   of the statistical descriptors (especially standard deviations)
+#'   of levels with very different count scales.
+#'
+#'   \code{`num_cols`}: The numerical columns are normalized prior to
+#'   summarization by group, using the \code{`num_normalize_fn`} function.
+#'   By default this applies MinMax scaling to columns so they are in the
+#'   range \code{[0, 1]}.
+#'   !!!TODO outliers can make them difficult to compare?!!!
+#'
+#'   \code{`id_cols`}: The counts of unique IDs in the original group summaries are
+#'   normalized with with \code{log(1 + count)}.
+#'
+#'   Contains the \code{mean}, \code{median}, standard deviation (\code{SD}),
+#'   interquartile range (\code{IQR}), \code{min}, and \code{max} measures.
+#'  }
+#'
+#' @examples
+#' # Attach packages
+#' library(groupdata2)
+#' library(dplyr)
+#'
+#' # Create data frame
+#' df <- data.frame(
+#'   "participant" = factor(rep(c("1", "2", "3", "4", "5", "6"), 3)),
+#'   "age" = rep(sample(c(1:100), 6), 3),
+#'   "diagnosis" = factor(rep(c("a", "b", "a", "a", "b", "b"), 3)),
+#'   "score" = sample(c(1:100), 3 * 6)
+#' )
+#' df <- df %>% arrange(participant)
+#' df$session <- rep(c("1", "2", "3"), 6)
+#'
+#' # Using fold()
+#'
+#' ## Without balancing
+#' df_folded <- fold(data = df, k = 3, method = "n_dist")
+#'
+#' ## With cat_col
+#' df_folded <- fold(
+#'   data = df,
+#'   k = 3,
+#'   cat_col = "diagnosis",
+#'   method = "n_dist"
+#' )
+summarize_balances <- function(
   data,
   group_cols,
   cat_cols = NULL,
   num_cols = NULL,
   id_cols = NULL,
-  include_normalized = TRUE,
+  include_normalized = FALSE,
+  num_normalize_fn = function(x){rearrr::min_max_scale(x, new_min = 0, new_max = 1)},
   max_cat_prefix_chars = "auto") {
 
   #### Check arguments ####
@@ -61,9 +211,18 @@ summarize_group_balances <- function(
     add = assert_collection
   )
   checkmate::assert_flag(x = include_normalized, add = assert_collection)
+  checkmate::assert_function(x = num_normalize_fn, add = assert_collection)
+  if (length(max_cat_prefix_chars) > 1){
+    assert_collection$push("`max_cat_prefix_chars` must have length 1.")
+    checkmate::reportAssertions(assert_collection)
+  }
+  if (is.character(max_cat_prefix_chars) && max_cat_prefix_chars != "auto"){
+    assert_collection$push("When `max_cat_prefix_chars` is a string, it can only be 'auto'.")
+    checkmate::reportAssertions(assert_collection)
+  }
   checkmate::assert(
     checkmate::check_count(x = max_cat_prefix_chars, positive = TRUE),
-    checkmate::check_string(x = max_cat_prefix_chars, fixed = "auto", ignore.case = TRUE)
+    checkmate::check_string(x = max_cat_prefix_chars, pattern = "^auto$")
   )
   checkmate::reportAssertions(assert_collection)
   checkmate::assert_names(
@@ -77,10 +236,11 @@ summarize_group_balances <- function(
   # Find the number of characters necessary to
   # distinguish between names in `cat_cols`
   if (!is.null(cat_cols) && max_cat_prefix_chars == "auto"){
-    for (i in 5:max(nchar(cat_cols))){
+    for (i in 4:max(nchar(cat_cols))){
       shorts <- substr(cat_cols, 1, i)
       if (length(unique(cat_cols)) == length(cat_cols)){
         max_cat_prefix_chars <- i
+        break
       }
     }
   }
@@ -88,7 +248,7 @@ summarize_group_balances <- function(
   #### Create summaries ####
 
   # Create summaries
-  summaries <-
+  group_summaries <-
     create_group_balance_summaries_(
       data = data,
       group_cols = group_cols,
@@ -101,32 +261,30 @@ summarize_group_balances <- function(
   #### Combining summaries ####
 
   # We always have the size summary
-  summary <- summaries[["size"]] %>%
+  group_summary <- group_summaries[["size"]] %>%
     # When the arg is not NULL, add it's summary with a join
     purrr::when(!is.null(id_cols) ~
-                  dplyr::left_join(., summaries[["id"]],
+                  dplyr::left_join(., group_summaries[["id"]],
                                    by = c("group_col", "group")),
                 ~ .) %>% # Else return the input
     purrr::when(!is.null(num_cols) ~
-                  dplyr::left_join(., summaries[["num"]],
+                  dplyr::left_join(., group_summaries[["num"]],
                                    by = c("group_col", "group")),
                 ~ .) %>%
     purrr::when(!is.null(cat_cols) ~
-                  dplyr::left_join(., summaries[["cat"]],
+                  dplyr::left_join(., group_summaries[["cat"]],
                                    by = c("group_col", "group")),
                 ~ .)
 
-  # Calculate standard deviations for all numeric columns
-  st_deviations <- summary %>%
-    dplyr::group_by(.data$group_col) %>%
-    dplyr::summarize(dplyr::across(where(is.numeric), sd))
+  # Calculate measures for all numeric columns
+  descriptors <- measure_summary_numerics_(group_summary)
 
   #### Normalized summaries ####
 
   if (isTRUE(include_normalized)){
 
     # Start with summary of size
-    normalized_summary <- summaries[["size"]] %>%
+    normalized_group_summary <- group_summaries[["size"]] %>%
       # Apply log10 to counts
       dplyr::mutate(dplyr::across(where(is.numeric), function(x) {
         # In case of zero-frequencies
@@ -136,7 +294,7 @@ summarize_group_balances <- function(
 
     # Add summary of ID columns
     if (!is.null(id_cols)) {
-      normalized_id_summary <- summaries[["id"]] %>%
+      normalized_id_summary <- group_summaries[["id"]] %>%
         # Apply log10 to counts
         dplyr::mutate(dplyr::across(where(is.numeric), function(x) {
           # In case of zero-frequencies
@@ -144,28 +302,27 @@ summarize_group_balances <- function(
         })) %>%
         dplyr::rename_with( ~ paste0("log(", ., ")"), where(is.numeric))
 
-      normalized_summary <- normalized_summary %>%
+      normalized_group_summary <- normalized_group_summary %>%
         dplyr::left_join(normalized_id_summary, by = c("group_col", "group"))
     }
 
     # Add summary of normalized (MinMax scaled) numeric columns
     if (!is.null(num_cols)) {
       normalized_num_summary <- data %>%
-        dplyr::mutate(dplyr::across(dplyr::one_of(num_cols), function(x) {
-          rearrr::min_max_scale(x, new_min = 0, new_max = 1)
-        })) %>% create_group_balance_summaries_(group_cols = group_cols,
-                                                num_cols = num_cols) %>%
+        dplyr::mutate(dplyr::across(dplyr::one_of(num_cols), num_normalize_fn)) %>%
+        create_group_balance_summaries_(group_cols = group_cols,
+                                        num_cols = num_cols) %>%
         .[["num"]] %>%
         dplyr::rename_with( ~ gsub(pattern = "(^.*\\()([[:alnum:]]*)\\)$" ,
                                    replacement = "\\1norm(\\2))", x = .), where(is.numeric))
 
-      normalized_summary <- normalized_summary %>%
+      normalized_group_summary <- normalized_group_summary %>%
         dplyr::left_join(normalized_num_summary, by = c("group_col", "group"))
     }
 
     # Add summary of categorical columns
     if (!is.null(cat_cols)) {
-      normalized_cat_summary <- summaries[["cat"]] %>%
+      normalized_cat_summary <- group_summaries[["cat"]] %>%
         # Apply log10 to counts
         dplyr::mutate(dplyr::across(where(is.numeric), function(x) {
           # In case of zero-frequencies
@@ -174,27 +331,25 @@ summarize_group_balances <- function(
         dplyr::rename_with( ~ paste0("log(", ., ")"), where(is.numeric))
       # TODO perhaps add a row mean per cat_col after log?
 
-      normalized_summary <- normalized_summary %>%
+      normalized_group_summary <- normalized_group_summary %>%
         dplyr::left_join(normalized_cat_summary, by = c("group_col", "group"))
     }
 
-    # Calculate standard deviations
-    normalized_st_deviations <- normalized_summary %>%
-      dplyr::group_by(.data$group_col) %>%
-      dplyr::summarize(dplyr::across(where(is.numeric), sd))
+    # Calculate measures for all numeric columns
+      normalized_descriptors <- measure_summary_numerics_(normalized_group_summary)
   }
 
   #### Preparing output ####
 
   # Prepare output list
   out <- list(
-    "Summary" = summary,
-    "Standard Deviations" = st_deviations
+    "Groups" = group_summary,
+    "Summary" = descriptors
   )
 
   # Add normalized standard deviations
   if (isTRUE(include_normalized)){
-    out[["Normalized Standard Deviations"]] <- normalized_st_deviations
+    out[["Normalized Summary"]] <- normalized_descriptors
   }
 
   out
@@ -253,7 +408,7 @@ create_group_balance_summaries_ <-
         data = data,
         group_col = .x,
         cat_cols = cat_cols,
-        max_cat_prefix_chars = max_cat_prefix_chars # TODO allow user to specify this
+        max_cat_prefix_chars = max_cat_prefix_chars
       ) %>%
         dplyr::rename(group = !!as.name(.x)) %>%
         dplyr::mutate(group_col = .x)
@@ -262,7 +417,6 @@ create_group_balance_summaries_ <-
 
   out
 }
-
 
 create_size_summary_ <- function(data, group_col){
   data %>%
@@ -273,9 +427,11 @@ create_size_summary_ <- function(data, group_col){
 create_id_summaries_ <- function(data, group_col, id_cols){
   summary <- data %>%
     dplyr::group_by(!!as.name(group_col)) %>%
-    dplyr::summarise(dplyr::across(dplyr::one_of(id_cols), function(x){length(unique(x))}))
-  colnames(summary)[colnames(summary) != group_col] <-
-    paste0("# ", colnames(summary)[colnames(summary) != group_col])
+    dplyr::summarise(dplyr::across(dplyr::one_of(id_cols), function(x){length(unique(x))})) %>%
+    dplyr::rename_with(
+      ~ paste0("# ", .),
+      -dplyr::one_of(group_col)
+    )
   summary
 }
 
@@ -311,5 +467,36 @@ create_cat_summaries_ <- function(data, group_col, cat_cols, max_cat_prefix_char
     dplyr::select(dplyr::one_of(group_col, "cat_name", "n")) %>%
     tidyr::spread(key = .data$cat_name,
                   value = .data$n,
-                  fill = 0)
+                  fill = 0) %>%
+    dplyr::rename_with(
+      ~ paste0("# ", .),
+      -dplyr::one_of(group_col)
+    )
+}
+
+measure_summary_numerics_ <- function(data){
+
+  # Calculate measures for all numeric columns
+  descriptors <- data %>%
+    dplyr::group_by(.data$group_col)
+
+  desc_fns <-
+    list(
+      "mean" = mean,
+      "median" = median,
+      "SD" = sd,
+      "IQR" = IQR,
+      "min" = min,
+      "max" = max
+    )
+
+  # Calculate each measure
+  plyr::llply(names(desc_fns), function(fn_name){
+    fn <- desc_fns[[fn_name]]
+    dplyr::summarize(descriptors, dplyr::across(where(is.numeric), fn)) %>%
+      dplyr::mutate(measure = fn_name)
+  }) %>% dplyr::bind_rows() %>%
+    position_first(col = "measure") %>%
+    position_first(col = "group_col")  %>%
+    dplyr::arrange(.data$group_col)
 }

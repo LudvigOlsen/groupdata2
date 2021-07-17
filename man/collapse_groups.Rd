@@ -212,7 +212,7 @@ df <- df \%>\% arrange(participant)
 df$session <- rep(c("1", "2", "3"), 6)
 }
 \seealso{
-\code{\link[groupdata2:fold]{fold()}} for creating balanced folds/group.
+\code{\link[groupdata2:fold]{fold()}} for creating balanced folds/groups.
 
 \code{\link[groupdata2:partition]{partition()}} for creating balanced partitions.
 
