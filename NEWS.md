@@ -1,6 +1,17 @@
 
 # groupdata2 1.5.0.9000
 
+* Adds `collapse_groups()` for collapsing a set of existing groups into a smaller set of groups. Can balance the
+new groups by size and by numeric and categorical columns. The more of these you balance at a time, the less balanced each will tend to be. Compare settings by summarizing the balances with `summarize_balances()` afterwards.
+
+TODODODODODODODODODODODO!!!!
+* Adds `collapse_groups_by_size()`, `collapse_groups_by_numeric()`, and `collapse_groups_by_factor()`. These 
+are wrappers of `collapse_groups()` but also provide additional features for those specific cases. 
+
+* Adds `summarize_balances()` for inspecting the balance of numeric, categorical, and ID columns in and between groups.
+
+* Adds `"every"` method to grouping functions. Groups every `n` data points together.
+
 # groupdata2 1.5.0
 
 * Breaking: Rewrites large parts of the numerical balancing engine used in `fold()` and `partition()`. This produces different groups in some cases. Outsources extreme pairing to `rearrr::pair_extremes()`. Now uses hierarchical shuffling (`rearrr::shuffle_hierarchy()`) in `partition()` and some cases of `fold()` (relevant when `extreme_pairing_levels` > 1).
