@@ -227,26 +227,14 @@ collapse_groups <- function(
 
   #### Prepare data and names ####
 
-  data_group_cols <- character()
-  if (dplyr::is_grouped_df(data)){
-    data_group_cols <- dplyr::group_vars(data)
-    if (length(intersect(data_group_cols, group_cols))>0) {
-      stop("`data` was grouped by a column from `group_cols`.")
-    }
-  }
-
-  # If `data` contains a fold column
-  # We need to rename it temporarily
-  if (replaced_fold_name <- any(grepl(".fold", colnames(data)))) {
-    updated <- replace_fold_in_names_(
-      data = data,
-      data_group_cols = data_group_cols,
-      group_cols = group_cols
-    )
-    data <- updated[["data"]]
-    data_group_cols <- updated[["data_group_cols"]]
-    group_cols <- updated[["group_cols"]]
-  }
+  # Prepare for collapsing
+  # Includes renaming columns with ".folds" in their name
+  # and checking `data` isn't grouped by any `group_cols`
+  prepped <- prepare_collapse_groups_run_(data = data, group_cols = group_cols)
+  data <- prepped[["data"]]
+  data_group_cols <- prepped[["data_group_cols"]]
+  group_cols <- prepped[["group_cols"]]
+  replaced_fold_name <- prepped[["replaced_fold_name"]]
 
   # Collapse groups within each group subset in `data`
   # NOTE: The `data_group_cols` groups, not the `group_cols` groups
@@ -270,6 +258,59 @@ collapse_groups <- function(
     parallel = parallel
   )
 
+  # Prepare data for return
+  data <- prepare_collapse_groups_output_(
+    data = data,
+    data_group_cols = data_group_cols,
+    group_cols = group_cols,
+    col_name = col_name,
+    num_new_group_cols = num_new_group_cols,
+    replaced_fold_name = replaced_fold_name
+  )
+
+  data
+
+}
+
+prepare_collapse_groups_run_ <- function(data, group_cols) {
+  # Check grouping of `data`
+  data_group_cols <- character()
+  if (dplyr::is_grouped_df(data)){
+    data_group_cols <- dplyr::group_vars(data)
+    if (length(intersect(data_group_cols, group_cols))>0) {
+      stop("`data` was grouped by a column from `group_cols`.")
+    }
+  }
+
+  # If `data` contains a fold column
+  # We need to rename it temporarily
+  if (replaced_fold_name <- any(grepl(".fold", colnames(data)))) {
+    updated <- replace_fold_in_names_(
+      data = data,
+      data_group_cols = data_group_cols,
+      group_cols = group_cols
+    )
+    data <- updated[["data"]]
+    data_group_cols <- updated[["data_group_cols"]]
+    group_cols <- updated[["group_cols"]]
+  }
+
+  list(
+    "data" = data,
+    "data_group_cols" = data_group_cols,
+    "group_cols" = group_cols,
+    "replaced_fold_name" = replaced_fold_name
+  )
+}
+
+prepare_collapse_groups_output_ <- function(
+  data,
+  data_group_cols,
+  group_cols,
+  col_name,
+  num_new_group_cols,
+  replaced_fold_name) {
+
   # If `data` contained a fold column
   # We need to invert the renaming
   if (isTRUE(replaced_fold_name)) {
@@ -284,14 +325,13 @@ collapse_groups <- function(
     group_cols <- updated[["group_cols"]]
   }
 
-  if (num_new_group_cols == 1){
+  if (num_new_group_cols == 1) {
     # Group by the new groups
     data <- data %>%
       dplyr::group_by(!!!rlang::syms(c(data_group_cols, col_name)))
   }
 
   data
-
 }
 
 run_collapse_groups_ <- function(
