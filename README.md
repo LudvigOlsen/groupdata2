@@ -38,7 +38,7 @@ R package for dividing data into groups.
 
 | Function         | Description                                                                                                                                                                               |
 | :--------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `group_factor()` | Divides data into groups by a range of methods.                                                                                                                                           |
+| `group_factor()` | Divides data into groups by a wide range of methods.                                                                                                                                      |
 | `group()`        | Creates grouping factor and adds to the given data frame.                                                                                                                                 |
 | `splt()`         | Creates grouping factor and splits the data by these groups.                                                                                                                              |
 | `partition()`    | Splits data into partitions. Balances a given categorical variable and/or numerical variable between partitions and keeps all data points with a shared ID in the same partition.         |
@@ -77,6 +77,8 @@ R package for dividing data into groups.
           - [Specify group size](#specify-group-size)
           - [Specify number of groups](#specify-number-of-groups)
           - [Specify list](#specify-list)
+          - [Specify distance between
+            members](#specify-distance-between-members)
           - [Specify step size](#specify-step-size)
           - [Specify start at](#specify-start-at)
       - [Balancing ID Methods](#balancing-id-methods)
@@ -514,7 +516,7 @@ balance(
 
 ## Grouping Methods
 
-There are currently 9 methods available. They can be divided into 5
+There are currently 10 methods available. They can be divided into 6
 categories.
 
 *Examples of group sizes are based on a vector with 57 elements.*
@@ -582,6 +584,14 @@ want the first appearance of 27 after the previous value 15.
 If passing `n = "auto"` starting positions are automatically found with
 `find_starts()`.
 
+### Specify distance between members
+
+##### Method: every
+
+Every `n`th data point is combined to a group.
+
+E.g. group sizes: 12, 12, 11, 11, 11
+
 ### Specify step size
 
 ##### Method: staircase
@@ -603,7 +613,8 @@ E.g. group sizes: 5, 7, 11, 13, 17, 4
 
 ## Balancing ID Methods
 
-There are currently 4 methods for balancing on ID level in `balance()`.
+There are currently 4 methods for balancing (up-/downsampling) on ID
+level in `balance()`.
 
 ##### ID method: n\_ids
 
@@ -621,8 +632,8 @@ lacking/excessive number of rows in the category.
 ##### ID method: distributed
 
 Distributes the lacking/excess rows equally between the IDs. If the
-number to distribute can not be equally divided, some IDs will have 1
-row more/less than the others.
+number to distribute cannot be equally divided, some IDs will have 1 row
+more/less than the others.
 
 ##### ID method: nested
 
