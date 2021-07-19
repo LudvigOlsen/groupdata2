@@ -221,6 +221,7 @@ df_grouped <- group(
 \seealso{
 Other grouping functions: 
 \code{\link{all_groups_identical}()},
+\code{\link{collapse_groups_by}},
 \code{\link{collapse_groups}()},
 \code{\link{fold}()},
 \code{\link{group_factor}()},

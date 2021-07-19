@@ -30,7 +30,7 @@ if (getRversion() >= "2.15.1")
 #'      \item Rows are shuffled.
 #'      \strong{Note} that this will only affect rows with the same value in \code{`num_col`}.
 #'      \item Extreme pairing 1: Rows are ordered as \emph{smallest, largest, second smallest, second largest}, etc.
-#'      Each pair get a group identifier.
+#'      Each pair get a group identifier. (See \code{\link[rearrr:pair_extremes]{rearrr::pair_extremes()}})
 #'      \item If \code{`extreme_pairing_levels` > 1}: The group identifiers are reordered as \emph{smallest,
 #'      largest, second smallest, second largest}, etc., by the sum of \code{`num_col`} in the represented rows.
 #'      These pairs (of pairs) get a new set of group identifiers, and the process is repeated

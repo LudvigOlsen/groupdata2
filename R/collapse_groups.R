@@ -6,6 +6,9 @@
 # should be able to cancel each other out and so there are
 # at least some scenarios where it wouldn't work?
 
+# TODO Check whether the log(1 + count) in cat_col actually helps?
+# Not sure the motivation holds up!
+
 # TODO handle existing .coll_group* columns!
 
 # TODO When there's any balancing we can often only create 1 fold column
@@ -13,7 +16,7 @@
 # might not always want balancing? And with different n's, they will
 # be different!
 
-#' @title Collapse groups with categorical, numerical, and size balancing
+#' @title Collapse groups with categorical, numerical, ID, and size balancing
 #' @description
 #'  \Sexpr[results=rd, stage=render]{lifecycle::badge("experimental")}
 #'
@@ -26,39 +29,109 @@
 #'  Note: The more of these you balance at a time,
 #'  the less balanced each of them may become.
 #'
-#'  Can create multiple unique collapsed group columns.
+#'  Tip: Check the balances of the new groups with
+#'  \code{\link[groupdata2:summarize_balances]{summarize_balances()}}.
 #' @details
+#'  The goal of \code{collapse_groups()} is to combine existing groups
+#'  to a lower number of groups while (optionally) balancing one or more of
+#'  four "balancing dimensions" (\emph{size}, \emph{numeric}, \emph{categorical},
+#'  and/or \emph{ID}). From each of these dimensions, we calculate
+#'  a normalized, numeric \emph{"balancing column"} that when balanced
+#'  between the groups means its dimension is balanced as well.
+#'
+#'  To balance multiple dimensions at once, we combine these balancing columns with
+#'  with weighted averaging (see \code{`combine_method`} and \code{`combine_weights`}).
+#'
+#'  Finally, we create groups where this combined balancing column is balanced using the
+#'  numerical balancing in \code{\link[groupdata2:fold]{fold()}}.
+#'
+#'  While theoretically, there should be instances where this strategy fails to
+#'  produce balanced groups, e.g. if the balancing dimensions cancel out or when
+#'  balancing on too many things at once, \emph{in practice}, this tends to lead
+#'  to decent* balances of the included columns (*better than not applying balancing).
+#'
+#'  When the balancing is important, we recommend using
+#'  \code{\link[groupdata2:summarize_balances]{summarize_balances()}} to
+#'  check how balanced the created groups are on the various dimensions.
+#'  If they are not balanced enough, consider changing \code{`combine_weights`} or
+#'  balancing fewer dimensions at a time.
+#'
+#'  The following describes the creation of the balancing columns
+#'  for each of the balancing dimensions:
+#'
 #'  \subsection{cat_col}{
-#'    \enumerate{
-#'      \item ...
-#'    }
+#'   * \strong{Count each level} in each group. This creates a \code{data.frame} with
+#'   one count column per level, with one row per group.
+#'   * \strong{Log-transform} the count columns with \code{log10(1 + count)}.
+#'   * \strong{Standardize} the transformed count columns.
+#'   * \strong{Sum} the standardized counts rowwise to create one combined column representing
+#'   the balance of the levels for each group.
+#'
+#'   \strong{Example}: Consider a factor column with the levels \code{c("A", "B", "C")}.
+#'   We count each level per group, normalize the counts and combine them with weighted averaging:
+#'
+#'   \tabular{rrrrrrrrrr}{
+#'   \strong{Group} \tab \strong{A} \tab
+#'   \strong{B} \tab \strong{C} \tab
+#'   \strong{ -> } \tab \strong{nA} \tab
+#'   \strong{nB} \tab \strong{nC} \tab
+#'   \strong{ -> } \tab \strong{Combined}\cr
+#'   1 \tab 5 \tab 57 \tab 1 \tab | \tab 0.24 \tab 0.55 \tab -0.77 \tab | \tab 0.007  \cr
+#'   2 \tab 7 \tab 69 \tab 2 \tab | \tab 0.93 \tab 0.64 \tab -0.77 \tab | \tab 0.267 \cr
+#'   3 \tab 2 \tab 34 \tab 14\tab | \tab -1.42\tab 0.29 \tab 1.34  \tab | \tab 0.07 \cr
+#'   4 \tab 5 \tab 0 \tab 4  \tab | \tab 0.24 \tab -1.48\tab 0.19  \tab | \tab -0.35 \cr
+#'   ... \tab ... \tab ... \tab ... \tab | \tab ... \tab ... \tab ... \tab | \tab ... }
+#'
+#'   By default, we only use the normalized counts for the majority class.
+#'
+#'  }
+#'
+#'  \subsection{id_col}{
+#'   * \strong{Count} the unique IDs (levels) within each group.
+#'   (Note: The same ID can be counted in multiple groups.)
 #'  }
 #'
 #'  \subsection{num_col}{
-#'    \enumerate{
-#'      \item ...
-#'    }
+#'   The numeric column is simply used as is.
 #'  }
 #'
 #'  \subsection{size}{
-#'    \enumerate{
-#'      \item ...
-#'    }
+#'   * \strong{Count} the number of rows per group.
 #'  }
 #'
-#'  \subsection{combined}{
-#'    \enumerate{
-#'      \item ...
-#'    }
+#'  \subsection{Combining balancing columns}{
+#'   * Apply standardization or MinMax scaling to each of the balancing columns (see \code{`combine_method`}).
+#'   * Perform weighted averaging to get a single balancing column (see \code{`combine_weights`}).
+#'
+#'   \strong{Example}: We apply standardization and perform weighted averaging:
+#'
+#'   \tabular{rrrrrrrrrrrr}{
+#'   \strong{Group} \tab \strong{Size} \tab
+#'   \strong{Num} \tab \strong{Cat} \tab
+#'   \strong{ID} \tab \strong{->} \tab
+#'   \strong{nSize} \tab \strong{nNum}
+#'   \tab \strong{nCat} \tab \strong{nID} \tab
+#'   \strong{->} \tab \strong{Combined}\cr
+#'   1 \tab 34 \tab 1.3 \tab 0.007 \tab 3 \tab | \tab -0.33 \tab -0.82 \tab 0.03 \tab -0.46\tab | \tab -0.395  \cr
+#'   2 \tab 23 \tab 4.6 \tab 0.267 \tab 4 \tab | \tab -1.12 \tab 0.34  \tab 1.04 \tab 0.0  \tab | \tab 0.065 \cr
+#'   3 \tab 56 \tab 7.2 \tab 0.07  \tab 7 \tab | \tab 1.27  \tab 1.26  \tab 0.28 \tab 1.39 \tab | \tab 1.05 \cr
+#'   4 \tab 41 \tab 1.4 \tab -0.35 \tab 2 \tab | \tab 0.18  \tab -0.79 \tab -1.35\tab -0.93\tab | \tab -0.723 \cr
+#'   ... \tab ... \tab ... \tab ... \tab ... \tab |
+#'   \tab ... \tab ... \tab ... \tab ... \tab | \tab ... }
+#'
 #'  }
 #'
-#'  \subsection{numerical balancing of combined column}{
-#'    TODO THIS ONE!
-#'    \enumerate{
+#'  \subsection{Creating the groups}{
+#'   Finally, we create the groups with the numerical balancing in \code{\link[groupdata2:fold]{fold()}}
+#'   so the combined balancing column is balanced between them.
+#'
+#'   The following describes the numerical balancing:
+#'
+#'   \enumerate{
 #'      \item Rows are shuffled.
 #'      \strong{Note} that this will only affect rows with the same value in \code{`num_col`}.
 #'      \item Extreme pairing 1: Rows are ordered as \emph{smallest, largest, second smallest, second largest}, etc.
-#'      Each pair get a group identifier.
+#'      Each pair get a group identifier. (See \code{\link[rearrr:pair_extremes]{rearrr::pair_extremes()}})
 #'      \item If \code{`extreme_pairing_levels` > 1}: The group identifiers are reordered as \emph{smallest,
 #'      largest, second smallest, second largest}, etc., by the sum of \code{`num_col`} in the represented rows.
 #'      These pairs (of pairs) get a new set of group identifiers, and the process is repeated
@@ -66,10 +139,31 @@
 #'       \code{2^`extreme_pairing_levels`} rows, why you should be careful when choosing that setting.
 #'      \item The final group identifiers are folded, and the fold identifiers are transferred to the rows.
 #'    }
+#'
 #'    N.B. When doing extreme pairing of an unequal number of rows,
 #'    the row with the smallest value is placed in a group by itself, and the order is instead:
 #'    smallest, \emph{second smallest, largest, third smallest, second largest}, etc.
+#'
+#'    \strong{Example}: We order the \code{data.frame} by smallest \emph{"Num"} value,
+#'    largest \emph{"Num"} value, second smallest, and so on.
+#'    We could (if \code{`extreme_pairing_levels` > 1})
+#'    find the sum of \emph{"Num"} for each pair and perform extreme pairing on the pairs.
+#'    Finally, we group the \code{data.frame}:
+#'
+#'    \tabular{rrrrrrrrrrrr}{
+#'     \strong{Group} \tab \strong{Num} \tab
+#'     \strong{->} \tab
+#'     \strong{Group} \tab \strong{Num} \tab
+#'     \strong{Pair} \tab \strong{->} \tab
+#'     \strong{New group}\cr
+#'     1 \tab -0.395\tab | \tab 4 \tab -0.723\tab 1 \tab | \tab 1 \cr
+#'     2 \tab 0.065 \tab | \tab 3 \tab 1.05  \tab 1 \tab | \tab 1  \cr
+#'     3 \tab 1.05  \tab | \tab 1 \tab -0.395\tab 2 \tab | \tab 2 \cr
+#'     4 \tab -0.723\tab | \tab 2 \tab 0.065 \tab 2 \tab | \tab 1 \cr
+#'     ... \tab ... \tab | \tab ... \tab ... \tab ... \tab | \tab ... }
+#'
 #'  }
+#'
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
 #' @param data \code{data.frame}. Can be \emph{grouped}, in which case
@@ -98,7 +192,10 @@
 #'  are found and used.
 #' @param num_col Name of numerical column to balance between groups.
 #'
-#'  Aggregated for each group using \code{`group_aggregation_fn`} before balancing.
+#'  \subsection{Balancing approach}{
+#'   * \strong{Aggregate} the numeric column by group using the \code{`group_aggregation_fn`}.
+#'   * \strong{Combine} with the balancing columns for the other attributes (if any; see \code{`combine_method`}).
+#'  }
 #' @param id_col Name of factor column with IDs to balance the counts of between groups.
 #' @param group_cols Name(s) of factor(s) in \code{`data`} for identifying the existing groups
 #'  that should be collapsed.
@@ -161,10 +258,28 @@
 #'  Note that we can end up with fewer columns than specified in \code{`num_new_group_cols`}.
 #'
 #'  N.B. Only used when \code{`num_new_group_cols` > 1}.
-#' @param combine_method Method to combine the balancing dimensions by. TODO
+#' @param combine_method Method to combine the balancing columns by.
+#'  One of \code{"avg_standardized"} or \code{"avg_min_max_scaled"}.
 #'
-#'  \code{"avg_standardized"} or \code{"avg_min_max_scaled"}.
+#'  For each balancing dimension (\emph{size}, \emph{numeric}, \emph{categorical},
+#'  and \emph{ID}), we calculate a \emph{balancing column}, which indicates the
+#'  "size" of each group in that dimension. We then combine these columns in two steps:
 #'
+#'  1) We normalize them separately with standardization (\code{"avg_standardized"}; Default) or MinMax scaling
+#'  to the [0, 1] range (\code{"avg_min_max_scaled"}).
+#'
+#'  2) We average them rowwise to get a single column with one value per group. The averaging
+#'  is weighted by \code{`combine_weights`}, which is useful when one of the dimensions is
+#'  more important to get a good balance of.
+#'
+#'  We can now create groups where this combined column is balanced between the groups. \emph{In practice},
+#'  this tend to lead to good balances of the included columns.
+#'
+#'  \strong{Note}: There are instances, where this strategy may fail to produce balanced groups.
+#'  E.g. if the balancing dimensions cancel out or when balancing on too many things at once.
+#'  Use \code{\link[groupdata2:summarize_balances]{summarize_balances()}} to
+#'  check whether your new groups are well balanced. If they are not, consider changing
+#'  \code{`combine_weights`} or balancing fewer dimensions.
 #' @param combine_weights Named vector with weights for each of
 #'  the balancing dimensions. Can be used to favor balancing of
 #'  either size, categorical, numerical, or number of IDs.

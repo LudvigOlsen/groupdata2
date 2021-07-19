@@ -56,6 +56,7 @@ all_groups_identical(x1, x2) # FALSE
 }
 \seealso{
 Other grouping functions: 
+\code{\link{collapse_groups_by}},
 \code{\link{collapse_groups}()},
 \code{\link{fold}()},
 \code{\link{group_factor}()},
