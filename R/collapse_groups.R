@@ -21,6 +21,7 @@
 #'
 #'  Balance the new groups by a numerical column,
 #'  one or more levels of a categorical column,
+#'  level counts in an ID column,
 #'  and/or the number of rows (size).
 #'  Note: The more of these you balance at a time,
 #'  the less balanced each of them may become.
@@ -81,21 +82,24 @@
 #'  to be in the order of \code{`n`}.
 #' @param balance_size Whether to balance the size of the collapsed groups. (logical)
 #' @param cat_col Name of categorical column to balance the average frequency
-#'  of a chosen level of between groups.
-#'
-#'  Note: I have not yet identified a way to quickly and robustly balance frequencies of
-#'  multiple levels at once. This may change in the future.
+#'  of one or more levels of between groups.
 #' @param cat_levels Names of the levels in the \code{`cat_col`} column to balance the average frequency
-#'  of. When \code{NULL}, all levels are balanced. The balancing is likely to work best with a few levels.
+#'  of. The balancing will likely work best with fewer levels.
+#'
+#'  When \code{`NULL`}, all levels are balanced.
 #'
 #'  Can be a named numeric vector, where the names are the levels and the values are weights
 #'  of importance in the balancing.
+#'
+#'  E.g. \code{c("dog" = 5, "pidgeon" = 1, "mouse" = 3)} (the weights
+#'  are automatically scaled to sum to 1).
 #'
 #'  Can be \code{".minority"} or \code{".majority"}, in which cases the minority/majority level
 #'  are found and used.
 #' @param num_col Name of numerical column to balance between groups.
 #'
 #'  Aggregated for each group using \code{`group_aggregation_fn`} before balancing.
+#' @param id_col Name of factor column with IDs to balance the counts of between groups.
 #' @param group_cols Name(s) of factor(s) in \code{`data`} for identifying the existing groups
 #'  that should be collapsed.
 #'
@@ -163,7 +167,7 @@
 #'
 #' @param combine_weights Named vector with weights for each of
 #'  the balancing dimensions. Can be used to favor balancing of
-#'  either size, categorical, or numerical balancing.
+#'  either size, categorical, numerical, or number of IDs.
 #' @param parallel Whether to parallelize the group column comparisons,
 #'  when \code{`unique_new_group_cols_only`} is \code{TRUE}.
 #'
@@ -199,12 +203,13 @@ collapse_groups <- function(
   cat_levels = ".majority",
   num_col = NULL,
   group_aggregation_fn = mean,
+  id_col = NULL,
   extreme_pairing_levels = 1,
   num_new_group_cols = 1,
   unique_new_group_cols_only = TRUE,
   max_iters = 5,
   combine_method = "avg_standardized",
-  combine_weights = c("size" = 1, "cat" = 1, "num" = 1),
+  combine_weights = c("size" = 1, "cat" = 1, "num" = 1, "id" = 1),
   col_name = ".coll_groups",
   parallel = FALSE) {
 
@@ -220,6 +225,7 @@ collapse_groups <- function(
     cat_levels = cat_levels,
     num_col = num_col,
     group_aggregation_fn = group_aggregation_fn,
+    id_col = id_col,
     combine_method = combine_method,
     combine_weights = combine_weights,
     col_name = col_name
@@ -248,6 +254,7 @@ collapse_groups <- function(
     cat_levels = cat_levels,
     num_col = num_col,
     group_aggregation_fn = group_aggregation_fn,
+    id_col = id_col,
     extreme_pairing_levels = extreme_pairing_levels,
     num_new_group_cols = num_new_group_cols,
     unique_new_group_cols_only = unique_new_group_cols_only,
@@ -343,6 +350,7 @@ run_collapse_groups_ <- function(
   cat_levels,
   num_col,
   group_aggregation_fn,
+  id_col,
   extreme_pairing_levels,
   num_new_group_cols,
   unique_new_group_cols_only,
@@ -408,52 +416,12 @@ run_collapse_groups_ <- function(
 
   #### Calculate summary info ####
 
-  cat_summary <- NULL
-  if (!is.null(cat_col)){
-    cat_summary <- data %>%
-      dplyr::count(!!!rlang::syms(c(tmp_old_group_var, cat_col)))
-
-    if (is.null(cat_levels)){
-      cat_levels <- levels(data[[cat_col]])
-    }
-
-    if (length(cat_levels) == 1 && cat_levels %in% c(".majority", ".minority")){
-      slice_fn <- ifelse(cat_levels == ".majority", which.max, which.min)
-      cat_levels <- data %>%
-        # TODO time whether summarize with the existing counts is faster
-        dplyr::count(!!as.name(cat_col)) %>%
-        dplyr::slice(slice_fn(n)) %>%
-        dplyr::pull(!!as.name(cat_col))
-    }
-
-    # Convert to always be a named numeric vector (weights)
-    if (!is.numeric(cat_levels)) {
-      cat_levels <- rep(1, times = length(cat_levels)) %>%
-        setNames(nm = cat_levels)
-    }
-
-    cat_summary <- cat_summary %>%
-      dplyr::filter(!!as.name(cat_col) %in% names(cat_levels)) %>%
-      tidyr::spread(key = !!as.name(cat_col),
-                    value = .data$n,
-                    fill = 0)
-
-    # Scale, weight and combine the `cat_levels` columns
-    cat_summary <- combined_scaled_cat_level_cols(
-      cat_summary = cat_summary,
-      weights = cat_levels,
-      scale_fn = standardize # TODO make specifiable?
-    ) %>%
-      dplyr::select(dplyr::one_of(tmp_old_group_var, "cat_levels_combined"))
-
-    if (all(cat_summary[["cat_levels_combined"]] == 0)){
-      stop(paste0(
-        "The `cat_levels` '",
-        names(cat_levels),
-        ", was not found in any of the groups."
-      ))
-    }
-  }
+  cat_summary <- create_combined_cat_summary_(
+    data = data,
+    group_cols = tmp_old_group_var,
+    cat_col = cat_col,
+    cat_levels = cat_levels
+  )
 
   num_summary <- NULL
   if (!is.null(num_col)){
@@ -467,6 +435,13 @@ run_collapse_groups_ <- function(
     size_summary <- data %>%
       dplyr::group_by(!!as.name(tmp_old_group_var)) %>%
       dplyr::summarise(size = dplyr::n(), .groups = "drop")
+  }
+
+  id_summary <- NULL
+  if (!is.null(id_col)){
+    id_summary <- data %>%
+      dplyr::group_by(!!as.name(tmp_old_group_var)) %>%
+      dplyr::summarize(n_ids = length(unique(!!as.name(id_col))), .groups = "drop")
   }
 
   # Prepare summaries tibble
@@ -489,6 +464,10 @@ run_collapse_groups_ <- function(
     summaries <- summaries %>%
       dplyr::left_join(size_summary, by = tmp_old_group_var)
   }
+  if (!is.null(id_summary)){
+    summaries <- summaries %>%
+      dplyr::left_join(id_summary, by = tmp_old_group_var)
+  }
 
   # Weighted combination of scaled summary columns
 
@@ -506,7 +485,8 @@ run_collapse_groups_ <- function(
     combine_weights = combine_weights,
     include_flags = c("size" = isTRUE(balance_size),
                       "cat" = !is.null(cat_col),
-                      "num" = !is.null(num_col)),
+                      "num" = !is.null(num_col),
+                      "id" = !is.null(id_col)),
     scale_fn = scale_fn
   )
 
@@ -591,6 +571,57 @@ standardize <- function(x){
   (x - mean(x)) / std
 }
 
+create_combined_cat_summary_ <- function(data, group_cols, cat_col, cat_levels){
+  cat_summary <- NULL
+  if (!is.null(cat_col)){
+    cat_summary <- data %>%
+      dplyr::count(!!!rlang::syms(c(group_cols, cat_col)))
+
+    if (is.null(cat_levels)){
+      cat_levels <- levels(data[[cat_col]])
+    }
+
+    if (length(cat_levels) == 1 && cat_levels %in% c(".majority", ".minority")){
+      slice_fn <- ifelse(cat_levels == ".majority", which.max, which.min)
+      cat_levels <- data %>%
+        # TODO time whether summarize with the existing counts is faster
+        dplyr::count(!!as.name(cat_col)) %>%
+        dplyr::slice(slice_fn(n)) %>%
+        dplyr::pull(!!as.name(cat_col))
+    }
+
+    # Convert to always be a named numeric vector (weights)
+    if (!is.numeric(cat_levels)) {
+      cat_levels <- rep(1, times = length(cat_levels)) %>%
+        setNames(nm = cat_levels)
+    }
+
+    cat_summary <- cat_summary %>%
+      dplyr::filter(!!as.name(cat_col) %in% names(cat_levels)) %>%
+      tidyr::spread(key = !!as.name(cat_col),
+                    value = .data$n,
+                    fill = 0)
+
+    # Scale, weight and combine the `cat_levels` columns
+    cat_summary <- combined_scaled_cat_level_cols(
+      cat_summary = cat_summary,
+      weights = cat_levels,
+      scale_fn = function(x){standardize(log(1 + x))} # TODO make specifiable?
+    ) %>%
+      dplyr::select(dplyr::one_of(group_cols, "cat_levels_combined"))
+
+    if (all(cat_summary[["cat_levels_combined"]] == 0)){
+      stop(paste0(
+        "The `cat_levels` '",
+        names(cat_levels),
+        ", was not found in any of the groups."
+      ))
+    }
+  }
+
+  cat_summary
+}
+
 combined_scaled_cat_level_cols <- function(cat_summary, weights, scale_fn = standardize){
 
   # Order weights by their names
@@ -641,14 +672,22 @@ combine_scaled_cols_ <- function(summaries, combine_weights, include_flags, scal
       scale_fn(summaries[["cat_levels_combined"]]) * combine_weights[["cat"]]
     )
   }
+
   if ("num_aggr" %in% names(summaries)) {
     summaries[["combined"]] <- summaries[["combined"]] + (
       scale_fn(summaries[["num_aggr"]]) * combine_weights[["num"]]
     )
   }
+
   if ("size" %in% names(summaries)) {
     summaries[["combined"]] <- summaries[["combined"]] + (
       scale_fn(summaries[["size"]]) * combine_weights[["size"]]
+    )
+  }
+
+  if ("n_ids" %in% names(summaries)) {
+    summaries[["combined"]] <- summaries[["combined"]] + (
+      scale_fn(summaries[["n_ids"]]) * combine_weights[["id"]]
     )
   }
 
@@ -664,6 +703,7 @@ check_collapse_groups_ <- function(
   cat_levels,
   num_col,
   group_aggregation_fn,
+  id_col,
   combine_method,
   combine_weights,
   col_name
@@ -687,7 +727,7 @@ check_collapse_groups_ <- function(
     x = combine_weights,
     finite = TRUE,
     any.missing = FALSE,
-    len = 3,
+    len = 4,
     names = "unique",
     add = assert_collection
   )
@@ -736,6 +776,14 @@ check_collapse_groups_ <- function(
     null.ok = TRUE,
     add = assert_collection
   )
+  checkmate::assert_string(
+    x = id_col,
+    na.ok = FALSE,
+    min.chars = 1,
+    null.ok = TRUE,
+    add = assert_collection
+  )
+
   checkmate::assert_string(x = combine_method,
                            min.chars = 1,
                            add = assert_collection)
@@ -762,7 +810,7 @@ check_collapse_groups_ <- function(
   )
   checkmate::assert_names(
     x = names(combine_weights),
-    permutation.of = c("size", "num", "cat"),
+    permutation.of = c("size", "cat", "num", "id"),
     add = assert_collection
   )
 
@@ -807,6 +855,13 @@ check_collapse_groups_ <- function(
       x = data[[num_col]],
       any.missing = FALSE,
       finite = TRUE,
+      add = assert_collection
+    )
+  }
+  if (!is.null(id_col)){
+    checkmate::assert_factor(
+      x = data[[id_col]],
+      any.missing = FALSE,
       add = assert_collection
     )
   }

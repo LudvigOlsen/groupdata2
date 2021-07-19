@@ -13,12 +13,13 @@ collapse_groups(
   cat_levels = ".majority",
   num_col = NULL,
   group_aggregation_fn = mean,
+  id_col = NULL,
   extreme_pairing_levels = 1,
   num_new_group_cols = 1,
   unique_new_group_cols_only = TRUE,
   max_iters = 5,
   combine_method = "avg_standardized",
-  combine_weights = c(size = 1, cat = 1, num = 1),
+  combine_weights = c(size = 1, cat = 1, num = 1, id = 1),
   col_name = ".coll_groups",
   parallel = FALSE
 )
@@ -52,16 +53,18 @@ TODO Improve this part!!!!}
 \item{balance_size}{Whether to balance the size of the collapsed groups. (logical)}
 
 \item{cat_col}{Name of categorical column to balance the average frequency
-of a chosen level of between groups.
-
-Note: I have not yet identified a way to quickly and robustly balance frequencies of
-multiple levels at once. This may change in the future.}
+of one or more levels of between groups.}
 
 \item{cat_levels}{Names of the levels in the \code{`cat_col`} column to balance the average frequency
-of. When \code{NULL}, all levels are balanced. The balancing is likely to work best with a few levels.
+of. The balancing will likely work best with fewer levels.
+
+When \code{`NULL`}, all levels are balanced.
 
 Can be a named numeric vector, where the names are the levels and the values are weights
 of importance in the balancing.
+
+E.g. \code{c("dog" = 5, "pidgeon" = 1, "mouse" = 3)} (the weights
+are automatically scaled to sum to 1).
 
 Can be \code{".minority"} or \code{".majority"}, in which cases the minority/majority level
 are found and used.}
@@ -74,6 +77,8 @@ Aggregated for each group using \code{`group_aggregation_fn`} before balancing.}
 for each group in \code{`group_cols`}, before balancing \code{`num_col`}.
 
 N.B. Only used when \code{`num_col`} is specified.}
+
+\item{id_col}{Name of factor column with IDs to balance the counts of between groups.}
 
 \item{extreme_pairing_levels}{How many levels of extreme pairing to do
 when balancing the groups by the combined balancing column. (TODO improve)
@@ -128,7 +133,7 @@ N.B. Only used when \code{`num_new_group_cols` > 1}.}
 
 \item{combine_weights}{Named vector with weights for each of
 the balancing dimensions. Can be used to favor balancing of
-either size, categorical, or numerical balancing.}
+either size, categorical, numerical, or number of IDs.}
 
 \item{parallel}{Whether to parallelize the group column comparisons,
 when \code{`unique_new_group_cols_only`} is \code{TRUE}.
@@ -146,6 +151,7 @@ Collapses a set of groups into a smaller set of groups.
 
 Balance the new groups by a numerical column,
 one or more levels of a categorical column,
+level counts in an ID column,
 and/or the number of rows (size).
 Note: The more of these you balance at a time,
 the less balanced each of them may become.
