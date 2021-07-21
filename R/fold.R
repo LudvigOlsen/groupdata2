@@ -1,6 +1,6 @@
 # R CMD check NOTE handling
 if (getRversion() >= "2.15.1")
-  utils::globalVariables(c("."))
+  utils::globalVariables(c(".", "where"))
 
 ## fold
 #' @title Create balanced folds for cross-validation

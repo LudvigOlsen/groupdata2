@@ -159,12 +159,13 @@ test_that("numerical balancing works with collapse_groups()", {
     ) %>%
     dplyr::ungroup()
 
-  score_group_balances(
+  summarize_balances(
     df_collapsed,
-    group_col = paste0(".cg", 1:6),
-    cat_col = "diagnosis",
-    num_col = "age"
-  )
+    paste0(".cg", 1:6),
+    num_cols = c("age"),
+    cat_cols = "diagnosis",
+    id_cols = "participant"
+  )$Summary %>% dplyr::filter(measure == "SD")
 
   # Test for different test script
   # When cat_col levels are already columns?
@@ -172,3 +173,203 @@ test_that("numerical balancing works with collapse_groups()", {
     summarize_group_balances(".folds", cat_col="diagnosis2", num_col="age", id_col="participant")
 
 })
+
+
+test_that("testing ...()", {
+
+  seed <- 67
+
+  # Create data frame
+  xpectr::set_test_seed(seed)
+  df <- data.frame(
+    "participant" = factor(rep(1:30, 5)),
+    "score" = sample(c(1:100), 150, replace = T),
+    "diagnosis" = factor(sample(c("a", "b", "c"), 150, replace = T))
+  ) %>% dplyr::arrange(.data$participant) %>%
+    dplyr::as_tibble()
+
+  xpectr::set_test_seed(seed)
+  df_folded <- fold(data = df, k = 13, method = "n_dist")
+
+  # TODO We must set seed between each collapsing, or we can't compare completely?
+
+  xpectr::set_test_seed(seed)
+  df_collapsed <- df_folded %>%
+    dplyr::ungroup() %>%
+    dplyr::sample_frac(size = 0.8)  %>%
+    dplyr::mutate(sampl = factor(sample(1:4, dplyr::n(), replace = TRUE))) %>%
+    # No balancing
+    # Default settings
+    collapse_groups(
+      n = 4,
+      group_cols = ".folds",
+      col_name = "R",
+      balance_size = FALSE
+    ) %>%
+    dplyr::ungroup() %>%
+    # All balancings
+    # Default settings
+    collapse_groups(
+      n = 4,
+      group_cols = ".folds",
+      num_col = "score",
+      cat_col = "diagnosis",
+      cat_levels = ".majority",
+      id_col = "participant",
+      balance_size = TRUE,
+      col_name = "n,i,s,c^"
+    ) %>%
+    dplyr::ungroup() %>%
+    # All balancings
+    # All cat levels
+    collapse_groups(
+      n = 4,
+      group_cols = ".folds",
+      num_col = "score",
+      cat_col = "diagnosis",
+      cat_levels = NULL,
+      id_col = "participant",
+      balance_size = TRUE,
+      col_name = "n,i,s,cA"
+    ) %>%
+    # No IDs
+    dplyr::ungroup() %>%
+    collapse_groups(
+      n = 4,
+      group_cols = ".folds",
+      num_col = "score",
+      cat_col = "diagnosis",
+      cat_levels = NULL,
+      balance_size = TRUE,
+      col_name = "n,s,cA"
+    ) %>%
+    # No ID, size
+    dplyr::ungroup() %>%
+    collapse_groups(
+      n = 4,
+      group_cols = ".folds",
+      num_col = "score",
+      cat_col = "diagnosis",
+      cat_levels = ".majority",
+      balance_size = TRUE,
+      col_name = "n,c^"
+    ) %>%
+    # No ID, size, cat
+    dplyr::ungroup() %>%
+    collapse_groups(
+      n = 4,
+      group_cols = ".folds",
+      num_col = "score",
+      balance_size = TRUE,
+      col_name = "n,s"
+    ) %>%
+    # Num only
+    dplyr::ungroup() %>%
+    collapse_groups(
+      n = 4,
+      group_cols = ".folds",
+      num_col = "score",
+      balance_size = FALSE,
+      col_name = "n"
+    ) %>%
+    # size only
+    dplyr::ungroup() %>%
+    collapse_groups(
+      n = 4,
+      group_cols = ".folds",
+      balance_size = TRUE,
+      col_name = "s"
+    ) %>%
+    # Cat only
+    dplyr::ungroup() %>%
+    collapse_groups(
+      n = 4,
+      group_cols = ".folds",
+      cat_col = "diagnosis",
+      cat_levels = ".majority",
+      balance_size = FALSE,
+      col_name = "c^"
+    ) %>%
+    # Cat only all levels
+    dplyr::ungroup() %>%
+    collapse_groups(
+      n = 4,
+      group_cols = ".folds",
+      cat_col = "diagnosis",
+      cat_levels = NULL,
+      balance_size = FALSE,
+      col_name = "cA"
+    ) %>%
+    # id only
+    dplyr::ungroup() %>%
+    collapse_groups(
+      n = 4,
+      group_cols = ".folds",
+      id_col = "participant",
+      balance_size = TRUE,
+      col_name = "i"
+    )
+
+  new_group_cols <- setdiff(colnames(df_collapsed), colnames(df_folded))
+
+  summ_bal <- summarize_balances(
+    data = df_collapsed,
+    group_cols = new_group_cols,
+    num_cols = c("score"),
+    cat_cols = "diagnosis",
+    id_cols = "participant",
+    include_normalized = TRUE
+  )
+
+  # n = numeric
+  # c = categorical ; ^ = .majority; A = all levels
+  # i = ID
+  # s = size
+  # R = Random collapsing (no balancing)
+  # sampl = completely random
+  summ_bal$Summary %>% ranked_balances()
+  summ_bal$`Normalized Summary` %>% ranked_balances()
+
+
+  # %>%
+  #   dplyr::ungroup() %>%
+  #   collapse_groups(
+  #     n = 4,
+  #     group_cols = ".folds",
+  #     num_col = "age",
+  #     cat_col = "diagnosis",
+  #     cat_levels = NULL,
+  #     col_name = ".cg2"
+  #   ) %>%
+  #   dplyr::ungroup() %>%
+  #   collapse_groups(
+  #     n = 4,
+  #     group_cols = ".folds",
+  #     num_col = "age",
+  #     col_name = ".cg3"
+  #   ) %>%
+  #   dplyr::ungroup() %>%
+  #   collapse_groups(
+  #     n = 4,
+  #     group_cols = ".folds",
+  #     cat_col = "diagnosis",
+  #     cat_levels = ".majority",
+  #     col_name = ".cg4"
+  #   ) %>%
+  #   dplyr::ungroup() %>%
+  #   collapse_groups(
+  #     n = 4,
+  #     group_cols = ".folds",
+  #     col_name = ".cg5"
+  #   ) %>%
+  #   dplyr::ungroup()  %>%
+  #   collapse_groups(
+  #     n = 4,
+  #     balance_size = FALSE,
+  #     group_cols = ".folds",
+  #     col_name = ".cg6"
+  #   ) %>%
+  #   dplyr::ungroup()
+
+})
+

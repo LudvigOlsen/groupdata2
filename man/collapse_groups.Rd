@@ -47,8 +47,7 @@ parent groups can be collapsed together.
 N.B. Do not confuse these group columns with potential columns that \code{`data`} is grouped by.
 \code{`group_cols`} identifies the groups to be collapsed. When \code{`data`} is
 grouped with \code{\link[dplyr:group_by]{dplyr::group_by()}}, the function is
-applied separately to each subset.
-TODO Improve this part!!!!}
+applied separately to each of those subsets.}
 
 \item{balance_size}{Whether to balance the size of the collapsed groups. (logical)}
 
@@ -64,48 +63,41 @@ Can be a named numeric vector, where the names are the levels and the values are
 of importance in the balancing.
 
 E.g. \code{c("dog" = 5, "pidgeon" = 1, "mouse" = 3)} (the weights
-are automatically scaled to sum to 1).
+are automatically scaled to sum to \code{1}).
 
 Can be \code{".minority"} or \code{".majority"}, in which cases the minority/majority level
 are found and used.}
 
-\item{num_col}{Name of numerical column to balance between groups.
-
-\subsection{Balancing approach}{
-\itemize{
-\item \strong{Aggregate} the numeric column by group using the \code{`group_aggregation_fn`}.
-\item \strong{Combine} with the balancing columns for the other attributes (if any; see \code{`combine_method`}).
-}
-}}
+\item{num_col}{Name of numerical column to balance between groups.}
 
 \item{group_aggregation_fn}{Function for aggregating values in \code{`num_col`}
-for each group in \code{`group_cols`}, before balancing \code{`num_col`}.
+for each group in \code{`group_cols`} before balancing \code{`num_col`}.
 
 N.B. Only used when \code{`num_col`} is specified.}
 
 \item{id_col}{Name of factor column with IDs to balance the counts of between groups.}
 
 \item{extreme_pairing_levels}{How many levels of extreme pairing to do
-when balancing the groups by the combined balancing column. (TODO improve)
+when balancing the groups by the combined balancing column (see \code{Details}).
 
 \strong{Extreme pairing}: Rows/pairs are ordered as smallest, largest,
 second smallest, second largest, etc. If \code{extreme_pairing_levels > 1},
-this is done "recursively" on the extreme pairs. See \code{`Details/TODODODODO`} for more.
+this is done "recursively" on the extreme pairs.
 
 N.B. Larger values work best with large datasets. If set too high,
 the result might not be stochastic. Always check if an increase
-actually makes the groups more balanced. See example.}
+actually makes the groups more balanced.}
 
 \item{num_new_group_cols}{Number of group columns to create.
 
-If \code{num_new_group_cols > 1}, columns will be named
+If \code{`num_new_group_cols` > 1}, columns will be named
 with a combination of \code{`col_name`} and \code{"_1"}, \code{"_2"}, etc.
 E.g. \eqn{".coll_groups_1"}, \eqn{".coll_groups_2"}, etc.
 
-N.B. If \code{`unique_new_group_cols_only`} is \code{TRUE},
+N.B. If \code{`unique_new_group_cols_only`} is \code{`TRUE`},
 we can end up with fewer columns than specified, see \code{`max_iters`}.
 E.g. when using balancing, the max. possible number of unique
-collapsings is often \code{1}.}
+collapsings is often \code{1}. TODO DODODODODDODODODODO!!!!!}
 
 \item{unique_new_group_cols_only}{Check if fold columns are identical and
 keep only unique columns.
@@ -140,24 +132,21 @@ and \emph{ID}), we calculate a \emph{balancing column}, which indicates the
 "size" of each group in that dimension. We then combine these columns in two steps:
 \enumerate{
 \item We normalize them separately with standardization (\code{"avg_standardized"}; Default) or MinMax scaling
-to the \link{0, 1} range (\code{"avg_min_max_scaled"}).
+to the [0, 1] range (\code{"avg_min_max_scaled"}).
 \item We average them rowwise to get a single column with one value per group. The averaging
 is weighted by \code{`combine_weights`}, which is useful when one of the dimensions is
 more important to get a good balance of.
 }
 
-We can now create groups where this combined column is balanced between the groups. \emph{In practice},
-this tend to lead to good balances of the included columns.
-
-\strong{Note}: There are instances, where this strategy may fail to produce balanced groups.
-E.g. if the balancing dimensions cancel out or when balancing on too many things at once.
-Use \code{\link[groupdata2:summarize_balances]{summarize_balances()}} to
-check whether your new groups are well balanced. If they are not, consider changing
-\code{`combine_weights`} or balancing fewer dimensions.}
+\code{`combine_method`} chooses whether to use standardization or MinMax scaling in step 1.}
 
 \item{combine_weights}{Named vector with weights for each of
 the balancing dimensions. Can be used to favor balancing of
-either size, categorical, numerical, or number of IDs.}
+either balancing dimension (\emph{size}, \emph{numeric}, \emph{categorical},
+or \emph{ID}).
+
+E.g. \code{c("size" = 1, "cat" = 1, "num" = 4, "id" = 2)} (the weights
+are automatically scaled to sum to \code{1}).}
 
 \item{parallel}{Whether to parallelize the group column comparisons,
 when \code{`unique_new_group_cols_only`} is \code{TRUE}.
@@ -177,6 +166,7 @@ Balance the new groups by a numerical column,
 one or more levels of a categorical column,
 level counts in an ID column,
 and/or the number of rows (size).
+
 Note: The more of these you balance at a time,
 the less balanced each of them may become.
 
@@ -248,7 +238,9 @@ By default, we only use the normalized counts for the majority class.
 }
 
 \subsection{num_col}{
-The numeric column is simply used as is.
+\itemize{
+\item \strong{Aggregate} the numeric column by group using the \code{`group_aggregation_fn`}.
+}
 }
 
 \subsection{size}{

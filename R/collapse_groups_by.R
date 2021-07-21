@@ -34,6 +34,7 @@
 #'  Tip: Check the balances of the new groups with
 #'  \code{\link[groupdata2:summarize_balances]{summarize_balances()}}.
 #' @inheritParams collapse_groups
+#' @param n Number of new groups.
 #' @param method \code{"balance"}, \code{"ascending"}, or \code{"descending"}.
 #'
 #'  * \code{"balance"} balances the attribute between the groups.
@@ -95,7 +96,6 @@ collapse_groups_by_size <- function(
   data <- prepped[["data"]]
   data_group_cols <- prepped[["data_group_cols"]]
   group_cols <- prepped[["group_cols"]]
-  replaced_fold_name <- prepped[["replaced_fold_name"]]
 
   # Collapse groups within each group subset in `data`
   # NOTE: The `data_group_cols` groups, not the `group_cols` groups
@@ -114,8 +114,7 @@ collapse_groups_by_size <- function(
     data_group_cols = data_group_cols,
     group_cols = group_cols,
     col_name = col_name,
-    num_new_group_cols = 1,
-    replaced_fold_name = replaced_fold_name
+    num_new_group_cols = 1
   )
 
   data
@@ -203,11 +202,15 @@ collapse_groups_by_numeric <- function(
   # Prepare for collapsing
   # Includes renaming columns with ".folds" in their name
   # and checking `data` isn't grouped by any `group_cols`
-  prepped <- prepare_collapse_groups_run_(data = data, group_cols = group_cols)
+  prepped <- prepare_collapse_groups_run_(
+    data = data,
+    group_cols = group_cols,
+    num_col = num_col
+  )
   data <- prepped[["data"]]
   data_group_cols <- prepped[["data_group_cols"]]
   group_cols <- prepped[["group_cols"]]
-  replaced_fold_name <- prepped[["replaced_fold_name"]]
+  num_col <- prepped[["num_col"]]
 
   # Collapse groups within each group subset in `data`
   # NOTE: The `data_group_cols` groups, not the `group_cols` groups
@@ -228,8 +231,7 @@ collapse_groups_by_numeric <- function(
     data_group_cols = data_group_cols,
     group_cols = group_cols,
     col_name = col_name,
-    num_new_group_cols = 1,
-    replaced_fold_name = replaced_fold_name
+    num_new_group_cols = 1
   )
 
   data
@@ -319,11 +321,15 @@ collapse_groups_by_levels <- function(
   # Prepare for collapsing
   # Includes renaming columns with ".folds" in their name
   # and checking `data` isn't grouped by any `group_cols`
-  prepped <- prepare_collapse_groups_run_(data = data, group_cols = group_cols)
+  prepped <- prepare_collapse_groups_run_(
+    data = data,
+    group_cols = group_cols,
+    cat_col = cat_col
+  )
   data <- prepped[["data"]]
   data_group_cols <- prepped[["data_group_cols"]]
   group_cols <- prepped[["group_cols"]]
-  replaced_fold_name <- prepped[["replaced_fold_name"]]
+  cat_col <- prepped[["cat_col"]]
 
   # Collapse groups within each group subset in `data`
   # NOTE: The `data_group_cols` groups, not the `group_cols` groups
@@ -344,8 +350,7 @@ collapse_groups_by_levels <- function(
     data_group_cols = data_group_cols,
     group_cols = group_cols,
     col_name = col_name,
-    num_new_group_cols = 1,
-    replaced_fold_name = replaced_fold_name
+    num_new_group_cols = 1
   )
 
   data
@@ -436,11 +441,15 @@ collapse_groups_by_ids <- function(
   # Prepare for collapsing
   # Includes renaming columns with ".folds" in their name
   # and checking `data` isn't grouped by any `group_cols`
-  prepped <- prepare_collapse_groups_run_(data = data, group_cols = group_cols)
+  prepped <- prepare_collapse_groups_run_(
+    data = data,
+    group_cols = group_cols,
+    id_col = id_col
+  )
   data <- prepped[["data"]]
   data_group_cols <- prepped[["data_group_cols"]]
   group_cols <- prepped[["group_cols"]]
-  replaced_fold_name <- prepped[["replaced_fold_name"]]
+  id_col <- prepped[["id_col"]]
 
   # Collapse groups within each group subset in `data`
   # NOTE: The `data_group_cols` groups, not the `group_cols` groups
@@ -460,8 +469,7 @@ collapse_groups_by_ids <- function(
     data_group_cols = data_group_cols,
     group_cols = group_cols,
     col_name = col_name,
-    num_new_group_cols = 1,
-    replaced_fold_name = replaced_fold_name
+    num_new_group_cols = 1
   )
 
   data

@@ -53,12 +53,7 @@ collapse_groups_by_ids(
 \item{data}{\code{data.frame}. Can be \emph{grouped}, in which case
 the function is applied group-wise.}
 
-\item{n}{Number of new groups.
-
-When \code{`num_new_group_cols` > 1}, \code{`n`} can also be a vector
-with one \code{`n`} per new group column. This allows trying multiple \code{`n`}
-settings at a time. Note that the generated group columns are not guaranteed
-to be in the order of \code{`n`}.}
+\item{n}{Number of new groups.}
 
 \item{group_cols}{Name(s) of factor(s) in \code{`data`} for identifying the existing groups
 that should be collapsed.
@@ -72,8 +67,7 @@ parent groups can be collapsed together.
 N.B. Do not confuse these group columns with potential columns that \code{`data`} is grouped by.
 \code{`group_cols`} identifies the groups to be collapsed. When \code{`data`} is
 grouped with \code{\link[dplyr:group_by]{dplyr::group_by()}}, the function is
-applied separately to each subset.
-TODO Improve this part!!!!}
+applied separately to each of those subsets.}
 
 \item{method}{\code{"balance"}, \code{"ascending"}, or \code{"descending"}.
 \itemize{
@@ -83,27 +77,20 @@ TODO Improve this part!!!!}
 }}
 
 \item{extreme_pairing_levels}{How many levels of extreme pairing to do
-when balancing the groups by the combined balancing column. (TODO improve)
+when balancing the groups by the combined balancing column (see \code{Details}).
 
 \strong{Extreme pairing}: Rows/pairs are ordered as smallest, largest,
 second smallest, second largest, etc. If \code{extreme_pairing_levels > 1},
-this is done "recursively" on the extreme pairs. See \code{`Details/TODODODODO`} for more.
+this is done "recursively" on the extreme pairs.
 
 N.B. Larger values work best with large datasets. If set too high,
 the result might not be stochastic. Always check if an increase
-actually makes the groups more balanced. See example.}
+actually makes the groups more balanced.}
 
-\item{num_col}{Name of numerical column to balance between groups.
-
-\subsection{Balancing approach}{
-\itemize{
-\item \strong{Aggregate} the numeric column by group using the \code{`group_aggregation_fn`}.
-\item \strong{Combine} with the balancing columns for the other attributes (if any; see \code{`combine_method`}).
-}
-}}
+\item{num_col}{Name of numerical column to balance between groups.}
 
 \item{group_aggregation_fn}{Function for aggregating values in \code{`num_col`}
-for each group in \code{`group_cols`}, before balancing \code{`num_col`}.
+for each group in \code{`group_cols`} before balancing \code{`num_col`}.
 
 N.B. Only used when \code{`num_col`} is specified.}
 
@@ -119,7 +106,7 @@ Can be a named numeric vector, where the names are the levels and the values are
 of importance in the balancing.
 
 E.g. \code{c("dog" = 5, "pidgeon" = 1, "mouse" = 3)} (the weights
-are automatically scaled to sum to 1).
+are automatically scaled to sum to \code{1}).
 
 Can be \code{".minority"} or \code{".majority"}, in which cases the minority/majority level
 are found and used.}
