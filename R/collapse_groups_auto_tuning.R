@@ -8,7 +8,7 @@ auto_tune_collapsings <- function(
   cat_col,
   id_col,
   balance_size,
-  combine_weights,
+  weights,
   scale_fn,
   extreme_pairing_levels,
   num_new_group_cols,
@@ -86,7 +86,7 @@ auto_tune_collapsings <- function(
       tmp_old_group_var = tmp_old_group_var,
       include_flags = .x,
       col_name = .y,
-      combine_weights = combine_weights,
+      weights = weights,
       scale_fn = scale_fn,
       extreme_pairing_levels = extreme_pairing_levels,
       num_new_group_cols = num_new_group_cols,
@@ -137,6 +137,23 @@ auto_tune_collapsings <- function(
     ))
   }
 
+  ranking_weights <- purrr::map(.x = names(weights), .f = ~{
+    if (.x == "num" && !is.null(num_cols)){
+      rep(weights[[.x]], times = length(num_cols)) %>%
+        setNames(num_cols)
+    } else if (.x == "cat" && !is.null(cat_col)){
+      weights[[.x]] %>%
+        setNames(cat_col)
+    } else if (.x == "id" && !is.null(id_col)){
+      weights[[.x]] %>%
+        setNames(id_col)
+    } else if (.x == "size" && isTRUE(balance_size)){
+      weights[[.x]] %>%
+        setNames("size")
+    }
+  }) %>%
+    unlist(recursive = FALSE, use.names = TRUE)
+
   # Summarize the balances
   balance_summary <- summarize_balances(
     data = data,
@@ -145,6 +162,7 @@ auto_tune_collapsings <- function(
     num_cols = num_cols,
     id_cols = id_col,
     summarize_size = balance_size,
+    ranking_weights = ranking_weights,
     include_normalized = TRUE
   )
 
@@ -194,7 +212,7 @@ combine_and_fold_combination_ <- function(
   n,
   include_flags,
   col_name,
-  combine_weights,
+  weights,
   scale_fn,
   extreme_pairing_levels,
   num_new_group_cols,
@@ -205,7 +223,7 @@ combine_and_fold_combination_ <- function(
   # Scale, weight and combine
   summaries <- combine_scaled_cols_(
     summaries = summaries,
-    combine_weights = combine_weights,
+    weights = weights,
     include_flags = include_flags,
     scale_fn = scale_fn
   )

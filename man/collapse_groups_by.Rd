@@ -87,12 +87,10 @@ N.B. Larger values work best with large datasets. If set too high,
 the result might not be stochastic. Always check if an increase
 actually makes the groups more balanced.}
 
-\item{num_col}{Name of numerical column to balance between groups.}
+\item{group_aggregation_fn}{Function for aggregating values in the \code{`num_cols`}
+for each group in \code{`group_cols`} before balancing the \code{`num_cols`}.
 
-\item{group_aggregation_fn}{Function for aggregating values in \code{`num_col`}
-for each group in \code{`group_cols`} before balancing \code{`num_col`}.
-
-N.B. Only used when \code{`num_col`} is specified.}
+N.B. Only used when \code{`num_cols`} is specified.}
 
 \item{cat_col}{Name of categorical column to balance the average frequency
 of one or more levels of between groups.}

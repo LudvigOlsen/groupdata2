@@ -64,6 +64,7 @@
 #'  The number of unique IDs are counted per group.
 #'
 #'  Normalization: The count of unique IDs is normalized with \code{log(1 + count)}.
+#' @param summarize_size Whether to summarize size (number of rows per group).
 #' @param include_normalized Whether to calculate and include the
 #'  normalized summary in the output. (logical)
 #' @param num_normalize_fn Function for normalizing the \code{`num_cols`} columns before
@@ -71,6 +72,13 @@
 #'
 #'  Only used when \code{`include_normalized`} is enabled.
 #'
+#' @param ranking_weights A named vector with weights for averaging the rank columns when calculating the `SD_rank` column.
+#'  The name is one of the balancing columns and the number is its weight. Non-specified columns are given the weight \code{1}.
+#'  The weights are automatically scaled to sum to 1.
+#'
+#'  When summarizing size (see \code{`summarize_size`}), name its weight \code{"size"}.
+#'
+#'  E.g. \code{c("size" = 1, "a_cat_col" = 2, "a_num_col" = 4, "an_id_col" = 2)}.
 #' @param max_cat_prefix_chars How many characters to prefix the categorical level
 #'  column names with.
 #'
@@ -169,6 +177,7 @@ summarize_balances <- function(
   id_cols = NULL,
   summarize_size = TRUE,
   include_normalized = FALSE,
+  ranking_weights = NULL,
   num_normalize_fn = function(x){rearrr::min_max_scale(x, new_min = 0, new_max = 1)},
   max_cat_prefix_chars = "auto") {
 
@@ -215,6 +224,16 @@ summarize_balances <- function(
     names = "unnamed",
     add = assert_collection
   )
+  checkmate::assert_numeric(
+    x = ranking_weights,
+    lower = 0,
+    finite = TRUE,
+    any.missing = FALSE,
+    min.len = 1,
+    names = "unique",
+    null.ok = TRUE,
+    add = assert_collection
+  )
   checkmate::assert_flag(x = summarize_size, add = assert_collection)
   checkmate::assert_flag(x = include_normalized, add = assert_collection)
   checkmate::assert_function(x = num_normalize_fn, add = assert_collection)
@@ -223,7 +242,7 @@ summarize_balances <- function(
     checkmate::reportAssertions(assert_collection)
   }
   if (is.character(max_cat_prefix_chars) && max_cat_prefix_chars != "auto"){
-    assert_collection$push("When `max_cat_prefix_chars` is a string, it can only be 'auto'.")
+    assert_collection$push("when `max_cat_prefix_chars` is a string, it can only be 'auto'.")
     checkmate::reportAssertions(assert_collection)
   }
   checkmate::assert(
@@ -236,6 +255,14 @@ summarize_balances <- function(
     must.include = c(group_cols, cat_cols, num_cols, id_cols),
     add = assert_collection
   )
+  checkmate::assert_names(
+    x = names(ranking_weights),
+    subset.of = c(cat_cols, num_cols, id_cols, "size"),
+    add = assert_collection
+  )
+  if (length(intersect(cat_cols, id_cols)) > 0) {
+    assert_collection$push("found identical names in `cat_cols` and `id_cols`.")
+  }
   checkmate::reportAssertions(assert_collection)
   # End of argument checks ####
 
@@ -244,7 +271,7 @@ summarize_balances <- function(
   if (!is.null(cat_cols) && max_cat_prefix_chars == "auto"){
     for (i in 4:max(nchar(cat_cols))){
       shorts <- substr(cat_cols, 1, i)
-      if (length(unique(cat_cols)) == length(cat_cols)){
+      if (length(unique(shorts)) == length(cat_cols)){
         max_cat_prefix_chars <- i
         break
       }
@@ -252,11 +279,13 @@ summarize_balances <- function(
   }
 
   # Do the same for the num cols
-  # We shorten the num cols strings in SD ranking columns
+  # We shorten the num+cat cols strings in SD ranking columns
+  # We might have similarly named cat and num cols, so we
+  # include cat_cols in the shortening
   if (!is.null(num_cols)){
     for (i in 4:max(nchar(num_cols))){
-      shorts <- substr(num_cols, 1, i)
-      if (length(unique(num_cols)) == length(num_cols)){
+      shorts <- substr(c(num_cols, cat_cols), 1, i)
+      if (length(unique(shorts)) == length(num_cols) + length(cat_cols)){
         max_num_prefix_chars <- i
         break
       }
@@ -336,6 +365,10 @@ summarize_balances <- function(
     group_summary,
     num_cols = num_cols,
     cat_level_cols = cat_summary_columns_list,
+    id_cols = id_cols,
+    summarize_size = summarize_size,
+    ranking_weights = ranking_weights,
+    logged_counts = FALSE,
     max_cat_prefix_chars = max_cat_prefix_chars,
     max_num_prefix_chars = max_num_prefix_chars
   )
@@ -402,16 +435,20 @@ summarize_balances <- function(
     }
 
     # Calculate measures for all numeric columns
-      normalized_descriptors <- measure_summary_numerics_(
-        normalized_group_summary,
-        num_cols = num_cols,
-        cat_level_cols = purrr::map(
-          .x = cat_summary_columns_list,
-          .f = ~{paste0("log(", .x, ")")}
-        ),
-        max_cat_prefix_chars = max_cat_prefix_chars,
-        max_num_prefix_chars = max_num_prefix_chars
-      )
+    normalized_descriptors <- measure_summary_numerics_(
+      normalized_group_summary,
+      num_cols = num_cols,
+      cat_level_cols = purrr::map(.x = cat_summary_columns_list,
+                                  .f = ~ {
+                                    paste0("log(", .x, ")")
+                                  }),
+      id_cols = id_cols,
+      summarize_size = summarize_size,
+      ranking_weights = ranking_weights,
+      logged_counts = TRUE,
+      max_cat_prefix_chars = max_cat_prefix_chars,
+      max_num_prefix_chars = max_num_prefix_chars
+    )
   }
 
   #### Preparing output ####
@@ -525,8 +562,11 @@ create_size_summary_ <- function(data, group_col){
 }
 
 create_empty_summary_ <- function(data, group_col){
-  create_size_summary_(data, group_col) %>%
-    dplyr::select(-.data$`# rows`)
+  data %>%
+    dplyr::ungroup() %>%
+    dplyr::select(!!as.name(group_col)) %>%
+    dplyr::group_by(!!as.name(group_col)) %>%
+    dplyr::group_keys()
 }
 
 create_id_summaries_ <- function(data, group_col, id_cols){
@@ -593,6 +633,10 @@ measure_summary_numerics_ <- function(
   data,
   num_cols,
   cat_level_cols,
+  id_cols,
+  summarize_size,
+  ranking_weights,
+  logged_counts,
   max_cat_prefix_chars,
   max_num_prefix_chars) {
 
@@ -624,14 +668,38 @@ measure_summary_numerics_ <- function(
   sd_rows <- measures %>%
     dplyr::filter(measure == "SD")
 
+  # We map the user specified names to the output names
+  # so we can use the ranking weights
+  rank_names <- list()
+
+  if (isTRUE(summarize_size)) {
+    if (isTRUE(logged_counts)) {
+      rank_names[["size"]] <- "log(# rows)"
+    } else {
+      rank_names[["size"]] <- "# rows"
+    }
+  }
+
+  if (!is.null(id_cols)) {
+    for (id_col in id_cols) {
+      if (isTRUE(logged_counts)) {
+        rank_names[[id_col]] <- paste0("log(# ", id_col, ")")
+      } else {
+        rank_names[[id_col]] <- paste0("# ", id_col)
+      }
+    }
+  }
+
   for (cat_col in names(cat_level_cols)){
+    rank_names[[cat_col]] <- paste0(
+      substr(cat_col, start = 1, stop = max_cat_prefix_chars),
+      "_SD_rank"
+    )
+
     sd_rows <- sd_rows %>%
       mean_rank_numeric_cols(
         cols = cat_level_cols[[cat_col]],
-        col_name = paste0(
-          substr(cat_col, start = 1, stop = max_cat_prefix_chars),
-          "_SD_rank"
-        )
+        col_name = rank_names[[cat_col]]
       )
   }
 
@@ -640,16 +708,44 @@ measure_summary_numerics_ <- function(
       # Names of num_cols columns (e.g. mean(score) and sum(score))
       num_col_cols <- colnames(sd_rows)[
         grepl(paste0("\\(", num_col, "\\)"), colnames(sd_rows))]
+
+      rank_names[[num_col]] <- paste0(
+        substr(num_col, start = 1, stop = max_num_prefix_chars),
+        "_SD_rank"
+      )
+
       # Combined rank for this num_col
       sd_rows <- sd_rows %>%
         mean_rank_numeric_cols(
           cols = num_col_cols,
-          col_name = paste0(
-            substr(num_col, start = 1, stop = max_num_prefix_chars),
-            "_SD_rank"
-          )
+          col_name = rank_names[[num_col]]
         )
     }
+  }
+
+  if (!is.null(ranking_weights)) {
+    # Convert names in ranking weights to their names in the output
+    names(ranking_weights) <-
+      purrr::map(.x = names(ranking_weights), .f = ~ {
+        rank_names[[.x]]
+      })
+
+    # If any of the elements are not in the weights
+    # We add them with a value of 1
+    names_to_add <- setdiff(rank_names, names(ranking_weights))
+    for (name in names_to_add) {
+      ranking_weights[[name]] <- 1
+    }
+  } else {
+    ranking_weights <- rep(1, times = length(rank_names)) %>%
+      setNames(rank_names)
+  }
+
+  if (is.list(ranking_weights)){
+    # Convert to numeric
+    ranking_weights <- unlist(ranking_weights,
+                              recursive = FALSE,
+                              use.names = TRUE)
   }
 
   cols_to_rank <- sd_rows %>%
@@ -663,7 +759,8 @@ measure_summary_numerics_ <- function(
   sd_ranks <- sd_rows %>%
     mean_rank_numeric_cols(
       cols = cols_to_rank,
-      col_name = "SD_rank") %>%
+      col_name = "SD_rank",
+      ranking_weights = ranking_weights) %>%
     dplyr::select(.data$group_col,
                   dplyr::ends_with("SD_rank"))
 
@@ -685,7 +782,7 @@ rank_numeric_cols <- function(data, cols = NULL){
     dplyr::mutate(dplyr::across(dplyr::one_of(cols), rank))
 }
 
-mean_rank_numeric_cols <- function(data, cols = NULL, col_name = "mean_rank"){
+mean_rank_numeric_cols <- function(data, cols = NULL, col_name = "mean_rank", ranking_weights = NULL){
 
   if (is.null(cols)){
     cols <- data %>%
@@ -693,11 +790,39 @@ mean_rank_numeric_cols <- function(data, cols = NULL, col_name = "mean_rank"){
       colnames()
   }
 
+  if (is.null(ranking_weights)){
+    ranking_weights <- rep(1, times = length(cols)) %>%
+      setNames(nm = cols)
+  }
+
   # Calculate average SD rank
   sd_ranks <- data %>%
-    rank_numeric_cols(cols = cols) %>%
-    dplyr::rowwise() %>%
-    dplyr::mutate(!!col_name := mean(dplyr::c_across(dplyr::one_of(cols)))) %>%
-    dplyr::ungroup()
+    rank_numeric_cols(cols = cols)
+  sd_ranks[[col_name]] <- sd_ranks %>%
+    dplyr::ungroup() %>%
+    dplyr::select(dplyr::one_of(cols)) %>%
+    purrr::pmap_dbl(.f = weighted_mean_, weights = ranking_weights)
+
+  sd_ranks
 }
 
+weighted_mean_ <- function(..., weights){
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+  checkmate::assert_numeric(x = weights, lower = 0, add = assert_collection)
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
+
+  # Order the row values and the weights
+  r <- c(...)
+  r <- r[order(names(r))]
+  weights <- weights[order(names(weights))]
+  if (!all(names(r) == names(weights))){
+    stop("`...` and `weights` must have the exact same names.")
+  }
+
+  # Sum to one
+  weights <- weights / sum(weights)
+
+  sum(r * weights)
+}

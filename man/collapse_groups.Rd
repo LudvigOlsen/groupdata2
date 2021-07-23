@@ -8,18 +8,19 @@ collapse_groups(
   data,
   n,
   group_cols,
-  balance_size = TRUE,
   cat_col = NULL,
-  cat_levels = ".majority",
-  num_col = NULL,
-  group_aggregation_fn = mean,
+  cat_levels = NULL,
+  num_cols = NULL,
   id_col = NULL,
-  extreme_pairing_levels = 1,
+  balance_size = TRUE,
+  auto_tune = FALSE,
+  group_aggregation_fn = mean,
   num_new_group_cols = 1,
   unique_new_group_cols_only = TRUE,
   max_iters = 5,
+  extreme_pairing_levels = 1,
   combine_method = "avg_standardized",
-  combine_weights = c(size = 1, cat = 1, num = 1, id = 1),
+  weights = c(size = 1, cat = 1, num = 1, id = 1),
   col_name = ".coll_groups",
   parallel = FALSE
 )
@@ -49,8 +50,6 @@ N.B. Do not confuse these group columns with potential columns that \code{`data`
 grouped with \code{\link[dplyr:group_by]{dplyr::group_by()}}, the function is
 applied separately to each of those subsets.}
 
-\item{balance_size}{Whether to balance the size of the collapsed groups. (logical)}
-
 \item{cat_col}{Name of categorical column to balance the average frequency
 of one or more levels of between groups.}
 
@@ -68,25 +67,16 @@ are automatically scaled to sum to \code{1}).
 Can be \code{".minority"} or \code{".majority"}, in which cases the minority/majority level
 are found and used.}
 
-\item{num_col}{Name of numerical column to balance between groups.}
-
-\item{group_aggregation_fn}{Function for aggregating values in \code{`num_col`}
-for each group in \code{`group_cols`} before balancing \code{`num_col`}.
-
-N.B. Only used when \code{`num_col`} is specified.}
+\item{num_cols}{Name(s) of numerical column(s) to balance between groups.}
 
 \item{id_col}{Name of factor column with IDs to balance the counts of between groups.}
 
-\item{extreme_pairing_levels}{How many levels of extreme pairing to do
-when balancing the groups by the combined balancing column (see \code{Details}).
+\item{balance_size}{Whether to balance the size of the collapsed groups. (logical)}
 
-\strong{Extreme pairing}: Rows/pairs are ordered as smallest, largest,
-second smallest, second largest, etc. If \code{extreme_pairing_levels > 1},
-this is done "recursively" on the extreme pairs.
+\item{group_aggregation_fn}{Function for aggregating values in the \code{`num_cols`}
+for each group in \code{`group_cols`} before balancing the \code{`num_cols`}.
 
-N.B. Larger values work best with large datasets. If set too high,
-the result might not be stochastic. Always check if an increase
-actually makes the groups more balanced.}
+N.B. Only used when \code{`num_cols`} is specified.}
 
 \item{num_new_group_cols}{Number of group columns to create.
 
@@ -124,6 +114,17 @@ Note that we can end up with fewer columns than specified in \code{`num_new_grou
 
 N.B. Only used when \code{`num_new_group_cols` > 1}.}
 
+\item{extreme_pairing_levels}{How many levels of extreme pairing to do
+when balancing the groups by the combined balancing column (see \code{Details}).
+
+\strong{Extreme pairing}: Rows/pairs are ordered as smallest, largest,
+second smallest, second largest, etc. If \code{extreme_pairing_levels > 1},
+this is done "recursively" on the extreme pairs.
+
+N.B. Larger values work best with large datasets. If set too high,
+the result might not be stochastic. Always check if an increase
+actually makes the groups more balanced.}
+
 \item{combine_method}{Method to combine the balancing columns by.
 One of \code{"avg_standardized"} or \code{"avg_min_max_scaled"}.
 
@@ -134,13 +135,13 @@ and \emph{ID}), we calculate a \emph{balancing column}, which indicates the
 \item We normalize them separately with standardization (\code{"avg_standardized"}; Default) or MinMax scaling
 to the [0, 1] range (\code{"avg_min_max_scaled"}).
 \item We average them rowwise to get a single column with one value per group. The averaging
-is weighted by \code{`combine_weights`}, which is useful when one of the dimensions is
+is weighted by \code{`weights`}, which is useful when one of the dimensions is
 more important to get a good balance of.
 }
 
 \code{`combine_method`} chooses whether to use standardization or MinMax scaling in step 1.}
 
-\item{combine_weights}{Named vector with weights for each of
+\item{weights}{Named vector with weights of balancing importance for each of
 the balancing dimensions. Can be used to favor balancing of
 either balancing dimension (\emph{size}, \emph{numeric}, \emph{categorical},
 or \emph{ID}).
@@ -182,7 +183,7 @@ a normalized, numeric \emph{"balancing column"} that when balanced
 between the groups means its dimension is balanced as well.
 
 To balance multiple dimensions at once, we combine these balancing columns with
-with weighted averaging (see \code{`combine_method`} and \code{`combine_weights`}).
+with weighted averaging (see \code{`combine_method`} and \code{`weights`}).
 
 Finally, we create groups where this combined balancing column is balanced using the
 numerical balancing in \code{\link[groupdata2:fold]{fold()}}.
@@ -195,7 +196,7 @@ to decent* balances of the included columns (*better than not applying balancing
 When the balancing is important, we recommend using
 \code{\link[groupdata2:summarize_balances]{summarize_balances()}} to
 check how balanced the created groups are on the various dimensions.
-If they are not balanced enough, consider changing \code{`combine_weights`} or
+If they are not balanced enough, consider changing \code{`weights`} or
 balancing fewer dimensions at a time.
 
 The following describes the creation of the balancing columns
@@ -237,9 +238,10 @@ By default, we only use the normalized counts for the majority class.
 }
 }
 
-\subsection{num_col}{
+\subsection{num_cols}{
 \itemize{
-\item \strong{Aggregate} the numeric column by group using the \code{`group_aggregation_fn`}.
+\item \strong{Aggregate} the numeric columns by group using the \code{`group_aggregation_fn`}.
+\item TODO Combine the aggregates !!!
 }
 }
 
@@ -252,7 +254,7 @@ By default, we only use the normalized counts for the majority class.
 \subsection{Combining balancing columns}{
 \itemize{
 \item Apply standardization or MinMax scaling to each of the balancing columns (see \code{`combine_method`}).
-\item Perform weighted averaging to get a single balancing column (see \code{`combine_weights`}).
+\item Perform weighted averaging to get a single balancing column (see \code{`weights`}).
 }
 
 \strong{Example}: We apply standardization and perform weighted averaging:
@@ -279,6 +281,7 @@ so the combined balancing column is balanced between them.
 
 The following describes the numerical balancing:
 
+TODO Replace num_col in the below as we are balancing the combined here!
 \enumerate{
 \item Rows are shuffled.
 \strong{Note} that this will only affect rows with the same value in \code{`num_col`}.

@@ -1,23 +1,16 @@
 
-## Collapse groups
 
-# TODO could you standardize freqs of each class and combine them
-# and get *some* balancing of all classes? Seems the class columns
-# should be able to cancel each other out and so there are
-# at least some scenarios where it wouldn't work?
+#   __________________ #< d0ef3dcf6f36ff79828d86bb092f9b67 ># __________________
+#   Collapse groups                                                         ####
+
 
 # TODO Check whether the log(1 + count) in cat_col actually helps?
 # Not sure the motivation holds up!
 
-# TODO handle existing .coll_group* columns!
-
-# TODO When there's any balancing we can often only create 1 fold column
-# so is it worth having the num_***_cols arg? Of course people
-# might not always want balancing? And with different n's, they will
-# be different!
+# TODO Consider adding fold style handling of existing .coll_group* columns?
 
 # TODO Add auto_tune for trying the different balancing dimensions and
-# taking the best weighted mean rank (by combine_weights?)
+# taking the best weighted mean rank (by weights?)
 # Could also create multiple new group columns per setting (e.g. 10?)
 # and perhaps return the num_new... best cols?
 
@@ -49,7 +42,7 @@
 #'  between the groups means its dimension is balanced as well.
 #'
 #'  To balance multiple dimensions at once, we combine these balancing columns with
-#'  with weighted averaging (see \code{`combine_method`} and \code{`combine_weights`}).
+#'  with weighted averaging (see \code{`combine_method`} and \code{`weights`}).
 #'
 #'  Finally, we create groups where this combined balancing column is balanced using the
 #'  numerical balancing in \code{\link[groupdata2:fold]{fold()}}.
@@ -62,7 +55,7 @@
 #'  When the balancing is important, we recommend using
 #'  \code{\link[groupdata2:summarize_balances]{summarize_balances()}} to
 #'  check how balanced the created groups are on the various dimensions.
-#'  If they are not balanced enough, consider changing \code{`combine_weights`} or
+#'  If they are not balanced enough, consider changing \code{`weights`} or
 #'  balancing fewer dimensions at a time.
 #'
 #'  The following describes the creation of the balancing columns
@@ -111,7 +104,7 @@
 #'
 #'  \subsection{Combining balancing columns}{
 #'   * Apply standardization or MinMax scaling to each of the balancing columns (see \code{`combine_method`}).
-#'   * Perform weighted averaging to get a single balancing column (see \code{`combine_weights`}).
+#'   * Perform weighted averaging to get a single balancing column (see \code{`weights`}).
 #'
 #'   \strong{Example}: We apply standardization and perform weighted averaging:
 #'
@@ -274,11 +267,11 @@
 #'  to the \[0, 1\] range (\code{"avg_min_max_scaled"}).
 #'
 #'  2) We average them rowwise to get a single column with one value per group. The averaging
-#'  is weighted by \code{`combine_weights`}, which is useful when one of the dimensions is
+#'  is weighted by \code{`weights`}, which is useful when one of the dimensions is
 #'  more important to get a good balance of.
 #'
 #'  \code{`combine_method`} chooses whether to use standardization or MinMax scaling in step 1.
-#' @param combine_weights Named vector with weights for each of
+#' @param weights Named vector with weights of balancing importance for each of
 #'  the balancing dimensions. Can be used to favor balancing of
 #'  either balancing dimension (\emph{size}, \emph{numeric}, \emph{categorical},
 #'  or \emph{ID}).
@@ -315,19 +308,19 @@ collapse_groups <- function(
   data,
   n,
   group_cols,
-  balance_size = TRUE,
   cat_col = NULL,
-  cat_levels = ".majority",
+  cat_levels = NULL,
   num_cols = NULL,
-  group_aggregation_fn = mean,
   id_col = NULL,
+  balance_size = TRUE,
   auto_tune = FALSE,
+  group_aggregation_fn = mean,
   num_new_group_cols = 1,
   unique_new_group_cols_only = TRUE,
   max_iters = 5,
   extreme_pairing_levels = 1,
   combine_method = "avg_standardized",
-  combine_weights = c("size" = 1, "cat" = 1, "num" = 1, "id" = 1),
+  weights = c("size" = 1, "cat" = 1, "num" = 1, "id" = 1),
   col_name = ".coll_groups",
   parallel = FALSE) {
 
@@ -344,8 +337,9 @@ collapse_groups <- function(
     num_cols = num_cols,
     group_aggregation_fn = group_aggregation_fn,
     id_col = id_col,
+    auto_tune = auto_tune,
     combine_method = combine_method,
-    combine_weights = combine_weights,
+    weights = weights,
     col_name = col_name
   )
 
@@ -388,7 +382,7 @@ collapse_groups <- function(
     max_iters = max_iters,
     extreme_pairing_levels = extreme_pairing_levels,
     combine_method = combine_method,
-    combine_weights = combine_weights,
+    weights = weights,
     col_name = col_name,
     parallel = parallel
   )
@@ -495,7 +489,7 @@ run_collapse_groups_ <- function(
   max_iters,
   extreme_pairing_levels,
   combine_method,
-  combine_weights,
+  weights,
   col_name,
   parallel
 ) {
@@ -643,7 +637,7 @@ run_collapse_groups_ <- function(
       cat_col = cat_col,
       id_col = id_col,
       balance_size = balance_size,
-      combine_weights = combine_weights,
+      weights = weights,
       scale_fn = scale_fn,
       extreme_pairing_levels = extreme_pairing_levels,
       num_new_group_cols = num_new_group_cols,
@@ -658,7 +652,7 @@ run_collapse_groups_ <- function(
     # Scale, weight and combine
     summaries <- combine_scaled_cols_(
       summaries = summaries,
-      combine_weights = combine_weights,
+      weights = weights,
       include_flags = c("size" = isTRUE(balance_size),
                         "cat" = !is.null(cat_col),
                         "num" = !is.null(num_cols),
@@ -872,17 +866,17 @@ scale_combine_cols_ <- function(summary, weights, scale_fn, col_name){
 }
 
 # Standardize/normalize, weight and combine summary columns
-combine_scaled_cols_ <- function(summaries, combine_weights, include_flags, scale_fn = standardize){
+combine_scaled_cols_ <- function(summaries, weights, include_flags, scale_fn = standardize){
 
   # Normalize weights
 
   # Reorder to allow masking
-  combine_weights <- combine_weights[order(names(combine_weights))]
+  weights <- weights[order(names(weights))]
   include_flags <- include_flags[order(names(include_flags))]
 
   # Mask by whether the attribute is balanced
-  combine_weights <- combine_weights * include_flags
-  combine_weights <- combine_weights / sum(combine_weights)
+  weights <- weights * include_flags
+  weights <- weights / sum(weights)
 
   # Prepare combined column
   summaries[["combined"]] <- 0
@@ -891,25 +885,25 @@ combine_scaled_cols_ <- function(summaries, combine_weights, include_flags, scal
 
   if ("cat_levels_combined" %in% names(summaries)) {
     summaries[["combined"]] <- summaries[["combined"]] + (
-      scale_fn(summaries[["cat_levels_combined"]]) * combine_weights[["cat"]]
+      scale_fn(summaries[["cat_levels_combined"]]) * weights[["cat"]]
     )
   }
 
   if ("num_cols_combined" %in% names(summaries)) {
     summaries[["combined"]] <- summaries[["combined"]] + (
-      scale_fn(summaries[["num_cols_combined"]]) * combine_weights[["num"]]
+      scale_fn(summaries[["num_cols_combined"]]) * weights[["num"]]
     )
   }
 
   if ("size" %in% names(summaries)) {
     summaries[["combined"]] <- summaries[["combined"]] + (
-      scale_fn(summaries[["size"]]) * combine_weights[["size"]]
+      scale_fn(summaries[["size"]]) * weights[["size"]]
     )
   }
 
   if ("n_ids" %in% names(summaries)) {
     summaries[["combined"]] <- summaries[["combined"]] + (
-      scale_fn(summaries[["n_ids"]]) * combine_weights[["id"]]
+      scale_fn(summaries[["n_ids"]]) * weights[["id"]]
     )
   }
 
@@ -926,8 +920,9 @@ check_collapse_groups_ <- function(
   num_cols,
   group_aggregation_fn,
   id_col,
+  auto_tune,
   combine_method,
-  combine_weights,
+  weights,
   col_name
 ){
 
@@ -946,9 +941,10 @@ check_collapse_groups_ <- function(
     add = assert_collection
   )
   checkmate::assert_numeric(
-    x = combine_weights,
+    x = weights,
     finite = TRUE,
     any.missing = FALSE,
+    lower = 0,
     len = 4,
     names = "unique",
     add = assert_collection
@@ -985,6 +981,8 @@ check_collapse_groups_ <- function(
     checkmate::check_numeric(
       x = cat_levels,
       names = "unique",
+      lower = 0,
+      finite = TRUE,
       any.missing = FALSE,
       null.ok = TRUE
     ),
@@ -1006,7 +1004,8 @@ check_collapse_groups_ <- function(
     null.ok = TRUE,
     add = assert_collection
   )
-
+  checkmate::assert_flag(x = auto_tune,
+                         add = assert_collection)
   checkmate::assert_string(x = combine_method,
                            min.chars = 1,
                            add = assert_collection)
@@ -1017,9 +1016,13 @@ check_collapse_groups_ <- function(
 
   checkmate::reportAssertions(assert_collection)
 
+  # Handle existing group columns with same name
   if (col_name %in% colnames(data)){
     assert_collection$push("`col_name` is already a column in `data`.")
+  } else if (any(grepl(col_name, colnames(data), fixed = TRUE))){
+    assert_collection$push("`data` already contains a column including `col_name`.")
   }
+
   checkmate::assert_names(
     x = colnames(data),
     must.include = c(group_cols, cat_col, num_cols),
@@ -1032,7 +1035,7 @@ check_collapse_groups_ <- function(
     add = assert_collection
   )
   checkmate::assert_names(
-    x = names(combine_weights),
+    x = names(weights),
     permutation.of = c("size", "cat", "num", "id"),
     add = assert_collection
   )
