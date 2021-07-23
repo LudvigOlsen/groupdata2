@@ -56,6 +56,7 @@ summarize_group_cols(
 }
 \seealso{
 Other summarization functions: 
+\code{\link{ranked_balances}()},
 \code{\link{summarize_balances}()}
 }
 \author{

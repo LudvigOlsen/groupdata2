@@ -1,20 +1,13 @@
 
-# Make an actual function with all sorts of features for comparing
-# and inspecting the created groups
-# This could be used for other group functions as well?
-# Should be advertised next to summarize_group_cols (only has row counts)
 
-# summarize_group_balances(df_collapsed, group_col = ".coll_groups",
-#                          cat_col="diagnosis", num_col="age")
+#   __________________ #< fcc7722513f44550a0f7a3a862ba5820 ># __________________
+#   Summarize group balances                                                ####
+
 
 # TODO The names of the output are perhaps a bit confusing?
 # This requires really well-explained docs! And perhaps find better names?
 
-# TODO Add weights to ranking averaging
-
 # TODO Add more comments to code
-
-# TODO Combine rankings for numerics before overall ranking
 
 #' @title Summarize group balances
 #' @description
@@ -38,11 +31,22 @@
 #'    "normalized" group summaries. (Disabled by default)
 #'  }
 #'
+#'  When evaluating how balanced the grouping columns are, we use
+#'  the standard deviations of the group summary columns. The lower a standard
+#'  deviation is, the more similar the groups are on that column. To quickly
+#'  extract these standard deviations, ordered by an aggregated rank,
+#'  use \code{\link[groupdata2:ranked_balances]{ranked_balances()}} on the
+#'   \code{"Summary" data.frame} in the output.
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
-#' @param data \code{data.frame}. Can be \emph{grouped}, in which case
-#'  the function is applied group-wise. !!!TODO Does this work currently?!!!
-#' @param group_cols Names of columns to with groups to summarize.
+#' @param data \code{data.frame} with group columns to summarize
+#'  by.
+#'
+#'  Can be \emph{grouped} (see \code{\link[dplyr:group_by]{dplyr::group_by()}}),
+#'  in which case the function is applied group-wise. This is not to
+#'  be confused with \code{`group_cols`}.
+#' @param group_cols Names of columns with group identifiers to summarize columns
+#'  in \code{`data`} by.
 #' @param cat_cols Names of categorical columns to summarize.
 #'
 #'  Each categorical level is counted per group.
@@ -79,15 +83,6 @@
 #'  When summarizing size (see \code{`summarize_size`}), name its weight \code{"size"}.
 #'
 #'  E.g. \code{c("size" = 1, "a_cat_col" = 2, "a_num_col" = 4, "an_id_col" = 2)}.
-#' @param max_cat_prefix_chars How many characters to prefix the categorical level
-#'  column names with.
-#'
-#'  TODO Improve this - explain why and what!
-#'
-#'  \code{"auto"} finds the number of characters \code{>=4} necessary to distinguish
-#'  between column names in \code{`cat_cols`}. E.g. if \code{`cat_cols`} contains the
-#'  column names \code{c("xxxxxxx","xxxxxyy")}, we need the 6 first characters to
-#'  distinguish them from each other.
 #' @family summarization functions
 #' @return \code{list} with three \code{data.frames}:
 #'
@@ -169,6 +164,8 @@
 #'   cat_col = "diagnosis",
 #'   method = "n_dist"
 #' )
+#'
+#' # summ$Summary %>% ranked_balances()
 summarize_balances <- function(
   data,
   group_cols,
@@ -178,8 +175,10 @@ summarize_balances <- function(
   summarize_size = TRUE,
   include_normalized = FALSE,
   ranking_weights = NULL,
-  num_normalize_fn = function(x){rearrr::min_max_scale(x, new_min = 0, new_max = 1)},
-  max_cat_prefix_chars = "auto") {
+  num_normalize_fn = function(x) {
+    rearrr::min_max_scale(x, new_min = 0, new_max = 1)
+  }) {
+
 
   #### Check arguments ####
 
@@ -237,18 +236,6 @@ summarize_balances <- function(
   checkmate::assert_flag(x = summarize_size, add = assert_collection)
   checkmate::assert_flag(x = include_normalized, add = assert_collection)
   checkmate::assert_function(x = num_normalize_fn, add = assert_collection)
-  if (length(max_cat_prefix_chars) > 1){
-    assert_collection$push("`max_cat_prefix_chars` must have length 1.")
-    checkmate::reportAssertions(assert_collection)
-  }
-  if (is.character(max_cat_prefix_chars) && max_cat_prefix_chars != "auto"){
-    assert_collection$push("when `max_cat_prefix_chars` is a string, it can only be 'auto'.")
-    checkmate::reportAssertions(assert_collection)
-  }
-  checkmate::assert(
-    checkmate::check_count(x = max_cat_prefix_chars, positive = TRUE),
-    checkmate::check_string(x = max_cat_prefix_chars, pattern = "^auto$")
-  )
   checkmate::reportAssertions(assert_collection)
   checkmate::assert_names(
     x = colnames(data),
@@ -263,12 +250,19 @@ summarize_balances <- function(
   if (length(intersect(cat_cols, id_cols)) > 0) {
     assert_collection$push("found identical names in `cat_cols` and `id_cols`.")
   }
+  # Get names of `data`'s grouping columns
+  group_col_names <- dplyr::group_vars(data)
+  if (length(intersect(group_col_names, c(
+    c(cat_cols, num_cols, id_cols, group_cols)
+  ))) > 0) {
+    assert_collection$push("columns `data` is grouped by can not be used in the arguments.")
+  }
   checkmate::reportAssertions(assert_collection)
   # End of argument checks ####
 
   # Find the number of characters necessary to
   # distinguish between names in `cat_cols`
-  if (!is.null(cat_cols) && max_cat_prefix_chars == "auto"){
+  if (!is.null(cat_cols)){
     for (i in 4:max(nchar(cat_cols))){
       shorts <- substr(cat_cols, 1, i)
       if (length(unique(shorts)) == length(cat_cols)){
@@ -292,7 +286,82 @@ summarize_balances <- function(
     }
   }
 
-  # TODO Run per grouping in `data` ?????
+  # Run per grouping in `data`
+  result <- run_by_group_list(
+    data = data,
+    .fn = run_summarize_balances,
+    group_cols = group_cols,
+    cat_cols = cat_cols,
+    num_cols = num_cols,
+    id_cols = id_cols,
+    summarize_size = summarize_size,
+    ranking_weights = ranking_weights,
+    include_normalized = include_normalized,
+    num_normalize_fn = num_normalize_fn,
+    max_cat_prefix_chars = max_cat_prefix_chars,
+    max_num_prefix_chars = max_num_prefix_chars
+  )
+
+  # If `data` was not grouped, this is our output
+  if (!dplyr::is_grouped_df(data)){
+    return(result)
+  }
+
+  # Get the grouping keys to add to the outputs
+  group_keys <- data %>%
+    dplyr::group_keys() %>%
+    dplyr::mutate(._group_index = as.character(dplyr::row_number()))
+
+  # Extracts all elements from list `l` with a given name
+  # Binds them to a single data.frame
+  # Adds group keys
+  # Reorders columns and groups by the added group keys
+  extract_and_add_groups_ <- function(l, name){
+    l %c% name %>%
+      dplyr::bind_rows(.id = "._group_index") %>%
+      dplyr::left_join(group_keys, by = "._group_index") %>%
+      dplyr::select(dplyr::one_of(group_col_names), dplyr::everything(), -.data$._group_index) %>%
+      dplyr::group_by(!!!rlang::syms(group_col_names))
+  }
+
+  # Extract all the Groups data.frames
+  # bind them, add group keys and formatting
+  group_summaries <- extract_and_add_groups_(result, "Groups")
+  summaries <- extract_and_add_groups_(result, "Summary")
+
+  if (isTRUE(include_normalized)){
+    normalized_summaries <- extract_and_add_groups_(result, "Normalized Summary")
+  }
+
+  #### Preparing output ####
+
+  # Prepare output list
+  out <- list(
+    "Groups" = group_summaries,
+    "Summary" = summaries
+  )
+
+  # Add normalized standard deviations
+  if (isTRUE(include_normalized)){
+    out[["Normalized Summary"]] <- normalized_summaries
+  }
+
+  out
+
+}
+
+run_summarize_balances <- function(
+  data,
+  group_cols,
+  cat_cols,
+  num_cols,
+  id_cols,
+  summarize_size,
+  ranking_weights,
+  include_normalized,
+  num_normalize_fn,
+  max_cat_prefix_chars,
+  max_num_prefix_chars) {
 
   # Make sure `group_cols` columns are factors
   data <- data %>%
@@ -341,6 +410,7 @@ summarize_balances <- function(
     }
   }
 
+  # Join summaries
   group_summary <- group_summaries[["empty"]] %>%
     # When the arg is not NULL, add it's summary with a join
     purrr::when(isTRUE(summarize_size) ~
@@ -468,10 +538,55 @@ summarize_balances <- function(
 }
 
 
+##  .................. #< 4169836c13bfd605440efe7f1f3c23df ># ..................
+##  Extract ranked balances                                                 ####
+
+
+#' @title Extract ranked standard deviations from summary
+#' @description
+#'  \Sexpr[results=rd, stage=render]{lifecycle::badge("experimental")}
+#'
+#'  Extract the standard deviations from the \code{"Summary" data.frame}
+#'  from the output of \code{\link[groupdata2:summarize_balances]{summarize_balances()}},
+#'  ordered by the \code{`SD_rank`} column.
+#'
+#'  See examples of usage in
+#'  \code{\link[groupdata2:summarize_balances]{summarize_balances()}}.
+#' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
+#' @export
+#' @param summary \code{"Summary" data.frame} from output of
+#'  \code{\link[groupdata2:summarize_balances]{summarize_balances()}}.
+#'
+#'  Can also be the direct output list of
+#'  \code{\link[groupdata2:summarize_balances]{summarize_balances()}}, in which case
+#'  the \code{"Summary"} element is used.
+#' @family summarization functions
+#' @return The rows in \code{`summary`} where \code{`measure` == "SD"},
+#'  ordered by the \code{`SD_rank`} column.
 ranked_balances <- function(summary){
+
+  if (is.list(summary) &&
+      all(c("Group", "Summary") %in% names(summary))) {
+    summary <- summary[["Summary"]]
+  }
+
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+  checkmate::assert_data_frame(x = summary, add = assert_collection)
+  checkmate::reportAssertions(assert_collection)
+  checkmate::assert_names(
+    x = colnames(summary),
+    must.include = c("measure", "SD_rank"),
+    add = assert_collection
+  )
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
+
+  arrange_by <- c(dplyr::group_vars(summary), "SD_rank")
+
   summary %>%
     dplyr::filter(measure == "SD") %>%
-    dplyr::arrange(SD_rank)
+    dplyr::arrange(!!!rlang::syms(arrange_by))
 }
 
 
@@ -479,6 +594,10 @@ ranked_balances <- function(summary){
 
 ##  .................. #< 0fe21d3103c070a95e80dda9f1a89dcd ># ..................
 ##  Utils                                                                   ####
+
+
+### . . . . . . . . .. #< 118181bc1a8cfda41b36a5b40cc32174 ># . . . . . . . . ..
+### Summary creators                                                        ####
 
 
 create_group_balance_summaries_ <-
@@ -629,6 +748,7 @@ create_cat_summaries_ <- function(data, group_col, cat_cols, max_cat_prefix_char
     )
 }
 
+
 measure_summary_numerics_ <- function(
   data,
   num_cols,
@@ -770,6 +890,11 @@ measure_summary_numerics_ <- function(
   measures
 
 }
+
+
+### . . . . . . . . .. #< 0bf5c2e81b2f1c78a4811574a98f12aa ># . . . . . . . . ..
+### Ranking utils                                                           ####
+
 
 rank_numeric_cols <- function(data, cols = NULL){
   if (is.null(cols)){

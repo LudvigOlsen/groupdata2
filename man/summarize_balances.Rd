@@ -14,15 +14,19 @@ summarize_balances(
   include_normalized = FALSE,
   ranking_weights = NULL,
   num_normalize_fn = function(x) {     rearrr::min_max_scale(x, new_min = 0, new_max =
-    1) },
-  max_cat_prefix_chars = "auto"
+    1) }
 )
 }
 \arguments{
-\item{data}{\code{data.frame}. Can be \emph{grouped}, in which case
-the function is applied group-wise. !!!TODO Does this work currently?!!!}
+\item{data}{\code{data.frame} with group columns to summarize
+by.
 
-\item{group_cols}{Names of columns to with groups to summarize.}
+Can be \emph{grouped} (see \code{\link[dplyr:group_by]{dplyr::group_by()}}),
+in which case the function is applied group-wise. This is not to
+be confused with \code{`group_cols`}.}
+
+\item{group_cols}{Names of columns with group identifiers to summarize columns
+in \code{`data`} by.}
 
 \item{cat_cols}{Names of categorical columns to summarize.
 
@@ -65,16 +69,6 @@ E.g. \code{c("size" = 1, "a_cat_col" = 2, "a_num_col" = 4, "an_id_col" = 2)}.}
 calculating normalized group summaries.
 
 Only used when \code{`include_normalized`} is enabled.}
-
-\item{max_cat_prefix_chars}{How many characters to prefix the categorical level
-column names with.
-
-TODO Improve this - explain why and what!
-
-\code{"auto"} finds the number of characters \code{>=4} necessary to distinguish
-between column names in \code{`cat_cols`}. E.g. if \code{`cat_cols`} contains the
-column names \code{c("xxxxxxx","xxxxxyy")}, we need the 6 first characters to
-distinguish them from each other.}
 }
 \value{
 \code{list} with three \code{data.frames}:
@@ -150,6 +144,13 @@ The output contains:
 \item \code{`Normalized Summary`}: statistical descriptors of a set of
 "normalized" group summaries. (Disabled by default)
 }
+
+When evaluating how balanced the grouping columns are, we use
+the standard deviations of the group summary columns. The lower a standard
+deviation is, the more similar the groups are on that column. To quickly
+extract these standard deviations, ordered by an aggregated rank,
+use \code{\link[groupdata2:ranked_balances]{ranked_balances()}} on the
+\code{"Summary" data.frame} in the output.
 }
 \examples{
 # Attach packages
@@ -181,6 +182,7 @@ df_folded <- fold(
 }
 \seealso{
 Other summarization functions: 
+\code{\link{ranked_balances}()},
 \code{\link{summarize_group_cols}()}
 }
 \author{

@@ -111,6 +111,14 @@ is_between_ <- function(x, a, b) {
   !(x %in% table)
 }
 
+# Get all lists in a list with a certain name
+# Use: list_of_lists %c% 'list_name'
+# From http://stackoverflow.com/questions/5935673/accessing-same-named-list-elements-of-the-list-of-lists-in-r/5936077#5936077
+`%c%` <- function(x, n) {
+  lapply(x, `[[`, n)
+}
+
+
 isEmpty_ <- function(x) {
   length(x) == 0
 }
