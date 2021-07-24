@@ -28,7 +28,7 @@
 ranked_balances <- function(summary){
 
   if (is.list(summary) &&
-      all(c("Group", "Summary") %in% names(summary))) {
+      all(c("Groups", "Summary") %in% names(summary))) {
     summary <- summary[["Summary"]]
   }
 
@@ -38,15 +38,30 @@ ranked_balances <- function(summary){
   checkmate::reportAssertions(assert_collection)
   checkmate::assert_names(
     x = colnames(summary),
-    must.include = c("measure", "SD_rank"),
+    must.include = c("measure"),
     add = assert_collection
   )
   checkmate::reportAssertions(assert_collection)
   # End of argument checks ####
 
-  arrange_by <- c(dplyr::group_vars(summary), "SD_rank")
+  # Extract rows with standard deviations
+  sd_rows <- summary %>%
+    dplyr::filter(measure == "SD")
 
-  summary %>%
-    dplyr::filter(measure == "SD") %>%
-    dplyr::arrange(!!!rlang::syms(arrange_by))
+  if (nrow(sd_rows) > 1){
+    if ("SD_rank" %ni% colnames(summary)){
+      assert_collection$push(
+        paste0(
+          "`summary` must include the `SD_rank` column when containing more ",
+          "than one group column."
+        )
+      )
+      checkmate::reportAssertions(assert_collection)
+    }
+    arrange_by <- c(dplyr::group_vars(summary), "SD_rank")
+    sd_rows <- dplyr::arrange(!!!rlang::syms(arrange_by))
+  }
+
+  sd_rows
+
 }
