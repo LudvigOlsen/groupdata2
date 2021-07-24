@@ -910,6 +910,11 @@ combine_scaled_cols_ <- function(summaries, weights, include_flags, scale_fn = s
   summaries
 }
 
+
+### . . . . . . . . .. #< d389058924b6716ba075731944149594 ># . . . . . . . . ..
+### Check arguments                                                         ####
+
+
 check_collapse_groups_ <- function(
   data,
   n,

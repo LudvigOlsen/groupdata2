@@ -179,6 +179,8 @@ df_folded <- fold(
   cat_col = "diagnosis",
   method = "n_dist"
 )
+
+# summ$Summary \%>\% ranked_balances()
 }
 \seealso{
 Other summarization functions: 

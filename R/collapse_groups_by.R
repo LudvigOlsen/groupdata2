@@ -166,7 +166,7 @@ collapse_groups_by_numeric <- function(
   data,
   n,
   group_cols,
-  num_col = NULL,
+  num_cols,
   method = "balance", # ascending/descending
   group_aggregation_fn = mean,
   extreme_pairing_levels = 1,
@@ -179,7 +179,7 @@ collapse_groups_by_numeric <- function(
         data = data,
         n = n,
         group_cols = group_cols,
-        num_col = num_col,
+        num_cols = num_cols,
         extreme_pairing_levels = extreme_pairing_levels,
         num_new_group_cols = 1,
         group_aggregation_fn = group_aggregation_fn,
@@ -205,12 +205,12 @@ collapse_groups_by_numeric <- function(
   prepped <- prepare_collapse_groups_run_(
     data = data,
     group_cols = group_cols,
-    num_col = num_col
+    num_cols = num_cols
   )
   data <- prepped[["data"]]
   data_group_cols <- prepped[["data_group_cols"]]
   group_cols <- prepped[["group_cols"]]
-  num_col <- prepped[["num_col"]]
+  num_cols <- prepped[["num_cols"]]
 
   # Collapse groups within each group subset in `data`
   # NOTE: The `data_group_cols` groups, not the `group_cols` groups
@@ -219,7 +219,7 @@ collapse_groups_by_numeric <- function(
     .fn = run_collapse_groups_by_numeric_,
     n = n,
     group_cols = group_cols,
-    num_col = num_col,
+    num_cols = num_cols,
     group_aggregation_fn = group_aggregation_fn,
     method = method,
     col_name = col_name
@@ -242,7 +242,7 @@ run_collapse_groups_by_numeric_ <- function(
   data,
   n,
   group_cols,
-  num_col,
+  num_cols,
   method,
   group_aggregation_fn,
   col_name) {
@@ -257,7 +257,17 @@ run_collapse_groups_by_numeric_ <- function(
 
   num_summary <- data %>%
     dplyr::group_by(!!!rlang::syms(group_cols)) %>%
-    dplyr::summarise(num_aggr = group_aggregation_fn(!!as.name(num_col)), .groups = "drop")
+    dplyr::summarise(dplyr::across(dplyr::one_of(num_cols), group_aggregation_fn), .groups = "drop")
+
+  # Combine `num_cols` columns
+  num_summary[["num_aggr"]] <- num_summary %>%
+    base_select(cols = num_cols) %>%
+    dplyr::mutate(dplyr::across(dplyr::everything(), standardize)) %>%
+    purrr::pmap_dbl(.f = function(...){mean(c(...))})
+
+  # Select necessary columns
+  num_summary <- num_summary %>%
+    dplyr::select(dplyr::one_of(group_cols, "num_aggr"))
 
   # Order summary depending on method
   # Create groups

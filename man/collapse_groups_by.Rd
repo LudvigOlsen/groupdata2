@@ -21,7 +21,7 @@ collapse_groups_by_numeric(
   data,
   n,
   group_cols,
-  num_col = NULL,
+  num_cols,
   method = "balance",
   group_aggregation_fn = mean,
   extreme_pairing_levels = 1,
@@ -86,6 +86,8 @@ this is done "recursively" on the extreme pairs.
 N.B. Larger values work best with large datasets. If set too high,
 the result might not be stochastic. Always check if an increase
 actually makes the groups more balanced.}
+
+\item{num_cols}{Name(s) of numerical column(s) to balance between groups.}
 
 \item{group_aggregation_fn}{Function for aggregating values in the \code{`num_cols`}
 for each group in \code{`group_cols`} before balancing the \code{`num_cols`}.
