@@ -77,15 +77,16 @@ collapse_groups_by_size <- function(
     )
   }
 
-  # Check arguments
+  # Check arguments ####
   # Some arguments go directly to fold()
   # so they will be checked there
-  # check_collapse_groups_???(
-  #   data = data,
-  #   n = n,
-  #   group_cols = group_cols,
-  #   col_name = col_name
-  # )
+  check_collapse_groups_by_(
+    data = data,
+    n = n,
+    group_cols = group_cols,
+    method = method,
+    col_name = col_name
+  )
 
   #### Prepare data and names ####
 
@@ -126,14 +127,6 @@ run_collapse_groups_by_size_ <- function(data,
                                          group_cols,
                                          method,
                                          col_name){
-
-  # Check arguments ####
-  assert_collection <- checkmate::makeAssertCollection()
-  checkmate::assert_names(method,
-                          subset.of = c("ascending", "descending"),
-                          add = assert_collection)
-  checkmate::reportAssertions(assert_collection)
-  # End of argument checks ####
 
   size_summary <- data %>%
     dplyr::group_by(!!!rlang::syms(group_cols)) %>%
@@ -189,15 +182,36 @@ collapse_groups_by_numeric <- function(
     )
   }
 
-  # Check arguments
+  # Check arguments ####
   # Some arguments go directly to fold()
   # so they will be checked there
-  # check_collapse_groups_???(
-  #   data = data,
-  #   n = n,
-  #   group_cols = group_cols,
-  #   col_name = col_name
-  # )
+  check_collapse_groups_by_(
+    data = data,
+    n = n,
+    group_cols = group_cols,
+    method = method,
+    col_name = col_name
+  )
+  checkmate::assert_character(
+    num_cols,
+    min.chars = 1,
+    any.missing = FALSE,
+    min.len = 1,
+    unique = TRUE
+  )
+  checkmate::assert_names(
+    colnames(data),
+    must.include = num_cols
+  )
+  for (num_col in num_cols) {
+    checkmate::assert_numeric(
+      x = data[[num_col]],
+      any.missing = FALSE,
+      finite = TRUE,
+      .var.name = paste0("data[[", num_col, "]]")
+    )
+  }
+  # End of argument checks ####
 
   # Prepare for collapsing
   # Includes renaming columns with ".folds" in their name
@@ -247,14 +261,6 @@ run_collapse_groups_by_numeric_ <- function(
   group_aggregation_fn,
   col_name) {
 
-  # Check arguments ####
-  assert_collection <- checkmate::makeAssertCollection()
-  checkmate::assert_names(method,
-                          subset.of = c("ascending", "descending"),
-                          add = assert_collection)
-  checkmate::reportAssertions(assert_collection)
-  # End of argument checks ####
-
   num_summary <- data %>%
     dplyr::group_by(!!!rlang::syms(group_cols)) %>%
     dplyr::summarise(dplyr::across(dplyr::one_of(num_cols), group_aggregation_fn), .groups = "drop")
@@ -289,6 +295,7 @@ run_collapse_groups_by_numeric_ <- function(
 ##  .................. #< 06fd80b0d0291e8a4a1c2960e9e5c443 ># ..................
 ##  Collapse by factor                                                      ####
 
+
 #' @rdname collapse_groups_by
 #' @export
 collapse_groups_by_levels <- function(
@@ -296,7 +303,7 @@ collapse_groups_by_levels <- function(
   n,
   group_cols,
   cat_col = NULL,
-  cat_levels = ".majority",
+  cat_levels = NULL,
   method = "balance", # ascending/descending
   extreme_pairing_levels = 1,
   col_name = ".coll_groups") {
@@ -318,15 +325,59 @@ collapse_groups_by_levels <- function(
     )
   }
 
-  # Check arguments
+  # Check arguments ####
   # Some arguments go directly to fold()
   # so they will be checked there
-  # check_collapse_groups_???(
-  #   data = data,
-  #   n = n,
-  #   group_cols = group_cols,
-  #   col_name = col_name
-  # )
+  check_collapse_groups_by_(
+    data = data,
+    n = n,
+    group_cols = group_cols,
+    method = method,
+    col_name = col_name
+  )
+  checkmate::assert_string(
+    cat_col,
+    min.chars = 1
+  )
+  checkmate::assert_names(
+    colnames(data),
+    must.include = cat_col
+  )
+  assert_collection <- checkmate::makeAssertCollection()
+  checkmate::assert_factor(
+    x = data[[cat_col]],
+    any.missing = FALSE,
+    min.levels = 2,
+    add = assert_collection
+  )
+  if (!is.null(cat_levels)){
+    if (is.numeric(cat_levels))
+      cat_levels_names <- names(cat_levels)
+    else
+      cat_levels_names <- cat_levels
+    checkmate::assert_names(
+      x = cat_levels_names,
+      subset.of = c(".minority",
+                    ".majority",
+                    levels(data[[cat_col]])),
+      type = "unique",
+      add = assert_collection,
+      .var.name = "cat_levels"
+    )
+    if ((".minority" %in% cat_levels_names ||
+         ".majority" %in% cat_levels_names) &&
+        (length(cat_levels_names) > 1 ||
+         !is.character(cat_levels))){
+      assert_collection$push(
+        paste0(
+          "when '.minority' or '.majority' is in `cat_levels`, ",
+          "it must be the only level."
+        )
+      )
+    }
+  }
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
 
   # Prepare for collapsing
   # Includes renaming columns with ".folds" in their name
@@ -375,14 +426,6 @@ run_collapse_groups_by_levels_ <- function(
   cat_levels,
   method,
   col_name) {
-
-  # Check arguments ####
-  assert_collection <- checkmate::makeAssertCollection()
-  checkmate::assert_names(method,
-                          subset.of = c("ascending", "descending"),
-                          add = assert_collection)
-  checkmate::reportAssertions(assert_collection)
-  # End of argument checks ####
 
   # Create summary with combined score
   cat_summary <- create_combined_cat_summary_(
@@ -438,15 +481,31 @@ collapse_groups_by_ids <- function(
     )
   }
 
-  # Check arguments
+  # Check arguments ####
   # Some arguments go directly to fold()
   # so they will be checked there
-  # check_collapse_groups_???(
-  #   data = data,
-  #   n = n,
-  #   group_cols = group_cols,
-  #   col_name = col_name
-  # )
+  check_collapse_groups_by_(
+    data = data,
+    n = n,
+    group_cols = group_cols,
+    method = method,
+    col_name = col_name
+  )
+  checkmate::assert_string(
+    x = id_col,
+    na.ok = FALSE,
+    min.chars = 1,
+    null.ok = TRUE
+  )
+  checkmate::assert_names(
+    colnames(data),
+    must.include = id_col
+  )
+  checkmate::assert_factor(
+    x = data[[id_col]],
+    any.missing = FALSE
+  )
+  # End argument checks ####
 
   # Prepare for collapsing
   # Includes renaming columns with ".folds" in their name
@@ -494,14 +553,6 @@ run_collapse_groups_by_ids_ <- function(
   method,
   col_name) {
 
-  # Check arguments ####
-  assert_collection <- checkmate::makeAssertCollection()
-  checkmate::assert_names(method,
-                          subset.of = c("ascending", "descending"),
-                          add = assert_collection)
-  checkmate::reportAssertions(assert_collection)
-  # End of argument checks ####
-
   # Create summary with combined score
   id_summary <- data %>%
     dplyr::group_by(!!!rlang::syms(group_cols)) %>%
@@ -546,4 +597,59 @@ add_ordered_summary_groups_ <- function(data, summary, n, group_cols, num_col, m
     dplyr::left_join(new_groups, by = group_cols)
 
   data
+}
+
+
+### . . . . . . . . .. #< 9b246b10eb0769ffa774eee6835009d2 ># . . . . . . . . ..
+### Check args shared                                                       ####
+
+check_collapse_groups_by_ <- function(
+  data,
+  n,
+  group_cols,
+  method = "balance", # ascending/descending
+  col_name = ".coll_groups"
+){
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+  checkmate::assert_data_frame(x = data,
+                               min.rows = 1,
+                               add = assert_collection)
+  checkmate::assert_numeric(
+    x = n,
+    lower = 1,
+    finite = TRUE,
+    any.missing = FALSE,
+    min.len = 1,
+    add = assert_collection
+  )
+  checkmate::assert_character(
+    x = group_cols,
+    min.len = 1,
+    min.chars = 1,
+    any.missing = FALSE,
+    unique = TRUE,
+    names = "unnamed",
+    add = assert_collection
+  )
+  checkmate::assert_string(x = col_name,
+                           min.chars = 1,
+                           add = assert_collection)
+  checkmate::assert_string(x = method,
+                           min.chars = 1,
+                           add = assert_collection)
+  checkmate::reportAssertions(assert_collection)
+  checkmate::assert_names(
+    x = method,
+    subset.of = c("balance", "ascending", "descending"),
+    add = assert_collection
+  )
+  checkmate::assert_names(
+    x = colnames(data),
+    must.include = group_cols,
+    type = "unique",
+    add = assert_collection
+  )
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
 }

@@ -1087,6 +1087,7 @@ check_collapse_groups_ <- function(
         x = data[[num_col]],
         any.missing = FALSE,
         finite = TRUE,
+        .var.name = paste0("data[[", num_col, "]]"),
         add = assert_collection
       )
     }
