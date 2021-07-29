@@ -59,7 +59,7 @@ ranked_balances <- function(summary){
       checkmate::reportAssertions(assert_collection)
     }
     arrange_by <- c(dplyr::group_vars(summary), "SD_rank")
-    sd_rows <- dplyr::arrange(!!!rlang::syms(arrange_by))
+    sd_rows <- dplyr::arrange(sd_rows, !!!rlang::syms(arrange_by))
   }
 
   sd_rows

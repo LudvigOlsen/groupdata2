@@ -1,12 +1,17 @@
 
+
+#   __________________ #< 5a2b738ccf085ae82add326faadd209b ># __________________
+#   Auto-tuning collapse_groups                                             ####
+
+
 auto_tune_collapsings <- function(
   data,
   summaries,
   n,
   tmp_old_group_var,
   num_cols,
-  cat_col,
-  id_col,
+  cat_cols,
+  id_cols,
   balance_size,
   weights,
   scale_fn,
@@ -23,44 +28,44 @@ auto_tune_collapsings <- function(
 
 
   # Create all combinations of the included balancing dimensions
-  include_flags <-  c(
-    "size" = isTRUE(balance_size),
-    "cat" = !is.null(cat_col),
-    "num" = !is.null(num_cols),
-    "id" = !is.null(id_col)
-  )
+  all_balance_cols <- c(cat_cols, num_cols, id_cols)
+  if (isTRUE(balance_size))
+    all_balance_cols <- c(all_balance_cols, "size")
 
-  # Get names of the TRUEs
-  included_flag_names <- names(include_flags)[include_flags]
+  if (length(all_balance_cols) > 6){
+    warning(
+      paste0(
+        "auto-tuning with >6 balancing columns may be slow. Increase",
+        " in running time per additional balancing column is exponential."
+      )
+    )
+  }
 
   # Make all relevant combinations
-  combinations <- purrr::map(.x = seq_along(included_flag_names),
+  combinations <- purrr::map(.x = seq_along(all_balance_cols),
                              .f = ~ {
-                               combn(included_flag_names, m = .x, simplify = F)
+                               combn(all_balance_cols, m = .x, simplify = F)
                              }) %>%
-    unlist(recursive = F) %>%
-    purrr::map(.f = ~ {
-      include_vec <- rep(FALSE, times = length(include_flags)) %>%
-        setNames(names(include_flags))
-      include_vec[names(include_vec) %in% .x] <- TRUE
-      include_vec
-    }) %>%
-    setNames(paste0(".atc_comb_", seq_len(length(.))))
+    unlist(recursive = F)
 
-  # We need to know the name of the main combination
-  # So we can produce many columns with those and fewer with the other combos
-  # to avoid exploding the number of column comparisons (in deduplication)
-  main_combination <- purrr::map(.x = combinations, .f = ~{
-    all(.x == include_flags)
-  }) %>% unlist()
-  main_combination <- names(main_combination)[main_combination]
+  # Add names
+  names(combinations) <- paste0(".atcg_", seq_len(length(combinations)))
+
+  # The main combination has all the balance cols
+  main_combination_name <- tail(names(combinations), n = 1)
 
   ### . . . . . . . . .. #< 40bb882cfc30cd1a93c9e99f28a9556e ># . . . . . . . . ..
   ### Combine and fold                                                        ####
 
   # Find number of group columns to generate
-  # Minimum 10 should be attempted
-  non_main_num_group_cols_to_check <- 5 # TODO Specifiable?
+  # Must vary with number of combinations or this
+  # could explode!
+  non_main_num_group_cols_to_check <- dplyr::case_when(
+    length(combinations) > 30 ~ 1,
+    length(combinations) > 20 ~ 2,
+    length(combinations) > 10 ~ 4,
+    TRUE ~ 5
+  )
   if (num_new_group_cols < 5) {
     main_num_group_cols_to_check <- 10
   } else if (num_new_group_cols < 20) {
@@ -78,15 +83,17 @@ auto_tune_collapsings <- function(
   # Combine the balancing dimensions for each include combination
   # And create new group columns
   new_group_cols <- purrr::map2_dfc(.x = combinations, .y = names(combinations), .f = ~{
-    num_new_group_cols <- ifelse(.y == main_combination, main_num_group_cols_to_check, non_main_num_group_cols_to_check)
+    num_new_group_cols <- ifelse(.y == main_combination_name,
+                                 main_num_group_cols_to_check,
+                                 non_main_num_group_cols_to_check)
     combine_and_fold_combination_(
       data = data,
       summaries = summaries,
       n = n,
       tmp_old_group_var = tmp_old_group_var,
-      include_flags = .x,
+      balance_cols = .x,
       col_name = .y,
-      weights = weights,
+      weights = weights[names(weights) %in% .x],
       scale_fn = scale_fn,
       extreme_pairing_levels = extreme_pairing_levels,
       num_new_group_cols = num_new_group_cols,
@@ -121,6 +128,9 @@ auto_tune_collapsings <- function(
         group_wise = TRUE,
         parallel = parallel
       )
+
+    # Names of deduplicated new group columns
+    group_cols_names <- colnames(new_group_cols)[colnames(new_group_cols) != tmp_old_group_var]
   }
 
   # Add new group columns to data
@@ -137,55 +147,37 @@ auto_tune_collapsings <- function(
     ))
   }
 
-  ranking_weights <- purrr::map(.x = names(weights), .f = ~{
-    if (.x == "num" && !is.null(num_cols)){
-      rep(weights[[.x]], times = length(num_cols)) %>%
-        setNames(num_cols)
-    } else if (.x == "cat" && !is.null(cat_col)){
-      weights[[.x]] %>%
-        setNames(cat_col)
-    } else if (.x == "id" && !is.null(id_col)){
-      weights[[.x]] %>%
-        setNames(id_col)
-    } else if (.x == "size" && isTRUE(balance_size)){
-      weights[[.x]] %>%
-        setNames("size")
-    }
-  }) %>%
-    unlist(recursive = FALSE, use.names = TRUE)
-
   # Summarize the balances
   balance_summary <- summarize_balances(
     data = data,
     group_cols = group_cols_names,
-    cat_cols = cat_col,
+    cat_cols = cat_cols,
     num_cols = num_cols,
-    id_cols = id_col,
+    id_cols = id_cols,
     summarize_size = balance_size,
-    ranking_weights = ranking_weights,
+    ranking_weights = weights,
     include_normalized = TRUE
   )
 
   # Find the group column rankings
   # We average the rankings of the summary and the normalized summary
   # As they have been shown to sometimes differ
-  # TODO Add weights to ranking averaging?!
   summary_ranks <- balance_summary[["Summary"]] %>%
     ranked_balances() %>%
-    dplyr::select(.data$group_col, .data$SD_rank)
+    dplyr::select(.data$.group_col, .data$SD_rank)
   normalized_summary_ranks <- balance_summary[["Normalized Summary"]] %>%
     ranked_balances() %>%
-    dplyr::select(.data$group_col, .data$SD_rank) %>%
+    dplyr::select(.data$.group_col, .data$SD_rank) %>%
     dplyr::rename(norm_SD_rank = .data$SD_rank)
   summary_ranks <- summary_ranks %>%
-    dplyr::left_join(normalized_summary_ranks, by = "group_col") %>%
+    dplyr::left_join(normalized_summary_ranks, by = ".group_col") %>%
     dplyr::mutate(avg_rank = (.data$SD_rank + .data$norm_SD_rank) / 2) %>%
     dplyr::ungroup() %>%
     dplyr::arrange(.data$avg_rank) %>%
     head(num_new_group_cols)
 
   # Find group columns to remove
-  group_cols_to_keep <- as.character(summary_ranks[["group_col"]])
+  group_cols_to_keep <- as.character(summary_ranks[[".group_col"]])
   group_cols_to_remove <- setdiff(group_cols_names, group_cols_to_keep)
 
   new_order_ <- c(
@@ -210,7 +202,7 @@ combine_and_fold_combination_ <- function(
   summaries,
   tmp_old_group_var,
   n,
-  include_flags,
+  balance_cols,
   col_name,
   weights,
   scale_fn,
@@ -222,9 +214,9 @@ combine_and_fold_combination_ <- function(
 
   # Scale, weight and combine
   summaries <- combine_scaled_cols_(
-    summaries = summaries,
+    summaries = base_select(summaries, cols = c(tmp_old_group_var, balance_cols)),
     weights = weights,
-    include_flags = include_flags,
+    group_cols = tmp_old_group_var,
     scale_fn = scale_fn
   )
 
@@ -239,6 +231,7 @@ combine_and_fold_combination_ <- function(
       max_iters = max_iters,
       parallel = parallel
     ) %>%
+    dplyr::ungroup() %>%
     # Safety check - should already be arrange by this
     dplyr::arrange(!!as.name(tmp_old_group_var))
 
@@ -250,9 +243,9 @@ combine_and_fold_combination_ <- function(
 
   # Select new group columns
   new_col_names <- setdiff(colnames(new_groups), colnames(summaries))
+
   new_groups %>%
     base_select(cols = new_col_names)
-
 }
 
 

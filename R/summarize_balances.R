@@ -308,16 +308,15 @@ run_summarize_balances <- function(
 
     if (length(cat_cols) > 1 && max_cat_prefix_chars > 0){
       cat_summary_columns_list <- purrr::map(.x = cat_cols, .f = ~{
-        base_name <- paste0(
-          "# ",
-          substr(.x, start = 1, stop = max_cat_prefix_chars)
-        )
+        base_name <- paste0("# ",
+                            substr(.x, start = 1, stop = max_cat_prefix_chars))
+        cat_summ_substring <- substr(cat_summary_columns,
+                     start = 1,
+                     stop = max_cat_prefix_chars + 2)
+        # Remove potential trailing underscore
+        cat_summ_substring <- gsub("_$", "", cat_summ_substring)
         # Get names that starts with this prefix
-        cat_summary_columns[
-          substr(cat_summary_columns,
-                 start = 1,
-                 stop = max_cat_prefix_chars + 2) == base_name
-        ]
+        cat_summary_columns[cat_summ_substring == base_name]
       }) %>% setNames(nm = cat_cols)
     } else {
       cat_summary_columns_list <- list(cat_summary_columns) %>%
@@ -481,7 +480,7 @@ calculate_max_prefix_nchars_ <- function(cat_cols, num_cols) {
   # We might have similarly named cat and num cols, so we
   # include cat_cols in the shortening
   if (!is.null(num_cols)) {
-    for (i in 4:max(nchar(num_cols))) {
+    for (i in 4:max(nchar(c(num_cols, cat_cols)))) {
       shorts <- substr(c(num_cols, cat_cols), 1, i)
       if (length(unique(shorts)) == length(num_cols) + length(cat_cols)) {
         max_num_prefix_chars <- i

@@ -9,10 +9,10 @@
 
 # TODO Consider adding fold style handling of existing .coll_group* columns?
 
-# TODO Add auto_tune for trying the different balancing dimensions and
-# taking the best weighted mean rank (by weights?)
-# Could also create multiple new group columns per setting (e.g. 10?)
-# and perhaps return the num_new... best cols?
+# TODO by removing the worst and rerunning summarize_balances()
+# We get a better "internal" comparison of the best models
+# i.e. how they rank against each other, not in the context
+# of hundreds of group columns
 
 # Allow group_aggregation_fn to be a list of functions to combine results
 # of, e.g. to balance both mean and sum - e.g. with a weight as well?
@@ -308,19 +308,19 @@ collapse_groups <- function(
   data,
   n,
   group_cols,
-  cat_col = NULL,
-  cat_levels = NULL,
+  cat_cols = NULL,
+  cat_levels = NULL, # TODO Allow list of levels per cat col
   num_cols = NULL,
-  id_col = NULL,
+  id_cols = NULL,
   balance_size = TRUE,
   auto_tune = FALSE,
-  group_aggregation_fn = mean,
+  group_aggregation_fn = mean, # TODO How should this affect autotuning?
   num_new_group_cols = 1,
   unique_new_group_cols_only = TRUE,
   max_iters = 5,
   extreme_pairing_levels = 1,
   combine_method = "avg_standardized",
-  weights = c("size" = 1, "cat" = 1, "num" = 1, "id" = 1),
+  weights = c("size" = 1, "cat" = 1, "num" = 1, "id" = 1), # TODO Should be column names
   col_name = ".coll_groups",
   parallel = FALSE) {
 
@@ -332,11 +332,11 @@ collapse_groups <- function(
     n = n,
     group_cols = group_cols,
     balance_size = balance_size,
-    cat_col = cat_col,
+    cat_cols = cat_cols,
     cat_levels = cat_levels,
     num_cols = num_cols,
     group_aggregation_fn = group_aggregation_fn,
-    id_col = id_col,
+    id_cols = id_cols,
     auto_tune = auto_tune,
     combine_method = combine_method,
     weights = weights,
@@ -352,16 +352,19 @@ collapse_groups <- function(
   prepped <- prepare_collapse_groups_run_(
     data = data,
     group_cols = group_cols,
-    cat_col = cat_col,
+    cat_cols = cat_cols,
     num_cols = num_cols,
-    id_col = id_col
+    id_cols = id_cols,
+    weights = weights,
+    balance_size = balance_size
   )
   data <- prepped[["data"]]
   data_group_cols <- prepped[["data_group_cols"]]
   group_cols <- prepped[["group_cols"]]
-  cat_col <- prepped[["cat_col"]]
+  cat_cols <- prepped[["cat_cols"]]
   num_cols <- prepped[["num_cols"]]
-  id_col <- prepped[["id_col"]]
+  id_cols <- prepped[["id_cols"]]
+  weights <- prepped[["weights"]]
 
   # Collapse groups within each group subset in `data`
   # NOTE: The `data_group_cols` groups, not the `group_cols` groups
@@ -371,11 +374,11 @@ collapse_groups <- function(
     n = n,
     group_cols = group_cols,
     balance_size = balance_size,
-    cat_col = cat_col,
+    cat_cols = cat_cols,
     cat_levels = cat_levels,
     num_cols = num_cols,
     group_aggregation_fn = group_aggregation_fn,
-    id_col = id_col,
+    id_cols = id_cols,
     auto_tune = auto_tune,
     num_new_group_cols = num_new_group_cols,
     unique_new_group_cols_only = unique_new_group_cols_only,
@@ -403,9 +406,11 @@ collapse_groups <- function(
 prepare_collapse_groups_run_ <- function(
   data,
   group_cols,
-  cat_col = NULL,
+  cat_cols = NULL,
   num_cols = NULL,
-  id_col = NULL) {
+  id_cols = NULL,
+  weights = NULL,
+  balance_size = FALSE) {
 
   # Check grouping of `data`
   data_group_cols <- character()
@@ -422,24 +427,44 @@ prepare_collapse_groups_run_ <- function(
     data = data,
     data_group_cols = data_group_cols,
     group_cols = group_cols,
-    cat_col = cat_col,
+    cat_cols = cat_cols,
     num_cols = num_cols,
-    id_col = id_col
+    id_cols = id_cols,
+    weights = weights
   )
   data <- updated[["data"]]
   data_group_cols <- updated[["data_group_cols"]]
   group_cols <- updated[["group_cols"]]
-  cat_col <- updated[["cat_col"]]
+  cat_cols <- updated[["cat_cols"]]
   num_cols <- updated[["num_cols"]]
-  id_col <- updated[["id_col"]]
+  id_cols <- updated[["id_cols"]]
+  weights <- updated[["weights"]]
+
+  # Make sure weights include all cols
+
+  # Whether to include "size" column
+  size_col <- NULL
+  if (isTRUE(balance_size)){
+    size_col <- "size"
+  }
+  # Add missing weights
+  all_balance_cols <- c(cat_cols, num_cols, id_cols, size_col)
+  if (length(weights) < length(all_balance_cols)){
+    to_add <- setdiff(all_balance_cols, names(weights))
+    new_weights <- rep(1, times = length(to_add)) %>%
+      setNames(to_add)
+    weights <- c(weights, new_weights)
+  }
+  weights <- weights[order(names(weights))]
 
   list(
     "data" = data,
     "data_group_cols" = data_group_cols,
     "group_cols" = group_cols,
-    "cat_col" = cat_col,
+    "cat_cols" = cat_cols,
     "num_cols" = num_cols,
-    "id_col" = id_col
+    "id_cols" = id_cols,
+    "weights" = weights
   )
 }
 
@@ -478,11 +503,11 @@ run_collapse_groups_ <- function(
   n,
   group_cols,
   balance_size,
-  cat_col,
+  cat_cols,
   cat_levels,
   num_cols,
   group_aggregation_fn,
-  id_col,
+  id_cols,
   auto_tune,
   num_new_group_cols,
   unique_new_group_cols_only,
@@ -549,12 +574,18 @@ run_collapse_groups_ <- function(
 
   #### Calculate summary info ####
 
-  cat_summary <- create_combined_cat_summary_(
-    data = data,
-    group_cols = tmp_old_group_var,
-    cat_col = cat_col,
-    cat_levels = cat_levels
-  )
+  cat_summary <- NULL
+  if (!is.null(cat_cols)){
+    cat_summary <- purrr::map(.x = cat_cols, .f = ~ {
+      create_combined_cat_summary_(
+        data = data,
+        group_cols = tmp_old_group_var,
+        cat_col = .x,
+        cat_levels = cat_levels
+      )
+    }) %>%
+      purrr::reduce(dplyr::full_join, by = tmp_old_group_var)
+  }
 
   num_summary <- NULL
   if (!is.null(num_cols)){
@@ -567,15 +598,6 @@ run_collapse_groups_ <- function(
       )
 
     num_summ_cols <- colnames(num_summary)[colnames(num_summary) != tmp_old_group_var]
-
-    num_summary <- scale_combine_cols_(
-      summary = num_summary,
-      weights = rep(1, times = length(num_summ_cols)) %>% # TODO Make specifiable?
-        setNames(num_summ_cols),
-      scale_fn = standardize,
-      col_name = "num_cols_combined"
-    ) %>%
-      dplyr::select(dplyr::one_of(tmp_old_group_var, "num_cols_combined"))
   }
 
   size_summary <- NULL
@@ -586,10 +608,14 @@ run_collapse_groups_ <- function(
   }
 
   id_summary <- NULL
-  if (!is.null(id_col)){
+  if (!is.null(id_cols)){
     id_summary <- data %>%
       dplyr::group_by(!!as.name(tmp_old_group_var)) %>%
-      dplyr::summarize(n_ids = length(unique(!!as.name(id_col))), .groups = "drop")
+      dplyr::summarize(
+        dplyr::across(dplyr::one_of(id_cols),
+                      function(x) {
+                        length(unique(x))
+                      }), .groups = "drop")
   }
 
   # Prepare summaries tibble
@@ -602,7 +628,7 @@ run_collapse_groups_ <- function(
       dplyr::left_join(cat_summary, by = tmp_old_group_var)
 
     # In case of NAs, set them to
-    summaries[["cat_levels_combined"]][is.na(summaries[["cat_levels_combined"]])] <- 0
+    summaries[, cat_cols][is.na(summaries[, cat_cols])] <- 0
   }
   if (!is.null(num_summary)){
     summaries <- summaries %>%
@@ -634,8 +660,8 @@ run_collapse_groups_ <- function(
       n = n,
       tmp_old_group_var = tmp_old_group_var,
       num_cols = num_cols,
-      cat_col = cat_col,
-      id_col = id_col,
+      cat_cols = cat_cols,
+      id_cols = id_cols,
       balance_size = balance_size,
       weights = weights,
       scale_fn = scale_fn,
@@ -653,12 +679,10 @@ run_collapse_groups_ <- function(
     summaries <- combine_scaled_cols_(
       summaries = summaries,
       weights = weights,
-      include_flags = c("size" = isTRUE(balance_size),
-                        "cat" = !is.null(cat_col),
-                        "num" = !is.null(num_cols),
-                        "id" = !is.null(id_col)),
+      group_cols = tmp_old_group_var,
       scale_fn = scale_fn
-    )
+    ) %>%
+      dplyr::select(dplyr::one_of(tmp_old_group_var, "combined"))
 
     # Fold the summary
     new_groups <- summaries %>%
@@ -697,7 +721,7 @@ add_new_groups_ <- function(data, new_groups, tmp_old_group_var, col_name){
       dplyr::one_of(tmp_old_group_var),
       dplyr::starts_with(col_name),
       # May be called "num" or something and return a wrong column with `starts_with`
-      -dplyr::any_of(c("cat_levels_combined", "combined", "size", "n_ids", "num_cols_combined"))
+      -dplyr::any_of(c("combined", "size"))
     )
 
   # Add new groups
@@ -717,13 +741,14 @@ replace_forbidden_names_ <- function(
   data,
   data_group_cols,
   group_cols,
-  cat_col = NULL,
+  cat_cols = NULL,
   num_cols = NULL,
-  id_col = NULL,
+  id_cols = NULL,
+  weights = NULL,
   invert = FALSE) {
 
   forbidden_name_patterns <- c(".fold")
-  forbidden_names <- c("n", "num_cols_combined", "combined", "size", "cat_levels_combined", "n_ids")
+  forbidden_names <- c("n", "combined", "size")
 
   new_name_patterns <- paste0(".____", forbidden_name_patterns)
   new_names <- paste0(".____", forbidden_names)
@@ -765,17 +790,19 @@ replace_forbidden_names_ <- function(
   colnames(data) <- replace_forbidden_(colnames(data))
   data_group_cols <- replace_forbidden_(data_group_cols)
   group_cols <- replace_forbidden_(group_cols)
-  cat_col <- replace_forbidden_(cat_col)
+  cat_cols <- replace_forbidden_(cat_cols)
   num_cols <- replace_forbidden_(num_cols)
-  id_col <- replace_forbidden_(id_col)
+  id_cols <- replace_forbidden_(id_cols)
+  names(weights) <- replace_forbidden_(names(weights))
 
   list(
     data = data,
     data_group_cols = data_group_cols,
     group_cols = group_cols,
-    cat_col = cat_col,
+    cat_cols = cat_cols,
     num_cols = num_cols,
-    id_col = id_col
+    id_cols = id_cols,
+    weights = weights
   )
 }
 
@@ -787,6 +814,9 @@ standardize <- function(x){
 }
 
 create_combined_cat_summary_ <- function(data, group_cols, cat_col, cat_levels){
+  if (is.list(cat_levels)){
+    cat_levels <- cat_levels[[cat_col]]
+  }
   cat_summary <- NULL
   if (!is.null(cat_col)){
     cat_summary <- data %>%
@@ -822,11 +852,11 @@ create_combined_cat_summary_ <- function(data, group_cols, cat_col, cat_levels){
       summary = cat_summary,
       weights = cat_levels,
       scale_fn = standardize, # function(x){standardize(log(1 + x))} # TODO make specifiable?
-      col_name = "cat_levels_combined"
+      col_name = cat_col
     ) %>%
-      dplyr::select(dplyr::one_of(group_cols, "cat_levels_combined"))
+      dplyr::select(dplyr::one_of(group_cols, cat_col))
 
-    if (all(cat_summary[["cat_levels_combined"]] == 0)){
+    if (all(cat_summary[[cat_col]] == 0)){
       stop(paste0(
         "The `cat_levels` '",
         names(cat_levels),
@@ -866,46 +896,23 @@ scale_combine_cols_ <- function(summary, weights, scale_fn, col_name){
 }
 
 # Standardize/normalize, weight and combine summary columns
-combine_scaled_cols_ <- function(summaries, weights, include_flags, scale_fn = standardize){
+combine_scaled_cols_ <- function(summaries, weights, group_cols, scale_fn = standardize){
 
-  # Normalize weights
+  # The column names of interest
+  cols <- colnames(summaries)[colnames(summaries) %ni% group_cols]
 
-  # Reorder to allow masking
-  weights <- weights[order(names(weights))]
-  include_flags <- include_flags[order(names(include_flags))]
-
-  # Mask by whether the attribute is balanced
-  weights <- weights * include_flags
-  weights <- weights / sum(weights)
-
-  # Prepare combined column
-  summaries[["combined"]] <- 0
-
-  # Standardize each column, multiply with weight and add to combined
-
-  if ("cat_levels_combined" %in% names(summaries)) {
-    summaries[["combined"]] <- summaries[["combined"]] + (
-      scale_fn(summaries[["cat_levels_combined"]]) * weights[["cat"]]
-    )
+  # Create weights if not specified
+  if (is.null(weights)){
+    weights <- rep(1, times = length(cols)) %>%
+      setNames(nm = cols)
   }
 
-  if ("num_cols_combined" %in% names(summaries)) {
-    summaries[["combined"]] <- summaries[["combined"]] + (
-      scale_fn(summaries[["num_cols_combined"]]) * weights[["num"]]
-    )
-  }
-
-  if ("size" %in% names(summaries)) {
-    summaries[["combined"]] <- summaries[["combined"]] + (
-      scale_fn(summaries[["size"]]) * weights[["size"]]
-    )
-  }
-
-  if ("n_ids" %in% names(summaries)) {
-    summaries[["combined"]] <- summaries[["combined"]] + (
-      scale_fn(summaries[["n_ids"]]) * weights[["id"]]
-    )
-  }
+  # Calculate combined column
+  summaries[["combined"]] <- summaries %>%
+    dplyr::ungroup() %>%
+    dplyr::select(dplyr::one_of(cols)) %>%
+    dplyr::mutate(dplyr::across(dplyr::everything(), scale_fn)) %>%
+    purrr::pmap_dbl(.f = weighted_mean_, weights = weights)
 
   summaries
 }
@@ -920,11 +927,11 @@ check_collapse_groups_ <- function(
   n,
   group_cols,
   balance_size,
-  cat_col,
+  cat_cols,
   cat_levels,
   num_cols,
   group_aggregation_fn,
-  id_col,
+  id_cols,
   auto_tune,
   combine_method,
   weights,
@@ -950,8 +957,9 @@ check_collapse_groups_ <- function(
     finite = TRUE,
     any.missing = FALSE,
     lower = 0,
-    len = 4,
+    max.len = length(c(cat_cols, num_cols, id_cols)) + 1, # + size
     names = "unique",
+    null.ok = TRUE,
     add = assert_collection
   )
   checkmate::assert_flag(x = balance_size,
@@ -965,13 +973,15 @@ check_collapse_groups_ <- function(
     names = "unnamed",
     add = assert_collection
   )
-  checkmate::assert_string(
-    x = cat_col,
+  checkmate::assert_character(
+    x = cat_cols,
     min.chars = 1,
     null.ok = TRUE,
+    any.missing = FALSE,
+    unique = TRUE,
     add = assert_collection
   )
-
+  checkmate::reportAssertions(assert_collection)
   # Either the name of the levels
   # or a named vector with weights for each given level
   checkmate::assert(
@@ -991,6 +1001,15 @@ check_collapse_groups_ <- function(
       any.missing = FALSE,
       null.ok = TRUE
     ),
+    checkmate::check_list(
+      x = cat_levels,
+      names = "unique",
+      types = c("character", "numeric"),
+      any.missing = FALSE,
+      min.len = 1,
+      max.len = length(cat_cols),
+      null.ok = TRUE
+    ),
     .var.name = "cat_levels"
   )
 
@@ -1002,10 +1021,11 @@ check_collapse_groups_ <- function(
     null.ok = TRUE,
     add = assert_collection
   )
-  checkmate::assert_string(
-    x = id_col,
-    na.ok = FALSE,
+  checkmate::assert_character(
+    x = id_cols,
+    any.missing = FALSE,
     min.chars = 1,
+    unique = TRUE,
     null.ok = TRUE,
     add = assert_collection
   )
@@ -1030,7 +1050,7 @@ check_collapse_groups_ <- function(
 
   checkmate::assert_names(
     x = colnames(data),
-    must.include = c(group_cols, cat_col, num_cols),
+    must.include = c(group_cols, cat_cols, num_cols, id_cols),
     type = "unique",
     add = assert_collection
   )
@@ -1039,45 +1059,30 @@ check_collapse_groups_ <- function(
     subset.of = c("avg_standardized", "avg_min_max_scaled"),
     add = assert_collection
   )
-  checkmate::assert_names(
-    x = names(weights),
-    permutation.of = c("size", "cat", "num", "id"),
-    add = assert_collection
-  )
-
-  if (!is.null(cat_col)){
-    checkmate::assert_factor(
-      x = data[[cat_col]],
-      any.missing = FALSE,
-      min.levels = 2,
+  if (!is.null(weights)){
+    checkmate::assert_names(
+      x = names(weights),
+      subset.of = c("size", cat_cols, num_cols, id_cols),
       add = assert_collection
     )
-    checkmate::reportAssertions(assert_collection)
-    if (!is.null(cat_levels)){
-      if (is.numeric(cat_levels))
-        cat_levels_names <- names(cat_levels)
-      else
-        cat_levels_names <- cat_levels
-      checkmate::assert_names(
-        x = cat_levels_names,
-        subset.of = c(".minority",
-                      ".majority",
-                      levels(data[[cat_col]])),
-        type = "unique",
-        add = assert_collection,
-        .var.name = "cat_levels"
+  }
+
+  if (!is.null(cat_cols)){
+    for (cat_col in cat_cols) {
+      checkmate::assert_factor(
+        x = data[[cat_col]],
+        any.missing = FALSE,
+        min.levels = 2,
+        .var.name = paste0("data[[", cat_col, "]]"),
+        add = assert_collection
       )
-      if ((".minority" %in% cat_levels_names ||
-          ".majority" %in% cat_levels_names) &&
-          (length(cat_levels_names) > 1 ||
-           !is.character(cat_levels))){
-        assert_collection$push(
-          paste0(
-            "when '.minority' or '.majority' is in `cat_levels`, ",
-            "it must be the only level."
-          )
-        )
-      }
+    }
+    checkmate::reportAssertions(assert_collection)
+
+    if (!is.null(cat_levels)){
+      check_cat_levels_(data = data,
+                        cat_cols = cat_cols,
+                        cat_levels = cat_levels)
     }
   }
 
@@ -1092,14 +1097,87 @@ check_collapse_groups_ <- function(
       )
     }
   }
-  if (!is.null(id_col)){
-    checkmate::assert_factor(
-      x = data[[id_col]],
-      any.missing = FALSE,
-      add = assert_collection
+  if (!is.null(id_cols)){
+    for (id_col in id_cols) {
+      checkmate::assert_factor(
+        x = data[[id_col]],
+        any.missing = FALSE,
+        .var.name = paste0("data[[", id_col, "]]"),
+        add = assert_collection
+      )
+    }
+  }
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
+}
+
+check_cat_levels_ <- function(data, cat_cols, cat_levels) {
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+  # checkmate::assert_ , add = assert_collection)
+
+  if (is.list(cat_levels)) {
+    if (!setequal(names(cat_levels), cat_cols)) {
+      assert_collection$push("when `cat_levels` is a list, its names must be equal to `cat_cols`.")
+    }
+    for (cat_col in cat_cols) {
+      check_single_cat_levels_(data = data,
+                               cat_col = cat_col,
+                               cat_levels = cat_levels[[cat_col]])
+    }
+  } else {
+    # When not a list, the same cat_levels are used for all cat_cols
+    # E.g. a character with ".minority"
+    for (cat_col in cat_cols) {
+      check_single_cat_levels_(data = data,
+                               cat_col = cat_col,
+                               cat_levels = cat_levels)
+    }
+    checkmate::reportAssertions(assert_collection)
+    # End of argument checks ####
+  }
+}
+
+check_single_cat_levels_ <- function(data, cat_col, cat_levels) {
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+  if (is.list(cat_levels)) {
+    assert_collection$push(
+      paste0(
+        "when `cat_levels` is a list, elements must have type",
+        " `character` or `numeric`."
+      )
+    )
+  }
+  if (!is.character(cat_levels)) {
+    cat_levels_names <- names(cat_levels)
+  } else {
+    cat_levels_names <- cat_levels
+  }
+  checkmate::assert_names(
+    x = cat_levels_names,
+    subset.of = c(".minority",
+                  ".majority",
+                  levels(data[[cat_col]])),
+    type = "unique",
+    add = assert_collection,
+    .var.name = paste0("`cat_levels` for ", cat_col)
+  )
+  if ((".minority" %in% cat_levels_names ||
+       ".majority" %in% cat_levels_names) &&
+      (length(cat_levels_names) > 1 ||
+       !is.character(cat_levels))) {
+    assert_collection$push(
+      paste0(
+        "when '.minority' or '.majority' is in `cat_levels` (for ",
+        cat_col,
+        "), ",
+        "it must be the only level."
+      )
     )
   }
   checkmate::reportAssertions(assert_collection)
   # End of argument checks ####
-
 }
+
+
