@@ -123,6 +123,13 @@ isEmpty_ <- function(x) {
   length(x) == 0
 }
 
+# Center and scale x
+standardize_ <- function(x){
+  std <- sd(x)
+  if (std == 0) std <- 1
+  (x - mean(x)) / std
+}
+
 convert_n <- function(data, n, method, allow_zero) {
 
   if (method %ni% c("l_starts", "l_sizes")) {

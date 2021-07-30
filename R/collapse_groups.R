@@ -3,18 +3,11 @@
 #   __________________ #< d0ef3dcf6f36ff79828d86bb092f9b67 ># __________________
 #   Collapse groups                                                         ####
 
-
-# TODO Check whether the log(1 + count) in cat_col actually helps?
-# Not sure the motivation holds up!
+# TODO auto-tune does not use cat_levels when ranking
 
 # TODO Consider adding fold style handling of existing .coll_group* columns?
 
-# TODO by removing the worst and rerunning summarize_balances()
-# We get a better "internal" comparison of the best models
-# i.e. how they rank against each other, not in the context
-# of hundreds of group columns
-
-# Allow group_aggregation_fn to be a list of functions to combine results
+# TODO Allow group_aggregation_fn to be a list of functions to combine results
 # of, e.g. to balance both mean and sum - e.g. with a weight as well?
 
 #' @title Collapse groups with categorical, numerical, ID, and size balancing
@@ -23,15 +16,21 @@
 #'
 #'  Collapses a set of groups into a smaller set of groups.
 #'
-#'  Balance the new groups by a numerical column,
-#'  one or more levels of a categorical column,
-#'  level counts in an ID column,
+#'  Balance the new groups by numerical columns,
+#'  categorical columns,
+#'  level counts in ID columns,
 #'  and/or the number of rows (size).
 #'
-#'  Note: The more of these you balance at a time,
-#'  the less balanced each of them may become.
+#'  \strong{Note}: The more of these you balance at a time,
+#'  the less balanced each of them may become. While on average,
+#'  the balancing work better than without, this is
+#'  not guaranteed on every run. Enabling \code{`auto_tune`} should yield a
+#'  much better overall balance than without in most contexts.
+#'  This generates a large set of group columns using all combinations of the
+#'  balancing columns and selects the most balanced group column(s).
+#'  This is slower and we recommend enabling parallelization (see \code{`parallel`}).
 #'
-#'  Tip: Check the balances of the new groups with
+#'  \strong{Tip}: Check the balances of the new groups with
 #'  \code{\link[groupdata2:summarize_balances]{summarize_balances()}}.
 #' @details
 #'  The goal of \code{collapse_groups()} is to combine existing groups
@@ -213,6 +212,12 @@
 #'  for each group in \code{`group_cols`} before balancing the \code{`num_cols`}.
 #'
 #'  N.B. Only used when \code{`num_cols`} is specified.
+#' @param auto_tune TODO
+#' @param method \code{"balance"}, \code{"ascending"}, or \code{"descending"}.
+#'
+#'  * \code{"balance"} balances the balancing columns between the groups.
+#'  * \code{"ascending"} orders the combined balancing column and groups from the lowest to highest value.
+#'  * \code{"descending"} orders the combined balancing column and groups from the highest to lowest value.
 #' @param extreme_pairing_levels How many levels of extreme pairing to do
 #'  when balancing the groups by the combined balancing column (see \code{Details}).
 #'
@@ -309,18 +314,19 @@ collapse_groups <- function(
   n,
   group_cols,
   cat_cols = NULL,
-  cat_levels = NULL, # TODO Allow list of levels per cat col
+  cat_levels = NULL,
   num_cols = NULL,
   id_cols = NULL,
   balance_size = TRUE,
   auto_tune = FALSE,
+  method = "balance",
   group_aggregation_fn = mean, # TODO How should this affect autotuning?
   num_new_group_cols = 1,
   unique_new_group_cols_only = TRUE,
   max_iters = 5,
   extreme_pairing_levels = 1,
   combine_method = "avg_standardized",
-  weights = c("size" = 1, "cat" = 1, "num" = 1, "id" = 1), # TODO Should be column names
+  weights = NULL,
   col_name = ".coll_groups",
   parallel = FALSE) {
 
@@ -338,6 +344,8 @@ collapse_groups <- function(
     group_aggregation_fn = group_aggregation_fn,
     id_cols = id_cols,
     auto_tune = auto_tune,
+    method = method,
+    num_new_group_cols = num_new_group_cols,
     combine_method = combine_method,
     weights = weights,
     col_name = col_name
@@ -380,6 +388,7 @@ collapse_groups <- function(
     group_aggregation_fn = group_aggregation_fn,
     id_cols = id_cols,
     auto_tune = auto_tune,
+    method = method,
     num_new_group_cols = num_new_group_cols,
     unique_new_group_cols_only = unique_new_group_cols_only,
     max_iters = max_iters,
@@ -486,14 +495,6 @@ prepare_collapse_groups_output_ <- function(
     invert = TRUE
   )
   data <- updated[["data"]]
-  data_group_cols <- updated[["data_group_cols"]]
-  group_cols <- updated[["group_cols"]]
-
-  if (num_new_group_cols == 1) {
-    # Group by the new groups
-    data <- data %>%
-      dplyr::group_by(!!!rlang::syms(c(data_group_cols, col_name)))
-  }
 
   data
 }
@@ -509,6 +510,7 @@ run_collapse_groups_ <- function(
   group_aggregation_fn,
   id_cols,
   auto_tune,
+  method,
   num_new_group_cols,
   unique_new_group_cols_only,
   max_iters,
@@ -538,7 +540,8 @@ run_collapse_groups_ <- function(
         "contain `>= n` groups to collapse."
       )
     )
-  } else if (all(max(data[[tmp_old_group_var]]) == n)){
+  } else if (all(max(data[[tmp_old_group_var]]) == n) &&
+             method == "balance"){
     # If `n` is such that each group becomes its own group
     # we simply fold it randomly without anything else
     # This is supported in case it is used programmatically
@@ -647,7 +650,7 @@ run_collapse_groups_ <- function(
 
   # Assign scaling function
   scale_fn <- list(
-    "avg_standardized" = standardize,
+    "avg_standardized" = standardize_,
     "avg_min_max_scaled" = function(x) {
       rearrr::min_max_scale(x = x, new_min = 0, new_max = 1)
     }
@@ -684,31 +687,47 @@ run_collapse_groups_ <- function(
     ) %>%
       dplyr::select(dplyr::one_of(tmp_old_group_var, "combined"))
 
-    # Fold the summary
-    new_groups <- summaries %>%
-      fold(
-        k = n,
-        num_col = "combined",
-        extreme_pairing_levels = extreme_pairing_levels,
-        num_fold_cols = num_new_group_cols,
-        unique_fold_cols_only =  unique_new_group_cols_only,
-        max_iters = max_iters,
-        parallel = parallel
+    if (method == "balance"){
+      # Fold the summary
+      new_groups <- summaries %>%
+        fold(
+          k = n,
+          num_col = "combined",
+          extreme_pairing_levels = extreme_pairing_levels,
+          num_fold_cols = num_new_group_cols,
+          unique_fold_cols_only =  unique_new_group_cols_only,
+          max_iters = max_iters,
+          parallel = parallel
+        )
+
+      # Replace .folds with the col_name
+      # By doing it this way, it works with multiple fold columns
+      colnames(new_groups) <- gsub(pattern = ".folds",
+                                   replacement = col_name,
+                                   x = colnames(new_groups))
+
+      # Add the groups to `data` and remove tmp column
+      data <- add_new_groups_(
+        data = data,
+        new_groups = new_groups,
+        tmp_old_group_var = tmp_old_group_var,
+        col_name = col_name
       )
 
-    # Replace .folds with the col_name
-    # By doing it this way, it works with multiple fold columns
-    colnames(new_groups) <- gsub(pattern = ".folds",
-                                 replacement = col_name,
-                                 x = colnames(new_groups))
+    } else {
+      data <- add_ordered_summary_groups_(
+        data = data,
+        summary = summaries,
+        n = n,
+        group_cols = tmp_old_group_var,
+        num_col = "combined",
+        method = method,
+        col_name = col_name
+      ) %>%
+        dplyr::select(-dplyr::one_of(tmp_old_group_var))
+    }
 
-    # Add the groups to `data` and remove tmp column
-    data <- add_new_groups_(
-      data = data,
-      new_groups = new_groups,
-      tmp_old_group_var = tmp_old_group_var,
-      col_name = col_name
-    )
+
   }
 
   data
@@ -806,13 +825,6 @@ replace_forbidden_names_ <- function(
   )
 }
 
-# Center and scale x
-standardize <- function(x){
-  std <- sd(x)
-  if (std == 0) std <- 1
-  (x - mean(x)) / std
-}
-
 create_combined_cat_summary_ <- function(data, group_cols, cat_col, cat_levels){
   if (is.list(cat_levels)){
     cat_levels <- cat_levels[[cat_col]]
@@ -851,7 +863,7 @@ create_combined_cat_summary_ <- function(data, group_cols, cat_col, cat_levels){
     cat_summary <- scale_combine_cols_(
       summary = cat_summary,
       weights = cat_levels,
-      scale_fn = standardize, # function(x){standardize(log(1 + x))} # TODO make specifiable?
+      scale_fn = standardize_,
       col_name = cat_col
     ) %>%
       dplyr::select(dplyr::one_of(group_cols, cat_col))
@@ -896,7 +908,7 @@ scale_combine_cols_ <- function(summary, weights, scale_fn, col_name){
 }
 
 # Standardize/normalize, weight and combine summary columns
-combine_scaled_cols_ <- function(summaries, weights, group_cols, scale_fn = standardize){
+combine_scaled_cols_ <- function(summaries, weights, group_cols, scale_fn = standardize_){
 
   # The column names of interest
   cols <- colnames(summaries)[colnames(summaries) %ni% group_cols]
@@ -918,6 +930,28 @@ combine_scaled_cols_ <- function(summaries, weights, group_cols, scale_fn = stan
 }
 
 
+# When method is ascending or descending
+add_ordered_summary_groups_ <- function(data, summary, n, group_cols, num_col, method, col_name){
+  order_fn <- identity
+  if (method == "descending"){
+    order_fn <- dplyr::desc
+  }
+
+  # Order and group
+  new_groups <- summary %>%
+    dplyr::arrange(order_fn(!!as.name(num_col))) %>%
+    group(n = n, method = "n_dist", col_name = col_name) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(-dplyr::one_of(num_col))
+
+  # Add new groups
+  data <- data %>%
+    dplyr::left_join(new_groups, by = group_cols)
+
+  data
+}
+
+
 ### . . . . . . . . .. #< d389058924b6716ba075731944149594 ># . . . . . . . . ..
 ### Check arguments                                                         ####
 
@@ -933,6 +967,8 @@ check_collapse_groups_ <- function(
   group_aggregation_fn,
   id_cols,
   auto_tune,
+  method,
+  num_new_group_cols, # Also checked in fold()
   combine_method,
   weights,
   col_name
@@ -962,6 +998,12 @@ check_collapse_groups_ <- function(
     null.ok = TRUE,
     add = assert_collection
   )
+  checkmate::assert_number(
+    x = num_new_group_cols,
+    finite = TRUE,
+    lower = 1,
+    add = assert_collection
+  )
   checkmate::assert_flag(x = balance_size,
                          add = assert_collection)
   checkmate::assert_character(
@@ -979,6 +1021,11 @@ check_collapse_groups_ <- function(
     null.ok = TRUE,
     any.missing = FALSE,
     unique = TRUE,
+    add = assert_collection
+  )
+  checkmate::assert_string(
+    x = method,
+    min.chars = 1,
     add = assert_collection
   )
   checkmate::reportAssertions(assert_collection)
@@ -1055,10 +1102,25 @@ check_collapse_groups_ <- function(
     add = assert_collection
   )
   checkmate::assert_names(
+    x = method,
+    subset.of = c("balanced", "ascending", "descending"),
+    add = assert_collection
+  )
+  checkmate::assert_names(
     x = combine_method,
     subset.of = c("avg_standardized", "avg_min_max_scaled"),
     add = assert_collection
   )
+  checkmate::reportAssertions(assert_collection)
+  if (method != "balance"){
+    if (isTRUE(auto_tune)){
+      assert_collection$push("when `method` != 'balance', `auto_tune` must be disabled.")
+    }
+    if (num_new_group_cols > 1){
+      assert_collection$push("when `method` != 'balance', `num_new_group_cols` must be `1`.")
+    }
+    checkmate::reportAssertions(assert_collection)
+  }
   if (!is.null(weights)){
     checkmate::assert_names(
       x = names(weights),

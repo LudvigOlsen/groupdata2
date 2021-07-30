@@ -8,19 +8,20 @@ collapse_groups(
   data,
   n,
   group_cols,
-  cat_col = NULL,
+  cat_cols = NULL,
   cat_levels = NULL,
   num_cols = NULL,
-  id_col = NULL,
+  id_cols = NULL,
   balance_size = TRUE,
   auto_tune = FALSE,
+  method = "balance",
   group_aggregation_fn = mean,
   num_new_group_cols = 1,
   unique_new_group_cols_only = TRUE,
   max_iters = 5,
   extreme_pairing_levels = 1,
   combine_method = "avg_standardized",
-  weights = c(size = 1, cat = 1, num = 1, id = 1),
+  weights = NULL,
   col_name = ".coll_groups",
   parallel = FALSE
 )
@@ -50,9 +51,6 @@ N.B. Do not confuse these group columns with potential columns that \code{`data`
 grouped with \code{\link[dplyr:group_by]{dplyr::group_by()}}, the function is
 applied separately to each of those subsets.}
 
-\item{cat_col}{Name of categorical column to balance the average frequency
-of one or more levels of between groups.}
-
 \item{cat_levels}{Names of the levels in the \code{`cat_col`} column to balance the average frequency
 of. The balancing will likely work best with fewer levels.
 
@@ -69,9 +67,16 @@ are found and used.}
 
 \item{num_cols}{Name(s) of numerical column(s) to balance between groups.}
 
-\item{id_col}{Name of factor column with IDs to balance the counts of between groups.}
-
 \item{balance_size}{Whether to balance the size of the collapsed groups. (logical)}
+
+\item{auto_tune}{TODO}
+
+\item{method}{\code{"balance"}, \code{"ascending"}, or \code{"descending"}.
+\itemize{
+\item \code{"balance"} balances the balancing columns between the groups.
+\item \code{"ascending"} orders the combined balancing column and groups from the lowest to highest value.
+\item \code{"descending"} orders the combined balancing column and groups from the highest to lowest value.
+}}
 
 \item{group_aggregation_fn}{Function for aggregating values in the \code{`num_cols`}
 for each group in \code{`group_cols`} before balancing the \code{`num_cols`}.
@@ -154,6 +159,11 @@ when \code{`unique_new_group_cols_only`} is \code{TRUE}.
 
 Requires a registered parallel backend.
 Like \code{doParallel::registerDoParallel}.}
+
+\item{cat_col}{Name of categorical column to balance the average frequency
+of one or more levels of between groups.}
+
+\item{id_col}{Name of factor column with IDs to balance the counts of between groups.}
 }
 \value{
 \code{data.frame} with grouping factor for subsetting in cross-validation.
@@ -163,15 +173,21 @@ Like \code{doParallel::registerDoParallel}.}
 
 Collapses a set of groups into a smaller set of groups.
 
-Balance the new groups by a numerical column,
-one or more levels of a categorical column,
-level counts in an ID column,
+Balance the new groups by numerical columns,
+categorical columns,
+level counts in ID columns,
 and/or the number of rows (size).
 
-Note: The more of these you balance at a time,
-the less balanced each of them may become.
+\strong{Note}: The more of these you balance at a time,
+the less balanced each of them may become. While on average,
+the balancing work better than without, this is
+not guaranteed on every run. Enabling \code{`auto_tune`} should yield a
+much better overall balance than without in most contexts.
+This generates a large set of group columns using all combinations of the
+balancing columns and selects the most balanced group column(s).
+This is slower and we recommend enabling parallelization (see \code{`parallel`}).
 
-Tip: Check the balances of the new groups with
+\strong{Tip}: Check the balances of the new groups with
 \code{\link[groupdata2:summarize_balances]{summarize_balances()}}.
 }
 \details{

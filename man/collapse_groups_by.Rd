@@ -12,6 +12,7 @@ collapse_groups_by_size(
   data,
   n,
   group_cols,
+  auto_tune = FALSE,
   method = "balance",
   extreme_pairing_levels = 1,
   col_name = ".coll_groups"
@@ -22,6 +23,8 @@ collapse_groups_by_numeric(
   n,
   group_cols,
   num_cols,
+  balance_size = FALSE,
+  auto_tune = FALSE,
   method = "balance",
   group_aggregation_fn = mean,
   extreme_pairing_levels = 1,
@@ -32,8 +35,10 @@ collapse_groups_by_levels(
   data,
   n,
   group_cols,
-  cat_col = NULL,
-  cat_levels = ".majority",
+  cat_cols,
+  cat_levels = NULL,
+  balance_size = FALSE,
+  auto_tune = FALSE,
   method = "balance",
   extreme_pairing_levels = 1,
   col_name = ".coll_groups"
@@ -43,7 +48,9 @@ collapse_groups_by_ids(
   data,
   n,
   group_cols,
-  id_col,
+  id_cols,
+  balance_size = FALSE,
+  auto_tune = FALSE,
   method = "balance",
   extreme_pairing_levels = 1,
   col_name = ".coll_groups"
@@ -69,6 +76,8 @@ N.B. Do not confuse these group columns with potential columns that \code{`data`
 grouped with \code{\link[dplyr:group_by]{dplyr::group_by()}}, the function is
 applied separately to each of those subsets.}
 
+\item{auto_tune}{TODO}
+
 \item{method}{\code{"balance"}, \code{"ascending"}, or \code{"descending"}.
 \itemize{
 \item \code{"balance"} balances the attribute between the groups.
@@ -89,13 +98,12 @@ actually makes the groups more balanced.}
 
 \item{num_cols}{Name(s) of numerical column(s) to balance between groups.}
 
+\item{balance_size}{Whether to balance the size of the collapsed groups. (logical)}
+
 \item{group_aggregation_fn}{Function for aggregating values in the \code{`num_cols`}
 for each group in \code{`group_cols`} before balancing the \code{`num_cols`}.
 
 N.B. Only used when \code{`num_cols`} is specified.}
-
-\item{cat_col}{Name of categorical column to balance the average frequency
-of one or more levels of between groups.}
 
 \item{cat_levels}{Names of the levels in the \code{`cat_col`} column to balance the average frequency
 of. The balancing will likely work best with fewer levels.
@@ -110,12 +118,9 @@ are automatically scaled to sum to \code{1}).
 
 Can be \code{".minority"} or \code{".majority"}, in which cases the minority/majority level
 are found and used.}
-
-\item{id_col}{Name of factor column with IDs to balance the counts of between groups.}
 }
 \value{
-\code{`data`} with a new grouping factor column,
-grouped by the existing grouping plus the new column.
+\code{`data`} with a new grouping factor column.
 }
 \description{
 \Sexpr[results=rd, stage=render]{lifecycle::badge("experimental")}
@@ -125,18 +130,18 @@ Collapses a set of groups into a smaller set of groups.
 Balance the new groups by:
 \itemize{
 \item The \strong{number of rows} with \code{collapse_groups_by_size()}
-\item A \strong{numerical column} with \code{collapse_groups_by_numeric()}
-\item One or more levels of a \strong{categorical column} with \code{collapse_groups_by_levels()}
-\item Level counts in an \strong{ID column} with \code{collapse_groups_by_ids()}
+\item \strong{Numerical columns} with \code{collapse_groups_by_numeric()}
+\item One or more levels of \strong{categorical columns} with \code{collapse_groups_by_levels()}
+\item Level counts in \strong{ID columns} with \code{collapse_groups_by_ids()}
 \item \strong{Any combination} of these with \code{collapse_groups()}
 }
 
-These functions wrap \code{\link[groupdata2:collapse_groups]{collapse_groups()}}. They
-simplify the given tasks and provide additional methods. To balance more than one of
-the attributes at a time, use \code{\link[groupdata2:collapse_groups]{collapse_groups()}}
-directly.
+These functions wrap \code{\link[groupdata2:collapse_groups]{collapse_groups()}}
+to provide a simpler interface. To balance more than one of the attributes at a time
+and/or create multiple new unique grouping columns at once, use
+\code{\link[groupdata2:collapse_groups]{collapse_groups()}} directly.
 
-Tip: Check the balances of the new groups with
+\strong{Tip}: Check the balances of the new groups with
 \code{\link[groupdata2:summarize_balances]{summarize_balances()}}.
 }
 \examples{

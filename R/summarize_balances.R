@@ -9,6 +9,9 @@
 
 # TODO Add more comments to code
 
+# TODO Add group_aggregation_fn = list("mean"=mean, "sum"=sum) so people can select
+# what to rank the numeric columns by.
+
 #' @title Summarize group balances
 #' @description
 #'  \Sexpr[results=rd, stage=render]{lifecycle::badge("experimental")}
@@ -280,7 +283,7 @@ run_summarize_balances <- function(
 
   # Make sure `group_cols` columns are factors
   data <- data %>%
-    dplyr::ungroup() %>% # TODO should be handled before this part!
+    dplyr::ungroup() %>%
     dplyr::mutate(dplyr::across(dplyr::one_of(group_cols), factor))
 
   #### Create summaries ####
@@ -412,7 +415,6 @@ run_summarize_balances <- function(
           log10(1 + x)
         })) %>%
         dplyr::rename_with( ~ paste0("log(", ., ")"), where(is.numeric))
-      # TODO perhaps add a row mean per cat_col after log?
 
       normalized_group_summary <- normalized_group_summary %>%
         dplyr::left_join(normalized_cat_summary, by = c(".group_col", ".group"))
