@@ -102,7 +102,6 @@ collapse_groups_by_numeric <- function(data,
     extreme_pairing_levels = extreme_pairing_levels,
     num_new_group_cols = 1,
     group_aggregation_fn = group_aggregation_fn,
-    balance_size = FALSE,
     col_name = col_name
   )
 }
@@ -135,7 +134,6 @@ collapse_groups_by_levels <- function(data,
     method = method,
     extreme_pairing_levels = extreme_pairing_levels,
     num_new_group_cols = 1,
-    balance_size = FALSE,
     col_name = col_name
   )
 }
@@ -165,7 +163,6 @@ collapse_groups_by_ids <- function(data,
     auto_tune = auto_tune,
     method = method,
     extreme_pairing_levels = extreme_pairing_levels,
-    balance_size = FALSE,
     col_name = col_name
   )
 }
