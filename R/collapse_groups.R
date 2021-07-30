@@ -940,7 +940,12 @@ add_ordered_summary_groups_ <- function(data, summary, n, group_cols, num_col, m
   # Order and group
   new_groups <- summary %>%
     dplyr::arrange(order_fn(!!as.name(num_col))) %>%
-    group(n = n, method = "n_dist", col_name = col_name) %>%
+    group(
+      n = n,
+      method = "n_fill",
+      col_name = col_name,
+      descending = method == "ascending"
+    ) %>%
     dplyr::ungroup() %>%
     dplyr::select(-dplyr::one_of(num_col))
 
@@ -1103,7 +1108,7 @@ check_collapse_groups_ <- function(
   )
   checkmate::assert_names(
     x = method,
-    subset.of = c("balanced", "ascending", "descending"),
+    subset.of = c("balance", "ascending", "descending"),
     add = assert_collection
   )
   checkmate::assert_names(
@@ -1241,5 +1246,3 @@ check_single_cat_levels_ <- function(data, cat_col, cat_levels) {
   checkmate::reportAssertions(assert_collection)
   # End of argument checks ####
 }
-
-
