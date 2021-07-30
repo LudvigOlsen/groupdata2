@@ -147,39 +147,41 @@ auto_tune_collapsings <- function(
     ))
   }
 
-  # Summarize the balances
-  balance_summary <- summarize_balances(
+  # Finding the most balanced group columns
+  # As average ranking is vulnerable with many competitors
+  # where a bad position on a single dimension can heavily impact avg rank
+  # We first filter out the worst group cols and rank again
+
+  # First summarization and filtering of group columns
+  group_cols_to_keep <- group_cols_names
+  if (length(group_cols_names) >= (num_new_group_cols * 2 + 3)) {
+    # In case `num_new_group_cols` is very low (e.g. 1)
+    # we add 3 to have at least 5 group cols when ordering
+    group_cols_to_keep <- find_best_group_cols_(
+      data = data,
+      num_new_group_cols = num_new_group_cols * 2 + 3,
+      group_cols_names = group_cols_names,
+      cat_cols = cat_cols,
+      num_cols = num_cols,
+      id_cols = id_cols,
+      balance_size = balance_size,
+      weights = weights
+    )
+  }
+
+  # Second summarization and filtering of group columns
+  group_cols_to_keep <- find_best_group_cols_(
     data = data,
-    group_cols = group_cols_names,
+    num_new_group_cols = num_new_group_cols,
+    group_cols_names = group_cols_to_keep,
     cat_cols = cat_cols,
     num_cols = num_cols,
     id_cols = id_cols,
-    summarize_size = balance_size,
-    ranking_weights = weights,
-    include_normalized = TRUE
+    balance_size = balance_size,
+    weights = weights
   )
 
-  # Find the group column rankings
-  # We average the rankings of the summary and the normalized summary
-  # As they have been shown to sometimes differ
-  summary_ranks <- balance_summary[["Summary"]] %>%
-    ranked_balances() %>%
-    dplyr::select(.data$.group_col, .data$SD_rank)
-  normalized_summary_ranks <- balance_summary[["Normalized Summary"]] %>%
-    ranked_balances() %>%
-    dplyr::select(.data$.group_col, .data$SD_rank) %>%
-    dplyr::rename(norm_SD_rank = .data$SD_rank)
-  summary_ranks <- summary_ranks %>%
-    dplyr::left_join(normalized_summary_ranks, by = ".group_col") %>%
-    dplyr::mutate(avg_rank = (.data$SD_rank + .data$norm_SD_rank) / 2) %>%
-    dplyr::ungroup() %>%
-    dplyr::arrange(.data$avg_rank) %>%
-    head(num_new_group_cols)
-
-  # Find group columns to remove
-  group_cols_to_keep <- as.character(summary_ranks[[".group_col"]])
-  group_cols_to_remove <- setdiff(group_cols_names, group_cols_to_keep)
-
+  # Create the final order for selection of columns
   new_order_ <- c(
     colnames(data)[colnames(data) %ni% c(group_cols_names, tmp_old_group_var)],
     group_cols_to_keep
@@ -248,4 +250,40 @@ combine_and_fold_combination_ <- function(
     base_select(cols = new_col_names)
 }
 
+find_best_group_cols_ <- function(data, num_new_group_cols, group_cols_names, cat_cols, num_cols, id_cols, weights, balance_size){
 
+  # Summarize the balances
+  balance_summary <- summarize_balances(
+    data = data,
+    group_cols = group_cols_names,
+    cat_cols = cat_cols,
+    num_cols = num_cols,
+    id_cols = id_cols,
+    summarize_size = balance_size,
+    ranking_weights = weights,
+    include_normalized = TRUE
+  )
+
+  # Find the group column rankings
+  # We average the rankings of the summary and the normalized summary
+  # As they have been shown to sometimes differ
+  summary_ranks <- balance_summary[["Summary"]] %>%
+    ranked_balances() %>%
+    dplyr::select(.data$.group_col, .data$SD_rank)
+  normalized_summary_ranks <- balance_summary[["Normalized Summary"]] %>%
+    ranked_balances() %>%
+    dplyr::select(.data$.group_col, .data$SD_rank) %>%
+    dplyr::rename(norm_SD_rank = .data$SD_rank)
+  summary_ranks <- summary_ranks %>%
+    dplyr::left_join(normalized_summary_ranks, by = ".group_col") %>%
+    dplyr::mutate(avg_rank = (.data$SD_rank + .data$norm_SD_rank) / 2) %>%
+    dplyr::ungroup() %>%
+    dplyr::arrange(.data$avg_rank) %>%
+    head(num_new_group_cols)
+
+  # Find group columns to remove
+  group_cols_to_keep <- as.character(summary_ranks[[".group_col"]])
+  group_cols_to_remove <- setdiff(group_cols_names, group_cols_to_keep)
+
+  group_cols_to_keep
+}
