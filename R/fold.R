@@ -31,12 +31,13 @@ if (getRversion() >= "2.15.1")
 #'      \strong{Note} that this will only affect rows with the same value in \code{`num_col`}.
 #'      \item Extreme pairing 1: Rows are ordered as \emph{smallest, largest, second smallest, second largest}, etc.
 #'      Each pair get a group identifier. (See \code{\link[rearrr:pair_extremes]{rearrr::pair_extremes()}})
-#'      \item If \code{`extreme_pairing_levels` > 1}: The group identifiers are reordered as \emph{smallest,
+#'      \item If \code{`extreme_pairing_levels` > 1}: These group identifiers are reordered as \emph{smallest,
 #'      largest, second smallest, second largest}, etc., by the sum of \code{`num_col`} in the represented rows.
 #'      These pairs (of pairs) get a new set of group identifiers, and the process is repeated
 #'       \code{`extreme_pairing_levels`-2} times. Note that the group identifiers at the last level will represent
 #'       \code{2^`extreme_pairing_levels`} rows, why you should be careful when choosing that setting.
-#'      \item The final group identifiers are folded, and the fold identifiers are transferred to the rows.
+#'      \item The group identifiers from the last pairing are folded (randomly divided into groups),
+#'      and the fold identifiers are transferred to the original rows.
 #'    }
 #'
 #'  N.B. When doing extreme pairing of an unequal number of rows,
@@ -160,6 +161,7 @@ if (getRversion() >= "2.15.1")
 #'  Hence, we repeatedly create the missing columns and remove those that are not unique.
 #'  This is done until we have \code{`num_fold_cols`} unique fold columns
 #'  or we have attempted \code{`max_iters`} times.
+#'
 #'  In some cases, it is not possible to create \code{`num_fold_cols`}
 #'  unique combinations of the dataset, e.g.
 #'  when specifying \code{`cat_col`}, \code{`id_col`} and \code{`num_col`}.

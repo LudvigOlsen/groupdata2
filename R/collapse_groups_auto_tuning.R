@@ -32,13 +32,15 @@ auto_tune_collapsings <- function(
   if (isTRUE(balance_size))
     all_balance_cols <- c(all_balance_cols, "size")
 
-  if (length(all_balance_cols) > 6){
-    warning(
+  if (length(all_balance_cols) > 6) {
+    warning(simpleWarning(
       paste0(
         "auto-tuning with >6 balancing columns may be slow. Increase",
         " in running time per additional balancing column is exponential."
-      )
-    )
+      ),
+      call = if (p <- sys.parent(2 + 1))
+        sys.call(p)
+    ))
   }
 
   # Make all relevant combinations

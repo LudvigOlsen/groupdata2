@@ -62,7 +62,7 @@ the function is applied group-wise.}
 
 \item{n}{Number of new groups.}
 
-\item{group_cols}{Name(s) of factor(s) in \code{`data`} for identifying the existing groups
+\item{group_cols}{Name(s) of factor(s) in \code{`data`} for identifying the \emph{existing} groups
 that should be collapsed.
 
 Multiple names are treated as in \code{\link[dplyr:group_by]{dplyr::group_by()}}
@@ -76,7 +76,13 @@ N.B. Do not confuse these group columns with potential columns that \code{`data`
 grouped with \code{\link[dplyr:group_by]{dplyr::group_by()}}, the function is
 applied separately to each of those subsets.}
 
-\item{auto_tune}{TODO}
+\item{auto_tune}{Whether to create a larger set of collapsed group columns
+from all combinations of the balancing dimensions and select the
+overall most balanced group column(s).
+
+This tends to create much more balanced collapsed group columns.
+
+Can be slow, why we recommend enabling parallelization (see \code{`parallel`}).}
 
 \item{method}{\code{"balance"}, \code{"ascending"}, or \code{"descending"}.
 \itemize{
@@ -105,19 +111,31 @@ for each group in \code{`group_cols`} before balancing the \code{`num_cols`}.
 
 N.B. Only used when \code{`num_cols`} is specified.}
 
-\item{cat_levels}{Names of the levels in the \code{`cat_col`} column to balance the average frequency
-of. The balancing will likely work best with fewer levels.
+\item{cat_cols}{Name(s) of categorical column(s) to balance the average frequency
+of one or more levels of.}
 
-When \code{`NULL`}, all levels are balanced.
+\item{cat_levels}{Names of the levels in the \code{`cat_cols`} columns to balance the average frequencies
+of. Either a \code{vector} with level names, a named \code{numeric vector} with weights, or a named
+\code{list} with \code{vector}s for each column name in \code{`cat_cols`}. When \code{`NULL`},
+all levels are balanced.
 
-Can be a named numeric vector, where the names are the levels and the values are weights
-of importance in the balancing.
+For each of the columns in \code{`cat_cols`}, we either provide the level names or
+weights for each of the levels, named by the level names.
 
-E.g. \code{c("dog" = 5, "pidgeon" = 1, "mouse" = 3)} (the weights
+E.g. \code{c("dog", "pidgeon", "mouse")} or \code{c("dog" = 5, "pidgeon" = 1, "mouse" = 3)} (the weights
 are automatically scaled to sum to \code{1}).
 
-Can be \code{".minority"} or \code{".majority"}, in which cases the minority/majority level
+When \code{`cat_cols`} has multiple column names, a named \code{list} with a \code{vector}
+for each column, named by the column name. When not providing a \code{vector} for a \code{`cat_cols`}
+column, all levels are balanced in that column.
+
+E.g. \code{list("col1" = c("dog" = 5, "pidgeon" = 1, "mouse" = 3),
+ "col2" = c("hydrated", "dehydrated"))}.
+
+Can be \code{".minority"} or \code{".majority"}, in which case the minority/majority level
 are found and used.}
+
+\item{id_cols}{Name(s) of factor column(s) with IDs to balance the counts of between groups.}
 }
 \value{
 \code{`data`} with a new grouping factor column.
@@ -143,6 +161,9 @@ and/or create multiple new unique grouping columns at once, use
 
 \strong{Tip}: Check the balances of the new groups with
 \code{\link[groupdata2:summarize_balances]{summarize_balances()}}.
+}
+\details{
+See details in \code{\link[groupdata2:collapse_groups]{collapse_groups()}}.
 }
 \examples{
 # Attach packages

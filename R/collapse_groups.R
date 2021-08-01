@@ -10,6 +10,9 @@
 # TODO Allow group_aggregation_fn to be a list of functions to combine results
 # of, e.g. to balance both mean and sum - e.g. with a weight as well?
 
+# TODO cat_levels: provide .majority/.minority in the list?
+# TODO cat_levels: What happens if a column is not in the list? (should use all for that column)
+
 #' @title Collapse groups with categorical, numerical, ID, and size balancing
 #' @description
 #'  \Sexpr[results=rd, stage=render]{lifecycle::badge("experimental")}
@@ -26,7 +29,7 @@
 #'  the balancing work better than without, this is
 #'  not guaranteed on every run. Enabling \code{`auto_tune`} should yield a
 #'  much better overall balance than without in most contexts.
-#'  This generates a large set of group columns using all combinations of the
+#'  This generates a larger set of group columns using all combinations of the
 #'  balancing columns and selects the most balanced group column(s).
 #'  This is slower and we recommend enabling parallelization (see \code{`parallel`}).
 #'
@@ -38,33 +41,52 @@
 #'  four "balancing dimensions" (\emph{size}, \emph{numeric}, \emph{categorical},
 #'  and/or \emph{ID}). From each of these dimensions, we calculate
 #'  a normalized, numeric \emph{"balancing column"} that when balanced
-#'  between the groups means its dimension is balanced as well.
+#'  between the groups lead to its dimension being balanced as well.
 #'
-#'  To balance multiple dimensions at once, we combine these balancing columns with
+#'  To balance multiple dimensions at once, we combine their balancing columns with
 #'  with weighted averaging (see \code{`combine_method`} and \code{`weights`}).
 #'
 #'  Finally, we create groups where this combined balancing column is balanced using the
 #'  numerical balancing in \code{\link[groupdata2:fold]{fold()}}.
 #'
-#'  While theoretically, there should be instances where this strategy fails to
-#'  produce balanced groups, e.g. if the balancing dimensions cancel out or when
-#'  balancing on too many things at once, \emph{in practice}, this tends to lead
-#'  to decent* balances of the included columns (*better than not applying balancing).
+#'  \subsection{Auto-tuning}{
 #'
-#'  When the balancing is important, we recommend using
+#'  This strategy is not guaranteed to produce balanced groups in all contexts,
+#'  e.g. when the balancing columns cancel out. To increase the probability of
+#'  balanced groups, we can produce multiple group columns with all combinations
+#'  of the balancing dimensions and select the overall most balanced group column(s).
+#'  We refer to this as auto-tuning (see \code{`auto_tune`}).
+#'
+#'  We find the most balanced group column from the rankings of across-group
+#'  standard deviations for each of the balancing dimensions, using the summaries produced by
+#'  \code{\link[groupdata2:summarize_balances]{summarize_balances()}}. E.g. if for
+#'  a group column the groups have the following average \emph{ages} \code{`c(16, 18, 25, 21)`},
+#'  the standard deviation thereof (\code{3.92}) is our measure for how balanced the \emph{age}
+#'  column is. Another group column can thus have a lower/higher standard deviation.
+#'  We find the rankings of these standard deviations for all the balancing dimensions
+#'  and average them (again weighted by \code{`weights`}). We select the, on average, highest ranking
+#'  (i.e. lowest standard deviations) group column(s).
+#'
+#'  }\subsection{Checking balances}{
+#'
+#'  We highly recommend using
 #'  \code{\link[groupdata2:summarize_balances]{summarize_balances()}} to
 #'  check how balanced the created groups are on the various dimensions.
-#'  If they are not balanced enough, consider changing \code{`weights`} or
-#'  balancing fewer dimensions at a time.
+#'  By applying \code{\link[groupdata2:ranked_balances]{ranked_balances()}}
+#'  to the summaries, we get a \code{data.frame} with the standard deviations
+#'  for each balancing dimension, ordered by the average rank.
+#'
+#'  }\subsection{Balancing columns}{
 #'
 #'  The following describes the creation of the balancing columns
 #'  for each of the balancing dimensions:
 #'
-#'  \subsection{cat_col}{
+#'  \subsection{cat_cols}{
+#'  For each column in \code{`cat_cols`}:
+#'
 #'   * \strong{Count each level} in each group. This creates a \code{data.frame} with
 #'   one count column per level, with one row per group.
-#'   * \strong{Log-transform} the count columns with \code{log10(1 + count)}.
-#'   * \strong{Standardize} the transformed count columns.
+#'   * \strong{Standardize} the count columns.
 #'   * \strong{Sum} the standardized counts rowwise to create one combined column representing
 #'   the balance of the levels for each group.
 #'
@@ -83,18 +105,19 @@
 #'   4 \tab 5 \tab 0 \tab 4  \tab | \tab 0.24 \tab -1.48\tab 0.19  \tab | \tab -0.35 \cr
 #'   ... \tab ... \tab ... \tab ... \tab | \tab ... \tab ... \tab ... \tab | \tab ... }
 #'
-#'   By default, we only use the normalized counts for the majority class.
-#'
 #'  }
 #'
-#'  \subsection{id_col}{
+#'  \subsection{id_cols}{
+#'  For each column in \code{`id_cols`}:
+#'
 #'   * \strong{Count} the unique IDs (levels) within each group.
 #'   (Note: The same ID can be counted in multiple groups.)
 #'  }
 #'
 #'  \subsection{num_cols}{
+#'  For each column in \code{`num_cols`}:
+#'
 #'   * \strong{Aggregate} the numeric columns by group using the \code{`group_aggregation_fn`}.
-#'   * TODO Combine the aggregates !!!
 #'  }
 #'
 #'  \subsection{size}{
@@ -123,49 +146,66 @@
 #'
 #'  }
 #'
-#'  \subsection{Creating the groups}{
-#'   Finally, we create the groups with the numerical balancing in \code{\link[groupdata2:fold]{fold()}}
-#'   so the combined balancing column is balanced between them.
+#'  }\subsection{Creating the groups}{
 #'
-#'   The following describes the numerical balancing:
+#'   Finally, we get to the group creation. There are three methods for creating groups based on the
+#'   combined balancing column: "balance", "ascending", and "descending".
 #'
-#'   TODO Replace num_col in the below as we are balancing the combined here!
+#'   \subsection{`method` is "balance"}{
+#'   To create groups that are balanced by the combined balancing column, we use the numerical balancing
+#'   in \code{\link[groupdata2:fold]{fold()}}.
+#'
+#'   The following describes the numerical balancing in broad terms:
+#'
 #'   \enumerate{
 #'      \item Rows are shuffled.
-#'      \strong{Note} that this will only affect rows with the same value in \code{`num_col`}.
+#'      \strong{Note} that this will only affect rows with the same value in the combined balancing column.
 #'      \item Extreme pairing 1: Rows are ordered as \emph{smallest, largest, second smallest, second largest}, etc.
 #'      Each pair get a group identifier. (See \code{\link[rearrr:pair_extremes]{rearrr::pair_extremes()}})
-#'      \item If \code{`extreme_pairing_levels` > 1}: The group identifiers are reordered as \emph{smallest,
-#'      largest, second smallest, second largest}, etc., by the sum of \code{`num_col`} in the represented rows.
+#'      \item If \code{`extreme_pairing_levels` > 1}: These group identifiers are reordered as \emph{smallest,
+#'      largest, second smallest, second largest}, etc., by the sum of the combined balancing column in the represented rows.
 #'      These pairs (of pairs) get a new set of group identifiers, and the process is repeated
 #'       \code{`extreme_pairing_levels`-2} times. Note that the group identifiers at the last level will represent
 #'       \code{2^`extreme_pairing_levels`} rows, why you should be careful when choosing that setting.
-#'      \item The final group identifiers are folded, and the fold identifiers are transferred to the rows.
-#'    }
+#'      \item The group identifiers from the last pairing are randomly divided into the final groups,
+#'      and these final identifiers are transferred to the original rows.
+#'   }
 #'
-#'    N.B. When doing extreme pairing of an unequal number of rows,
-#'    the row with the smallest value is placed in a group by itself, and the order is instead:
-#'    smallest, \emph{second smallest, largest, third smallest, second largest}, etc.
+#'   N.B. When doing extreme pairing of an unequal number of rows,
+#'   the row with the smallest value is placed in a group by itself, and the order is instead:
+#'   smallest, \emph{second smallest, largest, third smallest, second largest}, etc.
 #'
-#'    \strong{Example}: We order the \code{data.frame} by smallest \emph{"Num"} value,
-#'    largest \emph{"Num"} value, second smallest, and so on.
-#'    We could (if \code{`extreme_pairing_levels` > 1})
-#'    find the sum of \emph{"Num"} for each pair and perform extreme pairing on the pairs.
-#'    Finally, we group the \code{data.frame}:
+#'   \strong{Example}: We order the \code{data.frame} by smallest \emph{"Num"} value,
+#'   largest \emph{"Num"} value, second smallest, and so on.
+#'   We could further (when \code{`extreme_pairing_levels` > 1})
+#'   find the sum of \emph{"Num"} for each pair and perform extreme pairing on the pairs.
+#'   Finally, we group the \code{data.frame}:
 #'
-#'    \tabular{rrrrrrrrrrrr}{
+#'   \tabular{rrrrrrrrrrrr}{
 #'     \strong{Group} \tab \strong{Num} \tab
 #'     \strong{->} \tab
 #'     \strong{Group} \tab \strong{Num} \tab
 #'     \strong{Pair} \tab \strong{->} \tab
 #'     \strong{New group}\cr
-#'     1 \tab -0.395\tab | \tab 4 \tab -0.723\tab 1 \tab | \tab 1 \cr
-#'     2 \tab 0.065 \tab | \tab 3 \tab 1.05  \tab 1 \tab | \tab 1  \cr
-#'     3 \tab 1.05  \tab | \tab 1 \tab -0.395\tab 2 \tab | \tab 2 \cr
+#'     1 \tab -0.395\tab | \tab 5 \tab -1.23 \tab 1 \tab | \tab 3 \cr
+#'     2 \tab 0.065 \tab | \tab 3 \tab 1.05  \tab 1 \tab | \tab 3 \cr
+#'     3 \tab 1.05  \tab | \tab 4 \tab -0.723\tab 2 \tab | \tab 1 \cr
 #'     4 \tab -0.723\tab | \tab 2 \tab 0.065 \tab 2 \tab | \tab 1 \cr
+#'     5 \tab -1.23 \tab | \tab 1 \tab -0.395\tab 3 \tab | \tab 2 \cr
+#'     6 \tab -0.15 \tab | \tab 6 \tab -0.15 \tab 3 \tab | \tab 2 \cr
 #'     ... \tab ... \tab | \tab ... \tab ... \tab ... \tab | \tab ... }
 #'
-#'  }
+#'   }
+#'
+#'   \subsection{`method` is "ascending" or "descending"}{
+#'   These methods order the data by the combined balancing column and
+#'   creates groups such that the sums get increasingly larger (\code{`ascending`})
+#'   or smaller (\code{`descending`}). This will in turn lead to a \emph{pattern} of
+#'   increasing/decreasing sums in the balancing columns (e.g. increasing/decreasing counts
+#'   of the categorical levels, counts of IDs, number of rows and sums of numeric columns).
+#'   }
+#'
+#' }
 #'
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @export
@@ -178,24 +218,31 @@
 #'  settings at a time. Note that the generated group columns are not guaranteed
 #'  to be in the order of \code{`n`}.
 #' @param balance_size Whether to balance the size of the collapsed groups. (logical)
-#' @param cat_col Name of categorical column to balance the average frequency
-#'  of one or more levels of between groups.
-#' @param cat_levels Names of the levels in the \code{`cat_col`} column to balance the average frequency
-#'  of. The balancing will likely work best with fewer levels.
+#' @param cat_cols Name(s) of categorical column(s) to balance the average frequency
+#'  of one or more levels of.
+#' @param cat_levels Names of the levels in the \code{`cat_cols`} columns to balance the average frequencies
+#'  of. Either a \code{vector} with level names, a named \code{numeric vector} with weights, or a named
+#'  \code{list} with \code{vector}s for each column name in \code{`cat_cols`}. When \code{`NULL`},
+#'  all levels are balanced.
 #'
-#'  When \code{`NULL`}, all levels are balanced.
+#'  For each of the columns in \code{`cat_cols`}, we either provide the level names or
+#'  weights for each of the levels, named by the level names.
 #'
-#'  Can be a named numeric vector, where the names are the levels and the values are weights
-#'  of importance in the balancing.
-#'
-#'  E.g. \code{c("dog" = 5, "pidgeon" = 1, "mouse" = 3)} (the weights
+#'  E.g. \code{c("dog", "pidgeon", "mouse")} or \code{c("dog" = 5, "pidgeon" = 1, "mouse" = 3)} (the weights
 #'  are automatically scaled to sum to \code{1}).
 #'
-#'  Can be \code{".minority"} or \code{".majority"}, in which cases the minority/majority level
+#'  When \code{`cat_cols`} has multiple column names, a named \code{list} with a \code{vector}
+#'  for each column, named by the column name. When not providing a \code{vector} for a \code{`cat_cols`}
+#'  column, all levels are balanced in that column.
+#'
+#'  E.g. \code{list("col1" = c("dog" = 5, "pidgeon" = 1, "mouse" = 3),
+#'  "col2" = c("hydrated", "dehydrated"))}.
+#'
+#'  Can be \code{".minority"} or \code{".majority"}, in which case the minority/majority level
 #'  are found and used.
 #' @param num_cols Name(s) of numerical column(s) to balance between groups.
-#' @param id_col Name of factor column with IDs to balance the counts of between groups.
-#' @param group_cols Name(s) of factor(s) in \code{`data`} for identifying the existing groups
+#' @param id_cols Name(s) of factor column(s) with IDs to balance the counts of between groups.
+#' @param group_cols Name(s) of factor(s) in \code{`data`} for identifying the \emph{existing} groups
 #'  that should be collapsed.
 #'
 #'  Multiple names are treated as in \code{\link[dplyr:group_by]{dplyr::group_by()}}
@@ -212,7 +259,13 @@
 #'  for each group in \code{`group_cols`} before balancing the \code{`num_cols`}.
 #'
 #'  N.B. Only used when \code{`num_cols`} is specified.
-#' @param auto_tune TODO
+#' @param auto_tune Whether to create a larger set of collapsed group columns
+#'  from all combinations of the balancing dimensions and select the
+#'  overall most balanced group column(s).
+#'
+#'  This tends to create much more balanced collapsed group columns.
+#'
+#'  Can be slow, why we recommend enabling parallelization (see \code{`parallel`}).
 #' @param method \code{"balance"}, \code{"ascending"}, or \code{"descending"}.
 #'
 #'  * \code{"balance"} balances the balancing columns between the groups.
@@ -236,18 +289,16 @@
 #'
 #'  N.B. If \code{`unique_new_group_cols_only`} is \code{`TRUE`},
 #'  we can end up with fewer columns than specified, see \code{`max_iters`}.
-#'  E.g. when using balancing, the max. possible number of unique
-#'  collapsings is often \code{1}. TODO DODODODODDODODODODO!!!!!
-#' @param unique_new_group_cols_only Check if fold columns are identical and
+#' @param unique_new_group_cols_only Check if new group columns are identical and
 #'  keep only unique columns.
 #'
-#'  As the number of column comparisons can be time consuming,
+#'  As the number of column comparisons can be quite time consuming,
 #'  we can run this part in parallel. See \code{`parallel`}.
 #'
 #'  N.B. We can end up with fewer columns than specified in
 #'  \code{`num_new_group_cols`}, see \code{`max_iters`}.
 #'
-#'  N.B. Only used when \code{`num_new_group_cols` > 1} or (TODODODO: \code{`data`} has existing group columns.)
+#'  N.B. Only used when \code{`num_new_group_cols` > 1}.
 #' @param max_iters Maximum number of attempts at reaching
 #'  \code{`num_new_group_cols`} \emph{unique} new group columns.
 #'
@@ -255,6 +306,7 @@
 #'  Hence, we repeatedly create the missing columns and remove those that are not unique.
 #'  This is done until we have \code{`num_new_group_cols`} unique group columns
 #'  or we have attempted \code{`max_iters`} times.
+#'
 #'  In some cases, it is not possible to create \code{`num_new_group_cols`}
 #'  unique combinations of the dataset.
 #'  \code{`max_iters`} specifies when to stop trying.
@@ -277,20 +329,21 @@
 #'
 #'  \code{`combine_method`} chooses whether to use standardization or MinMax scaling in step 1.
 #' @param weights Named vector with weights of balancing importance for each of
-#'  the balancing dimensions. Can be used to favor balancing of
-#'  either balancing dimension (\emph{size}, \emph{numeric}, \emph{categorical},
-#'  or \emph{ID}).
+#'  the balancing dimensions. Besides the columns in \code{`cat_cols`}, \code{`num_cols`}, and \code{`ids_cols`},
+#'  the \emph{size} balancing weight can be given as \code{"size"}.
 #'
-#'  E.g. \code{c("size" = 1, "cat" = 1, "num" = 4, "id" = 2)} (the weights
-#'  are automatically scaled to sum to \code{1}).
+#'  The weights are automatically scaled to sum to \code{1}.
+#'
+#'  Dimensions that are not given a weight is automatically given the weight \code{1}.
+#'
+#'  E.g. \code{c("size" = 1, "cat" = 1, "num" = 4, "id" = 2)}.
 #' @param parallel Whether to parallelize the group column comparisons,
 #'  when \code{`unique_new_group_cols_only`} is \code{TRUE}.
 #'
 #'  Requires a registered parallel backend.
 #'  Like \code{doParallel::registerDoParallel}.
-#'
 #' @family grouping functions
-#' @return \code{data.frame} with grouping factor for subsetting in cross-validation.
+#' @return \code{data.frame} with one or more new grouping factors.
 #' @seealso
 #'  \code{\link[groupdata2:fold]{fold()}} for creating balanced folds/groups.
 #'
@@ -309,6 +362,11 @@
 #' )
 #' df <- df %>% arrange(participant)
 #' df$session <- rep(c("1", "2", "3"), 6)
+#'
+#'
+#'
+#'
+#'
 collapse_groups <- function(
   data,
   n,
@@ -319,6 +377,7 @@ collapse_groups <- function(
   id_cols = NULL,
   balance_size = TRUE,
   auto_tune = FALSE,
+  weights = NULL,
   method = "balance",
   group_aggregation_fn = mean, # TODO How should this affect autotuning?
   num_new_group_cols = 1,
@@ -326,7 +385,6 @@ collapse_groups <- function(
   max_iters = 5,
   extreme_pairing_levels = 1,
   combine_method = "avg_standardized",
-  weights = NULL,
   col_name = ".coll_groups",
   parallel = FALSE) {
 
@@ -829,6 +887,7 @@ create_combined_cat_summary_ <- function(data, group_cols, cat_col, cat_levels){
   if (is.list(cat_levels)){
     cat_levels <- cat_levels[[cat_col]]
   }
+
   cat_summary <- NULL
   if (!is.null(cat_col)){
     cat_summary <- data %>%
@@ -868,11 +927,17 @@ create_combined_cat_summary_ <- function(data, group_cols, cat_col, cat_levels){
     ) %>%
       dplyr::select(dplyr::one_of(group_cols, cat_col))
 
-    if (all(cat_summary[[cat_col]] == 0)){
-      stop(paste0(
-        "The `cat_levels` '",
-        names(cat_levels),
-        ", was not found in any of the groups."
+    if (sd(cat_summary[[cat_col]]) == 0){
+      warning(simpleWarning(
+        paste0(
+          "Combining the standardized level counts",
+          " for the `cat_cols` column '",
+          cat_col,
+          "' led to a zero-variance vector. ",
+          "Consider not balancing this column or change the included `cat_levels`."
+        ),
+        call = if (p <- sys.parent(4 + 1))
+          sys.call(p)
       ))
     }
   }
@@ -1140,7 +1205,7 @@ check_collapse_groups_ <- function(
         x = data[[cat_col]],
         any.missing = FALSE,
         min.levels = 2,
-        .var.name = paste0("data[[", cat_col, "]]"),
+        .var.name = paste0("data[['", cat_col, "']]"),
         add = assert_collection
       )
     }
@@ -1159,7 +1224,7 @@ check_collapse_groups_ <- function(
         x = data[[num_col]],
         any.missing = FALSE,
         finite = TRUE,
-        .var.name = paste0("data[[", num_col, "]]"),
+        .var.name = paste0("data[['", num_col, "']]"),
         add = assert_collection
       )
     }
@@ -1169,7 +1234,7 @@ check_collapse_groups_ <- function(
       checkmate::assert_factor(
         x = data[[id_col]],
         any.missing = FALSE,
-        .var.name = paste0("data[[", id_col, "]]"),
+        .var.name = paste0("data[['", id_col, "']]"),
         add = assert_collection
       )
     }

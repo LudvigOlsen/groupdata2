@@ -31,17 +31,18 @@ test_that("numerical balancing works with collapse_groups()", {
     c(37.5, 67.33333, 63.5, 48, 56, 76.66667, 61.5, 48.33333),
     tolerance = 1e-4)
 
+  xpectr::set_test_seed(42)
   df_collapsed <-
     collapse_groups(
       dplyr::ungroup(df_folded),
       n = 4,
       group_cols = ".folds",
-      num_col = "age",
-      num_method = "balance",
+      num_cols = "age",
       group_aggregation_fn = mean
     )
 
   post_mean_age <- df_collapsed %>%
+    dplyr::group_by(.coll_groups) %>%
     dplyr::summarise(mean_age = mean(age))
 
 
@@ -53,20 +54,23 @@ test_that("numerical balancing works with collapse_groups()", {
     structure(1:4, .Label = c("1", "2", "3", "4"), class = "factor"))
   expect_equal(
     post_mean_age[["mean_age"]],
-    c(57.66667, 61, 58.75, 54.4),
+    c(53.6, 54.2, 61, 62.8),
     tolerance = 1e-4)
 
+  xpectr::set_test_seed(42)
   df_collapsed <-
     collapse_groups(
       dplyr::ungroup(df_folded),
       n = 4,
       group_cols = ".folds",
-      num_col = "age",
-      num_method = "descending",
+      num_cols = "age",
+      balance_size = FALSE,
+      method = "descending",
       group_aggregation_fn = mean
     )
 
   post_mean_age <- df_collapsed %>%
+    dplyr::group_by(.coll_groups) %>%
     dplyr::summarise(mean_age = mean(age))
 
   ## Testing 'post_mean_age'                                                ####

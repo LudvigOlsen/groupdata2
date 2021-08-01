@@ -33,6 +33,7 @@
 #'
 #'  \strong{Tip}: Check the balances of the new groups with
 #'  \code{\link[groupdata2:summarize_balances]{summarize_balances()}}.
+#' @details See details in \code{\link[groupdata2:collapse_groups]{collapse_groups()}}.
 #' @inheritParams collapse_groups
 #' @param n Number of new groups.
 #' @param method \code{"balance"}, \code{"ascending"}, or \code{"descending"}.
