@@ -769,7 +769,7 @@ test_that("group sizes works with group_factor with method every", {
     counts$freq
   }
 
-  expect_equal(group_counts(v, 2), c(28, 29))
+  expect_equal(group_counts(v, 2), c(29, 28))
   expect_equal(group_counts(v, 3), c(19, 19, 19))
   expect_equal(group_counts(v, 4), c(15,14,14,14))
   expect_equal(group_counts(v, 5), c(12, 12, 11, 11, 11))
