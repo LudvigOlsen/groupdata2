@@ -271,7 +271,7 @@ test_that("testing summarize_group_cols()", {
   # Testing side effects
   # Assigning side effects
   side_effects_18304 <- xpectr::capture_side_effects(summarize_group_cols(data = df, group_cols = "grp_5", long = TRUE), reset_seed = TRUE)
-  expect_equal(
+  expect_match(
     xpectr::strip(side_effects_18304[['error']], lowercase = TRUE),
     xpectr::strip("must include the elements {grp_5}.", lowercase = TRUE),
     fixed = TRUE)
