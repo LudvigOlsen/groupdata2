@@ -144,9 +144,8 @@ test_that("differs_from_previous() find the right values and indices", {
     fixed = TRUE)
 
   expect_error(
-    xpectr::strip_msg(differs_from_previous(df, col = "v2", threshold = 10, direction = "greater")),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'direction': Must be a su",
-                         "bset of set {both,positive,negative}.")),
+    xpectr::strip_msg(differs_from_previous(df, col = "v2", threshold = 10, direction = "greater"), lowercase = TRUE),
+    xpectr::strip("must be a subset of set {both,positive,negative}.", lowercase = TRUE),
     fixed = TRUE)
 
   expect_error(differs_from_previous(df, col = "v2", threshold = c(-10, 10), direction = "negative"),
@@ -512,9 +511,8 @@ test_that("fuzz testing input checks for differs_from_previous()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   expect_error(
-    xpectr::strip_msg(differs_from_previous(data = df, col = "n", threshold = NULL, direction = "hellomama", return_index = FALSE, include_first = TRUE, handle_na = "ignore", factor_conversion_warning = TRUE)),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'direction': Must be a su",
-                         "bset of set {both,positive,negative}.")),
+    xpectr::strip_msg(differs_from_previous(data = df, col = "n", threshold = NULL, direction = "hellomama", return_index = FALSE, include_first = TRUE, handle_na = "ignore", factor_conversion_warning = TRUE), lowercase = TRUE),
+    xpectr::strip("must be a subset of set {both,positive,negative}.", lowercase = TRUE),
     fixed = TRUE)
 
   # Testing differs_from_previous(data = df, col = "n", th...

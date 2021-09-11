@@ -46,19 +46,16 @@ test_that("errors and warnings are correct with fold()", {
   # methods
 
   expect_error(
-    xpectr::strip_msg(fold(df, 5, method = "l_sizes")),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'method': Must be a subset",
-                         " of set {n_dist,n_fill,n_last,n_rand,greedy,staircase}.")),
+    xpectr::strip_msg(fold(df, 5, method = "l_sizes"), lowercase = TRUE),
+    xpectr::strip("must be a subset of set {n_dist,n_fill,n_last,n_rand,greedy,staircase}.", lowercase = TRUE),
     fixed = TRUE)
   expect_error(
-    xpectr::strip_msg(fold(df, 5, method = "l_starts")),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'method': Must be a subset",
-                         " of set {n_dist,n_fill,n_last,n_rand,greedy,staircase}.")),
+    xpectr::strip_msg(fold(df, 5, method = "l_starts"), lowercase = TRUE),
+    xpectr::strip("must be a subset of set {n_dist,n_fill,n_last,n_rand,greedy,staircase}.", lowercase = TRUE),
     fixed = TRUE)
   expect_error(
-    xpectr::strip_msg(fold(df, 5, method = "primes")),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'method': Must be a subset",
-                         " of set {n_dist,n_fill,n_last,n_rand,greedy,staircase}.")),
+    xpectr::strip_msg(fold(df, 5, method = "primes"), lowercase = TRUE),
+    xpectr::strip("must be a subset of set {n_dist,n_fill,n_last,n_rand,greedy,staircase}.", lowercase = TRUE),
     fixed = TRUE)
 
   # k
@@ -79,9 +76,8 @@ test_that("errors and warnings are correct with fold()", {
   # handle_existing_fold_cols
 
   expect_error(
-    xpectr::strip_msg(fold(df, k = 5, handle_existing_fold_cols = "naa")),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'handle_existing_fold_cols",
-                         "': Must be a subset of set {keep_warn,keep,remove}.")),
+    xpectr::strip_msg(fold(df, k = 5, handle_existing_fold_cols = "naa"), lowercase = TRUE),
+    xpectr::strip("must be a subset of set {keep_warn,keep,remove}.", lowercase = TRUE),
     fixed = TRUE)
   expect_error(
     xpectr::strip_msg(fold(df, k = 5, handle_existing_fold_cols = NULL)),
@@ -1299,9 +1295,8 @@ test_that("arg check fuzz tests for fold()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   expect_error(
-    xpectr::strip_msg(fold_2(data = df, k = 3, cat_col = "diagnosis", num_col = NULL, id_col = "participant", method = "n_dist", id_aggregation_fn = sum, extreme_pairing_levels = 1, num_fold_cols = 1, unique_fold_cols_only = TRUE, max_iters = 5, handle_existing_fold_cols = "hej", parallel = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'handle_existing_fold_col",
-                         "s': Must be a subset of set {keep_warn,keep,remove}.")),
+    xpectr::strip_msg(fold_2(data = df, k = 3, cat_col = "diagnosis", num_col = NULL, id_col = "participant", method = "n_dist", id_aggregation_fn = sum, extreme_pairing_levels = 1, num_fold_cols = 1, unique_fold_cols_only = TRUE, max_iters = 5, handle_existing_fold_cols = "hej", parallel = FALSE), lowercase = TRUE),
+    xpectr::strip("must be a subset of set {keep_warn,keep,remove}.", lowercase = TRUE),
     fixed = TRUE)
 
   # Testing fold_2(data = df, k = 3, cat_col = "diagnosis"...
@@ -1751,9 +1746,8 @@ test_that("arg check fuzz tests for fold()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   expect_error(
-    xpectr::strip_msg(fold_2(data = df, k = 3, cat_col = "diagnosis", num_col = NULL, id_col = "participant", method = "hej", id_aggregation_fn = sum, extreme_pairing_levels = 1, num_fold_cols = 1, unique_fold_cols_only = TRUE, max_iters = 5, handle_existing_fold_cols = "keep_warn", parallel = FALSE)),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'method': Must be a subse",
-                         "t of set {n_dist,n_fill,n_last,n_rand,greedy,staircase}.")),
+    xpectr::strip_msg(fold_2(data = df, k = 3, cat_col = "diagnosis", num_col = NULL, id_col = "participant", method = "hej", id_aggregation_fn = sum, extreme_pairing_levels = 1, num_fold_cols = 1, unique_fold_cols_only = TRUE, max_iters = 5, handle_existing_fold_cols = "keep_warn", parallel = FALSE), lowercase = TRUE),
+    xpectr::strip("must be a subset of set {n_dist,n_fill,n_last,n_rand,greedy,staircase}.", lowercase = TRUE),
     fixed = TRUE)
 
   # Testing fold_2(data = df, k = 3, cat_col = "diagnosis"...
