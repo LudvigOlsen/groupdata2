@@ -5,12 +5,13 @@
 new groups by size and by numeric and categorical columns. The more of these you balance at a time, the less balanced each will tend to be. Compare settings by summarizing the balances with `summarize_balances()` afterwards.
 
 TODODODODODODODODODODODO!!!!
-* Adds `collapse_groups_by_size()`, `collapse_groups_by_numeric()`, `collapse_groups_by_levels()`, and `collapse_groups_by_ids()`. These 
-are wrappers of `collapse_groups()` but also provide additional features for those specific cases. 
+* Adds `collapse_groups_by_size()`, `collapse_groups_by_numeric()`, `collapse_groups_by_levels()`, and `collapse_groups_by_ids()`. These are wrappers of `collapse_groups()` but also provide additional features for those specific cases. 
 
 * Adds `summarize_balances()` for inspecting the balance of numeric, categorical, and ID columns in and between groups.
 
 * Adds `"every"` method to grouping functions. Groups every `n` data points together.
+
+* Prepares package's tests for `checkmate 2.1.0`.
 
 # groupdata2 1.5.0
 

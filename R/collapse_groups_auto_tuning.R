@@ -231,7 +231,7 @@ combine_and_fold_combination_ <- function(
       num_col = "combined",
       extreme_pairing_levels = extreme_pairing_levels,
       num_fold_cols = num_new_group_cols,
-      unique_fold_cols_only =  unique_new_group_cols_only,
+      unique_fold_cols_only = unique_new_group_cols_only,
       max_iters = max_iters,
       parallel = parallel
     ) %>%

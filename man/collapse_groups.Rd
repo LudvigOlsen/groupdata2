@@ -37,7 +37,7 @@ with one \code{`n`} per new group column. This allows trying multiple \code{`n`}
 settings at a time. Note that the generated group columns are not guaranteed
 to be in the order of \code{`n`}.}
 
-\item{group_cols}{Name(s) of factor(s) in \code{`data`} for identifying the \emph{existing} groups
+\item{group_cols}{Names of factors in \code{`data`} for identifying the \emph{existing} groups
 that should be collapsed.
 
 Multiple names are treated as in \code{\link[dplyr:group_by]{dplyr::group_by()}}
@@ -46,38 +46,43 @@ considered a unique group to be collapsed.
 Parent groups are not considered during collapsing, why leaf groups from different
 parent groups can be collapsed together.
 
-N.B. Do not confuse these group columns with potential columns that \code{`data`} is grouped by.
+\strong{Note}: Do not confuse these group columns with potential columns that \code{`data`} is grouped by.
 \code{`group_cols`} identifies the groups to be collapsed. When \code{`data`} is
 grouped with \code{\link[dplyr:group_by]{dplyr::group_by()}}, the function is
 applied separately to each of those subsets.}
 
-\item{cat_cols}{Name(s) of categorical column(s) to balance the average frequency
+\item{cat_cols}{Names of categorical columns to balance the average frequency
 of one or more levels of.}
 
 \item{cat_levels}{Names of the levels in the \code{`cat_cols`} columns to balance the average frequencies
-of. Either a \code{vector} with level names, a named \code{numeric vector} with weights, or a named
-\code{list} with \code{vector}s for each column name in \code{`cat_cols`}. When \code{`NULL`},
-all levels are balanced.
+of. When \code{`NULL`} (default), all levels are balanced.
+Can be weights indicating the balancing importance of each level (within each column).
 
-For each of the columns in \code{`cat_cols`}, we either provide the level names or
-weights for each of the levels, named by the level names.
+The weights are automatically scaled to sum to \code{1}.
 
-E.g. \code{c("dog", "pidgeon", "mouse")} or \code{c("dog" = 5, "pidgeon" = 1, "mouse" = 3)} (the weights
-are automatically scaled to sum to \code{1}).
+Can be \code{".minority"} or \code{".majority"}, in which case the minority/majority level
+are found and used.
 
-When \code{`cat_cols`} has multiple column names, a named \code{list} with a \code{vector}
-for each column, named by the column name. When not providing a \code{vector} for a \code{`cat_cols`}
+\subsection{When \code{`cat_cols`} has single column name:}{
+
+Either a \code{vector} with level names or a named \code{numeric vector} with weights:
+
+E.g. \code{c("dog", "pidgeon", "mouse")} or \code{c("dog" = 5, "pidgeon" = 1, "mouse" = 3)}
+}
+
+\subsection{When \code{`cat_cols`} has multiple column names:}{
+
+A named \code{list} with \code{vector}s for each column name in \code{`cat_cols`}.
+When not providing a \code{vector} for a \code{`cat_cols`}
 column, all levels are balanced in that column.
 
 E.g. \code{list("col1" = c("dog" = 5, "pidgeon" = 1, "mouse" = 3),
  "col2" = c("hydrated", "dehydrated"))}.
+}}
 
-Can be \code{".minority"} or \code{".majority"}, in which case the minority/majority level
-are found and used.}
+\item{num_cols}{Names of numerical columns to balance between groups.}
 
-\item{num_cols}{Name(s) of numerical column(s) to balance between groups.}
-
-\item{id_cols}{Name(s) of factor column(s) with IDs to balance the counts of between groups.}
+\item{id_cols}{Names of factor columns with IDs to balance the counts of between groups.}
 
 \item{balance_size}{Whether to balance the size of the collapsed groups. (logical)}
 
@@ -89,47 +94,52 @@ This tends to create much more balanced collapsed group columns.
 
 Can be slow, why we recommend enabling parallelization (see \code{`parallel`}).}
 
-\item{weights}{Named vector with weights of balancing importance for each of
-the balancing dimensions. Besides the columns in \code{`cat_cols`}, \code{`num_cols`}, and \code{`ids_cols`},
+\item{weights}{Named \code{vector} with balancing importance weights for each of
+the balancing columns. Besides the columns in \code{`cat_cols`}, \code{`num_cols`}, and \code{`id_cols`},
 the \emph{size} balancing weight can be given as \code{"size"}.
 
 The weights are automatically scaled to sum to \code{1}.
 
-Dimensions that are not given a weight is automatically given the weight \code{1}.
+Dimensions that are \emph{not} given a weight is automatically given the weight \code{1}.
 
-E.g. \code{c("size" = 1, "cat" = 1, "num" = 4, "id" = 2)}.}
+E.g. \code{c("size" = 1, "cat" = 1, "num1" = 4, "num2" = 7, "id" = 2)}.}
 
-\item{method}{\code{"balance"}, \code{"ascending"}, or \code{"descending"}.
+\item{method}{\code{"balance"}, \code{"ascending"}, or \code{"descending"}:
+
+After calculating a \emph{combined balancing column} from each of the balancing columns (see \code{Details >> Balancing columns}):
 \itemize{
-\item \code{"balance"} balances the balancing columns between the groups.
+\item \code{"balance"} balances the combined balancing column between the groups.
 \item \code{"ascending"} orders the combined balancing column and groups from the lowest to highest value.
 \item \code{"descending"} orders the combined balancing column and groups from the highest to lowest value.
 }}
 
-\item{group_aggregation_fn}{Function for aggregating values in the \code{`num_cols`}
-for each group in \code{`group_cols`} before balancing the \code{`num_cols`}.
+\item{group_aggregation_fn}{Function for aggregating values in the \code{`num_cols`} columns
+for each group in \code{`group_cols`}.
 
-N.B. Only used when \code{`num_cols`} is specified.}
+Default is \code{mean()}, where the average value(s) are balanced across the new groups.
+
+When using \code{sum()}, the groups will have similar sums across the new groups.
+
+\strong{N.B.} Only used when \code{`num_cols`} is specified.}
 
 \item{num_new_group_cols}{Number of group columns to create.
 
-If \code{`num_new_group_cols` > 1}, columns will be named
+When \code{`num_new_group_cols` > 1}, columns are named
 with a combination of \code{`col_name`} and \code{"_1"}, \code{"_2"}, etc.
-E.g. \eqn{".coll_groups_1"}, \eqn{".coll_groups_2"}, etc.
+E.g. \eqn{".coll_groups_1"}, \eqn{".coll_groups_2"}, ...
 
-N.B. If \code{`unique_new_group_cols_only`} is \code{`TRUE`},
-we can end up with fewer columns than specified, see \code{`max_iters`}.}
+\strong{N.B.} When \code{`unique_new_group_cols_only`} is \code{`TRUE`},
+we may end up with fewer columns than specified, see \code{`max_iters`}.}
 
-\item{unique_new_group_cols_only}{Check if new group columns are identical and
-keep only unique columns.
+\item{unique_new_group_cols_only}{Whether to only return unique new group columns.
 
 As the number of column comparisons can be quite time consuming,
-we can run this part in parallel. See \code{`parallel`}.
+we recommend enabling parallelization. See \code{`parallel`}.
 
-N.B. We can end up with fewer columns than specified in
+\strong{N.B.} We can end up with fewer columns than specified in
 \code{`num_new_group_cols`}, see \code{`max_iters`}.
 
-N.B. Only used when \code{`num_new_group_cols` > 1}.}
+\strong{N.B.} Only used when \code{`num_new_group_cols` > 1}.}
 
 \item{max_iters}{Maximum number of attempts at reaching
 \code{`num_new_group_cols`} \emph{unique} new group columns.
@@ -144,7 +154,7 @@ unique combinations of the dataset.
 \code{`max_iters`} specifies when to stop trying.
 Note that we can end up with fewer columns than specified in \code{`num_new_group_cols`}.
 
-N.B. Only used when \code{`num_new_group_cols` > 1}.}
+\strong{N.B.} Only used when \code{`num_new_group_cols` > 1}.}
 
 \item{extreme_pairing_levels}{How many levels of extreme pairing to do
 when balancing the groups by the combined balancing column (see \code{Details}).
@@ -153,28 +163,36 @@ when balancing the groups by the combined balancing column (see \code{Details}).
 second smallest, second largest, etc. If \code{extreme_pairing_levels > 1},
 this is done "recursively" on the extreme pairs.
 
-N.B. Larger values work best with large datasets. If set too high,
+\strong{N.B.} Larger values work best with large datasets. If set too high,
 the result might not be stochastic. Always check if an increase
 actually makes the groups more balanced.}
 
 \item{combine_method}{Method to combine the balancing columns by.
 One of \code{"avg_standardized"} or \code{"avg_min_max_scaled"}.
 
-For each balancing dimension (\emph{size}, \emph{numeric}, \emph{categorical},
-and \emph{ID}), we calculate a \emph{balancing column}, which indicates the
-"size" of each group in that dimension. We then combine these columns in two steps:
+For each balancing column (all columns in \emph{\code{num_cols}}, \emph{\code{cat_cols}},
+and \emph{\code{id_cols}}, plus \emph{size}), we calculate a normalized, numeric group summary column, which indicates the
+"size" of each group in that dimension. These are then combined to a single
+\emph{combined balancing column}.
+
+The three steps are:
 \enumerate{
-\item We normalize them separately with standardization (\code{"avg_standardized"}; Default) or MinMax scaling
+\item Calculate a numeric representation of the balance for each column.
+E.g. the number of unique levels within each group of an ID column
+(see \code{Details > Balancing columns} for more on this).
+\item Normalize each column separately with standardization (\code{"avg_standardized"}; Default) or MinMax scaling
 to the [0, 1] range (\code{"avg_min_max_scaled"}).
-\item We average them rowwise to get a single column with one value per group. The averaging
+\item Average the columns \emph{rowwise} to get a single column with one value per group. The averaging
 is weighted by \code{`weights`}, which is useful when one of the dimensions is
 more important to get a good balance of.
 }
 
-\code{`combine_method`} chooses whether to use standardization or MinMax scaling in step 1.}
+\code{`combine_method`} chooses whether to use standardization or MinMax scaling in step 2.}
 
 \item{parallel}{Whether to parallelize the group column comparisons,
-when \code{`unique_new_group_cols_only`} is \code{TRUE}.
+when \code{`unique_new_group_cols_only`} is \code{`TRUE`}.
+
+Especially highly recommended when \code{`auto_tune`} is enabled.
 
 Requires a registered parallel backend.
 Like \code{doParallel::registerDoParallel}.}
@@ -347,7 +365,7 @@ These pairs (of pairs) get a new set of group identifiers, and the process is re
 and these final identifiers are transferred to the original rows.
 }
 
-N.B. When doing extreme pairing of an unequal number of rows,
+\strong{N.B.} When doing extreme pairing of an unequal number of rows,
 the row with the smallest value is placed in a group by itself, and the order is instead:
 smallest, \emph{second smallest, largest, third smallest, second largest}, etc.
 

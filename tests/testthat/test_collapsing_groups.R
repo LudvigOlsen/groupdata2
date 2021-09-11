@@ -1,6 +1,9 @@
 library(groupdata2)
 context("collapse_groups()")
 
+# TODO Test .minority/.majority on its own and within list
+
+
 test_that("numerical balancing works with collapse_groups()", {
 
   # Create data frame

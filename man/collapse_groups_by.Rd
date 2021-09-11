@@ -62,7 +62,7 @@ the function is applied group-wise.}
 
 \item{n}{Number of new groups.}
 
-\item{group_cols}{Name(s) of factor(s) in \code{`data`} for identifying the \emph{existing} groups
+\item{group_cols}{Names of factors in \code{`data`} for identifying the \emph{existing} groups
 that should be collapsed.
 
 Multiple names are treated as in \code{\link[dplyr:group_by]{dplyr::group_by()}}
@@ -71,7 +71,7 @@ considered a unique group to be collapsed.
 Parent groups are not considered during collapsing, why leaf groups from different
 parent groups can be collapsed together.
 
-N.B. Do not confuse these group columns with potential columns that \code{`data`} is grouped by.
+\strong{Note}: Do not confuse these group columns with potential columns that \code{`data`} is grouped by.
 \code{`group_cols`} identifies the groups to be collapsed. When \code{`data`} is
 grouped with \code{\link[dplyr:group_by]{dplyr::group_by()}}, the function is
 applied separately to each of those subsets.}
@@ -87,8 +87,8 @@ Can be slow, why we recommend enabling parallelization (see \code{`parallel`}).}
 \item{method}{\code{"balance"}, \code{"ascending"}, or \code{"descending"}.
 \itemize{
 \item \code{"balance"} balances the attribute between the groups.
-\item \code{"ascending"} orders the attribute and groups from the lowest to highest value.
-\item \code{"descending"} orders the attribute and groups from the highest to lowest value.
+\item \code{"ascending"} orders by the attribute and groups from the lowest to highest value.
+\item \code{"descending"} orders by the attribute and groups from the highest to lowest value.
 }}
 
 \item{extreme_pairing_levels}{How many levels of extreme pairing to do
@@ -98,44 +98,53 @@ when balancing the groups by the combined balancing column (see \code{Details}).
 second smallest, second largest, etc. If \code{extreme_pairing_levels > 1},
 this is done "recursively" on the extreme pairs.
 
-N.B. Larger values work best with large datasets. If set too high,
+\strong{N.B.} Larger values work best with large datasets. If set too high,
 the result might not be stochastic. Always check if an increase
 actually makes the groups more balanced.}
 
-\item{num_cols}{Name(s) of numerical column(s) to balance between groups.}
+\item{num_cols}{Names of numerical columns to balance between groups.}
 
 \item{balance_size}{Whether to balance the size of the collapsed groups. (logical)}
 
-\item{group_aggregation_fn}{Function for aggregating values in the \code{`num_cols`}
-for each group in \code{`group_cols`} before balancing the \code{`num_cols`}.
+\item{group_aggregation_fn}{Function for aggregating values in the \code{`num_cols`} columns
+for each group in \code{`group_cols`}.
 
-N.B. Only used when \code{`num_cols`} is specified.}
+Default is \code{mean()}, where the average value(s) are balanced across the new groups.
 
-\item{cat_cols}{Name(s) of categorical column(s) to balance the average frequency
+When using \code{sum()}, the groups will have similar sums across the new groups.
+
+\strong{N.B.} Only used when \code{`num_cols`} is specified.}
+
+\item{cat_cols}{Names of categorical columns to balance the average frequency
 of one or more levels of.}
 
 \item{cat_levels}{Names of the levels in the \code{`cat_cols`} columns to balance the average frequencies
-of. Either a \code{vector} with level names, a named \code{numeric vector} with weights, or a named
-\code{list} with \code{vector}s for each column name in \code{`cat_cols`}. When \code{`NULL`},
-all levels are balanced.
+of. When \code{`NULL`} (default), all levels are balanced.
+Can be weights indicating the balancing importance of each level (within each column).
 
-For each of the columns in \code{`cat_cols`}, we either provide the level names or
-weights for each of the levels, named by the level names.
+The weights are automatically scaled to sum to \code{1}.
 
-E.g. \code{c("dog", "pidgeon", "mouse")} or \code{c("dog" = 5, "pidgeon" = 1, "mouse" = 3)} (the weights
-are automatically scaled to sum to \code{1}).
+Can be \code{".minority"} or \code{".majority"}, in which case the minority/majority level
+are found and used.
 
-When \code{`cat_cols`} has multiple column names, a named \code{list} with a \code{vector}
-for each column, named by the column name. When not providing a \code{vector} for a \code{`cat_cols`}
+\subsection{When \code{`cat_cols`} has single column name:}{
+
+Either a \code{vector} with level names or a named \code{numeric vector} with weights:
+
+E.g. \code{c("dog", "pidgeon", "mouse")} or \code{c("dog" = 5, "pidgeon" = 1, "mouse" = 3)}
+}
+
+\subsection{When \code{`cat_cols`} has multiple column names:}{
+
+A named \code{list} with \code{vector}s for each column name in \code{`cat_cols`}.
+When not providing a \code{vector} for a \code{`cat_cols`}
 column, all levels are balanced in that column.
 
 E.g. \code{list("col1" = c("dog" = 5, "pidgeon" = 1, "mouse" = 3),
  "col2" = c("hydrated", "dehydrated"))}.
+}}
 
-Can be \code{".minority"} or \code{".majority"}, in which case the minority/majority level
-are found and used.}
-
-\item{id_cols}{Name(s) of factor column(s) with IDs to balance the counts of between groups.}
+\item{id_cols}{Names of factor columns with IDs to balance the counts of between groups.}
 }
 \value{
 \code{`data`} with a new grouping factor column.

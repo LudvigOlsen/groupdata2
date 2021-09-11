@@ -39,8 +39,8 @@
 #' @param method \code{"balance"}, \code{"ascending"}, or \code{"descending"}.
 #'
 #'  * \code{"balance"} balances the attribute between the groups.
-#'  * \code{"ascending"} orders the attribute and groups from the lowest to highest value.
-#'  * \code{"descending"} orders the attribute and groups from the highest to lowest value.
+#'  * \code{"ascending"} orders by the attribute and groups from the lowest to highest value.
+#'  * \code{"descending"} orders by the attribute and groups from the highest to lowest value.
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
 #' @return \code{`data`} with a new grouping factor column.
 #' @family grouping functions
