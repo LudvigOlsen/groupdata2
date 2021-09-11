@@ -9,6 +9,7 @@
 
 # TODO Allow group_aggregation_fn to be a list of functions to combine results
 # of, e.g. to balance both mean and sum - e.g. with a weight as well?
+# Also - a list with different functions per column in num_cols?
 
 # TODO cat_levels: provide .majority/.minority in the list?
 # TODO cat_levels: What happens if a column is not in the list? (should use all for that column)
@@ -533,15 +534,18 @@ prepare_collapse_groups_run_ <- function(
   if (isTRUE(balance_size)){
     size_col <- "size"
   }
+
   # Add missing weights
   all_balance_cols <- c(cat_cols, num_cols, id_cols, size_col)
-  if (length(weights) < length(all_balance_cols)){
+  if (is.null(weights) || length(weights) < length(all_balance_cols)){
     to_add <- setdiff(all_balance_cols, names(weights))
     new_weights <- rep(1, times = length(to_add)) %>%
       setNames(to_add)
     weights <- c(weights, new_weights)
   }
-  weights <- weights[order(names(weights))]
+  if (length(weights) > 0){
+    weights <- weights[order(names(weights))]
+  }
 
   list(
     "data" = data,
@@ -630,7 +634,7 @@ run_collapse_groups_ <- function(
       fold(
         k = n,
         num_fold_cols = num_new_group_cols,
-        unique_fold_cols_only =  unique_new_group_cols_only,
+        unique_fold_cols_only = unique_new_group_cols_only,
         max_iters = max_iters,
         parallel = parallel
       )
@@ -803,7 +807,6 @@ run_collapse_groups_ <- function(
       ) %>%
         dplyr::select(-dplyr::one_of(tmp_old_group_var))
     }
-
 
   }
 
@@ -993,6 +996,13 @@ scale_combine_cols_ <- function(summary, weights, scale_fn, col_name){
 
 # Standardize/normalize, weight and combine summary columns
 combine_scaled_cols_ <- function(summaries, weights, group_cols, scale_fn = standardize_){
+
+  # When there are no balancing columns
+  # we can't combine them :)
+  if (ncol(summaries) - length(group_cols) == 0){
+    summaries[["combined"]] <- 1
+    return(summaries)
+  }
 
   # The column names of interest
   cols <- colnames(summaries)[colnames(summaries) %ni% group_cols]
