@@ -20,22 +20,31 @@
 #'
 #'  Collapses a set of groups into a smaller set of groups.
 #'
-#'  Balance the new groups by numerical columns,
+#'  \emph{Attempts} to balance the new groups by specified numerical columns,
 #'  categorical columns,
 #'  level counts in ID columns,
 #'  and/or the number of rows (size).
 #'
 #'  \strong{Note}: The more of these you balance at a time,
-#'  the less balanced each of them may become. While on average,
+#'  the less balanced each of them may become. While, on average,
 #'  the balancing work better than without, this is
-#'  not guaranteed on every run. Enabling \code{`auto_tune`} should yield a
+#'  \strong{not guaranteed on every run}. Enabling \code{`auto_tune`} can yield a
 #'  much better overall balance than without in most contexts.
 #'  This generates a larger set of group columns using all combinations of the
 #'  balancing columns and selects the most balanced group column(s).
 #'  This is slower and we recommend enabling parallelization (see \code{`parallel`}).
 #'
+#'  \strong{Note}: The categorical and ID balancing algorithms are \strong{not}
+#'  the same as in \code{\link[groupdata2:fold]{fold()}} and
+#'  \code{\link[groupdata2:partition]{partition()}}.
+#'
 #'  \strong{Tip}: Check the balances of the new groups with
-#'  \code{\link[groupdata2:summarize_balances]{summarize_balances()}}.
+#'  \code{\link[groupdata2:summarize_balances]{summarize_balances()}} and
+#'  \code{\link[groupdata2:ranked_balances]{ranked_balances()}}.
+#'
+#'  While this balancing algorithm will not be optimal in all cases,
+#'  it allows us to balance a \strong{large} number of columns at once. Especially
+#'  with auto-tuning enabled, this can be very useful.
 #' @details
 #'  The goal of \code{collapse_groups()} is to combine existing groups
 #'  to a lower number of groups while (optionally) balancing one or more
@@ -385,18 +394,188 @@
 #' library(groupdata2)
 #' library(dplyr)
 #'
+#' # Set seed
+#' xpectr::set_test_seed(42)
+#'
 #' # Create data frame
 #' df <- data.frame(
-#'   "participant" = factor(rep(c("1", "2", "3", "4", "5", "6"), 3)),
-#'   "age" = rep(sample(c(1:100), 6), 3),
-#'   "diagnosis" = factor(rep(c("a", "b", "a", "a", "b", "b"), 3)),
-#'   "score" = sample(c(1:100), 3 * 6)
+#'   "participant" = factor(rep(1:20, 3)),
+#'   "age" = rep(sample(c(1:100), 20), 3),
+#'   "answer" = factor(sample(c("a", "b", "c", "d"), 60, replace = T)),
+#'   "score" = sample(c(1:100), 20 * 3)
 #' )
-#' df <- df %>% arrange(participant)
-#' df$session <- rep(c("1", "2", "3"), 6)
+#' df <- df %>% dplyr::arrange(participant)
+#' df$session <- rep(c("1", "2", "3"), 20)
 #'
+#' # Sample rows to get unequal sizes per participant
+#' df <- dplyr::sample_n(df, size = 53)
 #'
+#' # Create the initial groups (to be collapsed)
+#' df <- fold(
+#'   data = df,
+#'   k = 8,
+#'   method = "n_dist",
+#'   id_col = "participant"
+#' )
 #'
+#' # Ungroup the data frame
+#' # Otherwise `collapse_groups()` would be
+#' # applied to each fold separately!
+#' df <- dplyr::ungroup(df)
+#'
+#' # NOTE: Make sure to check the examples with `auto_tune`
+#' # in the end, as this is where the magic lies
+#'
+#' # Collapse to 3 groups with size balancing
+#' # Creates new `.coll_groups` column
+#' df_coll <- collapse_groups(
+#'   data = df,
+#'   n = 3,
+#'   group_cols = ".folds",
+#'   balance_size = TRUE # enabled by default
+#' )
+#'
+#' # Check balances
+#' (coll_summary <- summarize_balances(
+#'   data = df_coll,
+#'   group_cols = ".coll_groups",
+#'   cat_cols = 'answer',
+#'   num_cols = c('score', 'age'),
+#'   id_cols = 'participant'
+#' ))
+#'
+#' # Get ranked balances
+#' # NOTE: When we only have a single new group column
+#' # we don't get ranks - but this is good to use
+#' # when comparing multiple group columns!
+#' # The scores are standard deviations across groups
+#' ranked_balances(coll_summary)
+#'
+#' # Collapse to 3 groups with size + *categorical* balancing
+#' # We create 2 new `.coll_groups_1/2` columns
+#' df_coll <- collapse_groups(
+#'   data = df,
+#'   n = 3,
+#'   group_cols = ".folds",
+#'   cat_cols = "answer",
+#'   balance_size = TRUE,
+#'   num_new_group_cols = 2
+#' )
+#'
+#' # Check balances
+#' # To simplify the output, we only find the
+#' # balance of the `answer` column
+#' (coll_summary <- summarize_balances(
+#'   data = df_coll,
+#'   group_cols = paste0(".coll_groups_", 1:2),
+#'   cat_cols = 'answer'
+#' ))
+#'
+#' # Get ranked balances
+#' # All scores are standard deviations across groups or (average) ranks
+#' # Rows are ranked by most to least balanced
+#' # (i.e. lowest average SD rank)
+#' ranked_balances(coll_summary)
+#'
+#' # Collapse to 3 groups with size + categorical + *numerical* balancing
+#' # We create 2 new `.coll_groups_1/2` columns
+#' df_coll <- collapse_groups(
+#'   data = df,
+#'   n = 3,
+#'   group_cols = ".folds",
+#'   cat_cols = "answer",
+#'   num_cols = "score",
+#'   balance_size = TRUE,
+#'   num_new_group_cols = 2
+#' )
+#'
+#' # Check balances
+#' (coll_summary <- summarize_balances(
+#'   data = df_coll,
+#'   group_cols = paste0(".coll_groups_", 1:2),
+#'   cat_cols = 'answer',
+#'   num_cols = 'score'
+#' ))
+#'
+#' # Get ranked balances
+#' # All scores are standard deviations across groups or (average) ranks
+#' ranked_balances(coll_summary)
+#'
+#' # Collapse to 3 groups with size and *ID* balancing
+#' # We create 2 new `.coll_groups_1/2` columns
+#' df_coll <- collapse_groups(
+#'   data = df,
+#'   n = 3,
+#'   group_cols = ".folds",
+#'   id_cols = "participant",
+#'   balance_size = TRUE,
+#'   num_new_group_cols = 2
+#' )
+#'
+#' # Check balances
+#' # To simplify the output, we only find the
+#' # balance of the `participant` column
+#' (coll_summary <- summarize_balances(
+#'   data = df_coll,
+#'   group_cols = paste0(".coll_groups_", 1:2),
+#'   id_cols = 'participant'
+#' ))
+#'
+#' # Get ranked balances
+#' # All scores are standard deviations across groups or (average) ranks
+#' ranked_balances(coll_summary)
+#'
+#' ###################
+#' #### Auto-tune ####
+#'
+#' # As you might have seen, the balancing does not always
+#' # perform as optimal as we might want or need
+#' # To get a better balance, we can enable `auto_tune`
+#' # which will create a larger set of collapsings
+#' # and select the most balanced new group columns
+#' # While it is not required, we recommend
+#' # enabling parallelization
+#'
+#' \dontrun{
+#' # Uncomment for parallelization
+#' # library(doParallel)
+#' # doParallel::registerDoParallel(7) # use 7 cores
+#'
+#' # Collapse to 3 groups with lots of balancing
+#' # We enable `auto_tune` to get a more balanced set of columns
+#' # We create 10 new `.coll_groups_1/2/...` columns
+#' df_coll <- collapse_groups(
+#'   data = df,
+#'   n = 3,
+#'   group_cols = ".folds",
+#'   cat_cols = "answer",
+#'   num_cols = "score",
+#'   id_cols = "participant",
+#'   balance_size = TRUE,
+#'   num_new_group_cols = 10,
+#'   auto_tune = TRUE,
+#'   parallel = FALSE # Set to TRUE for parallelization!
+#' )
+#'
+#' # Check balances
+#' # To simplify the output, we only find the
+#' # balance of the `participant` column
+#' (coll_summary <- summarize_balances(
+#'   data = df_coll,
+#'   group_cols = paste0(".coll_groups_", 1:10),
+#'   cat_cols = "answer",
+#'   num_cols = "score",
+#'   id_cols = 'participant'
+#' ))
+#'
+#' # Get ranked balances
+#' # All scores are standard deviations across groups or (average) ranks
+#' ranked_balances(coll_summary)
+#'
+#' # Now we can choose the .coll_groups_* column(s)
+#' # that we favor the balance of
+#' # and move on with our lives!
+#' }
 #'
 #'
 collapse_groups <- function(
