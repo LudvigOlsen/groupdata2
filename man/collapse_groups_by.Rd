@@ -144,7 +144,9 @@ E.g. \code{list("col1" = c("dog" = 5, "pidgeon" = 1, "mouse" = 3),
  "col2" = c("hydrated", "dehydrated"))}.
 }}
 
-\item{id_cols}{Names of factor columns with IDs to balance the counts of between groups.}
+\item{id_cols}{Names of factor columns with IDs to balance the counts of between groups.
+
+E.g. useful to get a similar number of participants in each group.}
 }
 \value{
 \code{`data`} with a new grouping factor column.

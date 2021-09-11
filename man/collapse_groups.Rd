@@ -82,7 +82,9 @@ E.g. \code{list("col1" = c("dog" = 5, "pidgeon" = 1, "mouse" = 3),
 
 \item{num_cols}{Names of numerical columns to balance between groups.}
 
-\item{id_cols}{Names of factor columns with IDs to balance the counts of between groups.}
+\item{id_cols}{Names of factor columns with IDs to balance the counts of between groups.
+
+E.g. useful to get a similar number of participants in each group.}
 
 \item{balance_size}{Whether to balance the size of the collapsed groups. (logical)}
 
@@ -224,62 +226,72 @@ This is slower and we recommend enabling parallelization (see \code{`parallel`})
 }
 \details{
 The goal of \code{collapse_groups()} is to combine existing groups
-to a lower number of groups while (optionally) balancing one or more of
-four "balancing dimensions" (\emph{size}, \emph{numeric}, \emph{categorical},
-and/or \emph{ID}). From each of these dimensions, we calculate
-a normalized, numeric \emph{"balancing column"} that when balanced
-between the groups lead to its dimension being balanced as well.
+to a lower number of groups while (optionally) balancing one or more
+\emph{numeric}, \emph{categorical} and/or \emph{ID} columns, along with the group
+\emph{size}.
 
-To balance multiple dimensions at once, we combine their balancing columns with
-with weighted averaging (see \code{`combine_method`} and \code{`weights`}).
+For each of these columns (and size), we calculate a normalized, numeric \emph{"balancing column"}
+that when balanced between the groups lead to its original column being balanced as well.
 
-Finally, we create groups where this combined balancing column is balanced using the
-numerical balancing in \code{\link[groupdata2:fold]{fold()}}.
+To balance multiple columns at once, we combine their balancing columns with
+weighted averaging (see \code{`combine_method`} and \code{`weights`}) to a single
+\emph{combined balancing column}.
+
+Finally, we create groups where this combined balancing column is balanced between the groups,
+using the numerical balancing in \code{\link[groupdata2:fold]{fold()}}.
 
 \subsection{Auto-tuning}{
 
 This strategy is not guaranteed to produce balanced groups in all contexts,
 e.g. when the balancing columns cancel out. To increase the probability of
 balanced groups, we can produce multiple group columns with all combinations
-of the balancing dimensions and select the overall most balanced group column(s).
+of the balancing columns and select the overall most balanced group column(s).
 We refer to this as auto-tuning (see \code{`auto_tune`}).
 
-We find the most balanced group column from the rankings of across-group
-standard deviations for each of the balancing dimensions, using the summaries produced by
-\code{\link[groupdata2:summarize_balances]{summarize_balances()}}. E.g. if for
-a group column the groups have the following average \emph{ages} \code{`c(16, 18, 25, 21)`},
-the standard deviation thereof (\code{3.92}) is our measure for how balanced the \emph{age}
-column is. Another group column can thus have a lower/higher standard deviation.
-We find the rankings of these standard deviations for all the balancing dimensions
-and average them (again weighted by \code{`weights`}). We select the, on average, highest ranking
-(i.e. lowest standard deviations) group column(s).
+We find the overall most balanced group column by ranking the across-group
+standard deviations for each of the balancing columns, as found with
+\code{\link[groupdata2:summarize_balances]{summarize_balances()}}.
+
+\strong{Example} of finding the overall most balanced group column(s):
+
+Given a group column with the following average \emph{age} per group: \code{`c(16, 18, 25, 21)`},
+the standard deviation hereof (\code{3.92}) is a measure of how balanced the \emph{age}
+column is. Another group column can thus have a lower/higher standard deviation
+and be considered more/less balanced.
+
+We find the rankings of these standard deviations for all the balancing columns
+and average them (again weighted by \code{`weights`}). We select the group column(s) with the,
+on average, highest rank (i.e. lowest standard deviations).
 
 }\subsection{Checking balances}{
 
 We highly recommend using
-\code{\link[groupdata2:summarize_balances]{summarize_balances()}} to
+\code{\link[groupdata2:summarize_balances]{summarize_balances()}}
+and \code{\link[groupdata2:ranked_balances]{ranked_balances()}} to
 check how balanced the created groups are on the various dimensions.
 By applying \code{\link[groupdata2:ranked_balances]{ranked_balances()}}
-to the summaries, we get a \code{data.frame} with the standard deviations
-for each balancing dimension, ordered by the average rank.
+to the output of \code{\link[groupdata2:summarize_balances]{summarize_balances()}},
+we get a \code{data.frame} with the standard deviations
+for each balancing dimension, ordered by the average rank (see \code{Examples}).
 
 }\subsection{Balancing columns}{
 
 The following describes the creation of the balancing columns
-for each of the balancing dimensions:
+for each of the supported column types:
 
 \subsection{cat_cols}{
 For each column in \code{`cat_cols`}:
 \itemize{
-\item \strong{Count each level} in each group. This creates a \code{data.frame} with
+\item \strong{Count each level} within each group. This creates a \code{data.frame} with
 one count column per level, with one row per group.
 \item \strong{Standardize} the count columns.
-\item \strong{Sum} the standardized counts rowwise to create one combined column representing
-the balance of the levels for each group.
+\item \strong{Average} the standardized counts rowwise to create one combined column representing
+the balance of the levels for each group. When \code{cat_cols} contains weights for each of the levels,
+we apply weighted averaging.
 }
 
 \strong{Example}: Consider a factor column with the levels \code{c("A", "B", "C")}.
-We count each level per group, normalize the counts and combine them with weighted averaging:
+We count each level per group, \strong{n}ormalize the counts and combine them with weighted averaging:
 
 \tabular{rrrrrrrrrr}{
 \strong{Group} \tab \strong{A} \tab
@@ -343,7 +355,7 @@ For each column in \code{`num_cols`}:
 }\subsection{Creating the groups}{
 
 Finally, we get to the group creation. There are three methods for creating groups based on the
-combined balancing column: "balance", "ascending", and "descending".
+combined balancing column: "balance" (default), "ascending", and "descending".
 
 \subsection{\code{method} is "balance"}{
 To create groups that are balanced by the combined balancing column, we use the numerical balancing
@@ -355,23 +367,23 @@ The following describes the numerical balancing in broad terms:
 \item Rows are shuffled.
 \strong{Note} that this will only affect rows with the same value in the combined balancing column.
 \item Extreme pairing 1: Rows are ordered as \emph{smallest, largest, second smallest, second largest}, etc.
-Each pair get a group identifier. (See \code{\link[rearrr:pair_extremes]{rearrr::pair_extremes()}})
-\item If \code{`extreme_pairing_levels` > 1}: These group identifiers are reordered as \emph{smallest,
-largest, second smallest, second largest}, etc., by the sum of the combined balancing column in the represented rows.
-These pairs (of pairs) get a new set of group identifiers, and the process is repeated
-\code{`extreme_pairing_levels`-2} times. Note that the group identifiers at the last level will represent
-\code{2^`extreme_pairing_levels`} rows, why you should be careful when choosing that setting.
-\item The group identifiers from the last pairing are randomly divided into the final groups,
+Each small+large pair get an \emph{extreme-group} identifier. (See \code{\link[rearrr:pair_extremes]{rearrr::pair_extremes()}})
+\item If \code{`extreme_pairing_levels` > 1}: These extreme-group identifiers are reordered as \emph{smallest,
+largest, second smallest, second largest}, etc., by the \code{sum} of the combined balancing column in the represented rows.
+These pairs (of pairs) get a new set of extreme-group identifiers, and the process is repeated
+\code{`extreme_pairing_levels`-2} times. Note that the extreme-group identifiers at the last level will represent
+\code{2^`extreme_pairing_levels`} rows, why you should be careful when choosing a larger setting.
+\item The extreme-group identifiers from the last pairing are randomly divided into the final groups
 and these final identifiers are transferred to the original rows.
 }
 
 \strong{N.B.} When doing extreme pairing of an unequal number of rows,
 the row with the smallest value is placed in a group by itself, and the order is instead:
-smallest, \emph{second smallest, largest, third smallest, second largest}, etc.
+(smallest), \emph{(second smallest, largest), (third smallest, second largest)}, etc.
 
 \strong{Example}: We order the \code{data.frame} by smallest \emph{"Num"} value,
 largest \emph{"Num"} value, second smallest, and so on.
-We could further (when \code{`extreme_pairing_levels` > 1})
+We \emph{could} further (when \code{`extreme_pairing_levels` > 1})
 find the sum of \emph{"Num"} for each pair and perform extreme pairing on the pairs.
 Finally, we group the \code{data.frame}:
 
