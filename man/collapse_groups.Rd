@@ -191,7 +191,7 @@ more important to get a good balance of.
 
 \code{`combine_method`} chooses whether to use standardization or MinMax scaling in step 2.}
 
-\item{parallel}{Whether to parallelize the group column comparisons,
+\item{parallel}{Whether to parallelize the group column comparisons
 when \code{`unique_new_group_cols_only`} is \code{`TRUE`}.
 
 Especially highly recommended when \code{`auto_tune`} is enabled.
@@ -213,7 +213,7 @@ level counts in ID columns,
 and/or the number of rows (size).
 
 \strong{Note}: The more of these you balance at a time,
-the less balanced each of them may become. While, on average,
+the less balanced each of them may become. While, \emph{on average},
 the balancing work better than without, this is
 \strong{not guaranteed on every run}. Enabling \code{`auto_tune`} can yield a
 much better overall balance than without in most contexts.
@@ -221,17 +221,17 @@ This generates a larger set of group columns using all combinations of the
 balancing columns and selects the most balanced group column(s).
 This is slower and we recommend enabling parallelization (see \code{`parallel`}).
 
-\strong{Note}: The categorical and ID balancing algorithms are \strong{not}
-the same as in \code{\link[groupdata2:fold]{fold()}} and
-\code{\link[groupdata2:partition]{partition()}}.
+While this balancing algorithm will not be \emph{optimal} in all cases,
+it allows balancing a \strong{large} number of columns at once. Especially
+with auto-tuning enabled, this can be very powerful.
 
 \strong{Tip}: Check the balances of the new groups with
 \code{\link[groupdata2:summarize_balances]{summarize_balances()}} and
 \code{\link[groupdata2:ranked_balances]{ranked_balances()}}.
 
-While this balancing algorithm will not be optimal in all cases,
-it allows us to balance a \strong{large} number of columns at once. Especially
-with auto-tuning enabled, this can be very useful.
+\strong{Note}: The categorical and ID balancing algorithms are different to those
+in \code{\link[groupdata2:fold]{fold()}} and
+\code{\link[groupdata2:partition]{partition()}}.
 }
 \details{
 The goal of \code{collapse_groups()} is to combine existing groups

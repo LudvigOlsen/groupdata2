@@ -12,10 +12,11 @@ collapse_groups_by_size(
   data,
   n,
   group_cols,
-  auto_tune = FALSE,
+  auto_tune = TRUE,
   method = "balance",
   extreme_pairing_levels = 1,
-  col_name = ".coll_groups"
+  col_name = ".coll_groups",
+  parallel = FALSE
 )
 
 collapse_groups_by_numeric(
@@ -24,11 +25,12 @@ collapse_groups_by_numeric(
   group_cols,
   num_cols,
   balance_size = FALSE,
-  auto_tune = FALSE,
+  auto_tune = TRUE,
   method = "balance",
   group_aggregation_fn = mean,
   extreme_pairing_levels = 1,
-  col_name = ".coll_groups"
+  col_name = ".coll_groups",
+  parallel = FALSE
 )
 
 collapse_groups_by_levels(
@@ -38,10 +40,11 @@ collapse_groups_by_levels(
   cat_cols,
   cat_levels = NULL,
   balance_size = FALSE,
-  auto_tune = FALSE,
+  auto_tune = TRUE,
   method = "balance",
   extreme_pairing_levels = 1,
-  col_name = ".coll_groups"
+  col_name = ".coll_groups",
+  parallel = FALSE
 )
 
 collapse_groups_by_ids(
@@ -50,10 +53,11 @@ collapse_groups_by_ids(
   group_cols,
   id_cols,
   balance_size = FALSE,
-  auto_tune = FALSE,
+  auto_tune = TRUE,
   method = "balance",
   extreme_pairing_levels = 1,
-  col_name = ".coll_groups"
+  col_name = ".coll_groups",
+  parallel = FALSE
 )
 }
 \arguments{
@@ -101,6 +105,12 @@ this is done "recursively" on the extreme pairs.
 \strong{N.B.} Larger values work best with large datasets. If set too high,
 the result might not be stochastic. Always check if an increase
 actually makes the groups more balanced.}
+
+\item{parallel}{Whether to parallelize the group column comparisons
+when \code{`auto_tune`} is enabled.
+
+Requires a registered parallel backend.
+Like \code{doParallel::registerDoParallel}.}
 
 \item{num_cols}{Names of numerical columns to balance between groups.}
 
@@ -170,14 +180,135 @@ to provide a simpler interface. To balance more than one of the attributes at a 
 and/or create multiple new unique grouping columns at once, use
 \code{\link[groupdata2:collapse_groups]{collapse_groups()}} directly.
 
+While, \emph{on average}, the balancing work better than without, this is
+\strong{not guaranteed on every run}. \code{`auto_tune`} (enabled by default) can yield
+a much better overall balance than without in most contexts. This generates a larger set
+of group columns using all combinations of the balancing columns and selects the
+most balanced group column(s). This is slower and can be speeded up by enabling
+parallelization (see \code{`parallel`}).
+
+\strong{Tip}: When speed is more important than balancing, disable \code{`auto_tune`}.
+
 \strong{Tip}: Check the balances of the new groups with
-\code{\link[groupdata2:summarize_balances]{summarize_balances()}}.
+\code{\link[groupdata2:summarize_balances]{summarize_balances()}} and
+\code{\link[groupdata2:ranked_balances]{ranked_balances()}}.
+
+\strong{Note}: The categorical and ID balancing algorithms are different to those
+in \code{\link[groupdata2:fold]{fold()}} and
+\code{\link[groupdata2:partition]{partition()}}.
 }
 \details{
 See details in \code{\link[groupdata2:collapse_groups]{collapse_groups()}}.
 }
 \examples{
 # Attach packages
+library(groupdata2)
+library(dplyr)
+
+# Set seed
+xpectr::set_test_seed(42)
+
+# Create data frame
+df <- data.frame(
+  "participant" = factor(rep(1:20, 3)),
+  "age" = rep(sample(c(1:100), 20), 3),
+  "answer" = factor(sample(c("a", "b", "c", "d"), 60, replace = T)),
+  "score" = sample(c(1:100), 20 * 3)
+)
+df <- df \%>\% dplyr::arrange(participant)
+df$session <- rep(c("1", "2", "3"), 20)
+
+# Sample rows to get unequal sizes per participant
+df <- dplyr::sample_n(df, size = 53)
+
+# Create the initial groups (to be collapsed)
+df <- fold(
+  data = df,
+  k = 8,
+  method = "n_dist",
+  id_col = "participant"
+)
+
+# Ungroup the data frame
+# Otherwise `collapse_groups*()` would be
+# applied to each fold separately!
+df <- dplyr::ungroup(df)
+
+# When `auto_tune` is enabled for larger datasets
+# we recommend enabling parallelization
+# This can be done with:
+# library(doParallel)
+# doParallel::registerDoParallel(7) # use 7 cores
+
+\dontrun{
+
+# Collapse to 3 groups with size balancing
+# Creates new `.coll_groups` column
+df_coll <- collapse_groups_by_size(
+  data = df,
+  n = 3,
+  group_cols = ".folds"
+)
+
+# Check balances
+(coll_summary <- summarize_balances(
+  data = df_coll,
+  group_cols = ".coll_groups"
+))
+
+# Get ranked balances
+# This is most useful when having created multiple
+# new group columns with `collapse_groups()`
+# The scores are standard deviations across groups
+ranked_balances(coll_summary)
+
+# Collapse to 3 groups with *categorical* balancing
+df_coll <- collapse_groups_by_levels(
+  data = df,
+  n = 3,
+  group_cols = ".folds",
+  cat_cols = "answer"
+)
+
+# Check balances
+(coll_summary <- summarize_balances(
+  data = df_coll,
+  group_cols = ".coll_groups",
+  cat_cols = 'answer'
+))
+
+# Collapse to 3 groups with *numerical* balancing
+df_coll <- collapse_groups_by_numeric(
+  data = df,
+  n = 3,
+  group_cols = ".folds",
+  num_cols = "score"
+)
+
+# Check balances
+(coll_summary <- summarize_balances(
+  data = df_coll,
+  group_cols = ".coll_groups",
+  num_cols = 'score'
+))
+
+# Collapse to 3 groups with *ID* balancing
+# This should give us a similar number of IDs per group
+df_coll <- collapse_groups_by_ids(
+  data = df,
+  n = 3,
+  group_cols = ".folds",
+  id_cols = "participant"
+)
+
+# Check balances
+(coll_summary <- summarize_balances(
+  data = df_coll,
+  group_cols =".coll_groups",
+  id_cols = 'participant'
+))
+}
+
 }
 \seealso{
 Other grouping functions: 

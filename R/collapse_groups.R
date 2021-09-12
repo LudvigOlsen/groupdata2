@@ -3,7 +3,6 @@
 #   __________________ #< d0ef3dcf6f36ff79828d86bb092f9b67 ># __________________
 #   Collapse groups                                                         ####
 
-# TODO auto-tune does not use cat_levels when ranking
 
 # TODO Consider adding fold style handling of existing .coll_group* columns?
 
@@ -11,6 +10,7 @@
 # of, e.g. to balance both mean and sum - e.g. with a weight as well?
 # Also - a list with different functions per column in num_cols?
 
+# TODO auto-tune does not use cat_levels when ranking
 # TODO cat_levels: provide .majority/.minority in the list?
 # TODO cat_levels: What happens if a column is not in the list? (should use all for that column)
 
@@ -26,7 +26,7 @@
 #'  and/or the number of rows (size).
 #'
 #'  \strong{Note}: The more of these you balance at a time,
-#'  the less balanced each of them may become. While, on average,
+#'  the less balanced each of them may become. While, \emph{on average},
 #'  the balancing work better than without, this is
 #'  \strong{not guaranteed on every run}. Enabling \code{`auto_tune`} can yield a
 #'  much better overall balance than without in most contexts.
@@ -34,17 +34,17 @@
 #'  balancing columns and selects the most balanced group column(s).
 #'  This is slower and we recommend enabling parallelization (see \code{`parallel`}).
 #'
-#'  \strong{Note}: The categorical and ID balancing algorithms are \strong{not}
-#'  the same as in \code{\link[groupdata2:fold]{fold()}} and
-#'  \code{\link[groupdata2:partition]{partition()}}.
+#'  While this balancing algorithm will not be \emph{optimal} in all cases,
+#'  it allows balancing a \strong{large} number of columns at once. Especially
+#'  with auto-tuning enabled, this can be very powerful.
 #'
 #'  \strong{Tip}: Check the balances of the new groups with
 #'  \code{\link[groupdata2:summarize_balances]{summarize_balances()}} and
 #'  \code{\link[groupdata2:ranked_balances]{ranked_balances()}}.
 #'
-#'  While this balancing algorithm will not be optimal in all cases,
-#'  it allows us to balance a \strong{large} number of columns at once. Especially
-#'  with auto-tuning enabled, this can be very useful.
+#'  \strong{Note}: The categorical and ID balancing algorithms are different to those
+#'  in \code{\link[groupdata2:fold]{fold()}} and
+#'  \code{\link[groupdata2:partition]{partition()}}.
 #' @details
 #'  The goal of \code{collapse_groups()} is to combine existing groups
 #'  to a lower number of groups while (optionally) balancing one or more
@@ -376,7 +376,7 @@
 #'  Dimensions that are \emph{not} given a weight is automatically given the weight \code{1}.
 #'
 #'  E.g. \code{c("size" = 1, "cat" = 1, "num1" = 4, "num2" = 7, "id" = 2)}.
-#' @param parallel Whether to parallelize the group column comparisons,
+#' @param parallel Whether to parallelize the group column comparisons
 #'  when \code{`unique_new_group_cols_only`} is \code{`TRUE`}.
 #'
 #'  Especially highly recommended when \code{`auto_tune`} is enabled.
@@ -767,6 +767,23 @@ prepare_collapse_groups_output_ <- function(
     invert = TRUE
   )
   data <- updated[["data"]]
+
+  # If auto-tune named a single new column with _1
+  # We remove that suffix
+  # But use some extra heuristics to ensure we don't
+  # ruin anything
+  if (num_new_group_cols == 1 &&
+      paste0(col_name, "_1") %in% colnames(data) &&
+      col_name %ni% colnames(data) &&
+      paste0(col_name, "_2") %ni% colnames(data)) {
+
+    # Remove suffix to col_name
+    data <- base_rename(
+      data,
+      before = paste0(col_name, "_1"),
+      after = col_name
+    )
+  }
 
   data
 }
