@@ -53,6 +53,9 @@ auto_tune_collapsings <- function(
   # Add names
   names(combinations) <- paste0(".atcg_", seq_len(length(combinations)))
 
+  random_comb <- setNames(".__random__.", paste0(".atcg_", length(combinations) + 1))
+  combinations <- c(combinations, random_comb)
+
   # The main combination has all the balance cols
   main_combination_name <- tail(names(combinations), n = 1)
 
@@ -66,17 +69,22 @@ auto_tune_collapsings <- function(
     length(combinations) > 30 ~ 1,
     length(combinations) > 20 ~ 2,
     length(combinations) > 10 ~ 4,
-    TRUE ~ 5
+    length(combinations) > 5 ~ 5,
+    TRUE ~ 8
   )
-  if (num_new_group_cols < 5) {
-    main_num_group_cols_to_check <- 10
-  } else if (num_new_group_cols < 20) {
-    main_num_group_cols_to_check <- num_new_group_cols * 2
-  } else if (num_new_group_cols < 50) {
-    main_num_group_cols_to_check <- ceiling(num_new_group_cols * 1.5)
-  } else{
-    main_num_group_cols_to_check <- num_new_group_cols + 15
-  }
+
+  main_num_group_cols_to_check <- dplyr::case_when(
+    num_new_group_cols < 5 ~ 10,
+    num_new_group_cols < 20 ~ num_new_group_cols * 2,
+    num_new_group_cols < 50 ~ ceiling(num_new_group_cols * 1.5),
+    TRUE ~ num_new_group_cols + 15
+  )
+
+  num_random_group_cols_to_check <- dplyr::case_when(
+    num_new_group_cols < 20 ~ 10,
+    num_new_group_cols < 50 ~ 20,
+    TRUE ~ 25
+  )
 
   # Ensure summaries are ordered by group column
   summaries <- summaries %>%
@@ -85,15 +93,27 @@ auto_tune_collapsings <- function(
   # Combine the balancing dimensions for each include combination
   # And create new group columns
   new_group_cols <- purrr::map2_dfc(.x = combinations, .y = names(combinations), .f = ~{
-    num_new_group_cols <- ifelse(.y == main_combination_name,
-                                 main_num_group_cols_to_check,
-                                 non_main_num_group_cols_to_check)
+    num_new_group_cols <- dplyr::case_when(
+      .y == main_combination_name ~ main_num_group_cols_to_check,
+      .y == '.__random__.' ~ num_random_group_cols_to_check,
+      TRUE ~ non_main_num_group_cols_to_check)
+
+    # Get balance columns
+    balance_cols <- .x
+
+    # When performing random folding
+    # we just don't provide any balance colums
+    if (length(balance_cols) == 1 &&
+        balance_cols == ".__random__."){
+      balance_cols <- character(0)
+    }
+
     combine_and_fold_combination_(
       data = data,
       summaries = summaries,
       n = n,
       tmp_old_group_var = tmp_old_group_var,
-      balance_cols = .x,
+      balance_cols = balance_cols,
       col_name = .y,
       weights = weights[names(weights) %in% .x],
       scale_fn = scale_fn,
