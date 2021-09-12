@@ -185,8 +185,7 @@ collapse_groups_by_size <- function(data,
                                     n,
                                     group_cols,
                                     auto_tune = TRUE,
-                                    method = "balance", # ascending/descending
-                                    extreme_pairing_levels = 1, # only method==balance
+                                    method = "balance",
                                     col_name = ".coll_groups",
                                     parallel = FALSE) {
   collapse_groups(
@@ -195,7 +194,6 @@ collapse_groups_by_size <- function(data,
     group_cols = group_cols,
     auto_tune = auto_tune,
     method = method,
-    extreme_pairing_levels = extreme_pairing_levels,
     num_new_group_cols = 1,
     col_name = col_name,
     balance_size = TRUE,
@@ -216,9 +214,8 @@ collapse_groups_by_numeric <- function(data,
                                        num_cols,
                                        balance_size = FALSE,
                                        auto_tune = TRUE,
-                                       method = "balance", # ascending/descending
+                                       method = "balance",
                                        group_aggregation_fn = mean,
-                                       extreme_pairing_levels = 1,
                                        col_name = ".coll_groups",
                                        parallel = FALSE) {
   collapse_groups(
@@ -229,7 +226,6 @@ collapse_groups_by_numeric <- function(data,
     balance_size = balance_size,
     auto_tune = auto_tune,
     method = method,
-    extreme_pairing_levels = extreme_pairing_levels,
     num_new_group_cols = 1,
     group_aggregation_fn = group_aggregation_fn,
     col_name = col_name,
@@ -251,8 +247,7 @@ collapse_groups_by_levels <- function(data,
                                       cat_levels = NULL,
                                       balance_size = FALSE,
                                       auto_tune = TRUE,
-                                      method = "balance", # ascending/descending
-                                      extreme_pairing_levels = 1,
+                                      method = "balance",
                                       col_name = ".coll_groups",
                                       parallel = FALSE) {
   collapse_groups(
@@ -264,7 +259,6 @@ collapse_groups_by_levels <- function(data,
     balance_size = balance_size,
     auto_tune = auto_tune,
     method = method,
-    extreme_pairing_levels = extreme_pairing_levels,
     num_new_group_cols = 1,
     col_name = col_name,
     parallel = parallel
@@ -284,8 +278,7 @@ collapse_groups_by_ids <- function(data,
                                    id_cols,
                                    balance_size = FALSE,
                                    auto_tune = TRUE,
-                                   method = "balance", # ascending/descending
-                                   extreme_pairing_levels = 1,
+                                   method = "balance",
                                    col_name = ".coll_groups",
                                    parallel = FALSE) {
   collapse_groups(
@@ -296,7 +289,6 @@ collapse_groups_by_ids <- function(data,
     balance_size = balance_size,
     auto_tune = auto_tune,
     method = method,
-    extreme_pairing_levels = extreme_pairing_levels,
     col_name = col_name,
     parallel = parallel
   )

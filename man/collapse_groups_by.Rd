@@ -14,7 +14,6 @@ collapse_groups_by_size(
   group_cols,
   auto_tune = TRUE,
   method = "balance",
-  extreme_pairing_levels = 1,
   col_name = ".coll_groups",
   parallel = FALSE
 )
@@ -28,7 +27,6 @@ collapse_groups_by_numeric(
   auto_tune = TRUE,
   method = "balance",
   group_aggregation_fn = mean,
-  extreme_pairing_levels = 1,
   col_name = ".coll_groups",
   parallel = FALSE
 )
@@ -42,7 +40,6 @@ collapse_groups_by_levels(
   balance_size = FALSE,
   auto_tune = TRUE,
   method = "balance",
-  extreme_pairing_levels = 1,
   col_name = ".coll_groups",
   parallel = FALSE
 )
@@ -55,7 +52,6 @@ collapse_groups_by_ids(
   balance_size = FALSE,
   auto_tune = TRUE,
   method = "balance",
-  extreme_pairing_levels = 1,
   col_name = ".coll_groups",
   parallel = FALSE
 )
@@ -94,17 +90,6 @@ Can be slow, why we recommend enabling parallelization (see \code{`parallel`}).}
 \item \code{"ascending"} orders by the attribute and groups from the lowest to highest value.
 \item \code{"descending"} orders by the attribute and groups from the highest to lowest value.
 }}
-
-\item{extreme_pairing_levels}{How many levels of extreme pairing to do
-when balancing the groups by the combined balancing column (see \code{Details}).
-
-\strong{Extreme pairing}: Rows/pairs are ordered as smallest, largest,
-second smallest, second largest, etc. If \code{extreme_pairing_levels > 1},
-this is done "recursively" on the extreme pairs.
-
-\strong{N.B.} Larger values work best with large datasets. If set too high,
-the result might not be stochastic. Always check if an increase
-actually makes the groups more balanced.}
 
 \item{parallel}{Whether to parallelize the group column comparisons
 when \code{`auto_tune`} is enabled.
