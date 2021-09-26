@@ -22,31 +22,27 @@ test_that("find_missing_starts() find the right missing starts", {
   # find_missing_starts(df, n = c("r", "d"), starts_col = "v")
 
   # v
-  expect_equal(check_find_missing_starts_df(n = c("r", "d"), starts_col = "v"), "r")
-  expect_equal(unname(check_find_missing_starts_df(
+  expect_equal(check_find_missing_starts_df(n = c("r", "d"), starts_col = "v"), c("r"))
+  expect_equal(check_find_missing_starts_df(
     n = c("r", "d"), starts_col = "v",
     return_skip_numbers = TRUE
-  )), list(c("r", "1")))
+  ), list(c("r", "1")))
   expect_equal(check_find_missing_starts_df(n = c("b", "r", "o", "d"), starts_col = "v"), c("r", "o"))
-  expect_equal(unname(check_find_missing_starts_df(
+  expect_equal(check_find_missing_starts_df(
     n = c("b", "r", "o", "d"), starts_col = "v",
     return_skip_numbers = TRUE
-  )), list(c("r", "1"), c("o", "1")))
+  ), list(c("r", "1"), c("o", "1")))
 
   # v2
   expect_equal(check_find_missing_starts_df(n = c(1, 3, 5), starts_col = "v2"), c(5))
-  expect_equal(
-    unname(check_find_missing_starts_df(
+  expect_equal(check_find_missing_starts_df(
     n = c(1, 3, 5), starts_col = "v2",
     return_skip_numbers = TRUE
-  )), list(c(5, 1)))
+  ), list(c(5, 1)))
   expect_equal(check_find_missing_starts_df(n = c(5, 2, 1), starts_col = "v2"), c("5")) # TODO Why character type here?
-  expect_equal(unname(
-    check_find_missing_starts_df(
-      n = c(5, 3, 1),
-      starts_col = "v2",
-      return_skip_numbers = TRUE
-    )
+  expect_equal(check_find_missing_starts_df(
+    n = c(5, 3, 1), starts_col = "v2",
+    return_skip_numbers = TRUE
   ), list(c("5", "1")))
 
   # starts column is factor:
@@ -134,13 +130,13 @@ test_that("find_missing_starts() find the right missing starts", {
     type = "list")
   # Testing values
   expect_equal(
-    unname(output_19148), # Debian GCC has names for some reason
+    output_19148,
     list(c("e", "1"), c("d", "1")))
   # Testing names
-  # expect_equal(
-  #   names(output_19148),
-  #   NULL,
-  #   fixed = TRUE)
+  expect_equal(
+    names(output_19148),
+    NULL,
+    fixed = TRUE)
   # Testing length
   expect_equal(
     length(output_19148),
