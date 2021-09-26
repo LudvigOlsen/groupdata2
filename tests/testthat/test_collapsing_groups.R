@@ -1,7 +1,35 @@
 library(groupdata2)
 context("collapse_groups()")
 
-# TODO Test .minority/.majority on its own and within list
+
+test_that("unit testing collapse_groups()", {
+
+  # prepare_collapse_groups_run_
+  # prepare_collapse_groups_output_
+  # run_collapse_groups_
+  # replace_forbidden_names_
+  # add_new_groups_
+  # calculate_summary
+  # create_combined_cat_summary_
+  # scale_combine_cols_
+  # combine_scaled_cols_
+  # add_ordered_summary_groups_
+
+  #### List arguments ####
+  # TODO Test .minority/.majority on its own and within list
+
+  #### Summarization ####
+
+  #### Combination ####
+
+  #### Auto-tune ####
+
+
+
+})
+
+
+
 
 
 test_that("numerical balancing works with collapse_groups()", {
@@ -93,7 +121,7 @@ test_that("numerical balancing works with collapse_groups()", {
       n = 4,
       group_cols = ".folds",
       num_col = "age",
-      num_method = "ascending",
+      method = "ascending",
       group_aggregation_fn = mean
     )
 

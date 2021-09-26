@@ -303,7 +303,7 @@ relist_starts_ <- function(l) {
 }
 
 extract_start_values_ <- function(nested_list) {
-  unlisted <- nested_list %>% unlist()
+  unlisted <- nested_list %>% unlist(use.names = FALSE)
   unlisted[seq(1, length(unlisted), 2)]
 }
 
@@ -893,4 +893,17 @@ message_once_about_group_by <- function(fn_name, sys.parent.n = 1L) {
     ),
     sys.parent.n = sys.parent.n
   )
+}
+
+get_pkg_version <- function(pkg_name){
+  vs <- unlist(utils::packageVersion(pkg_name))
+  list("major" = vs[[1]],
+       "minor" = vs[[2]],
+       "patch" = vs[[3]],
+       "dev" = ifelse(length(vs) > 3, vs[[4]], integer(0)))
+}
+
+is_checkmate_v2_1 <- function(){
+  v <- get_pkg_version("checkmate")
+  v$major == 2 && v$minor >= 1
 }
