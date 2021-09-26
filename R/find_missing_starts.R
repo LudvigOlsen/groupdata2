@@ -87,7 +87,7 @@ find_missing_starts <- function(data,
   if (is.list(out)){
     out <- purrr::map(out, .f = unname)
     if (!dplyr::is_grouped_df(data)){
-      output <- unname(out)
+      out <- unname(out)
     }
   } else {
     output <- unname(out)
