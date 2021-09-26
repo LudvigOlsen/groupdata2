@@ -724,7 +724,7 @@ add_sd_ranks <- function(
 
   # Calculate average SD rank
   sd_rows <- measures %>%
-    dplyr::filter(measure == "SD")
+    dplyr::filter(.data$measure == "SD")
 
   # Ranking only makes sense with multiple group cols
   if (nrow(sd_rows) == 1){

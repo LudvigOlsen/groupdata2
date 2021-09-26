@@ -46,7 +46,7 @@ ranked_balances <- function(summary){
 
   # Extract rows with standard deviations
   sd_rows <- summary %>%
-    dplyr::filter(measure == "SD")
+    dplyr::filter(.data$measure == "SD")
 
   if (nrow(sd_rows) > 1){
     if ("SD_rank" %ni% colnames(summary)){

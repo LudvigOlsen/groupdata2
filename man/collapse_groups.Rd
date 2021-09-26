@@ -191,6 +191,10 @@ more important to get a good balance of.
 
 \code{`combine_method`} chooses whether to use standardization or MinMax scaling in step 2.}
 
+\item{col_name}{Name of the new group column. When creating multiple new group columns
+(\code{`num_new_group_cols`>1}), this is the prefix for the names, which will
+be suffixed with an underscore and a number (_1, _2, _3, etc.).}
+
 \item{parallel}{Whether to parallelize the group column comparisons
 when \code{`unique_new_group_cols_only`} is \code{`TRUE`}.
 

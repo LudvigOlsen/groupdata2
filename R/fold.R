@@ -350,7 +350,7 @@ if (getRversion() >= "2.15.1")
 #' @importFrom dplyr %>%
 #' @importFrom utils combn
 #' @importFrom rlang .data
-#' @importFrom stats runif
+#' @importFrom stats runif setNames
 fold <- function(data,
                  k = 5,
                  cat_col = NULL,

@@ -14,6 +14,8 @@
 # TODO cat_levels: provide .majority/.minority in the list?
 # TODO cat_levels: What happens if a column is not in the list? (should use all for that column)
 
+#### ####
+
 #' @title Collapse groups with categorical, numerical, ID, and size balancing
 #' @description
 #'  \Sexpr[results=rd, stage=render]{lifecycle::badge("experimental")}
@@ -376,6 +378,9 @@
 #'  Dimensions that are \emph{not} given a weight is automatically given the weight \code{1}.
 #'
 #'  E.g. \code{c("size" = 1, "cat" = 1, "num1" = 4, "num2" = 7, "id" = 2)}.
+#' @param col_name Name of the new group column. When creating multiple new group columns
+#'  (\code{`num_new_group_cols`>1}), this is the prefix for the names, which will
+#'  be suffixed with an underscore and a number (_1, _2, _3, etc.).
 #' @param parallel Whether to parallelize the group column comparisons
 #'  when \code{`unique_new_group_cols_only`} is \code{`TRUE`}.
 #'
@@ -401,7 +406,7 @@
 #' df <- data.frame(
 #'   "participant" = factor(rep(1:20, 3)),
 #'   "age" = rep(sample(c(1:100), 20), 3),
-#'   "answer" = factor(sample(c("a", "b", "c", "d"), 60, replace = T)),
+#'   "answer" = factor(sample(c("a", "b", "c", "d"), 60, replace = TRUE)),
 #'   "score" = sample(c(1:100), 20 * 3)
 #' )
 #' df <- df %>% dplyr::arrange(participant)
@@ -866,74 +871,16 @@ run_collapse_groups_ <- function(
 
   #### Calculate summary info ####
 
-  cat_summary <- NULL
-  if (!is.null(cat_cols)){
-    cat_summary <- purrr::map(.x = cat_cols, .f = ~ {
-      create_combined_cat_summary_(
-        data = data,
-        group_cols = tmp_old_group_var,
-        cat_col = .x,
-        cat_levels = cat_levels
-      )
-    }) %>%
-      purrr::reduce(dplyr::full_join, by = tmp_old_group_var)
-  }
-
-  num_summary <- NULL
-  if (!is.null(num_cols)){
-
-    num_summary <- data %>%
-      dplyr::group_by(!!as.name(tmp_old_group_var)) %>%
-      dplyr::summarise(
-        dplyr::across(dplyr::one_of(num_cols), group_aggregation_fn),
-        .groups = "drop"
-      )
-
-    num_summ_cols <- colnames(num_summary)[colnames(num_summary) != tmp_old_group_var]
-  }
-
-  size_summary <- NULL
-  if (isTRUE(balance_size)){
-    size_summary <- data %>%
-      dplyr::group_by(!!as.name(tmp_old_group_var)) %>%
-      dplyr::summarise(size = dplyr::n(), .groups = "drop")
-  }
-
-  id_summary <- NULL
-  if (!is.null(id_cols)){
-    id_summary <- data %>%
-      dplyr::group_by(!!as.name(tmp_old_group_var)) %>%
-      dplyr::summarize(
-        dplyr::across(dplyr::one_of(id_cols),
-                      function(x) {
-                        length(unique(x))
-                      }), .groups = "drop")
-  }
-
-  # Prepare summaries tibble
-  summaries <- dplyr::tibble(
-    !!tmp_old_group_var := unique(data[[tmp_old_group_var]])
+  summaries <- calculate_summary(
+    data = data,
+    tmp_old_group_var = tmp_old_group_var,
+    cat_cols = cat_cols,
+    cat_levels = cat_levels,
+    num_cols = num_cols,
+    group_aggregation_fn = group_aggregation_fn,
+    balance_size = balance_size,
+    id_cols = id_cols
   )
-
-  if (!is.null(cat_summary)){
-    summaries <- summaries %>%
-      dplyr::left_join(cat_summary, by = tmp_old_group_var)
-
-    # In case of NAs, set them to 0
-    summaries[, cat_cols][is.na(summaries[, cat_cols])] <- 0
-  }
-  if (!is.null(num_summary)){
-    summaries <- summaries %>%
-      dplyr::left_join(num_summary, by = tmp_old_group_var)
-  }
-  if (!is.null(size_summary)){
-    summaries <- summaries %>%
-      dplyr::left_join(size_summary, by = tmp_old_group_var)
-  }
-  if (!is.null(id_summary)){
-    summaries <- summaries %>%
-      dplyr::left_join(id_summary, by = tmp_old_group_var)
-  }
 
   # Weighted combination of scaled summary columns
 
@@ -1021,6 +968,96 @@ run_collapse_groups_ <- function(
   data
 }
 
+
+calculate_summary <- function(
+  data,
+  tmp_old_group_var,
+  cat_cols,
+  cat_levels,
+  num_cols,
+  group_aggregation_fn,
+  balance_size,
+  id_cols) {
+
+  # Calculate summary of `cat_cols`
+  cat_summary <- NULL
+  if (!is.null(cat_cols)){
+    cat_summary <- purrr::map(.x = cat_cols, .f = ~ {
+      create_combined_cat_summary_(
+        data = data,
+        group_cols = tmp_old_group_var,
+        cat_col = .x,
+        cat_levels = cat_levels
+      )
+    }) %>%
+      purrr::reduce(dplyr::full_join, by = tmp_old_group_var)
+  }
+
+  # Calculate summary of `num_cols`
+  num_summary <- NULL
+  if (!is.null(num_cols)){
+
+    num_summary <- data %>%
+      dplyr::group_by(!!as.name(tmp_old_group_var)) %>%
+      dplyr::summarise(
+        dplyr::across(dplyr::one_of(num_cols), group_aggregation_fn),
+        .groups = "drop"
+      )
+
+    num_summ_cols <- colnames(num_summary)[colnames(num_summary) != tmp_old_group_var]
+  }
+
+  # Calculate summary of `size`
+  size_summary <- NULL
+  if (isTRUE(balance_size)){
+    size_summary <- data %>%
+      dplyr::group_by(!!as.name(tmp_old_group_var)) %>%
+      dplyr::summarise(size = dplyr::n(), .groups = "drop")
+  }
+
+  # Calculate summary of `id_cols`
+  id_summary <- NULL
+  if (!is.null(id_cols)){
+    id_summary <- data %>%
+      dplyr::group_by(!!as.name(tmp_old_group_var)) %>%
+      dplyr::summarize(
+        dplyr::across(dplyr::one_of(id_cols),
+                      function(x) {
+                        length(unique(x))
+                      }), .groups = "drop")
+  }
+
+  # Prepare collected summaries tibble
+  summaries <- dplyr::tibble(
+    !!tmp_old_group_var := unique(data[[tmp_old_group_var]])
+  )
+
+  # Add the various summaries
+
+  if (!is.null(cat_summary)){
+    summaries <- summaries %>%
+      dplyr::left_join(cat_summary, by = tmp_old_group_var)
+
+    # In case of NAs, set them to 0
+    summaries[, cat_cols][is.na(summaries[, cat_cols])] <- 0
+  }
+  if (!is.null(num_summary)){
+    summaries <- summaries %>%
+      dplyr::left_join(num_summary, by = tmp_old_group_var)
+  }
+  if (!is.null(size_summary)){
+    summaries <- summaries %>%
+      dplyr::left_join(size_summary, by = tmp_old_group_var)
+  }
+  if (!is.null(id_summary)){
+    summaries <- summaries %>%
+      dplyr::left_join(id_summary, by = tmp_old_group_var)
+  }
+
+  summaries
+}
+
+
 add_new_groups_ <- function(data, new_groups, tmp_old_group_var, col_name){
   # Select the relevant columns
   new_groups <- new_groups %>%
@@ -1040,6 +1077,7 @@ add_new_groups_ <- function(data, new_groups, tmp_old_group_var, col_name){
 
   data
 }
+
 
 # Replace ".fold" with ".____fold" in names
 # before running the collapsing

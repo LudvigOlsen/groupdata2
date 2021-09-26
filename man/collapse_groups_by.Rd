@@ -91,6 +91,10 @@ Can be slow, why we recommend enabling parallelization (see \code{`parallel`}).}
 \item \code{"descending"} orders by the attribute and groups from the highest to lowest value.
 }}
 
+\item{col_name}{Name of the new group column. When creating multiple new group columns
+(\code{`num_new_group_cols`>1}), this is the prefix for the names, which will
+be suffixed with an underscore and a number (_1, _2, _3, etc.).}
+
 \item{parallel}{Whether to parallelize the group column comparisons
 when \code{`auto_tune`} is enabled.
 
