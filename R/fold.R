@@ -400,6 +400,7 @@ fold <- function(data,
     num_fold_cols = num_fold_cols,
     unique_fold_cols_only = unique_fold_cols_only,
     max_iters = max_iters,
+    allow_using_triplets = FALSE, # TODO Enable after testing!
     handle_existing_fold_cols = handle_existing_fold_cols,
     parallel = parallel
   )
@@ -417,6 +418,7 @@ run_fold_ <- function(data,
                       num_fold_cols,
                       unique_fold_cols_only,
                       max_iters,
+                      allow_using_triplets,
                       handle_existing_fold_cols,
                       parallel) {
   k <- fold_check_convert_k(
@@ -531,6 +533,7 @@ run_fold_ <- function(data,
           col_name = current_fold_info[["col_name"]],
           id_aggregation_fn = id_aggregation_fn,
           extreme_pairing_levels = extreme_pairing_levels,
+          use_triplets = isTRUE(allow_using_triplets) && max_iters - times_repeated == 1,
           method = "n_fill",
           pre_randomize = TRUE
         ) %>%
