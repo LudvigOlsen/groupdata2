@@ -201,7 +201,7 @@ xpectr::set_test_seed(42)
 df <- data.frame(
   "participant" = factor(rep(1:20, 3)),
   "age" = rep(sample(c(1:100), 20), 3),
-  "answer" = factor(sample(c("a", "b", "c", "d"), 60, replace = T)),
+  "answer" = factor(sample(c("a", "b", "c", "d"), 60, replace = TRUE)),
   "score" = sample(c(1:100), 20 * 3)
 )
 df <- df \%>\% dplyr::arrange(participant)
