@@ -72,18 +72,22 @@ numerically_balanced_group_factor_ <- function(
     ))
   }
 
-  # Check when grouping on rows
-  # If method="l_sizes" for instance, we want the last pairing to have at least one pair (two sub pairs)
-  if (!group_by_rearrange_id && extreme_pairing_levels > 1 &&
-    nrow(data) < 2 * 2^extreme_pairing_levels) {
-    stop(paste0(
-      "`num_col`: The (subset of) data is too small to perform ", extreme_pairing_levels,
-      " levels of extreme pairing. Decrease `extreme_pairing_levels`."
-    ))
-  }
-
   # Save the order of the data frame
   data[[local_tmp_index_var]] <- seq_len(nrow(data))
+
+  # Check when grouping on rows
+  # If method="l_sizes" for instance, we want the last pairing to have at least one pair (two sub pairs)
+  if (!isTRUE(group_by_rearrange_id) &&
+      extreme_pairing_levels > 1 &&
+      nrow(data) < 2 * 2 ^ extreme_pairing_levels) {
+    stop(
+      paste0(
+        "`num_col`: The (subset of) data is too small to perform ",
+        extreme_pairing_levels,
+        " levels of extreme pairing. Decrease `extreme_pairing_levels`."
+      )
+    )
+  }
 
   # Arrange by smallest, biggest, 2nd smallest, 2nd biggest, etc.
   # If the number of rows is unequal, the row with the smallest value is alone
@@ -267,6 +271,275 @@ numerically_balanced_group_factor_ <- function(
         data <- excessive_row %>%
           dplyr::bind_rows(data)
       }
+    }
+
+    # Create the groups
+    data <- data %>%
+      group(
+        n = n,
+        method = method,
+        col_name = local_tmp_groups_var,
+        force_equal = force_equal
+      ) %>%
+      dplyr::ungroup()
+
+    # Restore original order
+    data <- data %>%
+      dplyr::arrange(!!as.name(local_tmp_index_var))
+  }
+
+  # Extract grouping factor
+  data %>%
+    dplyr::pull(!!as.name(local_tmp_groups_var)) %>%
+    as.factor()
+}
+
+
+
+##  .................. #< 82e8f7fb4223b2bacb152fe18c916ee0 ># ..................
+##  Triplets version                                                        ####
+
+
+# Similar but using triplets instead of pairs
+# Likely less balanced but allows creating more unique group columns
+numerically_balanced_group_factor_triplets_ <- function(
+  data,
+  n,
+  num_col,
+  method = "n_fill",
+  # Internal for now ("mean" or "sd" or (alternating) list)
+  optimize_for = "mean",
+  extreme_grouping_levels = 1,
+  force_equal = FALSE) {
+
+  # Create unique local temporary index variable name
+  local_tmp_index_var <- create_tmp_var(data, ".tmp_index_")
+  local_tmp_groups_var <- create_tmp_var(data, ".groups")
+  local_tmp_rearrange_var <- create_tmp_var(data, ".rearrange_factor_")
+
+  # If method is n_*, it was called from fold()
+  is_n_method <- substring(method, 1, 2) == "n_"
+
+  # Check method is allowed
+  if (!is_n_method && method != "l_sizes"){
+    stop(paste0("method `", method, "` is currently not supported with `num_col` balancing."))
+  }
+
+  # Whether we have an equal number of rows (relevant for pairing)
+  nrows_divisible_by_3 <- nrow(data) %% 3 == 0
+
+  # Check if we have enough data for tripletwise folding
+  # or if we are running partitioning (l_sizes)
+
+  # In partitioning, we group directly on the rows, as that is the way to get
+  # those specific group sizes
+  # In folding, we group the final triplet indices (rearrange IDs) (when enough data points)
+  # When the number of rearrange IDs do not divide appropriately, why we have a distribution step
+  # for "excessive" rows.
+
+  if (method == "l_sizes") {
+    group_by_rearrange_id <- FALSE
+    num_final_groups <- length(n)
+  } else if (isTRUE(is_n_method)) {
+    if (length(n) > 1) {
+      stop(paste0("`n` contained more than one element with method `", method, "`."))
+    }
+    if (n < 1) {
+      n <- ceiling(nrow(data) / convert_percentage_(n, data))
+    }
+    num_final_groups <- n
+    # If we have enough data to create >=n triplets
+    # we group the pairs, otherwise the rows
+    group_by_rearrange_id <- nrow(data) >= n * 3
+  }
+
+  # Check if extreme_grouping_levels is too big for the dataset
+  # when grouping on rearrange IDs
+  # TODO: Ensure this is never seen by the end user!
+  if (isTRUE(group_by_rearrange_id) && extreme_grouping_levels > 1 &&
+      nrow(data) < num_final_groups * 3^extreme_grouping_levels) {
+    stop(paste0(
+      "`num_col`: The (subset of) data is too small to perform ",
+      extreme_grouping_levels,
+      " levels of extreme triplet groupings. Decrease `extreme_grouping_levels`."
+    ))
+  }
+
+  # Find a suitable `extreme_grouping_levels` setting
+  if (extreme_grouping_levels > 1) {
+    old_extreme_grouping_levels <- extreme_grouping_levels
+    while (nrow(data) < 3 * 3 ^ extreme_grouping_levels &&
+           extreme_grouping_levels > 1) {
+      extreme_grouping_levels <- extreme_grouping_levels - 1
+    }
+    if (extreme_grouping_levels != old_extreme_grouping_levels) {
+      message(
+        paste0(
+          "`extreme_grouping_levels` was reduced to ",
+          extreme_grouping_levels,
+          " during extreme triplets numerical balancing."
+        )
+      )
+    }
+  }
+
+  # Save the order of the data frame
+  data[[local_tmp_index_var]] <- seq_len(nrow(data))
+
+  # Unequal methods are returned as first group in triplet_extremes
+  data <- data %>%
+    rearrr::triplet_extremes(
+      col = num_col,
+      unequal_method_1 = "min",
+      unequal_method_2 = c("min", "min"),
+      num_groupings = extreme_grouping_levels,
+      balance = optimize_for,
+      shuffle_members = FALSE,
+      shuffle_triplet = FALSE,
+      factor_name = local_tmp_rearrange_var
+    )
+
+  # Names of the pairing factors
+  if (extreme_grouping_levels == 1){
+    triplet_grouping_factors <- local_tmp_rearrange_var
+  } else {
+    triplet_grouping_factors <- paste0(local_tmp_rearrange_var, "_", seq_len(extreme_grouping_levels))
+  }
+  final_rearrange_var <- tail(triplet_grouping_factors, 1)
+
+  # If we are grouping the rearrange IDs
+  # I.e. for n_* methods with >= 2*n data points
+  if (isTRUE(group_by_rearrange_id)) {
+    num_excessive_rearrange_ids <-
+      nlevels(factor(data[[final_rearrange_var]])) %% num_final_groups
+    has_excessive_rearrange_ids <- num_excessive_rearrange_ids > 0
+
+    # We have extra rearrange IDs to distribute the rows of
+    if (has_excessive_rearrange_ids) {
+      if (!nrows_divisible_by_3) {
+        # Add index of unequal row to a list of IDs to distribute
+        ids_to_distribute <- as.numeric(1)
+        if (num_excessive_rearrange_ids > 1) {
+          # Add indices for the remaining number of excess IDs
+          rearrange_ids <- unique(data[[final_rearrange_var]])
+          possible_choices <- rearrange_ids[rearrange_ids != ids_to_distribute]
+          ids_to_distribute <- c(
+            ids_to_distribute,
+            sample(possible_choices, num_excessive_rearrange_ids - 1)
+          )
+        }
+      } else {
+        ids_to_distribute <- sample(
+          unique(data[[final_rearrange_var]]),
+          num_excessive_rearrange_ids
+        )
+      }
+
+      # Extract the actual rows to distribute
+      rows_to_distribute <- data[
+        data[[final_rearrange_var]] %in% ids_to_distribute,
+        ] %>%
+        dplyr::arrange(!!as.name(num_col))
+
+      # Remove the rows that will be distributed after grouping
+      data <- data[
+        data[[final_rearrange_var]] %ni% ids_to_distribute,
+        ]
+    }
+
+    # Group the IDs randomly
+    data <- data %>%
+      group_uniques_randomly_(
+        n = n,
+        id_col = final_rearrange_var,
+        method = method,
+        col_name = local_tmp_groups_var
+      )
+
+    if (has_excessive_rearrange_ids) {
+      # Calculate sums of the other triplet
+      # Get the smallest (and second smallest if we have 2 rows to distribute)
+      # TODO What if extreme_grouping_levels > 1 ???
+      # TODO Should this use the summary statistics from `balance`?? (spread/mean, ...)
+      data_rank_summary <- create_rank_summary(
+        data = data,
+        levels_col = local_tmp_groups_var,
+        num_col = num_col
+      )
+
+      if (nrow(data_rank_summary) >= nrow(rows_to_distribute)) {
+        # When there are fewer rows to distribute than number of groups
+        # Add group IDs to the excess rows
+        # such that the smallest groups get the additional rows
+        rows_to_distribute[[local_tmp_groups_var]] <- data_rank_summary %>%
+          head(nrow(rows_to_distribute)) %>%
+          dplyr::pull(!!as.name(local_tmp_groups_var))
+      } else {
+        # When there are more rows to distribute than number of groups
+        # we run the balancing again
+        # Given that this will mostly happen with a few excess datapoints
+        # the following might not be the optimal approach
+        rows_to_distribute[[local_tmp_groups_var]] <- numerically_balanced_group_factor_triplets_(
+          data = rows_to_distribute,
+          n = n,
+          num_col = num_col,
+          method = method,
+          extreme_grouping_levels = 1
+        )
+
+        # Rename the groups for the excess rows such that
+        # the biggest group becomes part of the smallest group in the data
+        renaming_levels_list <- rename_levels_by_reverse_rank_summary(
+          data = rows_to_distribute,
+          rank_summary = data_rank_summary,
+          levels_col = local_tmp_groups_var,
+          num_col = num_col
+        )
+
+        # Extract regrouped rows
+        rows_to_distribute <- renaming_levels_list[["updated_data"]]
+      }
+
+      # Add the now distributed rows
+      data <- data %>%
+        dplyr::bind_rows(rows_to_distribute)
+    }
+
+    # Reorder the data to the original order
+    data <- data %>%
+      dplyr::ungroup() %>%
+      dplyr::arrange(!!as.name(local_tmp_index_var))
+
+  } else {
+    # Either using in partition()
+    # or fold() with small number of data points <n*3
+
+    # Remove the excess rows and insert first/last after
+    # we have reordered the pairs
+    # TODO: Should we not check if final_rearrange_var has num groups divisible by three instead?
+    # in case of extreme_grouping_levels > 1 ?
+    # TODO Are we sure this is a single excessive rows?
+    if (is_n_method &&
+        !isTRUE(nrows_divisible_by_3)) {
+      excessive_row <- data[data[[final_rearrange_var]] ==
+                              min(factor_to_num(data[[final_rearrange_var]])), ] %>% print()
+      data <- data[data[[final_rearrange_var]] !=
+                     min(factor_to_num(data[[final_rearrange_var]])), ]
+    }
+
+    # Shuffle hierarchy of pairs and pair members
+    # We're grouping the rows so we shuffle the indices as well
+    shuffle_cols <- c(rev(triplet_grouping_factors), local_tmp_index_var)
+    data <- rearrr::shuffle_hierarchy(
+      data = data,
+      group_cols = shuffle_cols,
+      leaf_has_groups = FALSE
+    )
+
+    # Insert the excess row again
+    if (isTRUE(is_n_method) && !isTRUE(nrows_divisible_by_3)) {
+      data <- excessive_row %>%
+          dplyr::bind_rows(data)
     }
 
     # Create the groups

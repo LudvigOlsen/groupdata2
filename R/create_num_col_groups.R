@@ -7,6 +7,7 @@ create_num_col_groups <- function(data, n, num_col,
                                   extreme_pairing_levels = 1,
                                   method = "n_fill",
                                   unequal_method = "first",
+                                  use_triplets = FALSE,
                                   optimize_for = "mean",
                                   force_equal = FALSE,
                                   pre_randomize = TRUE) {
@@ -18,6 +19,7 @@ create_num_col_groups <- function(data, n, num_col,
   checkmate::assert_string(x = unequal_method, add = assert_collection)
   checkmate::assert_string(x = optimize_for, add = assert_collection)
   checkmate::assert_flag(x = pre_randomize, add = assert_collection)
+  checkmate::assert_flag(x = use_triplets, add = assert_collection)
   checkmate::reportAssertions(assert_collection)
   # End of argument checks ####
 
@@ -67,15 +69,18 @@ create_num_col_groups <- function(data, n, num_col,
         ids_for_cat <- ids_aggregated[
           ids_aggregated[[cat_col]] == category,
         ]
-        ids_for_cat$._new_groups_ <-
-          numerically_balanced_group_factor_(
-            ids_for_cat,
-            n = n,
-            num_col = "aggr_val",
-            method = method,
-            unequal_method = unequal_method,
-            extreme_pairing_levels = extreme_pairing_levels
-          )
+
+        # Add group factor
+        ids_for_cat <- call_extreme_grouping(
+          data = ids_for_cat,
+          n = n,
+          method = method,
+          unequal_method = unequal_method,
+          extreme_pairing_levels = extreme_pairing_levels,
+          num_col = "aggr_val",
+          new_col = "._new_groups_",
+          use_triplets = use_triplets
+        )
 
         if (isTRUE(is_n_method)) {
           # Rename groups to be combined in the most balanced way
@@ -117,13 +122,17 @@ create_num_col_groups <- function(data, n, num_col,
         data_for_cat <- data[
           data[[cat_col]] == category,
         ]
-        data_for_cat$._new_groups_ <- numerically_balanced_group_factor_(
+
+        # Add group factor
+        data_for_cat <- call_extreme_grouping(
           data = data_for_cat,
           n = n,
-          num_col = num_col,
           method = method,
           unequal_method = unequal_method,
-          extreme_pairing_levels = extreme_pairing_levels
+          extreme_pairing_levels = extreme_pairing_levels,
+          num_col = num_col,
+          new_col = "._new_groups_",
+          use_triplets = use_triplets
         )
 
         if (isTRUE(is_n_method)) {
@@ -164,15 +173,18 @@ create_num_col_groups <- function(data, n, num_col,
         dplyr::summarize(aggr_val = id_aggregation_fn(!!as.name(num_col))) %>%
         dplyr::ungroup()
 
-      # Create group factor
-      ids_aggregated$._new_groups_ <- numerically_balanced_group_factor_(
-        ids_aggregated,
+      # Add group factor
+      ids_aggregated <- call_extreme_grouping(
+        data = ids_aggregated,
         n = n,
-        num_col = "aggr_val",
         method = method,
         unequal_method = unequal_method,
-        extreme_pairing_levels = extreme_pairing_levels
+        extreme_pairing_levels = extreme_pairing_levels,
+        num_col = "aggr_val",
+        new_col = "._new_groups_",
+        use_triplets = use_triplets
       )
+
       ids_aggregated$aggr_val <- NULL
 
       # Transfer groups to data
@@ -183,13 +195,15 @@ create_num_col_groups <- function(data, n, num_col,
     } else {
 
       # Add group factor
-      data$._new_groups_ <- numerically_balanced_group_factor_(
-        data,
+      data <- call_extreme_grouping(
+        data = data,
         n = n,
-        num_col = num_col,
         method = method,
         unequal_method = unequal_method,
-        extreme_pairing_levels = extreme_pairing_levels
+        extreme_pairing_levels = extreme_pairing_levels,
+        num_col = num_col,
+        new_col = "._new_groups_",
+        use_triplets = use_triplets
       )
     }
   }
@@ -222,4 +236,60 @@ create_num_col_groups <- function(data, n, num_col,
   }
 
   dplyr::as_tibble(data)
+
+}
+
+
+call_extreme_grouping <- function(
+  data,
+  n,
+  method,
+  extreme_pairing_levels,
+  unequal_method,
+  num_col = "aggr_val",
+  new_col = "._new_groups_",
+  use_triplets = FALSE) {
+
+  #
+  # Wrapper for choosing between
+  # numerically_balanced_group_factor_ and
+  # numerically_balanced_group_factor_triplets_
+  #
+
+  # Create group factor
+  if (!isTRUE(use_triplets)){
+
+    # Use extreme pairing
+    data[[new_col]] <- numerically_balanced_group_factor_(
+      data = data,
+      n = n,
+      num_col = num_col,
+      method = method,
+      unequal_method = unequal_method,
+      extreme_pairing_levels = extreme_pairing_levels
+    )
+
+  } else {
+
+    # Use extreme triplet grouping
+    # First ensure extreme grouping levels are compatible
+    tmp_local_extreme_grouping_levels <- extreme_pairing_levels
+    if (extreme_pairing_levels > 1) {
+      while (nrow(data) < 3 * 3 ^ tmp_local_extreme_grouping_levels &&
+             tmp_local_extreme_grouping_levels > 1) {
+        tmp_local_extreme_grouping_levels <- tmp_local_extreme_grouping_levels - 1
+      }
+    }
+    data[[new_col]] <-
+      numerically_balanced_group_factor_triplets_(
+        data = data,
+        n = n,
+        num_col = num_col,
+        method = method,
+        extreme_grouping_levels = tmp_local_extreme_grouping_levels
+      )
+  }
+
+  data
+
 }
