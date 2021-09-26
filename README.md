@@ -15,8 +15,6 @@ downloads](https://cranlogs.r-pkg.org/badges/groupdata2)](https://cran.r-project
 version](https://img.shields.io/badge/R%3E%3D-3.5-6666ff.svg)](https://cran.r-project.org/)
 [![Codecov test
 coverage](https://codecov.io/gh/ludvigolsen/groupdata2/branch/master/graph/badge.svg)](https://codecov.io/gh/ludvigolsen/groupdata2?branch=master)
-[![Travis build
-status](https://travis-ci.com/LudvigOlsen/groupdata2.svg?branch=master)](https://travis-ci.com/LudvigOlsen/groupdata2)
 [![AppVeyor build
 status](https://ci.appveyor.com/api/projects/status/github/LudvigOlsen/groupdata2?branch=master&svg=true)](https://ci.appveyor.com/project/LudvigOlsen/groupdata2)
 [![DOI](https://zenodo.org/badge/72371128.svg)](https://zenodo.org/badge/latestdoi/72371128)
@@ -36,26 +34,29 @@ R package for dividing data into groups.
 
 ### Main functions
 
-| Function         | Description                                                                                                                                                                               |
-| :--------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `group_factor()` | Divides data into groups by a wide range of methods.                                                                                                                                      |
-| `group()`        | Creates grouping factor and adds to the given data frame.                                                                                                                                 |
-| `splt()`         | Creates grouping factor and splits the data by these groups.                                                                                                                              |
-| `partition()`    | Splits data into partitions. Balances a given categorical variable and/or numerical variable between partitions and keeps all data points with a shared ID in the same partition.         |
-| `fold()`         | Creates folds for (repeated) cross-validation. Balances a given categorical variable and/or numerical variable between folds and keeps all data points with a shared ID in the same fold. |
-| `balance()`      | Uses up- and/or downsampling to equalize group sizes. Can balance on ID level. See wrappers: `downsample()`, `upsample()`.                                                                |
+| Function            | Description                                                                                                                                                                               |
+| :------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `group_factor()`    | Divides data into groups by a wide range of methods.                                                                                                                                      |
+| `group()`           | Creates grouping factor and adds to the given data frame.                                                                                                                                 |
+| `splt()`            | Creates grouping factor and splits the data by these groups.                                                                                                                              |
+| `partition()`       | Splits data into partitions. Balances a given categorical variable and/or numerical variable between partitions and keeps all data points with a shared ID in the same partition.         |
+| `fold()`            | Creates folds for (repeated) cross-validation. Balances a given categorical variable and/or numerical variable between folds and keeps all data points with a shared ID in the same fold. |
+| `collapse_groups()` | Collapses existing groups nto a smaller set of groups with categorical, numerical, ID, and size balancing.                                                                                |
+| `balance()`         | Uses up- and/or downsampling to equalize group sizes. Can balance on ID level. See wrappers: `downsample()`, `upsample()`.                                                                |
 
 ### Other tools
 
-| Function                  | Description                                                                                   |
-| :------------------------ | :-------------------------------------------------------------------------------------------- |
-| `all_groups_identical()`  | Checks whether two grouping factors contain the same groups, *memberwise*.                    |
-| `differs_from_previous()` | Finds values, or indices of values, that differ from the previous value by some threshold(s). |
-| `find_starts()`           | Finds values or indices of values that are not the same as the previous value.                |
-| `find_missing_starts()`   | Finds missing starts for the `l_starts` method.                                               |
-| `summarize_group_cols()`  | Calculates summary statistics about group columns (i.e. `factor`s).                           |
-| `%primes%`                | Finds remainder for the `primes` method.                                                      |
-| `%staircase%`             | Finds remainder for the `staircase` method.                                                   |
+| Function                  | Description                                                                                                         |
+| :------------------------ | :------------------------------------------------------------------------------------------------------------------ |
+| `all_groups_identical()`  | Checks whether two grouping factors contain the same groups, *memberwise*.                                          |
+| `differs_from_previous()` | Finds values, or indices of values, that differ from the previous value by some threshold(s).                       |
+| `find_starts()`           | Finds values or indices of values that are not the same as the previous value.                                      |
+| `find_missing_starts()`   | Finds missing starts for the `l_starts` method.                                                                     |
+| `summarize_group_cols()`  | Calculates summary statistics about group columns (i.e. `factor`s).                                                 |
+| `summarize_balances()`    | Summarizes the balances of numeric, categorical, and ID columns in and between groups in one or more group columns. |
+| `ranked_balances()`       | Extracts the standard deviations from the `Summary` data frame from the output of `summarize_balances()`            |
+| `%primes%`                | Finds remainder for the `primes` method.                                                                            |
+| `%staircase%`             | Finds remainder for the `staircase` method.                                                                         |
 
 ## Table of Contents
 
@@ -72,6 +73,7 @@ R package for dividing data into groups.
           - [splt()](#splt\(\))
           - [partition()](#partition\(\))
           - [fold()](#fold\(\))
+          - [collapse\_groups()](#collapse_groups\(\))
           - [balance()](#balance\(\))
       - [Grouping Methods](#grouping-methods)
           - [Specify group size](#specify-group-size)
@@ -127,6 +129,7 @@ df_medium <- data.frame(
   "participant" = factor(rep(c('1', '2', '3', '4', '5', '6'), 3)),
   "age" = rep(c(20, 33, 27, 21, 32, 25), 3),
   "diagnosis" = factor(rep(c('a', 'b', 'a', 'b', 'b', 'a'), 3)),
+  "diagnosis2" = factor(sample(c('x','z','y'), 18, replace = TRUE)),
   "score" = c(10, 24, 15, 35, 24, 14, 24, 40, 30, 
               50, 54, 25, 45, 67, 40, 78, 62, 30))
 df_medium <- df_medium %>% arrange(participant)
@@ -195,11 +198,11 @@ df_small %>%
 
 | .groups | mean\_age |
 | :------ | --------: |
-| 1       |  53.50000 |
-| 2       |  17.50000 |
-| 3       |  48.00000 |
-| 4       |  70.50000 |
-| 5       |  52.33333 |
+| 1       |      53.5 |
+| 2       |      17.5 |
+| 3       |      48.0 |
+| 4       |      70.5 |
+| 5       |      52.3 |
 
 ``` r
 # Using group() with 'l_starts' method
@@ -319,33 +322,33 @@ df_partitioned %>%
 
 <td>
 
-| participant | age | diagnosis | score | session |
-| :---------- | --: | :-------- | ----: | :------ |
-| 1           |  20 | a         |    10 | 1       |
-| 1           |  20 | a         |    24 | 2       |
-| 1           |  20 | a         |    45 | 3       |
-| 4           |  21 | b         |    35 | 1       |
-| 4           |  21 | b         |    50 | 2       |
-| 4           |  21 | b         |    78 | 3       |
-| 5           |  32 | b         |    24 | 1       |
-| 5           |  32 | b         |    54 | 2       |
-| 5           |  32 | b         |    62 | 3       |
-| 6           |  25 | a         |    14 | 1       |
-| 6           |  25 | a         |    25 | 2       |
-| 6           |  25 | a         |    30 | 3       |
+| participant | age | diagnosis | diagnosis2 | score | session |
+| :---------- | --: | :-------- | :--------- | ----: | :------ |
+| 1           |  20 | a         | z          |    10 | 1       |
+| 1           |  20 | a         | y          |    24 | 2       |
+| 1           |  20 | a         | x          |    45 | 3       |
+| 2           |  33 | b         | z          |    24 | 1       |
+| 2           |  33 | b         | x          |    40 | 2       |
+| 2           |  33 | b         | x          |    67 | 3       |
+| 3           |  27 | a         | z          |    15 | 1       |
+| 3           |  27 | a         | x          |    30 | 2       |
+| 3           |  27 | a         | z          |    40 | 3       |
+| 4           |  21 | b         | z          |    35 | 1       |
+| 4           |  21 | b         | x          |    50 | 2       |
+| 4           |  21 | b         | z          |    78 | 3       |
 
 </td>
 
 <td>
 
-| participant | age | diagnosis | score | session |
-| :---------- | --: | :-------- | ----: | :------ |
-| 2           |  33 | b         |    24 | 1       |
-| 2           |  33 | b         |    40 | 2       |
-| 2           |  33 | b         |    67 | 3       |
-| 3           |  27 | a         |    15 | 1       |
-| 3           |  27 | a         |    30 | 2       |
-| 3           |  27 | a         |    40 | 3       |
+| participant | age | diagnosis | diagnosis2 | score | session |
+| :---------- | --: | :-------- | :--------- | ----: | :------ |
+| 5           |  32 | b         | y          |    24 | 1       |
+| 5           |  32 | b         | x          |    54 | 2       |
+| 5           |  32 | b         | z          |    62 | 3       |
+| 6           |  25 | a         | x          |    14 | 1       |
+| 6           |  25 | a         | z          |    25 | 2       |
+| 6           |  25 | a         | x          |    30 | 3       |
 
 </td>
 
@@ -382,26 +385,26 @@ df_folded %>%
   kable()
 ```
 
-| participant | age | diagnosis | score | session | .folds |
-| :---------- | --: | :-------- | ----: | :------ | :----- |
-| 1           |  20 | a         |    10 | 1       | 1      |
-| 1           |  20 | a         |    24 | 2       | 1      |
-| 1           |  20 | a         |    45 | 3       | 1      |
-| 2           |  33 | b         |    24 | 1       | 1      |
-| 2           |  33 | b         |    40 | 2       | 1      |
-| 2           |  33 | b         |    67 | 3       | 1      |
-| 5           |  32 | b         |    24 | 1       | 2      |
-| 5           |  32 | b         |    54 | 2       | 2      |
-| 5           |  32 | b         |    62 | 3       | 2      |
-| 6           |  25 | a         |    14 | 1       | 2      |
-| 6           |  25 | a         |    25 | 2       | 2      |
-| 6           |  25 | a         |    30 | 3       | 2      |
-| 3           |  27 | a         |    15 | 1       | 3      |
-| 3           |  27 | a         |    30 | 2       | 3      |
-| 3           |  27 | a         |    40 | 3       | 3      |
-| 4           |  21 | b         |    35 | 1       | 3      |
-| 4           |  21 | b         |    50 | 2       | 3      |
-| 4           |  21 | b         |    78 | 3       | 3      |
+| participant | age | diagnosis | diagnosis2 | score | session | .folds |
+| :---------- | --: | :-------- | :--------- | ----: | :------ | :----- |
+| 1           |  20 | a         | z          |    10 | 1       | 1      |
+| 1           |  20 | a         | y          |    24 | 2       | 1      |
+| 1           |  20 | a         | x          |    45 | 3       | 1      |
+| 5           |  32 | b         | y          |    24 | 1       | 1      |
+| 5           |  32 | b         | x          |    54 | 2       | 1      |
+| 5           |  32 | b         | z          |    62 | 3       | 1      |
+| 4           |  21 | b         | z          |    35 | 1       | 2      |
+| 4           |  21 | b         | x          |    50 | 2       | 2      |
+| 4           |  21 | b         | z          |    78 | 3       | 2      |
+| 6           |  25 | a         | x          |    14 | 1       | 2      |
+| 6           |  25 | a         | z          |    25 | 2       | 2      |
+| 6           |  25 | a         | x          |    30 | 3       | 2      |
+| 2           |  33 | b         | z          |    24 | 1       | 3      |
+| 2           |  33 | b         | x          |    40 | 2       | 3      |
+| 2           |  33 | b         | x          |    67 | 3       | 3      |
+| 3           |  27 | a         | z          |    15 | 1       | 3      |
+| 3           |  27 | a         | x          |    30 | 2       | 3      |
+| 3           |  27 | a         | z          |    40 | 3       | 3      |
 
 ``` r
 # Show distribution of diagnoses and participants
@@ -414,11 +417,11 @@ df_folded %>%
 | .folds | diagnosis | participant | n |
 | :----- | :-------- | :---------- | -: |
 | 1      | a         | 1           | 3 |
-| 1      | b         | 2           | 3 |
+| 1      | b         | 5           | 3 |
 | 2      | a         | 6           | 3 |
-| 2      | b         | 5           | 3 |
+| 2      | b         | 4           | 3 |
 | 3      | a         | 3           | 3 |
-| 3      | b         | 4           | 3 |
+| 3      | b         | 2           | 3 |
 
 ``` r
 # Show age representation in folds
@@ -431,11 +434,11 @@ df_folded %>%
   kable()
 ```
 
-| .folds | mean\_age |  sd\_age |
-| :----- | --------: | -------: |
-| 1      |      26.5 | 7.120393 |
-| 2      |      28.5 | 3.834058 |
-| 3      |      24.0 | 3.286335 |
+| .folds | mean\_age | sd\_age |
+| :----- | --------: | ------: |
+| 1      |        26 |    6.57 |
+| 2      |        23 |    2.19 |
+| 3      |        30 |    3.29 |
 
 **Notice**, that the we now have the opportunity to include the
 *session* variable and/or use *participant* as a random effect in our
@@ -444,6 +447,102 @@ in one fold.
 
 We also have a balance in the representation of each diagnosis, which
 could give us better, more consistent results.
+
+### collapse\_groups()
+
+Collapses a set of groups into a smaller set of groups while attempting
+to balance the new groups by specified numerical columns, categorical
+columns, level counts in ID columns, and/or the number of rows.
+
+``` r
+# We consider each participant a group
+# and collapse them into 3 new groups
+# We balance the diagnosis2 column, which 
+# is not constant within the participants
+df_collapsed <- collapse_groups(
+  data = df_medium,
+  n = 3,
+  group_cols = 'participant',
+  cat_cols = 'diagnosis2',
+  num_cols = "score"
+) 
+
+# Show df_collapsed ordered by new collapsed groups
+df_collapsed %>% 
+  arrange(.coll_groups) %>%
+  kable()
+```
+
+| participant | age | diagnosis | diagnosis2 | score | session | .coll\_groups |
+| :---------- | --: | :-------- | :--------- | ----: | :------ | :------------ |
+| 5           |  32 | b         | y          |    24 | 1       | 1             |
+| 5           |  32 | b         | x          |    54 | 2       | 1             |
+| 5           |  32 | b         | z          |    62 | 3       | 1             |
+| 6           |  25 | a         | x          |    14 | 1       | 1             |
+| 6           |  25 | a         | z          |    25 | 2       | 1             |
+| 6           |  25 | a         | x          |    30 | 3       | 1             |
+| 3           |  27 | a         | z          |    15 | 1       | 2             |
+| 3           |  27 | a         | x          |    30 | 2       | 2             |
+| 3           |  27 | a         | z          |    40 | 3       | 2             |
+| 4           |  21 | b         | z          |    35 | 1       | 2             |
+| 4           |  21 | b         | x          |    50 | 2       | 2             |
+| 4           |  21 | b         | z          |    78 | 3       | 2             |
+| 1           |  20 | a         | z          |    10 | 1       | 3             |
+| 1           |  20 | a         | y          |    24 | 2       | 3             |
+| 1           |  20 | a         | x          |    45 | 3       | 3             |
+| 2           |  33 | b         | z          |    24 | 1       | 3             |
+| 2           |  33 | b         | x          |    40 | 2       | 3             |
+| 2           |  33 | b         | x          |    67 | 3       | 3             |
+
+``` r
+
+# Summarize the balances of the new groups
+coll_summ <- df_collapsed %>% 
+  summarize_balances(group_cols = '.coll_groups',
+                     cat_cols = "diagnosis2",
+                     num_cols = "score")
+
+coll_summ$Groups %>% 
+  kable()
+```
+
+| .group\_col   | .group | \# rows | mean(score) | sum(score) | \# diag\_x | \# diag\_y | \# diag\_z |
+| :------------ | :----- | ------: | ----------: | ---------: | ---------: | ---------: | ---------: |
+| .coll\_groups | 1      |       6 |        34.8 |        209 |          3 |          1 |          2 |
+| .coll\_groups | 2      |       6 |        41.3 |        248 |          2 |          0 |          4 |
+| .coll\_groups | 3      |       6 |        35.0 |        210 |          3 |          1 |          2 |
+
+``` r
+
+coll_summ$Summary %>% 
+  kable()
+```
+
+| .group\_col   | measure | \# rows | mean(score) | sum(score) | \# diag\_x | \# diag\_y | \# diag\_z |
+| :------------ | :------ | ------: | ----------: | ---------: | ---------: | ---------: | ---------: |
+| .coll\_groups | mean    |       6 |       37.06 |      222.3 |      2.667 |      0.667 |       2.67 |
+| .coll\_groups | median  |       6 |       35.00 |      210.0 |      3.000 |      1.000 |       2.00 |
+| .coll\_groups | SD      |       0 |        3.71 |       22.2 |      0.577 |      0.577 |       1.16 |
+| .coll\_groups | IQR     |       0 |        3.25 |       19.5 |      0.500 |      0.500 |       1.00 |
+| .coll\_groups | min     |       6 |       34.83 |      209.0 |      2.000 |      0.000 |       2.00 |
+| .coll\_groups | max     |       6 |       41.33 |      248.0 |      3.000 |      1.000 |       4.00 |
+
+``` r
+
+# Check the across-groups standard deviations 
+# This is a measure of how balanced the groups are (lower == more balanced)
+# and is especially useful when comparing multiple group columns
+coll_summ %>% 
+  ranked_balances() %>%
+  kable()
+```
+
+| .group\_col   | measure | \# rows | mean(score) | sum(score) | \# diag\_x | \# diag\_y | \# diag\_z |
+| :------------ | :------ | ------: | ----------: | ---------: | ---------: | ---------: | ---------: |
+| .coll\_groups | SD      |       0 |        3.71 |       22.2 |      0.577 |      0.577 |       1.16 |
+
+**Recommended**: By enabling the `auto_tune` setting, we often get a
+much better balance.
 
 ### balance()
 
