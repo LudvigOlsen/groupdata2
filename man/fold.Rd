@@ -216,6 +216,11 @@ and the fold identifiers are transferred to the original rows.
 N.B. When doing extreme pairing of an unequal number of rows,
 the row with the smallest value is placed in a group by itself, and the order is instead:
 smallest, \emph{second smallest, largest, third smallest, second largest}, etc.
+
+N.B. When \code{`num_fold_cols` > 1} and fewer than \code{`num_fold_cols`} fold columns have
+been created after \code{`max_iters`} attempts, we try with \emph{extreme triplets} instead
+(see \code{\link[rearrr:triplet_extremes]{rearrr::triplet_extremes()}}). It groups the elements
+as \emph{smallest, closest to the median, largest, second smallest, second closest to the median, second largest}, etc.
 }
 
 \subsection{cat_col AND id_col}{
