@@ -358,11 +358,8 @@ df_folded_1 <- fold(
   extreme_pairing_levels = 1
 )
 df_folded_1 \%>\%
-  dplyr::group_by(.folds) \%>\%
-  dplyr::summarise(
-    sum_score = sum(score),
-    mean_score = mean(score)
-  )
+  dplyr::ungroup() \%>\%
+  summarize_balances(group_cols = '.folds', num_cols = 'score')
 
 set.seed(2)  # Try with seed 1 as well
 df_folded_2 <- fold(
@@ -372,11 +369,21 @@ df_folded_2 <- fold(
   extreme_pairing_levels = 2
 )
 df_folded_2 \%>\%
-  dplyr::group_by(.folds) \%>\%
-  dplyr::summarise(
-    sum_score = sum(score),
-    mean_score = mean(score)
-  )
+  dplyr::ungroup() \%>\%
+  summarize_balances(group_cols = '.folds', num_cols = 'score')
+
+# We can directly compare how balanced the 'score' is
+# in the two fold columns using a combination of
+# `summarize_balances()` and `ranked_balances()`
+# We see that the second fold column (made with `extreme_pairing_levels = 2`)
+# has a lower standard deviation of its mean scores - meaning that they
+# are more similar and thus more balanced
+df_folded_1$.folds_2 <- df_folded_2$.folds
+df_folded_1 \%>\%
+  dplyr::ungroup() \%>\%
+  summarize_balances(group_cols = c('.folds', '.folds_2'), num_cols = 'score') \%>\%
+  ranked_balances()
+
 }
 \seealso{
 \code{\link{partition}} for balanced partitions

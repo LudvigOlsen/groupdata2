@@ -252,7 +252,7 @@ call_extreme_grouping <- function(
 
   #
   # Wrapper for choosing between
-  # numerically_balanced_group_factor_ and
+  # numerically_balanced_group_factor_pairs_ and
   # numerically_balanced_group_factor_triplets_
   #
 
@@ -260,7 +260,7 @@ call_extreme_grouping <- function(
   if (!isTRUE(use_triplets)){
 
     # Use extreme pairing
-    data[[new_col]] <- numerically_balanced_group_factor_(
+    data[[new_col]] <- numerically_balanced_group_factor_pairs_(
       data = data,
       n = n,
       num_col = num_col,

@@ -4,10 +4,14 @@
 #   Numerically balanced group factor                                       ####
 
 
+##  .................. #< b035f131de4beef545b4052e8c8be0ca ># ..................
+##  Extreme pairing version                                                 ####
+
+
 # Either called by fold() with a n_* method
 # or partition() with the l_sizes method
 
-numerically_balanced_group_factor_ <- function(
+numerically_balanced_group_factor_pairs_ <- function(
   data,
   n,
   num_col,
@@ -17,6 +21,10 @@ numerically_balanced_group_factor_ <- function(
   optimize_for = "mean",
   extreme_pairing_levels = 1,
   force_equal = FALSE) {
+
+  if (unequal_method %ni% c("first","last")){
+    stop('`unequal_method` must be in {first, last}.')
+  }
 
   # Create unique local temporary index variable name
   local_tmp_index_var <- create_tmp_var(data, ".tmp_index_")
@@ -114,45 +122,24 @@ numerically_balanced_group_factor_ <- function(
   # If we are grouping the rearrange IDs
   # I.e. for n_* methods with >= 2*n data points
   if (isTRUE(group_by_rearrange_id)) {
-    num_excessive_rearrange_ids <-
-      nlevels(factor(data[[final_rearrange_var]])) %% num_final_groups
-    has_excessive_rearrange_ids <- num_excessive_rearrange_ids > 0
-
-    # We have extra rearrange IDs to distribute the rows of
-    if (has_excessive_rearrange_ids) {
-      if (!equal_nrows) {
-        # Add index of unequal row to a list of IDs to distribute
-        ids_to_distribute <- dplyr::case_when(
+    # Check whether we have extra rearrange IDs to distribute the rows of
+    excess_list <-
+      get_excessive_rows_(
+        data = data,
+        num_col = num_col,
+        num_final_groups = num_final_groups,
+        final_rearrange_var = final_rearrange_var,
+        nrows_divisible = equal_nrows,
+        nrows_nondivisible_id = dplyr::case_when(
           unequal_method == "first" ~ as.numeric(1),
-          unequal_method == "last" ~ as.numeric(floor(nrow(data) / 2) + 1),
-          unequal_method == "middle" ~ as.numeric(ceiling(nrow(data) / 4) + 1)
-        )
-        if (num_excessive_rearrange_ids > 1) {
-          # Add indices for the remaining number of excess IDs
-          rearrange_ids <- unique(data[[final_rearrange_var]])
-          possible_choices <- rearrange_ids[rearrange_ids != ids_to_distribute]
-          ids_to_distribute <- c(
-            ids_to_distribute,
-            sample(possible_choices, num_excessive_rearrange_ids - 1)
-          )
-        }
-      } else {
-        ids_to_distribute <- sample(
-          unique(data[[final_rearrange_var]]),
-          num_excessive_rearrange_ids
-        )
-      }
-
-      # Extract the actual rows to distribute
-      rows_to_distribute <- data[
-        data[[final_rearrange_var]] %in% ids_to_distribute,
-      ] %>%
-        dplyr::arrange(!!as.name(num_col))
-
-      # Remove the rows that will be distributed after grouping
-      data <- data[
-        data[[final_rearrange_var]] %ni% ids_to_distribute,
-      ]
+          unequal_method == "last" ~ as.numeric(length(unique(data[[final_rearrange_var]])))
+        ),
+        optimize_for = optimize_for
+      )
+    has_excessive_rearrange_ids <- excess_list[["has_excessive_rearrange_ids"]]
+    if (isTRUE(has_excessive_rearrange_ids)){
+      data <- excess_list[["data"]]
+      rows_to_distribute <- excess_list[["rows_to_distribute"]]
     }
 
     # Group the IDs randomly
@@ -171,7 +158,9 @@ numerically_balanced_group_factor_ <- function(
       data_rank_summary <- create_rank_summary(
         data = data,
         levels_col = local_tmp_groups_var,
-        num_col = num_col
+        num_col = num_col,
+        fn = get_optimization_measure_fn(
+          optimize_for=optimize_for)
       )
 
       if (nrow(data_rank_summary) >= nrow(rows_to_distribute)) {
@@ -181,12 +170,13 @@ numerically_balanced_group_factor_ <- function(
         rows_to_distribute[[local_tmp_groups_var]] <- data_rank_summary %>%
           head(nrow(rows_to_distribute)) %>%
           dplyr::pull(!!as.name(local_tmp_groups_var))
+
       } else {
         # When there are more rows to distribute than number of groups
         # we run the balancing again
         # Given that this will mostly happen with a few excess datapoints
         # the following might not be the optimal approach
-        rows_to_distribute[[local_tmp_groups_var]] <- numerically_balanced_group_factor_(
+        rows_to_distribute[[local_tmp_groups_var]] <- numerically_balanced_group_factor_pairs_(
           data = rows_to_distribute,
           n = n,
           num_col = num_col,
@@ -295,9 +285,8 @@ numerically_balanced_group_factor_ <- function(
 }
 
 
-
 ##  .................. #< 82e8f7fb4223b2bacb152fe18c916ee0 ># ..................
-##  Triplets version                                                        ####
+##  Extreme triplets version                                                ####
 
 
 # Similar but using triplets instead of pairs
@@ -328,7 +317,7 @@ numerically_balanced_group_factor_triplets_ <- function(
   # Whether we have an equal number of rows (relevant for pairing)
   nrows_divisible_by_3 <- nrow(data) %% 3 == 0
 
-  # Check if we have enough data for tripletwise folding
+  # Check if we have enough data for triplet-wise folding
   # or if we are running partitioning (l_sizes)
 
   # In partitioning, we group directly on the rows, as that is the way to get
@@ -408,43 +397,24 @@ numerically_balanced_group_factor_triplets_ <- function(
   final_rearrange_var <- tail(triplet_grouping_factors, 1)
 
   # If we are grouping the rearrange IDs
-  # I.e. for n_* methods with >= 2*n data points
+  # I.e. for n_* methods with >= 3*n data points
   if (isTRUE(group_by_rearrange_id)) {
-    num_excessive_rearrange_ids <-
-      nlevels(factor(data[[final_rearrange_var]])) %% num_final_groups
-    has_excessive_rearrange_ids <- num_excessive_rearrange_ids > 0
 
-    # We have extra rearrange IDs to distribute the rows of
-    if (has_excessive_rearrange_ids) {
-      if (!nrows_divisible_by_3) {
-        # Add index of unequal row to a list of IDs to distribute
-        ids_to_distribute <- as.numeric(1)
-        if (num_excessive_rearrange_ids > 1) {
-          # Add indices for the remaining number of excess IDs
-          rearrange_ids <- unique(data[[final_rearrange_var]])
-          possible_choices <- rearrange_ids[rearrange_ids != ids_to_distribute]
-          ids_to_distribute <- c(
-            ids_to_distribute,
-            sample(possible_choices, num_excessive_rearrange_ids - 1)
-          )
-        }
-      } else {
-        ids_to_distribute <- sample(
-          unique(data[[final_rearrange_var]]),
-          num_excessive_rearrange_ids
-        )
-      }
-
-      # Extract the actual rows to distribute
-      rows_to_distribute <- data[
-        data[[final_rearrange_var]] %in% ids_to_distribute,
-        ] %>%
-        dplyr::arrange(!!as.name(num_col))
-
-      # Remove the rows that will be distributed after grouping
-      data <- data[
-        data[[final_rearrange_var]] %ni% ids_to_distribute,
-        ]
+    # Check whether we have extra rearrange IDs to distribute the rows of
+    excess_list <-
+      get_excessive_rows_(
+        data = data,
+        num_col = num_col,
+        num_final_groups = num_final_groups,
+        final_rearrange_var = final_rearrange_var,
+        nrows_divisible = nrows_divisible_by_3,
+        nrows_nondivisible_id = 1,
+        optimize_for = optimize_for
+      )
+    has_excessive_rearrange_ids <- excess_list[["has_excessive_rearrange_ids"]]
+    if (isTRUE(has_excessive_rearrange_ids)){
+      data <- excess_list[["data"]]
+      rows_to_distribute <- excess_list[["rows_to_distribute"]]
     }
 
     # Group the IDs randomly
@@ -458,13 +428,14 @@ numerically_balanced_group_factor_triplets_ <- function(
 
     if (has_excessive_rearrange_ids) {
       # Calculate sums of the other triplet
-      # Get the smallest (and second smallest if we have 2 rows to distribute)
+      # Get the n smallest (where n = rows to distribute)
       # TODO What if extreme_grouping_levels > 1 ???
-      # TODO Should this use the summary statistics from `balance`?? (spread/mean, ...)
       data_rank_summary <- create_rank_summary(
         data = data,
         levels_col = local_tmp_groups_var,
-        num_col = num_col
+        num_col = num_col,
+        fn = get_optimization_measure_fn(
+          optimize_for=optimize_for)
       )
 
       if (nrow(data_rank_summary) >= nrow(rows_to_distribute)) {
@@ -474,6 +445,7 @@ numerically_balanced_group_factor_triplets_ <- function(
         rows_to_distribute[[local_tmp_groups_var]] <- data_rank_summary %>%
           head(nrow(rows_to_distribute)) %>%
           dplyr::pull(!!as.name(local_tmp_groups_var))
+
       } else {
         # When there are more rows to distribute than number of groups
         # we run the balancing again
@@ -514,17 +486,18 @@ numerically_balanced_group_factor_triplets_ <- function(
     # Either using in partition()
     # or fold() with small number of data points <n*3
 
-    # Remove the excess rows and insert first/last after
-    # we have reordered the pairs
-    # TODO: Should we not check if final_rearrange_var has num groups divisible by three instead?
-    # in case of extreme_grouping_levels > 1 ?
-    # TODO Are we sure this is a single excessive rows?
+    # Remove the excess rows and insert first after
+    # we have reordered the triplets
+
     if (is_n_method &&
+        # We can use `nrows_divisible_by_3` as it should not be here
+        # for an n_method if we have enough rows for extreme triplet grouping
         !isTRUE(nrows_divisible_by_3)) {
-      excessive_row <- data[data[[final_rearrange_var]] ==
-                              min(factor_to_num(data[[final_rearrange_var]])), ] %>% print()
+      excessive_rows <- data[data[[final_rearrange_var]] ==
+                               min(factor_to_num(data[[final_rearrange_var]])),] %>%
+        dplyr::sample_frac()
       data <- data[data[[final_rearrange_var]] !=
-                     min(factor_to_num(data[[final_rearrange_var]])), ]
+                     min(factor_to_num(data[[final_rearrange_var]])),]
     }
 
     # Shuffle hierarchy of pairs and pair members
@@ -536,9 +509,9 @@ numerically_balanced_group_factor_triplets_ <- function(
       leaf_has_groups = FALSE
     )
 
-    # Insert the excess row again
+    # Insert the excess row(s) again
     if (isTRUE(is_n_method) && !isTRUE(nrows_divisible_by_3)) {
-      data <- excessive_row %>%
+      data <- excessive_rows %>%
           dplyr::bind_rows(data)
     }
 
@@ -561,4 +534,182 @@ numerically_balanced_group_factor_triplets_ <- function(
   data %>%
     dplyr::pull(!!as.name(local_tmp_groups_var)) %>%
     as.factor()
+}
+
+##  .................. #< 343b07a0c0c09df6eb6f87ce74366fb9 ># ..................
+##  Utils                                                                   ####
+
+
+get_excessive_rows_ <- function(data, num_col, num_final_groups, final_rearrange_var, nrows_divisible,
+                                nrows_nondivisible_id, optimize_for){
+
+  # Find whether and how many IDs to redistribute
+  # Also find whether to redistribute the smallest ID
+  redistribution_info <-
+    get_redistribution_info(
+      data = data,
+      num_col = num_col,
+      num_final_groups = num_final_groups,
+      final_rearrange_var = final_rearrange_var,
+      optimize_for = optimize_for
+    )
+  has_excessive_rearrange_ids = redistribution_info[["has_excessive_rearrange_ids"]]
+  redistribute_smallest_group = redistribution_info[["redistribute_smallest_group"]]
+  redistribute_largest_group = redistribution_info[["redistribute_largest_group"]]
+  num_excessive_rearrange_ids = redistribution_info[["num_excessive_rearrange_ids"]]
+  smallest_group_id = redistribution_info[["smallest_group_id"]]
+  largest_group_id = redistribution_info[["largest_group_id"]]
+
+  # We have extra rearrange IDs to distribute the rows of
+  if (has_excessive_rearrange_ids) {
+    ids_to_distribute <- numeric(0)
+
+    if (!nrows_divisible ||
+        isTRUE(redistribute_smallest_group)) {
+      if (isTRUE(redistribute_smallest_group)) {
+        ids_to_distribute <- smallest_group_id
+      }
+      if (isTRUE(redistribute_largest_group)) {
+        ids_to_distribute <- c(ids_to_distribute, largest_group_id)
+      }
+      if (!nrows_divisible) {
+        if (length(ids_to_distribute) == 0 ||
+            (nrows_nondivisible_id %ni% ids_to_distribute &&
+             num_excessive_rearrange_ids > length(ids_to_distribute))) {
+          ids_to_distribute <- c(ids_to_distribute, nrows_nondivisible_id)
+        }
+      }
+      if (num_excessive_rearrange_ids > length(ids_to_distribute)) {
+        # Add indices for the remaining number of excess IDs
+        rearrange_ids <- unique(data[[final_rearrange_var]])
+        possible_choices <-
+          rearrange_ids[rearrange_ids %ni% ids_to_distribute]
+        ids_to_distribute <- c(
+          ids_to_distribute,
+          sample(
+            possible_choices,
+            num_excessive_rearrange_ids - length(ids_to_distribute)
+          )
+        )
+      }
+    } else {
+      ids_to_distribute <- sample(
+        unique(data[[final_rearrange_var]]),
+        num_excessive_rearrange_ids
+      )
+    }
+
+    # Extract the actual rows to distribute
+    rows_to_distribute <- data[
+      data[[final_rearrange_var]] %in% ids_to_distribute,
+    ] %>%
+      dplyr::arrange(!!as.name(num_col))
+
+    # Remove the rows that will be distributed after grouping
+    data <- data[
+      data[[final_rearrange_var]] %ni% ids_to_distribute,
+    ]
+
+    return(list(
+      "has_excessive_rearrange_ids" = has_excessive_rearrange_ids,
+      "data" = data,
+      "rows_to_distribute" = rows_to_distribute
+    ))
+
+  } else {
+    return(list(
+      "has_excessive_rearrange_ids" = has_excessive_rearrange_ids
+    ))
+  }
+}
+
+get_redistribution_info <- function(data, num_col, num_final_groups, final_rearrange_var, optimize_for){
+
+  smallest_group_id <- NULL
+  largest_group_id <- NULL
+  redistribute_smallest_group <- FALSE
+  redistribute_largest_group <- FALSE
+  num_ids <- nlevels(data[[final_rearrange_var]])
+  num_possible_to_redistribute <- num_ids - num_final_groups
+
+  # Calculate how many IDs we need to redistribute
+  # if we redistribute 1 or 2 IDs
+  to_redistribute_if_one_is_redistributed <- num_ids - calculate_excessive_ids(
+    data,
+    id_col = final_rearrange_var,
+    num_groups = num_final_groups,
+    num_removed = 1)
+  to_redistribute_if_two_are_redistributed <- num_ids - calculate_excessive_ids(
+    data,
+    id_col = final_rearrange_var,
+    num_groups = num_final_groups,
+    num_removed = 2)
+
+  if (to_redistribute_if_one_is_redistributed <= num_possible_to_redistribute &&
+      num_ids > max(2, num_final_groups)){
+    aggr_fn <- get_optimization_measure_fn(optimize_for=optimize_for)
+
+    # If the smallest extreme group in the final_rearrange_var has 1+ standard deviations
+    # up to the second smallest extreme group, we redistribute that
+    tmp_aggr_var <- create_tmp_var(data, tmp_var = '.__aggr__')
+    aggregates <- data %>%
+      dplyr::group_by(!!as.name(final_rearrange_var)) %>%
+      dplyr::summarise(!!tmp_aggr_var := aggr_fn(!!as.name(num_col))) %>%
+      dplyr::arrange(!!as.name(tmp_aggr_var))
+    avg_aggregate <- mean(aggregates[[tmp_aggr_var]])
+    sd_aggregate <- sd(aggregates[[tmp_aggr_var]])
+    two_smallest <- unlist(head(aggregates, 2)[, tmp_aggr_var], use.names = FALSE)
+    two_largest <- unlist(tail(aggregates, 2)[, tmp_aggr_var], use.names = FALSE)
+    smallest_group_id <- as.numeric(as.character(aggregates[[final_rearrange_var]][[1]]))
+    largest_group_id <- as.numeric(as.character(tail(aggregates, 1)[[final_rearrange_var]][[1]]))
+
+    if (two_smallest[[2]] - two_smallest[[1]] > sd_aggregate){
+      # We should redistribute the smallest one
+      redistribute_smallest_group <- TRUE
+    }
+    if (to_redistribute_if_two_are_redistributed <= num_possible_to_redistribute &&
+        two_largest[[2]] - two_largest[[1]] > sd_aggregate){
+      # We should redistribute the smallest one
+      redistribute_largest_group <- TRUE
+    }
+  }
+
+  # Calculate the number of excessive IDs to distribute
+  # num_extreme: Either 0, 1 or 2
+  num_extreme <- sum(c(as.integer(isTRUE(redistribute_smallest_group)),
+                       as.integer(isTRUE(redistribute_smallest_group))))
+  num_excessive_rearrange_ids <- calculate_excessive_ids(
+    data,
+    id_col = final_rearrange_var,
+    num_groups = num_final_groups,
+    num_removed = num_extreme)
+  has_excessive_rearrange_ids <- num_excessive_rearrange_ids > 0
+
+  list(
+    "has_excessive_rearrange_ids" = has_excessive_rearrange_ids,
+    "redistribute_smallest_group" = redistribute_smallest_group,
+    "redistribute_largest_group" = redistribute_largest_group,
+    "num_excessive_rearrange_ids" = num_excessive_rearrange_ids,
+    "smallest_group_id" = smallest_group_id,
+    "largest_group_id" = largest_group_id
+  )
+}
+
+calculate_excessive_ids <- function(data, id_col, num_groups, num_removed=0){
+  # num_removed: Number of IDs already decided to be excessive
+  num_removed + ((nlevels(factor(data[[id_col]])) - num_removed) %% num_groups)
+}
+
+get_optimization_measure_fn <- function(optimize_for){
+  list(
+    'mean' = sum,
+    'spread' = spread_fn <- function(x) {
+      if (length(x) < 2) {
+        return(0)
+      }
+      sd(x)
+    },
+    'min' = min,
+    'max' = max
+  )[[optimize_for]]
 }
