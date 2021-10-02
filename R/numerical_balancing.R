@@ -623,6 +623,7 @@ get_excessive_rows_ <- function(data, num_col, num_final_groups, final_rearrange
   }
 }
 
+
 get_redistribution_info <- function(data, num_col, num_final_groups, final_rearrange_var, optimize_for){
 
   smallest_group_id <- NULL
@@ -634,12 +635,12 @@ get_redistribution_info <- function(data, num_col, num_final_groups, final_rearr
 
   # Calculate how many IDs we need to redistribute
   # if we redistribute 1 or 2 IDs
-  to_redistribute_if_one_is_redistributed <- num_ids - calculate_excessive_ids(
+  to_redistribute_if_one_is_redistributed <- calculate_excessive_ids(
     data,
     id_col = final_rearrange_var,
     num_groups = num_final_groups,
     num_removed = 1)
-  to_redistribute_if_two_are_redistributed <- num_ids - calculate_excessive_ids(
+  to_redistribute_if_two_are_redistributed <- calculate_excessive_ids(
     data,
     id_col = final_rearrange_var,
     num_groups = num_final_groups,
@@ -647,29 +648,30 @@ get_redistribution_info <- function(data, num_col, num_final_groups, final_rearr
 
   if (to_redistribute_if_one_is_redistributed <= num_possible_to_redistribute &&
       num_ids > max(2, num_final_groups)){
-    aggr_fn <- get_optimization_measure_fn(optimize_for=optimize_for)
 
     # If the smallest extreme group in the final_rearrange_var has 1+ standard deviations
     # up to the second smallest extreme group, we redistribute that
-    tmp_aggr_var <- create_tmp_var(data, tmp_var = '.__aggr__')
-    aggregates <- data %>%
-      dplyr::group_by(!!as.name(final_rearrange_var)) %>%
-      dplyr::summarise(!!tmp_aggr_var := aggr_fn(!!as.name(num_col))) %>%
-      dplyr::arrange(!!as.name(tmp_aggr_var))
-    avg_aggregate <- mean(aggregates[[tmp_aggr_var]])
-    sd_aggregate <- sd(aggregates[[tmp_aggr_var]])
-    two_smallest <- unlist(head(aggregates, 2)[, tmp_aggr_var], use.names = FALSE)
-    two_largest <- unlist(tail(aggregates, 2)[, tmp_aggr_var], use.names = FALSE)
-    smallest_group_id <- as.numeric(as.character(aggregates[[final_rearrange_var]][[1]]))
-    largest_group_id <- as.numeric(as.character(tail(aggregates, 1)[[final_rearrange_var]][[1]]))
+    aggr_list <- aggregate_groups_(
+      data = data,
+      final_rearrange_var = final_rearrange_var,
+      num_col = num_col,
+      optimize_for = optimize_for
+    )
+    sd_aggregate <- aggr_list[["sd_aggregate"]]
+    two_smallest <- aggr_list[["two_smallest"]]
+    two_largest <- aggr_list[["two_largest"]]
+    smallest_group_id <- aggr_list[["smallest_group_id"]]
+    largest_group_id <- aggr_list[["largest_group_id"]]
 
     if (two_smallest[[2]] - two_smallest[[1]] > sd_aggregate){
       # We should redistribute the smallest one
       redistribute_smallest_group <- TRUE
     }
-    if (to_redistribute_if_two_are_redistributed <= num_possible_to_redistribute &&
-        two_largest[[2]] - two_largest[[1]] > sd_aggregate){
-      # We should redistribute the smallest one
+
+    if (two_largest[[2]] - two_largest[[1]] > sd_aggregate &&
+        (!isTRUE(redistribute_smallest_group) ||
+         to_redistribute_if_two_are_redistributed <= num_possible_to_redistribute)) {
+      # We should redistribute the largest one
       redistribute_largest_group <- TRUE
     }
   }
@@ -677,7 +679,7 @@ get_redistribution_info <- function(data, num_col, num_final_groups, final_rearr
   # Calculate the number of excessive IDs to distribute
   # num_extreme: Either 0, 1 or 2
   num_extreme <- sum(c(as.integer(isTRUE(redistribute_smallest_group)),
-                       as.integer(isTRUE(redistribute_smallest_group))))
+                       as.integer(isTRUE(redistribute_largest_group))))
   num_excessive_rearrange_ids <- calculate_excessive_ids(
     data,
     id_col = final_rearrange_var,
@@ -695,10 +697,39 @@ get_redistribution_info <- function(data, num_col, num_final_groups, final_rearr
   )
 }
 
+
+aggregate_groups_ <- function(data, final_rearrange_var, num_col, optimize_for){
+  # Note: This is mainly a separate function to allow testing
+  aggr_fn <- get_optimization_measure_fn(optimize_for=optimize_for)
+  tmp_aggr_var <- create_tmp_var(data, tmp_var = '.__aggr__')
+  aggregates <- data %>%
+    dplyr::group_by(!!as.name(final_rearrange_var)) %>%
+    dplyr::summarise(!!tmp_aggr_var := aggr_fn(!!as.name(num_col))) %>%
+    dplyr::arrange(!!as.name(tmp_aggr_var))
+  if (nrow(aggregates) < 2){
+    stop("`aggregate_groups_` found only a single group. `data` must contain multiple groups.")
+  }
+  sd_aggregate <- sd(aggregates[[tmp_aggr_var]])
+  two_smallest <- unlist(head(aggregates, 2)[, tmp_aggr_var], use.names = FALSE)
+  two_largest <- unlist(tail(aggregates, 2)[, tmp_aggr_var], use.names = FALSE)
+  smallest_group_id <- as.numeric(as.character(aggregates[[final_rearrange_var]][[1]]))
+  largest_group_id <- as.numeric(as.character(tail(aggregates, 1)[[final_rearrange_var]][[1]]))
+
+  list(
+    'sd_aggregate' = sd_aggregate,
+    'two_smallest' = two_smallest,
+    'two_largest' = two_largest,
+    'smallest_group_id' = smallest_group_id,
+    'largest_group_id' = largest_group_id
+  )
+}
+
+
 calculate_excessive_ids <- function(data, id_col, num_groups, num_removed=0){
   # num_removed: Number of IDs already decided to be excessive
   num_removed + ((nlevels(factor(data[[id_col]])) - num_removed) %% num_groups)
 }
+
 
 get_optimization_measure_fn <- function(optimize_for){
   list(
