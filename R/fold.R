@@ -429,6 +429,12 @@ run_fold_ <- function(data,
     id_col = id_col
   )
 
+  if (isTRUE(allow_using_triplets)){
+    # Use two extra iterations using triplets instead
+    # *when needed*
+    max_iters <- max_iters + 2
+  }
+
   # Check for existing fold columns
   existing_fold_colnames <- extract_fold_colnames(data)
   num_existing_fold_colnames <- length(existing_fold_colnames)
@@ -533,7 +539,7 @@ run_fold_ <- function(data,
           col_name = current_fold_info[["col_name"]],
           id_aggregation_fn = id_aggregation_fn,
           extreme_pairing_levels = extreme_pairing_levels,
-          use_triplets = isTRUE(allow_using_triplets) && max_iters - times_repeated == 1,
+          use_triplets = isTRUE(allow_using_triplets) && max_iters - times_repeated <= 2,
           method = "n_fill",
           pre_randomize = TRUE
         ) %>%
