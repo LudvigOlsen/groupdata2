@@ -7,7 +7,7 @@
  
   - When possible, it redistributes the smallest and/or largest group if they are 1 standard deviation from the second smallest/largest group to avoid imbalances due to very large scores.
  
-  - Adds use of extreme triplet grouping when too few grouping columns are created with extreme pairing. In some cases, these groupings may be more balanced than with extreme pairing, but on average extreme pairing leads to more balanced groupings.
+  - Adds use of extreme triplet grouping when too few grouping columns are created with extreme pairing. In some cases, these groupings may be more balanced than with extreme pairing, but on average extreme pairing leads to more balanced groupings. See `rearrr::triplet_extremes()` for more on extreme triplet grouping.
 
 * Adds `collapse_groups()` for collapsing a set of existing groups into a smaller set of groups. Can balance the
 new groups by size and by numeric and categorical columns. The more of these you balance at a time, the less balanced each will tend to be. Compare settings by summarizing the balances with `summarize_balances()` afterwards.
