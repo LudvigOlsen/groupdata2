@@ -5,7 +5,7 @@ Authors@R: person("Ludvig Renbo", "Olsen", email = "r-pkgs@ludvigolsen.dk", role
 Description: Methods for dividing data into groups. 
     Create balanced partitions and cross-validation folds. 
     Perform time series windowing and general grouping and splitting of data. 
-    Balance existing groups with up- and downsampling.
+    Balance existing groups with up- and downsampling or collapse them to fewer groups.
 Depends:
     R (>= 3.5)
 License: MIT + file LICENSE
