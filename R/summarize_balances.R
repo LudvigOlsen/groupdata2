@@ -19,24 +19,25 @@
 #'  Summarize the balances of numeric, categorical, and ID columns
 #'  in and between groups in one or more group columns.
 #'
-#'  This tools allows you to quickly and thorughly assess the balance
+#'  This tool allows you to quickly and thoroughly assess the balance
 #'  of different columns between groups. This is for instance useful
 #'  after creating groups with \code{\link[groupdata2:fold]{fold()}},
 #'  \code{\link[groupdata2:partition]{partition()}}, or
 #'  \code{\link[groupdata2:collapse_groups]{collapse_groups()}} to
-#'  check their performance on your data.
+#'  check how well they did and to compare multiple
+#'  groupings.
 #'
 #'  The output contains:
 #'  \enumerate{
-#'    \item \code{`Groups`}: a summary per group.
+#'    \item \code{`Groups`}: a summary per group (per grouping column).
 #'    \item \code{`Summary`}: statistical descriptors of the group summaries.
 #'    \item \code{`Normalized Summary`}: statistical descriptors of a set of
 #'    "normalized" group summaries. (Disabled by default)
 #'  }
 #'
-#'  When evaluating how balanced the grouping columns are, we use
+#'  When comparing how balanced the grouping columns are, we can use
 #'  the standard deviations of the group summary columns. The lower a standard
-#'  deviation is, the more similar the groups are on that column. To quickly
+#'  deviation is, the more similar the groups are in that column. To quickly
 #'  extract these standard deviations, ordered by an aggregated rank,
 #'  use \code{\link[groupdata2:ranked_balances]{ranked_balances()}} on the
 #'   \code{"Summary" data.frame} in the output.
@@ -59,21 +60,24 @@
 #'  categorical level with parts of the name of the categorical column.
 #'  This amount can be controlled with \code{`max_cat_prefix_chars`}.
 #'
-#'  Normalization: The counts of each categorical level is normalized with \code{log(1 + count)}.
+#'  Normalization when \code{`include_normalized`} is enabled:
+#'  The counts of each categorical level is normalized with \code{log(1 + count)}.
 #' @param num_cols Names of numerical columns to summarize.
 #'
 #'  For each column, the \code{mean} and \code{sum} is calculated per group.
 #'
-#'  Normalization: Each column is normalized with \code{`num_normalize_fn`} before
+#'  Normalization when \code{`include_normalized`} is enabled:
+#'  Each column is normalized with \code{`num_normalize_fn`} before
 #'  calculating the \code{mean} and \code{sum} per group.
 #' @param id_cols Names of factor columns with IDs to summarize.
 #'
 #'  The number of unique IDs are counted per group.
 #'
-#'  Normalization: The count of unique IDs is normalized with \code{log(1 + count)}.
-#' @param summarize_size Whether to summarize size (number of rows per group).
+#'  Normalization when \code{`include_normalized`} is enabled:
+#'  The count of unique IDs is normalized with \code{log(1 + count)}.
+#' @param summarize_size Whether to summarize the number of rows per group.
 #' @param include_normalized Whether to calculate and include the
-#'  normalized summary in the output. (logical)
+#'  normalized summary in the output.
 #' @param num_normalize_fn Function for normalizing the \code{`num_cols`} columns before
 #'  calculating normalized group summaries.
 #'
@@ -87,7 +91,7 @@
 #'
 #'  E.g. \code{c("size" = 1, "a_cat_col" = 2, "a_num_col" = 4, "an_id_col" = 2)}.
 #' @family summarization functions
-#' @return \code{list} with three \code{data.frames}:
+#' @return \code{list} with two/three \code{data.frames}:
 #'
 #'  \subsection{Groups}{
 #'   A summary per group.
@@ -101,7 +105,7 @@
 #'  }
 #'
 #'  \subsection{Summary}{
-#'   Statistical descriptors of the columns in \code{`Group`}.
+#'   Statistical descriptors of the columns in \code{`Groups`}.
 #'
 #'   Contains the \code{mean}, \code{median}, standard deviation (\code{SD}),
 #'   interquartile range (\code{IQR}), \code{min}, and \code{max} measures.
@@ -127,14 +131,13 @@
 #'   of the statistical descriptors (especially standard deviations)
 #'   of levels with very different count scales.
 #'
-#'   \code{`num_cols`}: The numerical columns are normalized prior to
+#'   \code{`num_cols`}: The numeric columns are normalized prior to
 #'   summarization by group, using the \code{`num_normalize_fn`} function.
-#'   By default this applies MinMax scaling to columns so they are in the
-#'   range \code{[0, 1]}.
-#'   !!!TODO outliers can make them difficult to compare?!!!
+#'   By default this applies MinMax scaling to columns such that ~95% of the values
+#'   are expected to be in the \code{[0, 1]} range.
 #'
 #'   \code{`id_cols`}: The counts of unique IDs in the original group summaries are
-#'   normalized with with \code{log(1 + count)}.
+#'   normalized with \code{log(1 + count)}.
 #'
 #'   Contains the \code{mean}, \code{median}, standard deviation (\code{SD}),
 #'   interquartile range (\code{IQR}), \code{min}, and \code{max} measures.
@@ -144,6 +147,8 @@
 #' # Attach packages
 #' library(groupdata2)
 #' library(dplyr)
+#'
+#' set.seed(1)
 #'
 #' # Create data frame
 #' df <- data.frame(
@@ -158,17 +163,68 @@
 #' # Using fold()
 #'
 #' ## Without balancing
-#' df_folded <- fold(data = df, k = 3, method = "n_dist")
+#' set.seed(1)
+#' df_folded <- fold(data = df, k = 3)
 #'
-#' ## With cat_col
+#' # Check the balances of the various columns
+#' # As we have not used balancing in `fold()`
+#' # we should not expect it to be amazingly balanced
+#' df_folded %>%
+#'   dplyr::ungroup() %>%
+#'   summarize_balances(
+#'     group_cols = ".folds",
+#'     num_cols = c("score", "age"),
+#'     cat_cols = "diagnosis",
+#'     id_cols="participant"
+#'   )
+#'
+#' ## With balancing
+#' set.seed(1)
 #' df_folded <- fold(
 #'   data = df,
 #'   k = 3,
 #'   cat_col = "diagnosis",
-#'   method = "n_dist"
+#'   num_col = 'score',
+#'   id_col = 'participant'
 #' )
 #'
-#' # summ$Summary %>% ranked_balances()
+#' # Now the balance should be better
+#' # although it may be difficult to get a good balance
+#' # the 'score' column when also balancing on 'diagnosis'
+#' # and keeping all rows per participant in the same fold
+#' df_folded %>%
+#'   dplyr::ungroup() %>%
+#'   summarize_balances(
+#'     group_cols = ".folds",
+#'     num_cols = c("score", "age"),
+#'     cat_cols = "diagnosis",
+#'     id_cols="participant"
+#'   )
+#'
+#' # Comparing multiple grouping columns
+#' # Create 3 fold column that only balance "score"
+#' set.seed(1)
+#' df_folded <- fold(
+#'   data = df,
+#'   k = 3,
+#'   num_fold_cols = 3,
+#'   num_col = 'score'
+#' )
+#'
+#' # Summarize all three grouping cols at once
+#' (summ <- df_folded %>%
+#'   dplyr::ungroup() %>%
+#'   summarize_balances(
+#'     group_cols = paste0(".folds_", 1:3),
+#'     num_cols = c("score")
+#'   )
+#' )
+#'
+#' # Extract the across-group standard deviations
+#' # The group column with the lowest standard deviation(s)
+#' # is the most balanced group column
+#' summ %>% ranked_balances()
+#'
 summarize_balances <- function(
   data,
   group_cols,
@@ -179,7 +235,12 @@ summarize_balances <- function(
   include_normalized = FALSE,
   ranking_weights = NULL,
   num_normalize_fn = function(x) {
-    rearrr::min_max_scale(x, new_min = 0, new_max = 1)
+    rearrr::min_max_scale(
+      x,
+      old_min = quantile(x, .025),
+      old_max = quantile(x, .975),
+      new_min = 0,
+      new_max = 1)
   }) {
 
   #### Check arguments ####
@@ -196,7 +257,7 @@ summarize_balances <- function(
   )
   # End of argument checks ####
 
-  # Calculate needed number of characters in colname prefixes
+  # Calculate needed number of characters in col name prefixes
   # that allows distinguishing between column names
   max_prefix_chars <- calculate_max_prefix_nchars_(cat_cols = cat_cols, num_cols = num_cols)
   max_cat_prefix_chars <- max_prefix_chars[["max_cat_prefix_chars"]]
@@ -988,4 +1049,18 @@ check_summarize_balances_ <- function(
     assert_collection$push("columns that `data` is grouped by can not be used in the arguments.")
   }
   checkmate::reportAssertions(assert_collection)
+  if (!is.null(num_cols)){
+    for (num_col in num_cols){
+      checkmate::assert_numeric(
+        data[[num_col]],
+        finite = TRUE,
+        any.missing = FALSE,
+        add = assert_collection,
+        .var.name = paste0("data[['", num_col, "']]")
+      )
+    }
+  }
+  checkmate::reportAssertions(assert_collection)
+
+  invisible(NULL)
 }
