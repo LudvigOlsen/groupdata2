@@ -682,6 +682,90 @@ test_that("numerically_balanced_group_factor_triplets_() work with n=3", {
 
 })
 
+test_that("numerically_balanced_group_factor_triplets_() work method='l_sizes'", {
+
+  # Create data frame
+  xpectr::set_test_seed(2)
+  df <- data.frame(
+    "participant" = factor(c(1, 3, 5, 6, 7, 8)),
+    "score" = c(79, 85, 140, 69, 87, 92)
+  )
+
+  vbf <- numerically_balanced_group_factor_triplets_(df, 0.5, num_col = "score", method = "l_sizes")
+  df_vbf <- df %>%
+    dplyr::mutate(.groups = vbf)
+
+  group_sums <- df_vbf %>%
+    dplyr::group_by(.groups) %>%
+    dplyr::summarize(group_sum = sum(score))
+
+  expect_equal(vbf, factor(c(2, 1, 1, 1, 2, 2)))
+  expect_equal(group_sums$group_sum, c(294, 258))
+
+  xpectr::set_test_seed(4)
+  vbf <- numerically_balanced_group_factor_triplets_(df, 0.2, num_col = "score", method = "l_sizes")
+  df_vbf <- df %>%
+    dplyr::mutate(.groups = vbf)
+
+  group_sums <- df_vbf %>%
+    dplyr::group_by(.groups) %>%
+    dplyr::summarize(group_sum = sum(score))
+
+  expect_equal(vbf, factor(c(1L, 2L, 2L, 2L, 2L, 2L)))
+  expect_equal(group_sums$group_sum, c(79, 473))
+
+  xpectr::set_test_seed(19)
+  # With 3 partitions
+  vbf <- numerically_balanced_group_factor_triplets_(df, c(0.2, 0.2),
+                                                     num_col = "score",
+                                                     method = "l_sizes")
+  df_vbf <- df %>%
+    dplyr::mutate(.groups = vbf)
+
+  group_sums <- df_vbf %>%
+    dplyr::group_by(.groups) %>%
+    dplyr::summarize(group_sum = sum(score))
+
+  expect_equal(vbf, factor(c(3, 3, 2, 1, 3, 3)))
+  expect_equal(group_sums$group_sum, c(69, 140, 343))
+
+  # With 3 partitions
+  xpectr::set_test_seed(28)
+  vbf <- numerically_balanced_group_factor_triplets_(df, c(0.6, 0.2),
+                                                     num_col = "score",
+                                                     method = "l_sizes")
+  df_vbf <- df %>%
+    dplyr::mutate(.groups = vbf)
+
+  group_sums <- df_vbf %>%
+    dplyr::group_by(.groups) %>%
+    dplyr::summarize(group_sum = sum(score))
+
+  expect_equal(vbf, factor(c(3, 1, 1, 1, 3, 2)))
+  expect_equal(group_sums$group_sum, c(294, 92, 166))
+
+  # Create data frame
+  xpectr::set_test_seed(2)
+  df_larger <- data.frame(
+    "score" = runif(100)
+  )
+
+  # With 3 partitions
+  xpectr::set_test_seed(28)
+  vbf <- numerically_balanced_group_factor_triplets_(df_larger, c(0.3, 0.3),
+                                                     num_col = "score",
+                                                     method = "l_sizes")
+  df_vbf <- df_larger %>%
+    dplyr::mutate(.groups = vbf)
+
+  group_sums <- df_vbf %>%
+    dplyr::group_by(.groups) %>%
+    dplyr::summarize(group_sum = sum(score))
+
+  expect_equal(group_sums$group_sum, c(14.28130, 15.42880, 19.45027), tolerance = 1e-3)
+
+})
+
 test_that("testing calculate_excessive_ids_()", {
   xpectr::set_test_seed(42)
 
