@@ -23,14 +23,13 @@ test_that("unit testing collapse_groups()", {
   #### Combination ####
 
   #### Auto-tune ####
+  # combine_and_fold_combination_
+  # find_best_group_cols_
+  # auto_tune_collapsings
 
 
 
 })
-
-
-
-
 
 test_that("numerical balancing works with collapse_groups()", {
 
@@ -210,7 +209,6 @@ test_that("numerical balancing works with collapse_groups()", {
     summarize_group_balances(".folds", cat_col="diagnosis2", num_col="age", id_col="participant")
 
 })
-
 
 test_that("testing ...()", {
 

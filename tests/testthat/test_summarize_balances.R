@@ -3,6 +3,26 @@ context("summarize_balances()")
 
 
 
+test_that("testing utils()", {
+  xpectr::set_test_seed(42)
+  # TODO
+  # run_summarize_balances
+  # calculate_max_prefix_nchars_
+  # create_group_balance_summaries_
+  # create_empty_summary_
+  # create_size_summary_
+  # create_id_summaries_
+  # create_num_summaries_
+  # create_cat_summaries_
+  # measure_summary_numerics_
+  # add_sd_ranks
+  #rank_numeric_cols
+  #mean_rank_numeric_cols
+  #weighted_mean_()
+  # ...
+
+})
+
 test_that("fuzz testing check_summarize_balances_()", {
 
   xpectr::set_test_seed(42)
