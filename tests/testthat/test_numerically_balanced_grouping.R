@@ -1527,11 +1527,6 @@ test_that("testing get_excessive_rows_()", {
   ## Finished testing 'excess$rows_to_distribute'                           ####
 
 
-  expect_equal(
-    names(excess),
-    "has_excessive_rearrange_ids",
-    fixed = TRUE
-  )
 
 })
 
