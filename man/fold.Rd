@@ -17,6 +17,7 @@ fold(
   num_fold_cols = 1,
   unique_fold_cols_only = TRUE,
   max_iters = 5,
+  use_of_triplets = "fill",
   handle_existing_fold_cols = "keep_warn",
   parallel = FALSE
 )
@@ -158,6 +159,43 @@ when specifying \code{`cat_col`}, \code{`id_col`} and \code{`num_col`}.
 Note that we can end up with fewer columns than specified in \code{`num_fold_cols`}.
 
 N.B. Only used when \code{`num_fold_cols` > 1}.}
+
+\item{use_of_triplets}{\code{"fill"}, \code{"instead"} or \code{"never"}.
+
+When to use extreme triplet grouping in numerical balancing (when \code{`num_col`} is specified).
+
+\subsection{fill (default)}{
+When extreme pairing cannot create enough unique fold columns, use extreme triplet grouping
+to create additional unique fold columns.
+}
+\subsection{instead}{
+Use extreme triplet grouping instead of extreme pairing. For some datasets, grouping in triplets
+give better balancing than grouping in pairs. This can be worth exploring when
+numerical balancing is important.
+
+Tip: Compare the balances with \code{\link[groupdata2:summarize_balances]{summarize_balances()}} and
+\code{\link[groupdata2:ranked_balances]{ranked_balances()}}.
+}
+\subsection{never}{
+Never use extreme triplet grouping.
+}
+
+\subsection{Extreme triplet grouping}{
+Similar to extreme pairing (see \code{Details >> num_col}), extreme triplet grouping
+orders the rows as \emph{smallest, closest to the median, largest, second smallest, second
+closest to the median, second largest,} etc. Each triplet gets a group identifier
+and we either perform recursive extreme triplet grouping on the identifiers or fold
+the identifiers and transfer the fold IDs to the original rows.
+
+For some datasets, this can be give more balanced groups than extreme pairing, but
+on average, extreme pairing works better. Due to the grouping into triplets instead of pairs
+they tend to create different groupings though, so when creating many fold columns
+and extreme pairing cannot create enough unique fold columns, we can create the remaining
+(or at least some additional number) with extreme triplet grouping.
+
+Extreme triplet grouping is implemented in
+\code{\link[rearrr:triplet_extremes]{rearrr::triplet_extremes()}}.
+}}
 
 \item{handle_existing_fold_cols}{How to handle existing fold columns.
 Either \code{"keep_warn"}, \code{"keep"}, or \code{"remove"}.

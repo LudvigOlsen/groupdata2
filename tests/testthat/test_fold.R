@@ -497,18 +497,26 @@ test_that("repeated folding works in fold()", {
 
   # Compare to without use of extreme triplets
   xpectr::set_test_seed(1)
-  df_folded_4reps_to_triplets <- internal_fold_(head(df, 7), 2,
-                          num_col = "score", num_fold_cols = 10,
-                          handle_existing_fold_cols = "remove",
-                          use_of_triplets = 'none')
+  df_folded_4reps_to_triplets <- fold(
+    head(df, 7),
+    2,
+    num_col = "score",
+    num_fold_cols = 10,
+    handle_existing_fold_cols = "remove",
+    use_of_triplets = 'never'
+  )
   expect_equal(length(extract_fold_colnames(df_folded_4reps_to_triplets)), 4)
 
   # Compare to only using extreme triplets
   xpectr::set_test_seed(1)
-  df_folded_4reps_to_triplets <- internal_fold_(head(df, 7), 2,
-                                                num_col = "score", num_fold_cols = 10,
-                                                handle_existing_fold_cols = "remove",
-                                                use_of_triplets = 'instead')
+  df_folded_4reps_to_triplets <- fold(
+    head(df, 7),
+    2,
+    num_col = "score",
+    num_fold_cols = 10,
+    handle_existing_fold_cols = "remove",
+    use_of_triplets = 'instead'
+  )
   expect_equal(length(extract_fold_colnames(df_folded_4reps_to_triplets)), 4)
 
 
@@ -2463,7 +2471,7 @@ test_that("multiple k values in repeated folding()", {
 
 })
 
-test_that("repeated folding with extreme triplets works in internal_fold_()", {
+test_that("repeated folding with extreme triplets works in fold()", {
   xpectr::set_test_seed(1)
   df <- data.frame(
     "participant" = factor(rep(c("1", "2", "3", "4", "5", "6"), 3)),
@@ -2476,12 +2484,12 @@ test_that("repeated folding with extreme triplets works in internal_fold_()", {
 
   xpectr::set_test_seed(1)
   # Using only pairing with 1 possible fold column
-  df_folded_1reps_pairing <- internal_fold_(
+  df_folded_1reps_pairing <- fold(
     head(df, 5), 2,
     num_col = "score",
     num_fold_cols = 10,
     handle_existing_fold_cols = "remove",
-    use_of_triplets = 'none')
+    use_of_triplets = 'never')
   expect_equal(length(extract_fold_colnames(df_folded_1reps_pairing)), 1)
   expect_equal(
     as.character(df_folded_1reps_pairing$.folds_1),
@@ -2496,7 +2504,7 @@ test_that("repeated folding with extreme triplets works in internal_fold_()", {
   # Scores 5 and 23 (smallest two) are put in the same
   # group always, and the remaining triplet is split into
   # the three possible 1:2 splits
-  df_folded_3reps_triplets <- internal_fold_(
+  df_folded_3reps_triplets <- fold(
     head(df, 5), 2,
     num_col = "score",
     num_fold_cols = 10,
@@ -2518,7 +2526,7 @@ test_that("repeated folding with extreme triplets works in internal_fold_()", {
 
   xpectr::set_test_seed(1)
   # Using pairing and filling with triplet grouping
-  df_folded_4reps_mixed <- internal_fold_(
+  df_folded_4reps_mixed <- fold(
     head(df, 5), 2,
     num_col = "score",
     num_fold_cols = 10,
@@ -2568,7 +2576,7 @@ test_that("repeated folding with extreme triplets works in internal_fold_()", {
   xpectr::set_test_seed(2)
   # Using only triplet grouping
   # Dataset has #rows divisibly by 3
-  df_folded_15reps_triplets <- internal_fold_(
+  df_folded_15reps_triplets <- fold(
     head(df, 9), 2,
     num_col = "score",
     num_fold_cols = 15,
@@ -2579,17 +2587,17 @@ test_that("repeated folding with extreme triplets works in internal_fold_()", {
   # Pairings can only find 8 groupings, while triplets
   # had no problem finding 15 (possibly more)
   xpectr::set_test_seed(2)
-  df_folded_8reps_pairs <- internal_fold_(
+  df_folded_8reps_pairs <- fold(
     head(df, 9), 2,
     num_col = "score",
     num_fold_cols = 15,
     handle_existing_fold_cols = "remove",
-    use_of_triplets = 'none')
+    use_of_triplets = 'never')
   expect_equal(length(extract_fold_colnames(df_folded_8reps_pairs)), 8)
 
   # Fill up with triplets
   xpectr::set_test_seed(2)
-  df_folded_15reps_mixed <- internal_fold_(
+  df_folded_15reps_mixed <- fold(
     head(df, 9), 2,
     num_col = "score",
     num_fold_cols = 15,
@@ -2644,9 +2652,9 @@ test_that("repeated folding with extreme triplets works in internal_fold_()", {
 
   xpectr::set_test_seed(1)
   # With num_col
-  df_folded <- internal_fold_(df, 3, num_col = "score", num_fold_cols = 100, use_of_triplets = 'instead')
-  df_folded_paired <- internal_fold_(df, 3, num_col = "score", num_fold_cols = 100, use_of_triplets = 'none')
-  df_folded_random <- internal_fold_(df, 3, num_fold_cols = 100)
+  df_folded <- fold(df, 3, num_col = "score", num_fold_cols = 100, use_of_triplets = 'instead')
+  df_folded_paired <- fold(df, 3, num_col = "score", num_fold_cols = 100, use_of_triplets = 'never')
+  df_folded_random <- fold(df, 3, num_fold_cols = 100)
 
   triplet_balance <- df_folded %>%
     summarize_balances(group_cols = paste0('.folds_', 1:100), num_cols = "score") %>%

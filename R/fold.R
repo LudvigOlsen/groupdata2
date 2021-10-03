@@ -174,6 +174,42 @@ if (getRversion() >= "2.15.1")
 #'  Note that we can end up with fewer columns than specified in \code{`num_fold_cols`}.
 #'
 #'  N.B. Only used when \code{`num_fold_cols` > 1}.
+#' @param use_of_triplets \code{"fill"}, \code{"instead"} or \code{"never"}.
+#'
+#'  When to use extreme triplet grouping in numerical balancing (when \code{`num_col`} is specified).
+#'
+#'  \subsection{fill (default)}{
+#'  When extreme pairing cannot create enough unique fold columns, use extreme triplet grouping
+#'  to create additional unique fold columns.
+#'  }
+#'  \subsection{instead}{
+#'  Use extreme triplet grouping instead of extreme pairing. For some datasets, grouping in triplets
+#'  give better balancing than grouping in pairs. This can be worth exploring when
+#'  numerical balancing is important.
+#'
+#'  Tip: Compare the balances with \code{\link[groupdata2:summarize_balances]{summarize_balances()}} and
+#'  \code{\link[groupdata2:ranked_balances]{ranked_balances()}}.
+#'  }
+#'  \subsection{never}{
+#'  Never use extreme triplet grouping.
+#'  }
+#'
+#'  \subsection{Extreme triplet grouping}{
+#'  Similar to extreme pairing (see \code{Details >> num_col}), extreme triplet grouping
+#'  orders the rows as \emph{smallest, closest to the median, largest, second smallest, second
+#'  closest to the median, second largest,} etc. Each triplet gets a group identifier
+#'  and we either perform recursive extreme triplet grouping on the identifiers or fold
+#'  the identifiers and transfer the fold IDs to the original rows.
+#'
+#'  For some datasets, this can be give more balanced groups than extreme pairing, but
+#'  on average, extreme pairing works better. Due to the grouping into triplets instead of pairs
+#'  they tend to create different groupings though, so when creating many fold columns
+#'  and extreme pairing cannot create enough unique fold columns, we can create the remaining
+#'  (or at least some additional number) with extreme triplet grouping.
+#'
+#'  Extreme triplet grouping is implemented in
+#'  \code{\link[rearrr:triplet_extremes]{rearrr::triplet_extremes()}}.
+#'  }
 #' @param handle_existing_fold_cols How to handle existing fold columns.
 #'  Either \code{"keep_warn"}, \code{"keep"}, or \code{"remove"}.
 #'
@@ -374,6 +410,7 @@ fold <- function(data,
                  num_fold_cols = 1,
                  unique_fold_cols_only = TRUE,
                  max_iters = 5,
+                 use_of_triplets = 'fill',
                  handle_existing_fold_cols = "keep_warn",
                  parallel = FALSE) {
 
@@ -407,27 +444,17 @@ fold <- function(data,
     method = method,
     id_aggregation_fn = id_aggregation_fn,
     extreme_pairing_levels = extreme_pairing_levels,
-    use_of_triplets = 'fill',
     num_fold_cols = num_fold_cols,
     unique_fold_cols_only = unique_fold_cols_only,
     max_iters = max_iters,
+    use_of_triplets = use_of_triplets,
     handle_existing_fold_cols = handle_existing_fold_cols,
     parallel = parallel
   )
 
 }
 
-
-#' @title Internal version of \code{`fold()`}
-#' @description
-#'  Internal version of \code{`fold()`} that allows setting the use of `triplets` and avoids
-#'  argument checks.
-#' @inheritParams fold
-#' @param use_of_triplets How to use extreme triplets in numeric balancing.
-#'  One of \code{'fill'}, \code{'instead'}, \code{'none'}.
-#'
-#'  When \code{'instead'}, extreme \emph{pairing} is replaced by extreme \emph{triplet grouping}.
-#' @keywords internal
+# Avoid argument checks
 internal_fold_ <- function(data,
                            k = 5,
                            cat_col = NULL,
@@ -436,17 +463,12 @@ internal_fold_ <- function(data,
                            method = "n_dist",
                            id_aggregation_fn = sum,
                            extreme_pairing_levels = 1,
-                           use_of_triplets = 'fill', # instead, none
                            num_fold_cols = 1,
                            unique_fold_cols_only = TRUE,
                            max_iters = 5,
+                           use_of_triplets = 'fill', # instead, none
                            handle_existing_fold_cols = "keep_warn",
                            parallel = FALSE) {
-
-  # Check arguments ####
-  checkmate::assert_string(use_of_triplets)
-  checkmate::assert_names(use_of_triplets, subset.of = c('fill', 'instead', 'none'))
-  # End of argument checks ####
 
   # Apply by group (recursion)
   run_by_group_df(
@@ -847,6 +869,7 @@ check_fold_once <- function(data,
                             num_fold_cols,
                             unique_fold_cols_only,
                             max_iters,
+                            use_of_triplets,
                             handle_existing_fold_cols,
                             parallel) {
   # Check arguments ####
@@ -854,6 +877,7 @@ check_fold_once <- function(data,
   checkmate::assert_data_frame(x = data,
                                min.rows = 1,
                                add = assert_collection)
+  checkmate::assert_string(use_of_triplets, add = assert_collection)
   checkmate::reportAssertions(assert_collection)
   checkmate::assert_numeric(
     x = k,
@@ -903,6 +927,9 @@ check_fold_once <- function(data,
   checkmate::assert_function(x = id_aggregation_fn, add = assert_collection)
   checkmate::assert_string(x = handle_existing_fold_cols,
                            add = assert_collection)
+  checkmate::assert_names(use_of_triplets, subset.of = c('fill', 'instead', 'never', 'none'),
+                          add = assert_collection)
+  # End of argument checks ####
   checkmate::reportAssertions(assert_collection)
 
   if (length(k) > 1 && length(k) != num_fold_cols){
