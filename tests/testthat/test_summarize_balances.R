@@ -304,7 +304,7 @@ test_that("fuzz testing check_summarize_balances_()", {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
-  expect_equal(
+  expect_match(
     xpectr::strip(side_effects_19400[['error']]),
     xpectr::strip(
       ifelse(
