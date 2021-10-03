@@ -427,6 +427,7 @@ fold <- function(data,
     num_fold_cols = num_fold_cols,
     unique_fold_cols_only = unique_fold_cols_only,
     max_iters = max_iters,
+    use_of_triplets = use_of_triplets,
     handle_existing_fold_cols = handle_existing_fold_cols,
     parallel = parallel
   )
