@@ -445,7 +445,7 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   # Generate expectations for 'collapse_groups'
   # Tip: comment out the gxs_function() call
   # so it is easy to regenerate the tests
-  xpectr::set_test_seed(42)
+  # xpectr::set_test_seed(42)
   # xpectr::gxs_function(
   #   fn = collapse_groups,
   #   args_values = list(
@@ -462,7 +462,7 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   #     "auto_tune" = list(FALSE, 1, NA), # TRUE is tested elsewhere
   #     "weights" = list(NULL, c("size" = 2, "answer" = 7, "score" = 1, "participant" = 2),
   #                      c("size" = 3, "nope" = 5), c("participant" = 2,"participant_2" = 2),
-  #                      list("size" = 2, "answer" = 7), list("size" = NA, "answer" = 7)
+  #                      list("size" = 2, "answer" = 7), list("size" = NA, "answer" = 7),
   #                      1, NA),
   #     "method" = list("balance", "ascending", "descending", "none", list("balance"), 1, NA),
   #     "group_aggregation_fn" = list(mean, sum, sd, 2, NA),
@@ -952,95 +952,20 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
-  # TODO WRONG BEHAVIOUR
-  # Also, check multiple group_cols work
-
   # Testing collapse_groups(data = df, n = 3, group_cols...
   # Changed from baseline: group_cols = c(".fold...
   xpectr::set_test_seed(42)
-  # Assigning output
-  output_19346 <- collapse_groups(data = df, n = 3, group_cols = c(".folds", "participant"), cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE)
-  # Testing class
+  # Testing side effects
+  # Assigning side effects
+  side_effects_19346 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = c(".folds", "participant"), cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    class(output_19346),
-    c("tbl_df", "tbl", "data.frame"),
-    fixed = TRUE)
-  # Testing column values
-  expect_equal(
-    xpectr::smpl(output_19346[["participant"]], n = 30),
-    structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
-      18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
-      8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
-      "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
-      "19", "20"), class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_19346[["participant_2"]], n = 30),
-    structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
-      18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
-      8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
-      "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
-      "19", "20"), class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_19346[["age"]], n = 30),
-    c(65, 42, 91, 83, 83, 40, 80, 80, 88, 88, 10, 10, 93, 93, 46, 46,
-      29, 29, 81, 81, 81, 62, 62, 50, 50, 13, 13, 61, 61, 61),
-    tolerance = 1e-4)
-  expect_equal(
-    xpectr::smpl(output_19346[["answer"]], n = 30),
-    structure(c(4L, 3L, 4L, 2L, 2L, 1L, 3L, 3L, 1L, 1L, 1L, 2L, 2L,
-      4L, 3L, 3L, 1L, 4L, 4L, 3L, 4L, 1L, 4L, 3L, 4L, 4L, 3L, 3L,
-      2L, 4L), .Label = c("a", "b", "c", "d"), class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_19346[["score"]], n = 30),
-    c(28, 61, 1, 52, 19, 40, 27, 35, 91, 90, 43, 5, 18, 25, 86, 51,
-      17, 36, 63, 69, 30, 75, 41, 54, 73, 9, 95, 13, 8, 39),
-    tolerance = 1e-4)
-  expect_equal(
-    xpectr::smpl(output_19346[["session"]], n = 30),
-    c("1", "1", "1", "2", "1", "3", "3", "2", "1", "3", "1", "3", "2",
-      "3", "2", "1", "2", "1", "1", "3", "2", "1", "3", "1", "2",
-      "1", "2", "3", "1", "2"),
+    xpectr::strip(side_effects_19346[['error']]),
+    xpectr::strip("1 assertions failed:\n * All columns in 'c(group_cols, cat_cols, num_cols, id_cols)' must be unique. Found duplicates: 'participant'"),
     fixed = TRUE)
   expect_equal(
-    xpectr::smpl(output_19346[[".folds"]], n = 30),
-    structure(c(6L, 6L, 7L, 7L, 7L, 4L, 4L, 4L, 6L, 6L, 2L, 2L, 1L,
-      1L, 8L, 8L, 2L, 2L, 5L, 5L, 5L, 8L, 8L, 3L, 3L, 3L, 3L, 1L,
-      1L, 1L), .Label = c("1", "2", "3", "4", "5", "6", "7", "8"),
-      class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_19346[[".collg"]], n = 30),
-    structure(c(3L, 3L, 2L, 2L, 2L, 1L, 3L, 3L, 1L, 1L, 2L, 2L, 2L,
-      2L, 2L, 2L, 3L, 3L, 1L, 1L, 1L, 3L, 3L, 1L, 1L, 1L, 1L, 2L,
-      2L, 2L), .Label = c("1", "2", "3"), class = "factor"))
-  # Testing column names
-  expect_equal(
-    names(output_19346),
-    c("participant", "participant_2", "age", "answer", "score", "session",
-      ".folds", ".collg"),
+    xpectr::strip(side_effects_19346[['error_class']]),
+    xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
-  # Testing column classes
-  expect_equal(
-    xpectr::element_classes(output_19346),
-    c("factor", "factor", "integer", "factor", "integer", "character",
-      "factor", "factor"),
-    fixed = TRUE)
-  # Testing column types
-  expect_equal(
-    xpectr::element_types(output_19346),
-    c("integer", "integer", "integer", "integer", "integer", "character",
-      "integer", "integer"),
-    fixed = TRUE)
-  # Testing dimensions
-  expect_equal(
-    dim(output_19346),
-    c(53L, 8L))
-  # Testing group keys
-  expect_equal(
-    colnames(dplyr::group_keys(output_19346)),
-    character(0),
-    fixed = TRUE)
-
-  # TODO FIX
 
   # Testing collapse_groups(data = df, n = 3, group_cols...
   # Changed from baseline: group_cols = "answer"
@@ -1049,93 +974,12 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   # Assigning side effects
   side_effects_12554 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = "answer", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_12554[['warnings']]),
-    xpectr::strip("Combining the standardized level counts for the `cat_cols` column 'answer' led to a zero-variance vector. Consider not balancing this column or change the included `cat_levels`."),
+    xpectr::strip(side_effects_12554[['error']]),
+    xpectr::strip("1 assertions failed:\n * All columns in 'c(group_cols, cat_cols, num_cols, id_cols)' must be unique. Found duplicates: 'answer'"),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_12554[['messages']]),
-    xpectr::strip(character(0)),
-    fixed = TRUE)
-  # Assigning output
-  output_12554 <- xpectr::suppress_mw(collapse_groups(data = df, n = 3, group_cols = "answer", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE))
-  # Testing class
-  expect_equal(
-    class(output_12554),
-    c("tbl_df", "tbl", "data.frame"),
-    fixed = TRUE)
-  # Testing column values
-  expect_equal(
-    xpectr::smpl(output_12554[["participant"]], n = 30),
-    structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
-      18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
-      8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
-      "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
-      "19", "20"), class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_12554[["participant_2"]], n = 30),
-    structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
-      18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
-      8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
-      "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
-      "19", "20"), class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_12554[["age"]], n = 30),
-    c(65, 42, 91, 83, 83, 40, 80, 80, 88, 88, 10, 10, 93, 93, 46, 46,
-      29, 29, 81, 81, 81, 62, 62, 50, 50, 13, 13, 61, 61, 61),
-    tolerance = 1e-4)
-  expect_equal(
-    xpectr::smpl(output_12554[["answer"]], n = 30),
-    structure(c(4L, 3L, 4L, 2L, 2L, 1L, 3L, 3L, 1L, 1L, 1L, 2L, 2L,
-      4L, 3L, 3L, 1L, 4L, 4L, 3L, 4L, 1L, 4L, 3L, 4L, 4L, 3L, 3L,
-      2L, 4L), .Label = c("a", "b", "c", "d"), class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_12554[["score"]], n = 30),
-    c(28, 61, 1, 52, 19, 40, 27, 35, 91, 90, 43, 5, 18, 25, 86, 51,
-      17, 36, 63, 69, 30, 75, 41, 54, 73, 9, 95, 13, 8, 39),
-    tolerance = 1e-4)
-  expect_equal(
-    xpectr::smpl(output_12554[["session"]], n = 30),
-    c("1", "1", "1", "2", "1", "3", "3", "2", "1", "3", "1", "3", "2",
-      "3", "2", "1", "2", "1", "1", "3", "2", "1", "3", "1", "2",
-      "1", "2", "3", "1", "2"),
-    fixed = TRUE)
-  expect_equal(
-    xpectr::smpl(output_12554[[".folds"]], n = 30),
-    structure(c(6L, 6L, 7L, 7L, 7L, 4L, 4L, 4L, 6L, 6L, 2L, 2L, 1L,
-      1L, 8L, 8L, 2L, 2L, 5L, 5L, 5L, 8L, 8L, 3L, 3L, 3L, 3L, 1L,
-      1L, 1L), .Label = c("1", "2", "3", "4", "5", "6", "7", "8"),
-      class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_12554[[".collg"]], n = 30),
-    structure(c(1L, 3L, 1L, 1L, 1L, 2L, 3L, 3L, 2L, 2L, 2L, 1L, 1L,
-      1L, 3L, 3L, 2L, 1L, 1L, 3L, 1L, 2L, 1L, 3L, 1L, 1L, 3L, 3L,
-      1L, 1L), .Label = c("1", "2", "3"), class = "factor"))
-  # Testing column names
-  expect_equal(
-    names(output_12554),
-    c("participant", "participant_2", "age", "answer", "score", "session",
-      ".folds", ".collg"),
-    fixed = TRUE)
-  # Testing column classes
-  expect_equal(
-    xpectr::element_classes(output_12554),
-    c("factor", "factor", "integer", "factor", "integer", "character",
-      "factor", "factor"),
-    fixed = TRUE)
-  # Testing column types
-  expect_equal(
-    xpectr::element_types(output_12554),
-    c("integer", "integer", "integer", "integer", "integer", "character",
-      "integer", "integer"),
-    fixed = TRUE)
-  # Testing dimensions
-  expect_equal(
-    dim(output_12554),
-    c(53L, 8L))
-  # Testing group keys
-  expect_equal(
-    colnames(dplyr::group_keys(output_12554)),
-    character(0),
+    xpectr::strip(side_effects_12554[['error_class']]),
+    xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
   # Testing collapse_groups(data = df, n = 3, group_cols...
@@ -1206,98 +1050,26 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   side_effects_14749 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "score", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_14749[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'data[['score']]': Must be of type 'factor', not 'integer'."),
+    xpectr::strip("1 assertions failed:\n * All columns in 'c(group_cols, cat_cols, num_cols, id_cols)' must be unique. Found duplicates: 'score'"),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_14749[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
-  # TODO FIX
-
   # Testing collapse_groups(data = df, n = 3, group_cols...
   # Changed from baseline: cat_cols = ".folds"
   xpectr::set_test_seed(42)
-  # Assigning output
-  output_15603 <- collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = ".folds", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE)
-  # Testing class
+  # Testing side effects
+  # Assigning side effects
+  side_effects_15603 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = ".folds", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    class(output_15603),
-    c("tbl_df", "tbl", "data.frame"),
-    fixed = TRUE)
-  # Testing column values
-  expect_equal(
-    xpectr::smpl(output_15603[["participant"]], n = 30),
-    structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
-      18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
-      8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
-      "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
-      "19", "20"), class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_15603[["participant_2"]], n = 30),
-    structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
-      18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
-      8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
-      "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
-      "19", "20"), class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_15603[["age"]], n = 30),
-    c(65, 42, 91, 83, 83, 40, 80, 80, 88, 88, 10, 10, 93, 93, 46, 46,
-      29, 29, 81, 81, 81, 62, 62, 50, 50, 13, 13, 61, 61, 61),
-    tolerance = 1e-4)
-  expect_equal(
-    xpectr::smpl(output_15603[["answer"]], n = 30),
-    structure(c(4L, 3L, 4L, 2L, 2L, 1L, 3L, 3L, 1L, 1L, 1L, 2L, 2L,
-      4L, 3L, 3L, 1L, 4L, 4L, 3L, 4L, 1L, 4L, 3L, 4L, 4L, 3L, 3L,
-      2L, 4L), .Label = c("a", "b", "c", "d"), class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_15603[["score"]], n = 30),
-    c(28, 61, 1, 52, 19, 40, 27, 35, 91, 90, 43, 5, 18, 25, 86, 51,
-      17, 36, 63, 69, 30, 75, 41, 54, 73, 9, 95, 13, 8, 39),
-    tolerance = 1e-4)
-  expect_equal(
-    xpectr::smpl(output_15603[["session"]], n = 30),
-    c("1", "1", "1", "2", "1", "3", "3", "2", "1", "3", "1", "3", "2",
-      "3", "2", "1", "2", "1", "1", "3", "2", "1", "3", "1", "2",
-      "1", "2", "3", "1", "2"),
+    xpectr::strip(side_effects_15603[['error']]),
+    xpectr::strip("1 assertions failed:\n * All columns in 'c(group_cols, cat_cols, num_cols, id_cols)' must be unique. Found duplicates: '.folds'"),
     fixed = TRUE)
   expect_equal(
-    xpectr::smpl(output_15603[[".folds"]], n = 30),
-    structure(c(6L, 6L, 7L, 7L, 7L, 4L, 4L, 4L, 6L, 6L, 2L, 2L, 1L,
-      1L, 8L, 8L, 2L, 2L, 5L, 5L, 5L, 8L, 8L, 3L, 3L, 3L, 3L, 1L,
-      1L, 1L), .Label = c("1", "2", "3", "4", "5", "6", "7", "8"),
-      class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_15603[[".collg"]], n = 30),
-    structure(c(2L, 2L, 1L, 1L, 1L, 3L, 3L, 3L, 2L, 2L, 3L, 3L, 3L,
-      3L, 1L, 1L, 3L, 3L, 2L, 2L, 2L, 1L, 1L, 2L, 2L, 2L, 2L, 3L,
-      3L, 3L), .Label = c("1", "2", "3"), class = "factor"))
-  # Testing column names
-  expect_equal(
-    names(output_15603),
-    c("participant", "participant_2", "age", "answer", "score", "session",
-      ".folds", ".collg"),
-    fixed = TRUE)
-  # Testing column classes
-  expect_equal(
-    xpectr::element_classes(output_15603),
-    c("factor", "factor", "integer", "factor", "integer", "character",
-      "factor", "factor"),
-    fixed = TRUE)
-  # Testing column types
-  expect_equal(
-    xpectr::element_types(output_15603),
-    c("integer", "integer", "integer", "integer", "integer", "character",
-      "integer", "integer"),
-    fixed = TRUE)
-  # Testing dimensions
-  expect_equal(
-    dim(output_15603),
-    c(53L, 8L))
-  # Testing group keys
-  expect_equal(
-    colnames(dplyr::group_keys(output_15603)),
-    character(0),
+    xpectr::strip(side_effects_15603[['error_class']]),
+    xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
   # Testing collapse_groups(data = df, n = 3, group_cols...
@@ -1840,10 +1612,6 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
     character(0),
     fixed = TRUE)
 
-  # TODO This test only shows that this doesn't fail
-  # That's fine but not does not test that .majority is actually used
-  # Reconsider or extend the test
-
   # Testing collapse_groups(data = df, n = 3, group_cols...
   # Changed from baseline: cat_levels = ".majority"
   xpectr::set_test_seed(42)
@@ -1928,8 +1696,6 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
     colnames(dplyr::group_keys(output_14469)),
     character(0),
     fixed = TRUE)
-
-  # TODO Same
 
   # Testing collapse_groups(data = df, n = 3, group_cols...
   # Changed from baseline: cat_levels = ".minority"
@@ -2024,7 +1790,7 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   side_effects_17375 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = "nope", num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_17375[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable '`cat_levels` for answer': Names must be a subset of\n * {'.minority','.majority','a','b','c','d'}, but has additional elements {'nope'}."),
+    xpectr::strip("1 assertions failed:\n * Variable '`cat_levels` for answer': Names must be a subset of {'.minority','.majority','a','b','c','d'}, but\n * has additional elements {'nope'}."),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_17375[['error_class']]),
@@ -2124,7 +1890,7 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   side_effects_13881 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = c(nope = 2, b = 3), num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_13881[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable '`cat_levels` for answer': Names must be a subset of\n * {'.minority','.majority','a','b','c','d'}, but has additional elements {'nope'}."),
+    xpectr::strip("1 assertions failed:\n * Variable '`cat_levels` for answer': Names must be a subset of {'.minority','.majority','a','b','c','d'}, but\n * has additional elements {'nope'}."),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_13881[['error_class']]),
@@ -2216,8 +1982,6 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
     character(0),
     fixed = TRUE)
 
-  # TODO Fix - seems like the wrong error message
-
   # Testing collapse_groups(data = df, n = 3, group_cols...
   # Changed from baseline: cat_levels = list(ses...
   xpectr::set_test_seed(42)
@@ -2226,14 +1990,12 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   side_effects_10039 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = list(session = c(a = 2)), num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_10039[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable '`cat_levels` for answer': Must have names."),
+    xpectr::strip("1 assertions failed:\n * when `cat_levels` is a list, its names must be equal to those in `cat_cols`."),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_10039[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
-
-  # TODO Fix - same as previous
 
   # Testing collapse_groups(data = df, n = 3, group_cols...
   # Changed from baseline: cat_levels = list(sdf...
@@ -2243,7 +2005,7 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   side_effects_18329 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = list(sdfs = c(a = 2)), num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_18329[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable '`cat_levels` for answer': Must have names."),
+    xpectr::strip("1 assertions failed:\n * when `cat_levels` is a list, its names must be equal to those in `cat_cols`."),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_18329[['error_class']]),
@@ -2358,14 +2120,12 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   side_effects_19066 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "answer", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_19066[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'data[['answer']]': Must be of type 'numeric', not 'factor'."),
+    xpectr::strip("1 assertions failed:\n * All columns in 'c(group_cols, cat_cols, num_cols, id_cols)' must be unique. Found duplicates: 'answer'"),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_19066[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
-
-  # TODO Fix - correct but should be different error
 
   # Testing collapse_groups(data = df, n = 3, group_cols...
   # Changed from baseline: num_cols = ".folds"
@@ -2375,7 +2135,7 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   side_effects_16117 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = ".folds", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_16117[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'data[['.folds']]': Must be of type 'numeric', not 'factor'."),
+    xpectr::strip("1 assertions failed:\n * All columns in 'c(group_cols, cat_cols, num_cols, id_cols)' must be unique. Found duplicates: '.folds'"),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_16117[['error_class']]),
@@ -2590,98 +2350,26 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   side_effects_14317 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "score", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_14317[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'data[['score']]': Must be of type 'factor', not 'integer'."),
+    xpectr::strip("1 assertions failed:\n * All columns in 'c(group_cols, cat_cols, num_cols, id_cols)' must be unique. Found duplicates: 'score'"),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_14317[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
-  # TODO Fix
-
   # Testing collapse_groups(data = df, n = 3, group_cols...
   # Changed from baseline: id_cols = ".folds"
   xpectr::set_test_seed(42)
-  # Assigning output
-  output_19575 <- collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = ".folds", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE)
-  # Testing class
+  # Testing side effects
+  # Assigning side effects
+  side_effects_19575 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = ".folds", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    class(output_19575),
-    c("tbl_df", "tbl", "data.frame"),
-    fixed = TRUE)
-  # Testing column values
-  expect_equal(
-    xpectr::smpl(output_19575[["participant"]], n = 30),
-    structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
-      18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
-      8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
-      "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
-      "19", "20"), class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_19575[["participant_2"]], n = 30),
-    structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
-      18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
-      8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
-      "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
-      "19", "20"), class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_19575[["age"]], n = 30),
-    c(65, 42, 91, 83, 83, 40, 80, 80, 88, 88, 10, 10, 93, 93, 46, 46,
-      29, 29, 81, 81, 81, 62, 62, 50, 50, 13, 13, 61, 61, 61),
-    tolerance = 1e-4)
-  expect_equal(
-    xpectr::smpl(output_19575[["answer"]], n = 30),
-    structure(c(4L, 3L, 4L, 2L, 2L, 1L, 3L, 3L, 1L, 1L, 1L, 2L, 2L,
-      4L, 3L, 3L, 1L, 4L, 4L, 3L, 4L, 1L, 4L, 3L, 4L, 4L, 3L, 3L,
-      2L, 4L), .Label = c("a", "b", "c", "d"), class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_19575[["score"]], n = 30),
-    c(28, 61, 1, 52, 19, 40, 27, 35, 91, 90, 43, 5, 18, 25, 86, 51,
-      17, 36, 63, 69, 30, 75, 41, 54, 73, 9, 95, 13, 8, 39),
-    tolerance = 1e-4)
-  expect_equal(
-    xpectr::smpl(output_19575[["session"]], n = 30),
-    c("1", "1", "1", "2", "1", "3", "3", "2", "1", "3", "1", "3", "2",
-      "3", "2", "1", "2", "1", "1", "3", "2", "1", "3", "1", "2",
-      "1", "2", "3", "1", "2"),
+    xpectr::strip(side_effects_19575[['error']]),
+    xpectr::strip("1 assertions failed:\n * All columns in 'c(group_cols, cat_cols, num_cols, id_cols)' must be unique. Found duplicates: '.folds'"),
     fixed = TRUE)
   expect_equal(
-    xpectr::smpl(output_19575[[".folds"]], n = 30),
-    structure(c(6L, 6L, 7L, 7L, 7L, 4L, 4L, 4L, 6L, 6L, 2L, 2L, 1L,
-      1L, 8L, 8L, 2L, 2L, 5L, 5L, 5L, 8L, 8L, 3L, 3L, 3L, 3L, 1L,
-      1L, 1L), .Label = c("1", "2", "3", "4", "5", "6", "7", "8"),
-      class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_19575[[".collg"]], n = 30),
-    structure(c(2L, 2L, 3L, 3L, 3L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 2L,
-      2L, 1L, 1L, 3L, 3L, 3L, 3L, 3L, 1L, 1L, 1L, 1L, 1L, 1L, 2L,
-      2L, 2L), .Label = c("1", "2", "3"), class = "factor"))
-  # Testing column names
-  expect_equal(
-    names(output_19575),
-    c("participant", "participant_2", "age", "answer", "score", "session",
-      ".folds", ".collg"),
-    fixed = TRUE)
-  # Testing column classes
-  expect_equal(
-    xpectr::element_classes(output_19575),
-    c("factor", "factor", "integer", "factor", "integer", "character",
-      "factor", "factor"),
-    fixed = TRUE)
-  # Testing column types
-  expect_equal(
-    xpectr::element_types(output_19575),
-    c("integer", "integer", "integer", "integer", "integer", "character",
-      "integer", "integer"),
-    fixed = TRUE)
-  # Testing dimensions
-  expect_equal(
-    dim(output_19575),
-    c(53L, 8L))
-  # Testing group keys
-  expect_equal(
-    colnames(dplyr::group_keys(output_19575)),
-    character(0),
+    xpectr::strip(side_effects_19575[['error_class']]),
+    xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
   # Testing collapse_groups(data = df, n = 3, group_cols...
@@ -2989,21 +2677,89 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
-  # TODO FIX - Probably should test weighted average function as well
-
   # Testing collapse_groups(data = df, n = 3, group_cols...
   # Changed from baseline: weights = c(size = 2,...
   xpectr::set_test_seed(42)
-  # Testing side effects
-  # Assigning side effects
-  side_effects_11712 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = c(size = 2, answer = 7, score = 1, participant = 2), method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  # Assigning output
+  output_11712 <- collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = c(size = 2, answer = 7, score = 1, participant = 2), method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE)
+  # Testing class
   expect_equal(
-    xpectr::strip(side_effects_11712[['error']]),
-    xpectr::strip("`...` and `weights` must have the exact same names."),
+    class(output_11712),
+    c("tbl_df", "tbl", "data.frame"),
+    fixed = TRUE)
+  # Testing column values
+  expect_equal(
+    xpectr::smpl(output_11712[["participant"]], n = 30),
+    structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
+      18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
+      8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
+      "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
+      "19", "20"), class = "factor"))
+  expect_equal(
+    xpectr::smpl(output_11712[["participant_2"]], n = 30),
+    structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
+      18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
+      8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
+      "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
+      "19", "20"), class = "factor"))
+  expect_equal(
+    xpectr::smpl(output_11712[["age"]], n = 30),
+    c(65, 42, 91, 83, 83, 40, 80, 80, 88, 88, 10, 10, 93, 93, 46, 46,
+      29, 29, 81, 81, 81, 62, 62, 50, 50, 13, 13, 61, 61, 61),
+    tolerance = 1e-4)
+  expect_equal(
+    xpectr::smpl(output_11712[["answer"]], n = 30),
+    structure(c(4L, 3L, 4L, 2L, 2L, 1L, 3L, 3L, 1L, 1L, 1L, 2L, 2L,
+      4L, 3L, 3L, 1L, 4L, 4L, 3L, 4L, 1L, 4L, 3L, 4L, 4L, 3L, 3L,
+      2L, 4L), .Label = c("a", "b", "c", "d"), class = "factor"))
+  expect_equal(
+    xpectr::smpl(output_11712[["score"]], n = 30),
+    c(28, 61, 1, 52, 19, 40, 27, 35, 91, 90, 43, 5, 18, 25, 86, 51,
+      17, 36, 63, 69, 30, 75, 41, 54, 73, 9, 95, 13, 8, 39),
+    tolerance = 1e-4)
+  expect_equal(
+    xpectr::smpl(output_11712[["session"]], n = 30),
+    c("1", "1", "1", "2", "1", "3", "3", "2", "1", "3", "1", "3", "2",
+      "3", "2", "1", "2", "1", "1", "3", "2", "1", "3", "1", "2",
+      "1", "2", "3", "1", "2"),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_11712[['error_class']]),
-    xpectr::strip(c("simpleError", "error", "condition")),
+    xpectr::smpl(output_11712[[".folds"]], n = 30),
+    structure(c(6L, 6L, 7L, 7L, 7L, 4L, 4L, 4L, 6L, 6L, 2L, 2L, 1L,
+      1L, 8L, 8L, 2L, 2L, 5L, 5L, 5L, 8L, 8L, 3L, 3L, 3L, 3L, 1L,
+      1L, 1L), .Label = c("1", "2", "3", "4", "5", "6", "7", "8"),
+      class = "factor"))
+  expect_equal(
+    xpectr::smpl(output_11712[[".collg"]], n = 30),
+    structure(c(1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 3L,
+      3L, 3L, 3L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 3L, 3L, 3L, 3L, 3L,
+      3L, 3L), .Label = c("1", "2", "3"), class = "factor"))
+  # Testing column names
+  expect_equal(
+    names(output_11712),
+    c("participant", "participant_2", "age", "answer", "score", "session",
+      ".folds", ".collg"),
+    fixed = TRUE)
+  # Testing column classes
+  expect_equal(
+    xpectr::element_classes(output_11712),
+    c("factor", "factor", "integer", "factor", "integer", "character",
+      "factor", "factor"),
+    fixed = TRUE)
+  # Testing column types
+  expect_equal(
+    xpectr::element_types(output_11712),
+    c("integer", "integer", "integer", "integer", "integer", "character",
+      "integer", "integer"),
+    fixed = TRUE)
+  # Testing dimensions
+  expect_equal(
+    dim(output_11712),
+    c(53L, 8L))
+  # Testing group keys
+  expect_equal(
+    colnames(dplyr::group_keys(output_11712)),
+    character(0),
     fixed = TRUE)
 
   # Testing collapse_groups(data = df, n = 3, group_cols...
@@ -3014,7 +2770,7 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   side_effects_12610 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = c(size = 3, nope = 5), method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_12610[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'names(weights)': Names must be a subset of {'size','answer','score','participant'},\n * but has additional elements {'nope'}."),
+    xpectr::strip("1 assertions failed:\n * Variable 'names(weights)': Names must be a subset of {'size','answer','score','participant'}, but has\n * additional elements {'nope'}."),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_12610[['error_class']]),
@@ -3029,7 +2785,7 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   side_effects_15144 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = c(participant = 2, participant_2 = 2), method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_15144[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'names(weights)': Names must be a subset of {'size','answer','score','participant'},\n * but has additional elements {'participant_2'}."),
+    xpectr::strip("1 assertions failed:\n * Variable 'names(weights)': Names must be a subset of {'size','answer','score','participant'}, but has\n * additional elements {'participant_2'}."),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_15144[['error_class']]),
@@ -3052,28 +2808,26 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
     fixed = TRUE)
 
   # Testing collapse_groups(data = df, n = 3, group_cols...
-  # Changed from baseline: weights = 1
+  # Changed from baseline: weights = list(size =...
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_19828 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = 1, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_19828 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = list(size = NA, answer = 7), method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_19828[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'weights': Must have names."),
+    xpectr::strip("1 assertions failed:\n * Variable 'weights': Must be of type 'numeric' (or 'NULL'), not 'list'."),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_19828[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
-  # TODO Make test of weights with named NA
-
   # Testing collapse_groups(data = df, n = 3, group_cols...
-  # Changed from baseline: weights = NA
+  # Changed from baseline: weights = 1
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_17595 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NA, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_17595 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = 1, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_17595[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'weights': Must have names."),
@@ -3083,98 +2837,26 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
-  # TODO Make separate test of this - this only shows that it doesn't fail
+  # Testing collapse_groups(data = df, n = 3, group_cols...
+  # Changed from baseline: weights = NA
+  xpectr::set_test_seed(42)
+  # Testing side effects
+  # Assigning side effects
+  side_effects_15664 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NA, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  expect_equal(
+    xpectr::strip(side_effects_15664[['error']]),
+    xpectr::strip("1 assertions failed:\n * Variable 'weights': Must have names."),
+    fixed = TRUE)
+  expect_equal(
+    xpectr::strip(side_effects_15664[['error_class']]),
+    xpectr::strip(c("simpleError", "error", "condition")),
+    fixed = TRUE)
 
   # Testing collapse_groups(data = df, n = 3, group_cols...
   # Changed from baseline: method = "ascending"
   xpectr::set_test_seed(42)
   # Assigning output
-  output_15664 <- collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "ascending", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE)
-  # Testing class
-  expect_equal(
-    class(output_15664),
-    c("tbl_df", "tbl", "data.frame"),
-    fixed = TRUE)
-  # Testing column values
-  expect_equal(
-    xpectr::smpl(output_15664[["participant"]], n = 30),
-    structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
-      18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
-      8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
-      "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
-      "19", "20"), class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_15664[["participant_2"]], n = 30),
-    structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
-      18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
-      8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
-      "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
-      "19", "20"), class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_15664[["age"]], n = 30),
-    c(65, 42, 91, 83, 83, 40, 80, 80, 88, 88, 10, 10, 93, 93, 46, 46,
-      29, 29, 81, 81, 81, 62, 62, 50, 50, 13, 13, 61, 61, 61),
-    tolerance = 1e-4)
-  expect_equal(
-    xpectr::smpl(output_15664[["answer"]], n = 30),
-    structure(c(4L, 3L, 4L, 2L, 2L, 1L, 3L, 3L, 1L, 1L, 1L, 2L, 2L,
-      4L, 3L, 3L, 1L, 4L, 4L, 3L, 4L, 1L, 4L, 3L, 4L, 4L, 3L, 3L,
-      2L, 4L), .Label = c("a", "b", "c", "d"), class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_15664[["score"]], n = 30),
-    c(28, 61, 1, 52, 19, 40, 27, 35, 91, 90, 43, 5, 18, 25, 86, 51,
-      17, 36, 63, 69, 30, 75, 41, 54, 73, 9, 95, 13, 8, 39),
-    tolerance = 1e-4)
-  expect_equal(
-    xpectr::smpl(output_15664[["session"]], n = 30),
-    c("1", "1", "1", "2", "1", "3", "3", "2", "1", "3", "1", "3", "2",
-      "3", "2", "1", "2", "1", "1", "3", "2", "1", "3", "1", "2",
-      "1", "2", "3", "1", "2"),
-    fixed = TRUE)
-  expect_equal(
-    xpectr::smpl(output_15664[[".folds"]], n = 30),
-    structure(c(6L, 6L, 7L, 7L, 7L, 4L, 4L, 4L, 6L, 6L, 2L, 2L, 1L,
-      1L, 8L, 8L, 2L, 2L, 5L, 5L, 5L, 8L, 8L, 3L, 3L, 3L, 3L, 1L,
-      1L, 1L), .Label = c("1", "2", "3", "4", "5", "6", "7", "8"),
-      class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_15664[[".collg"]], n = 30),
-    structure(c(3L, 3L, 2L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 3L, 3L, 1L,
-      1L, 3L, 3L, 3L, 3L, 1L, 1L, 1L, 3L, 3L, 2L, 2L, 2L, 2L, 1L,
-      1L, 1L), .Label = c("1", "2", "3"), class = "factor"))
-  # Testing column names
-  expect_equal(
-    names(output_15664),
-    c("participant", "participant_2", "age", "answer", "score", "session",
-      ".folds", ".collg"),
-    fixed = TRUE)
-  # Testing column classes
-  expect_equal(
-    xpectr::element_classes(output_15664),
-    c("factor", "factor", "integer", "factor", "integer", "character",
-      "factor", "factor"),
-    fixed = TRUE)
-  # Testing column types
-  expect_equal(
-    xpectr::element_types(output_15664),
-    c("integer", "integer", "integer", "integer", "integer", "character",
-      "integer", "integer"),
-    fixed = TRUE)
-  # Testing dimensions
-  expect_equal(
-    dim(output_15664),
-    c(53L, 8L))
-  # Testing group keys
-  expect_equal(
-    colnames(dplyr::group_keys(output_15664)),
-    character(0),
-    fixed = TRUE)
-
-  # Testing collapse_groups(data = df, n = 3, group_cols...
-  # Changed from baseline: method = "descending"
-  xpectr::set_test_seed(42)
-  # Assigning output
-  output_18496 <- collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "descending", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE)
+  output_18496 <- collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "ascending", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE)
   # Testing class
   expect_equal(
     class(output_18496),
@@ -3224,9 +2906,9 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
       class = "factor"))
   expect_equal(
     xpectr::smpl(output_18496[[".collg"]], n = 30),
-    structure(c(1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 1L, 1L, 1L, 1L, 3L,
-      3L, 1L, 1L, 1L, 1L, 3L, 3L, 3L, 1L, 1L, 2L, 2L, 2L, 2L, 3L,
-      3L, 3L), .Label = c("1", "2", "3"), class = "factor"))
+    structure(c(3L, 3L, 2L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 3L, 3L, 1L,
+      1L, 3L, 3L, 3L, 3L, 1L, 1L, 1L, 3L, 3L, 2L, 2L, 2L, 2L, 1L,
+      1L, 1L), .Label = c("1", "2", "3"), class = "factor"))
   # Testing column names
   expect_equal(
     names(output_18496),
@@ -3256,17 +2938,102 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
     fixed = TRUE)
 
   # Testing collapse_groups(data = df, n = 3, group_cols...
+  # Changed from baseline: method = "descending"
+  xpectr::set_test_seed(42)
+  # Assigning output
+  output_11894 <- collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "descending", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE)
+  # Testing class
+  expect_equal(
+    class(output_11894),
+    c("tbl_df", "tbl", "data.frame"),
+    fixed = TRUE)
+  # Testing column values
+  expect_equal(
+    xpectr::smpl(output_11894[["participant"]], n = 30),
+    structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
+      18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
+      8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
+      "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
+      "19", "20"), class = "factor"))
+  expect_equal(
+    xpectr::smpl(output_11894[["participant_2"]], n = 30),
+    structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
+      18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
+      8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
+      "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
+      "19", "20"), class = "factor"))
+  expect_equal(
+    xpectr::smpl(output_11894[["age"]], n = 30),
+    c(65, 42, 91, 83, 83, 40, 80, 80, 88, 88, 10, 10, 93, 93, 46, 46,
+      29, 29, 81, 81, 81, 62, 62, 50, 50, 13, 13, 61, 61, 61),
+    tolerance = 1e-4)
+  expect_equal(
+    xpectr::smpl(output_11894[["answer"]], n = 30),
+    structure(c(4L, 3L, 4L, 2L, 2L, 1L, 3L, 3L, 1L, 1L, 1L, 2L, 2L,
+      4L, 3L, 3L, 1L, 4L, 4L, 3L, 4L, 1L, 4L, 3L, 4L, 4L, 3L, 3L,
+      2L, 4L), .Label = c("a", "b", "c", "d"), class = "factor"))
+  expect_equal(
+    xpectr::smpl(output_11894[["score"]], n = 30),
+    c(28, 61, 1, 52, 19, 40, 27, 35, 91, 90, 43, 5, 18, 25, 86, 51,
+      17, 36, 63, 69, 30, 75, 41, 54, 73, 9, 95, 13, 8, 39),
+    tolerance = 1e-4)
+  expect_equal(
+    xpectr::smpl(output_11894[["session"]], n = 30),
+    c("1", "1", "1", "2", "1", "3", "3", "2", "1", "3", "1", "3", "2",
+      "3", "2", "1", "2", "1", "1", "3", "2", "1", "3", "1", "2",
+      "1", "2", "3", "1", "2"),
+    fixed = TRUE)
+  expect_equal(
+    xpectr::smpl(output_11894[[".folds"]], n = 30),
+    structure(c(6L, 6L, 7L, 7L, 7L, 4L, 4L, 4L, 6L, 6L, 2L, 2L, 1L,
+      1L, 8L, 8L, 2L, 2L, 5L, 5L, 5L, 8L, 8L, 3L, 3L, 3L, 3L, 1L,
+      1L, 1L), .Label = c("1", "2", "3", "4", "5", "6", "7", "8"),
+      class = "factor"))
+  expect_equal(
+    xpectr::smpl(output_11894[[".collg"]], n = 30),
+    structure(c(1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 1L, 1L, 1L, 1L, 3L,
+      3L, 1L, 1L, 1L, 1L, 3L, 3L, 3L, 1L, 1L, 2L, 2L, 2L, 2L, 3L,
+      3L, 3L), .Label = c("1", "2", "3"), class = "factor"))
+  # Testing column names
+  expect_equal(
+    names(output_11894),
+    c("participant", "participant_2", "age", "answer", "score", "session",
+      ".folds", ".collg"),
+    fixed = TRUE)
+  # Testing column classes
+  expect_equal(
+    xpectr::element_classes(output_11894),
+    c("factor", "factor", "integer", "factor", "integer", "character",
+      "factor", "factor"),
+    fixed = TRUE)
+  # Testing column types
+  expect_equal(
+    xpectr::element_types(output_11894),
+    c("integer", "integer", "integer", "integer", "integer", "character",
+      "integer", "integer"),
+    fixed = TRUE)
+  # Testing dimensions
+  expect_equal(
+    dim(output_11894),
+    c(53L, 8L))
+  # Testing group keys
+  expect_equal(
+    colnames(dplyr::group_keys(output_11894)),
+    character(0),
+    fixed = TRUE)
+
+  # Testing collapse_groups(data = df, n = 3, group_cols...
   # Changed from baseline: method = "none"
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_11894 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "none", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_12712 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "none", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_11894[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'method': Names must be a subset of {'balance','ascending','descending'}, but has\n * additional elements {'none'}."),
+    xpectr::strip(side_effects_12712[['error']]),
+    xpectr::strip("1 assertions failed:\n * Variable 'method': Names must be a subset of {'balance','ascending','descending'}, but has additional elements\n * {'none'}."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_11894[['error_class']]),
+    xpectr::strip(side_effects_12712[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -3275,13 +3042,13 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_12712 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = list("balance"), group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_18281 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = list("balance"), group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_12712[['error']]),
+    xpectr::strip(side_effects_18281[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'method': Must be of type 'string', not 'list'."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_12712[['error_class']]),
+    xpectr::strip(side_effects_18281[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -3290,13 +3057,13 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_18281 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = 1, group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_16932 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = 1, group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_18281[['error']]),
+    xpectr::strip(side_effects_16932[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'method': Must be of type 'string', not 'double'."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_18281[['error_class']]),
+    xpectr::strip(side_effects_16932[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -3305,13 +3072,13 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_16932 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = NA, group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_12405 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = NA, group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_16932[['error']]),
+    xpectr::strip(side_effects_12405[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'method': May not be NA."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_16932[['error_class']]),
+    xpectr::strip(side_effects_12405[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -3320,13 +3087,13 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_12405 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = NULL, group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_10429 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = NULL, group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_12405[['error']]),
+    xpectr::strip(side_effects_10429[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'method': Must be of type 'string', not 'NULL'."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_12405[['error_class']]),
+    xpectr::strip(side_effects_10429[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -3334,92 +3101,7 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   # Changed from baseline: group_aggregation_fn ...
   xpectr::set_test_seed(42)
   # Assigning output
-  output_10429 <- collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = sum, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE)
-  # Testing class
-  expect_equal(
-    class(output_10429),
-    c("tbl_df", "tbl", "data.frame"),
-    fixed = TRUE)
-  # Testing column values
-  expect_equal(
-    xpectr::smpl(output_10429[["participant"]], n = 30),
-    structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
-      18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
-      8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
-      "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
-      "19", "20"), class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_10429[["participant_2"]], n = 30),
-    structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
-      18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
-      8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
-      "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
-      "19", "20"), class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_10429[["age"]], n = 30),
-    c(65, 42, 91, 83, 83, 40, 80, 80, 88, 88, 10, 10, 93, 93, 46, 46,
-      29, 29, 81, 81, 81, 62, 62, 50, 50, 13, 13, 61, 61, 61),
-    tolerance = 1e-4)
-  expect_equal(
-    xpectr::smpl(output_10429[["answer"]], n = 30),
-    structure(c(4L, 3L, 4L, 2L, 2L, 1L, 3L, 3L, 1L, 1L, 1L, 2L, 2L,
-      4L, 3L, 3L, 1L, 4L, 4L, 3L, 4L, 1L, 4L, 3L, 4L, 4L, 3L, 3L,
-      2L, 4L), .Label = c("a", "b", "c", "d"), class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_10429[["score"]], n = 30),
-    c(28, 61, 1, 52, 19, 40, 27, 35, 91, 90, 43, 5, 18, 25, 86, 51,
-      17, 36, 63, 69, 30, 75, 41, 54, 73, 9, 95, 13, 8, 39),
-    tolerance = 1e-4)
-  expect_equal(
-    xpectr::smpl(output_10429[["session"]], n = 30),
-    c("1", "1", "1", "2", "1", "3", "3", "2", "1", "3", "1", "3", "2",
-      "3", "2", "1", "2", "1", "1", "3", "2", "1", "3", "1", "2",
-      "1", "2", "3", "1", "2"),
-    fixed = TRUE)
-  expect_equal(
-    xpectr::smpl(output_10429[[".folds"]], n = 30),
-    structure(c(6L, 6L, 7L, 7L, 7L, 4L, 4L, 4L, 6L, 6L, 2L, 2L, 1L,
-      1L, 8L, 8L, 2L, 2L, 5L, 5L, 5L, 8L, 8L, 3L, 3L, 3L, 3L, 1L,
-      1L, 1L), .Label = c("1", "2", "3", "4", "5", "6", "7", "8"),
-      class = "factor"))
-  expect_equal(
-    xpectr::smpl(output_10429[[".collg"]], n = 30),
-    structure(c(2L, 2L, 1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 3L,
-      3L, 1L, 1L, 3L, 3L, 2L, 2L, 2L, 1L, 1L, 1L, 1L, 1L, 1L, 3L,
-      3L, 3L), .Label = c("1", "2", "3"), class = "factor"))
-  # Testing column names
-  expect_equal(
-    names(output_10429),
-    c("participant", "participant_2", "age", "answer", "score", "session",
-      ".folds", ".collg"),
-    fixed = TRUE)
-  # Testing column classes
-  expect_equal(
-    xpectr::element_classes(output_10429),
-    c("factor", "factor", "integer", "factor", "integer", "character",
-      "factor", "factor"),
-    fixed = TRUE)
-  # Testing column types
-  expect_equal(
-    xpectr::element_types(output_10429),
-    c("integer", "integer", "integer", "integer", "integer", "character",
-      "integer", "integer"),
-    fixed = TRUE)
-  # Testing dimensions
-  expect_equal(
-    dim(output_10429),
-    c(53L, 8L))
-  # Testing group keys
-  expect_equal(
-    colnames(dplyr::group_keys(output_10429)),
-    character(0),
-    fixed = TRUE)
-
-  # Testing collapse_groups(data = df, n = 3, group_cols...
-  # Changed from baseline: group_aggregation_fn ...
-  xpectr::set_test_seed(42)
-  # Assigning output
-  output_11404 <- collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = sd, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE)
+  output_11404 <- collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = sum, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE)
   # Testing class
   expect_equal(
     class(output_11404),
@@ -3469,9 +3151,9 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
       class = "factor"))
   expect_equal(
     xpectr::smpl(output_11404[[".collg"]], n = 30),
-    structure(c(2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 1L,
-      1L, 1L, 1L, 3L, 3L, 3L, 3L, 3L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
-      1L, 1L), .Label = c("1", "2", "3"), class = "factor"))
+    structure(c(2L, 2L, 1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 3L,
+      3L, 1L, 1L, 3L, 3L, 2L, 2L, 2L, 1L, 1L, 1L, 1L, 1L, 1L, 3L,
+      3L, 3L), .Label = c("1", "2", "3"), class = "factor"))
   # Testing column names
   expect_equal(
     names(output_11404),
@@ -3501,29 +3183,99 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
     fixed = TRUE)
 
   # Testing collapse_groups(data = df, n = 3, group_cols...
+  # Changed from baseline: group_aggregation_fn ...
+  xpectr::set_test_seed(42)
+  # Assigning output
+  output_12163 <- collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = sd, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE)
+  # Testing class
+  expect_equal(
+    class(output_12163),
+    c("tbl_df", "tbl", "data.frame"),
+    fixed = TRUE)
+  # Testing column values
+  expect_equal(
+    xpectr::smpl(output_12163[["participant"]], n = 30),
+    structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
+      18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
+      8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
+      "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
+      "19", "20"), class = "factor"))
+  expect_equal(
+    xpectr::smpl(output_12163[["participant_2"]], n = 30),
+    structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
+      18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
+      8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
+      "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
+      "19", "20"), class = "factor"))
+  expect_equal(
+    xpectr::smpl(output_12163[["age"]], n = 30),
+    c(65, 42, 91, 83, 83, 40, 80, 80, 88, 88, 10, 10, 93, 93, 46, 46,
+      29, 29, 81, 81, 81, 62, 62, 50, 50, 13, 13, 61, 61, 61),
+    tolerance = 1e-4)
+  expect_equal(
+    xpectr::smpl(output_12163[["answer"]], n = 30),
+    structure(c(4L, 3L, 4L, 2L, 2L, 1L, 3L, 3L, 1L, 1L, 1L, 2L, 2L,
+      4L, 3L, 3L, 1L, 4L, 4L, 3L, 4L, 1L, 4L, 3L, 4L, 4L, 3L, 3L,
+      2L, 4L), .Label = c("a", "b", "c", "d"), class = "factor"))
+  expect_equal(
+    xpectr::smpl(output_12163[["score"]], n = 30),
+    c(28, 61, 1, 52, 19, 40, 27, 35, 91, 90, 43, 5, 18, 25, 86, 51,
+      17, 36, 63, 69, 30, 75, 41, 54, 73, 9, 95, 13, 8, 39),
+    tolerance = 1e-4)
+  expect_equal(
+    xpectr::smpl(output_12163[["session"]], n = 30),
+    c("1", "1", "1", "2", "1", "3", "3", "2", "1", "3", "1", "3", "2",
+      "3", "2", "1", "2", "1", "1", "3", "2", "1", "3", "1", "2",
+      "1", "2", "3", "1", "2"),
+    fixed = TRUE)
+  expect_equal(
+    xpectr::smpl(output_12163[[".folds"]], n = 30),
+    structure(c(6L, 6L, 7L, 7L, 7L, 4L, 4L, 4L, 6L, 6L, 2L, 2L, 1L,
+      1L, 8L, 8L, 2L, 2L, 5L, 5L, 5L, 8L, 8L, 3L, 3L, 3L, 3L, 1L,
+      1L, 1L), .Label = c("1", "2", "3", "4", "5", "6", "7", "8"),
+      class = "factor"))
+  expect_equal(
+    xpectr::smpl(output_12163[[".collg"]], n = 30),
+    structure(c(2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 1L,
+      1L, 1L, 1L, 3L, 3L, 3L, 3L, 3L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+      1L, 1L), .Label = c("1", "2", "3"), class = "factor"))
+  # Testing column names
+  expect_equal(
+    names(output_12163),
+    c("participant", "participant_2", "age", "answer", "score", "session",
+      ".folds", ".collg"),
+    fixed = TRUE)
+  # Testing column classes
+  expect_equal(
+    xpectr::element_classes(output_12163),
+    c("factor", "factor", "integer", "factor", "integer", "character",
+      "factor", "factor"),
+    fixed = TRUE)
+  # Testing column types
+  expect_equal(
+    xpectr::element_types(output_12163),
+    c("integer", "integer", "integer", "integer", "integer", "character",
+      "integer", "integer"),
+    fixed = TRUE)
+  # Testing dimensions
+  expect_equal(
+    dim(output_12163),
+    c(53L, 8L))
+  # Testing group keys
+  expect_equal(
+    colnames(dplyr::group_keys(output_12163)),
+    character(0),
+    fixed = TRUE)
+
+  # Testing collapse_groups(data = df, n = 3, group_cols...
   # Changed from baseline: group_aggregation_fn = 2
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_12163 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = 2, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
-  expect_equal(
-    xpectr::strip(side_effects_12163[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'group_aggregation_fn': Must be a function, not 'double'."),
-    fixed = TRUE)
-  expect_equal(
-    xpectr::strip(side_effects_12163[['error_class']]),
-    xpectr::strip(c("simpleError", "error", "condition")),
-    fixed = TRUE)
-
-  # Testing collapse_groups(data = df, n = 3, group_cols...
-  # Changed from baseline: group_aggregation_fn ...
-  xpectr::set_test_seed(42)
-  # Testing side effects
-  # Assigning side effects
-  side_effects_14793 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = NA, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_14793 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = 2, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_14793[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'group_aggregation_fn': Must be a function, not 'logical'."),
+    xpectr::strip("1 assertions failed:\n * Variable 'group_aggregation_fn': Must be a function, not 'double'."),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_14793[['error_class']]),
@@ -3535,10 +3287,10 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_11974 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = NULL, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_11974 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = NA, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_11974[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'group_aggregation_fn': Must be a function, not 'NULL'."),
+    xpectr::strip("1 assertions failed:\n * Variable 'group_aggregation_fn': Must be a function, not 'logical'."),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_11974[['error_class']]),
@@ -3546,92 +3298,107 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
     fixed = TRUE)
 
   # Testing collapse_groups(data = df, n = 3, group_cols...
+  # Changed from baseline: group_aggregation_fn ...
+  xpectr::set_test_seed(42)
+  # Testing side effects
+  # Assigning side effects
+  side_effects_17193 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = NULL, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  expect_equal(
+    xpectr::strip(side_effects_17193[['error']]),
+    xpectr::strip("1 assertions failed:\n * Variable 'group_aggregation_fn': Must be a function, not 'NULL'."),
+    fixed = TRUE)
+  expect_equal(
+    xpectr::strip(side_effects_17193[['error_class']]),
+    xpectr::strip(c("simpleError", "error", "condition")),
+    fixed = TRUE)
+
+  # Testing collapse_groups(data = df, n = 3, group_cols...
   # Changed from baseline: num_new_group_cols = 2
   xpectr::set_test_seed(42)
   # Assigning output
-  output_17193 <- collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 2, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE)
+  output_10078 <- collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 2, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE)
   # Testing class
   expect_equal(
-    class(output_17193),
+    class(output_10078),
     c("tbl_df", "tbl", "data.frame"),
     fixed = TRUE)
   # Testing column values
   expect_equal(
-    xpectr::smpl(output_17193[["participant"]], n = 30),
+    xpectr::smpl(output_10078[["participant"]], n = 30),
     structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
       18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
       8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
       "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
       "19", "20"), class = "factor"))
   expect_equal(
-    xpectr::smpl(output_17193[["participant_2"]], n = 30),
+    xpectr::smpl(output_10078[["participant_2"]], n = 30),
     structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
       18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
       8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
       "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
       "19", "20"), class = "factor"))
   expect_equal(
-    xpectr::smpl(output_17193[["age"]], n = 30),
+    xpectr::smpl(output_10078[["age"]], n = 30),
     c(65, 42, 91, 83, 83, 40, 80, 80, 88, 88, 10, 10, 93, 93, 46, 46,
       29, 29, 81, 81, 81, 62, 62, 50, 50, 13, 13, 61, 61, 61),
     tolerance = 1e-4)
   expect_equal(
-    xpectr::smpl(output_17193[["answer"]], n = 30),
+    xpectr::smpl(output_10078[["answer"]], n = 30),
     structure(c(4L, 3L, 4L, 2L, 2L, 1L, 3L, 3L, 1L, 1L, 1L, 2L, 2L,
       4L, 3L, 3L, 1L, 4L, 4L, 3L, 4L, 1L, 4L, 3L, 4L, 4L, 3L, 3L,
       2L, 4L), .Label = c("a", "b", "c", "d"), class = "factor"))
   expect_equal(
-    xpectr::smpl(output_17193[["score"]], n = 30),
+    xpectr::smpl(output_10078[["score"]], n = 30),
     c(28, 61, 1, 52, 19, 40, 27, 35, 91, 90, 43, 5, 18, 25, 86, 51,
       17, 36, 63, 69, 30, 75, 41, 54, 73, 9, 95, 13, 8, 39),
     tolerance = 1e-4)
   expect_equal(
-    xpectr::smpl(output_17193[["session"]], n = 30),
+    xpectr::smpl(output_10078[["session"]], n = 30),
     c("1", "1", "1", "2", "1", "3", "3", "2", "1", "3", "1", "3", "2",
       "3", "2", "1", "2", "1", "1", "3", "2", "1", "3", "1", "2",
       "1", "2", "3", "1", "2"),
     fixed = TRUE)
   expect_equal(
-    xpectr::smpl(output_17193[[".folds"]], n = 30),
+    xpectr::smpl(output_10078[[".folds"]], n = 30),
     structure(c(6L, 6L, 7L, 7L, 7L, 4L, 4L, 4L, 6L, 6L, 2L, 2L, 1L,
       1L, 8L, 8L, 2L, 2L, 5L, 5L, 5L, 8L, 8L, 3L, 3L, 3L, 3L, 1L,
       1L, 1L), .Label = c("1", "2", "3", "4", "5", "6", "7", "8"),
       class = "factor"))
   expect_equal(
-    xpectr::smpl(output_17193[[".collg_1"]], n = 30),
+    xpectr::smpl(output_10078[[".collg_1"]], n = 30),
     structure(c(2L, 2L, 3L, 3L, 3L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 2L,
       2L, 1L, 1L, 3L, 3L, 3L, 3L, 3L, 1L, 1L, 1L, 1L, 1L, 1L, 2L,
       2L, 2L), .Label = c("1", "2", "3"), class = "factor"))
   expect_equal(
-    xpectr::smpl(output_17193[[".collg_2"]], n = 30),
+    xpectr::smpl(output_10078[[".collg_2"]], n = 30),
     structure(c(2L, 2L, 2L, 2L, 2L, 3L, 3L, 3L, 2L, 2L, 1L, 1L, 1L,
       1L, 2L, 2L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 3L, 3L, 3L, 3L, 1L,
       1L, 1L), .Label = c("1", "2", "3"), class = "factor"))
   # Testing column names
   expect_equal(
-    names(output_17193),
+    names(output_10078),
     c("participant", "participant_2", "age", "answer", "score", "session",
       ".folds", ".collg_1", ".collg_2"),
     fixed = TRUE)
   # Testing column classes
   expect_equal(
-    xpectr::element_classes(output_17193),
+    xpectr::element_classes(output_10078),
     c("factor", "factor", "integer", "factor", "integer", "character",
       "factor", "factor", "factor"),
     fixed = TRUE)
   # Testing column types
   expect_equal(
-    xpectr::element_types(output_17193),
+    xpectr::element_types(output_10078),
     c("integer", "integer", "integer", "integer", "integer", "character",
       "integer", "integer", "integer"),
     fixed = TRUE)
   # Testing dimensions
   expect_equal(
-    dim(output_17193),
+    dim(output_10078),
     c(53L, 9L))
   # Testing group keys
   expect_equal(
-    colnames(dplyr::group_keys(output_17193)),
+    colnames(dplyr::group_keys(output_10078)),
     character(0),
     fixed = TRUE)
 
@@ -3640,13 +3407,13 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_10078 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = "two", unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_13754 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = "two", unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_10078[['error']]),
+    xpectr::strip(side_effects_13754[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'num_new_group_cols': Must be of type 'number', not 'character'."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_10078[['error_class']]),
+    xpectr::strip(side_effects_13754[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -3655,13 +3422,13 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_13754 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = NA, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_10015 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = NA, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_13754[['error']]),
+    xpectr::strip(side_effects_10015[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'num_new_group_cols': May not be NA."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_13754[['error_class']]),
+    xpectr::strip(side_effects_10015[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -3670,13 +3437,13 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_10015 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = NULL, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_15816 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = NULL, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_10015[['error']]),
+    xpectr::strip(side_effects_15816[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'num_new_group_cols': Must be of type 'number', not 'NULL'."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_10015[['error_class']]),
+    xpectr::strip(side_effects_15816[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -3684,84 +3451,84 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   # Changed from baseline: unique_new_group_cols...
   xpectr::set_test_seed(42)
   # Assigning output
-  output_15816 <- collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = FALSE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE)
+  output_11579 <- collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = FALSE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE)
   # Testing class
   expect_equal(
-    class(output_15816),
+    class(output_11579),
     c("tbl_df", "tbl", "data.frame"),
     fixed = TRUE)
   # Testing column values
   expect_equal(
-    xpectr::smpl(output_15816[["participant"]], n = 30),
+    xpectr::smpl(output_11579[["participant"]], n = 30),
     structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
       18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
       8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
       "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
       "19", "20"), class = "factor"))
   expect_equal(
-    xpectr::smpl(output_15816[["participant_2"]], n = 30),
+    xpectr::smpl(output_11579[["participant_2"]], n = 30),
     structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
       18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
       8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
       "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
       "19", "20"), class = "factor"))
   expect_equal(
-    xpectr::smpl(output_15816[["age"]], n = 30),
+    xpectr::smpl(output_11579[["age"]], n = 30),
     c(65, 42, 91, 83, 83, 40, 80, 80, 88, 88, 10, 10, 93, 93, 46, 46,
       29, 29, 81, 81, 81, 62, 62, 50, 50, 13, 13, 61, 61, 61),
     tolerance = 1e-4)
   expect_equal(
-    xpectr::smpl(output_15816[["answer"]], n = 30),
+    xpectr::smpl(output_11579[["answer"]], n = 30),
     structure(c(4L, 3L, 4L, 2L, 2L, 1L, 3L, 3L, 1L, 1L, 1L, 2L, 2L,
       4L, 3L, 3L, 1L, 4L, 4L, 3L, 4L, 1L, 4L, 3L, 4L, 4L, 3L, 3L,
       2L, 4L), .Label = c("a", "b", "c", "d"), class = "factor"))
   expect_equal(
-    xpectr::smpl(output_15816[["score"]], n = 30),
+    xpectr::smpl(output_11579[["score"]], n = 30),
     c(28, 61, 1, 52, 19, 40, 27, 35, 91, 90, 43, 5, 18, 25, 86, 51,
       17, 36, 63, 69, 30, 75, 41, 54, 73, 9, 95, 13, 8, 39),
     tolerance = 1e-4)
   expect_equal(
-    xpectr::smpl(output_15816[["session"]], n = 30),
+    xpectr::smpl(output_11579[["session"]], n = 30),
     c("1", "1", "1", "2", "1", "3", "3", "2", "1", "3", "1", "3", "2",
       "3", "2", "1", "2", "1", "1", "3", "2", "1", "3", "1", "2",
       "1", "2", "3", "1", "2"),
     fixed = TRUE)
   expect_equal(
-    xpectr::smpl(output_15816[[".folds"]], n = 30),
+    xpectr::smpl(output_11579[[".folds"]], n = 30),
     structure(c(6L, 6L, 7L, 7L, 7L, 4L, 4L, 4L, 6L, 6L, 2L, 2L, 1L,
       1L, 8L, 8L, 2L, 2L, 5L, 5L, 5L, 8L, 8L, 3L, 3L, 3L, 3L, 1L,
       1L, 1L), .Label = c("1", "2", "3", "4", "5", "6", "7", "8"),
       class = "factor"))
   expect_equal(
-    xpectr::smpl(output_15816[[".collg"]], n = 30),
+    xpectr::smpl(output_11579[[".collg"]], n = 30),
     structure(c(2L, 2L, 3L, 3L, 3L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 2L,
       2L, 1L, 1L, 3L, 3L, 3L, 3L, 3L, 1L, 1L, 1L, 1L, 1L, 1L, 2L,
       2L, 2L), .Label = c("1", "2", "3"), class = "factor"))
   # Testing column names
   expect_equal(
-    names(output_15816),
+    names(output_11579),
     c("participant", "participant_2", "age", "answer", "score", "session",
       ".folds", ".collg"),
     fixed = TRUE)
   # Testing column classes
   expect_equal(
-    xpectr::element_classes(output_15816),
+    xpectr::element_classes(output_11579),
     c("factor", "factor", "integer", "factor", "integer", "character",
       "factor", "factor"),
     fixed = TRUE)
   # Testing column types
   expect_equal(
-    xpectr::element_types(output_15816),
+    xpectr::element_types(output_11579),
     c("integer", "integer", "integer", "integer", "integer", "character",
       "integer", "integer"),
     fixed = TRUE)
   # Testing dimensions
   expect_equal(
-    dim(output_15816),
+    dim(output_11579),
     c(53L, 8L))
   # Testing group keys
   expect_equal(
-    colnames(dplyr::group_keys(output_15816)),
+    colnames(dplyr::group_keys(output_11579)),
     character(0),
     fixed = TRUE)
 
@@ -3770,25 +3537,10 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_11579 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = 1, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
-  expect_equal(
-    xpectr::strip(side_effects_11579[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'unique_fold_cols_only': Must be of type 'logical flag', not 'double'."),
-    fixed = TRUE)
-  expect_equal(
-    xpectr::strip(side_effects_11579[['error_class']]),
-    xpectr::strip(c("simpleError", "error", "condition")),
-    fixed = TRUE)
-
-  # Testing collapse_groups(data = df, n = 3, group_cols...
-  # Changed from baseline: unique_new_group_cols...
-  xpectr::set_test_seed(42)
-  # Testing side effects
-  # Assigning side effects
-  side_effects_13590 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = NA, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_13590 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = 1, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_13590[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'unique_fold_cols_only': May not be NA."),
+    xpectr::strip("1 assertions failed:\n * Variable 'unique_fold_cols_only': Must be of type 'logical flag', not 'double'."),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_13590[['error_class']]),
@@ -3800,13 +3552,28 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_16456 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = NULL, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_16456 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = NA, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_16456[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'unique_fold_cols_only': Must be of type 'logical flag', not 'NULL'."),
+    xpectr::strip("1 assertions failed:\n * Variable 'unique_fold_cols_only': May not be NA."),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_16456[['error_class']]),
+    xpectr::strip(c("simpleError", "error", "condition")),
+    fixed = TRUE)
+
+  # Testing collapse_groups(data = df, n = 3, group_cols...
+  # Changed from baseline: unique_new_group_cols...
+  xpectr::set_test_seed(42)
+  # Testing side effects
+  # Assigning side effects
+  side_effects_17758 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = NULL, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  expect_equal(
+    xpectr::strip(side_effects_17758[['error']]),
+    xpectr::strip("1 assertions failed:\n * Variable 'unique_fold_cols_only': Must be of type 'logical flag', not 'NULL'."),
+    fixed = TRUE)
+  expect_equal(
+    xpectr::strip(side_effects_17758[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -3815,13 +3582,13 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_17758 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 0, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_15636 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 0, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_17758[['error']]),
+    xpectr::strip(side_effects_15636[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'max_iters': Must be >= 1."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_17758[['error_class']]),
+    xpectr::strip(side_effects_15636[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -3830,13 +3597,13 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_15636 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = "sdf", extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_12337 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = "sdf", extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_15636[['error']]),
+    xpectr::strip(side_effects_12337[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'max_iters': Must be of type 'count', not 'character'."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_15636[['error_class']]),
+    xpectr::strip(side_effects_12337[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -3845,13 +3612,13 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_12337 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = NA, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_10899 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = NA, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_12337[['error']]),
+    xpectr::strip(side_effects_10899[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'max_iters': May not be NA."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_12337[['error_class']]),
+    xpectr::strip(side_effects_10899[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -3860,25 +3627,10 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_10899 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = NULL, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
-  expect_equal(
-    xpectr::strip(side_effects_10899[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'max_iters': Must be of type 'count', not 'NULL'."),
-    fixed = TRUE)
-  expect_equal(
-    xpectr::strip(side_effects_10899[['error_class']]),
-    xpectr::strip(c("simpleError", "error", "condition")),
-    fixed = TRUE)
-
-  # Testing collapse_groups(data = df, n = 3, group_cols...
-  # Changed from baseline: extreme_pairing_level...
-  xpectr::set_test_seed(42)
-  # Testing side effects
-  # Assigning side effects
-  side_effects_10856 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 2, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_10856 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = NULL, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_10856[['error']]),
-    xpectr::strip("`num_col`: The (subset of) data is too small to perform 2 levels of extreme pairing. Decrease `extreme_pairing_levels`."),
+    xpectr::strip("1 assertions failed:\n * Variable 'max_iters': Must be of type 'count', not 'NULL'."),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_10856[['error_class']]),
@@ -3890,10 +3642,10 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_13052 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 0, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_13052 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 2, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_13052[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'extreme_pairing_levels': Must be >= 1."),
+    xpectr::strip("`num_col`: The (subset of) data is too small to perform 2 levels of extreme pairing. Decrease `extreme_pairing_levels`."),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_13052[['error_class']]),
@@ -3905,10 +3657,10 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_16674 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = "str", combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_16674 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 0, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_16674[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'extreme_pairing_levels': Must be of type 'count', not 'character'."),
+    xpectr::strip("1 assertions failed:\n * Variable 'extreme_pairing_levels': Must be >= 1."),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_16674[['error_class']]),
@@ -3920,10 +3672,10 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_10002 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = NA, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_10002 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = "str", combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_10002[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'extreme_pairing_levels': May not be NA."),
+    xpectr::strip("1 assertions failed:\n * Variable 'extreme_pairing_levels': Must be of type 'count', not 'character'."),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_10002[['error_class']]),
@@ -3935,100 +3687,113 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_12085 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = NULL, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_12085 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = NA, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_12085[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'extreme_pairing_levels': Must be of type 'count', not 'NULL'."),
+    xpectr::strip("1 assertions failed:\n * Variable 'extreme_pairing_levels': May not be NA."),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_12085[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
-  # TODO Create separate test for this as well
+  # Testing collapse_groups(data = df, n = 3, group_cols...
+  # Changed from baseline: extreme_pairing_level...
+  xpectr::set_test_seed(42)
+  # Testing side effects
+  # Assigning side effects
+  side_effects_19330 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = NULL, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  expect_equal(
+    xpectr::strip(side_effects_19330[['error']]),
+    xpectr::strip("1 assertions failed:\n * Variable 'extreme_pairing_levels': Must be of type 'count', not 'NULL'."),
+    fixed = TRUE)
+  expect_equal(
+    xpectr::strip(side_effects_19330[['error_class']]),
+    xpectr::strip(c("simpleError", "error", "condition")),
+    fixed = TRUE)
 
   # Testing collapse_groups(data = df, n = 3, group_cols...
   # Changed from baseline: combine_method = "avg...
   xpectr::set_test_seed(42)
   # Assigning output
-  output_19330 <- collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_min_max_scaled", col_name = ".collg", parallel = FALSE, verbose = FALSE)
+  output_19256 <- collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_min_max_scaled", col_name = ".collg", parallel = FALSE, verbose = FALSE)
   # Testing class
   expect_equal(
-    class(output_19330),
+    class(output_19256),
     c("tbl_df", "tbl", "data.frame"),
     fixed = TRUE)
   # Testing column values
   expect_equal(
-    xpectr::smpl(output_19330[["participant"]], n = 30),
+    xpectr::smpl(output_19256[["participant"]], n = 30),
     structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
       18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
       8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
       "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
       "19", "20"), class = "factor"))
   expect_equal(
-    xpectr::smpl(output_19330[["participant_2"]], n = 30),
+    xpectr::smpl(output_19256[["participant_2"]], n = 30),
     structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
       18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
       8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
       "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
       "19", "20"), class = "factor"))
   expect_equal(
-    xpectr::smpl(output_19330[["age"]], n = 30),
+    xpectr::smpl(output_19256[["age"]], n = 30),
     c(65, 42, 91, 83, 83, 40, 80, 80, 88, 88, 10, 10, 93, 93, 46, 46,
       29, 29, 81, 81, 81, 62, 62, 50, 50, 13, 13, 61, 61, 61),
     tolerance = 1e-4)
   expect_equal(
-    xpectr::smpl(output_19330[["answer"]], n = 30),
+    xpectr::smpl(output_19256[["answer"]], n = 30),
     structure(c(4L, 3L, 4L, 2L, 2L, 1L, 3L, 3L, 1L, 1L, 1L, 2L, 2L,
       4L, 3L, 3L, 1L, 4L, 4L, 3L, 4L, 1L, 4L, 3L, 4L, 4L, 3L, 3L,
       2L, 4L), .Label = c("a", "b", "c", "d"), class = "factor"))
   expect_equal(
-    xpectr::smpl(output_19330[["score"]], n = 30),
+    xpectr::smpl(output_19256[["score"]], n = 30),
     c(28, 61, 1, 52, 19, 40, 27, 35, 91, 90, 43, 5, 18, 25, 86, 51,
       17, 36, 63, 69, 30, 75, 41, 54, 73, 9, 95, 13, 8, 39),
     tolerance = 1e-4)
   expect_equal(
-    xpectr::smpl(output_19330[["session"]], n = 30),
+    xpectr::smpl(output_19256[["session"]], n = 30),
     c("1", "1", "1", "2", "1", "3", "3", "2", "1", "3", "1", "3", "2",
       "3", "2", "1", "2", "1", "1", "3", "2", "1", "3", "1", "2",
       "1", "2", "3", "1", "2"),
     fixed = TRUE)
   expect_equal(
-    xpectr::smpl(output_19330[[".folds"]], n = 30),
+    xpectr::smpl(output_19256[[".folds"]], n = 30),
     structure(c(6L, 6L, 7L, 7L, 7L, 4L, 4L, 4L, 6L, 6L, 2L, 2L, 1L,
       1L, 8L, 8L, 2L, 2L, 5L, 5L, 5L, 8L, 8L, 3L, 3L, 3L, 3L, 1L,
       1L, 1L), .Label = c("1", "2", "3", "4", "5", "6", "7", "8"),
       class = "factor"))
   expect_equal(
-    xpectr::smpl(output_19330[[".collg"]], n = 30),
+    xpectr::smpl(output_19256[[".collg"]], n = 30),
     structure(c(2L, 2L, 3L, 3L, 3L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 2L,
       2L, 1L, 1L, 3L, 3L, 3L, 3L, 3L, 1L, 1L, 1L, 1L, 1L, 1L, 2L,
       2L, 2L), .Label = c("1", "2", "3"), class = "factor"))
   # Testing column names
   expect_equal(
-    names(output_19330),
+    names(output_19256),
     c("participant", "participant_2", "age", "answer", "score", "session",
       ".folds", ".collg"),
     fixed = TRUE)
   # Testing column classes
   expect_equal(
-    xpectr::element_classes(output_19330),
+    xpectr::element_classes(output_19256),
     c("factor", "factor", "integer", "factor", "integer", "character",
       "factor", "factor"),
     fixed = TRUE)
   # Testing column types
   expect_equal(
-    xpectr::element_types(output_19330),
+    xpectr::element_types(output_19256),
     c("integer", "integer", "integer", "integer", "integer", "character",
       "integer", "integer"),
     fixed = TRUE)
   # Testing dimensions
   expect_equal(
-    dim(output_19330),
+    dim(output_19256),
     c(53L, 8L))
   # Testing group keys
   expect_equal(
-    colnames(dplyr::group_keys(output_19330)),
+    colnames(dplyr::group_keys(output_19256)),
     character(0),
     fixed = TRUE)
 
@@ -4037,13 +3802,13 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_19256 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "nope", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_17340 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "nope", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_19256[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'combine_method': Names must be a subset of {'avg_standardized','avg_min_max_scaled'},\n * but has additional elements {'nope'}."),
+    xpectr::strip(side_effects_17340[['error']]),
+    xpectr::strip("1 assertions failed:\n * Variable 'combine_method': Names must be a subset of {'avg_standardized','avg_min_max_scaled'}, but has\n * additional elements {'nope'}."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_19256[['error_class']]),
+    xpectr::strip(side_effects_17340[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -4052,13 +3817,13 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_17340 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = 1, col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_13330 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = 1, col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_17340[['error']]),
+    xpectr::strip(side_effects_13330[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'combine_method': Must be of type 'string', not 'double'."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_17340[['error_class']]),
+    xpectr::strip(side_effects_13330[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -4067,13 +3832,13 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_13330 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = NA, col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_15150 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = NA, col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_13330[['error']]),
+    xpectr::strip(side_effects_15150[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'combine_method': May not be NA."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_13330[['error_class']]),
+    xpectr::strip(side_effects_15150[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -4082,13 +3847,13 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_15150 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = NULL, col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_17439 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = NULL, col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_15150[['error']]),
+    xpectr::strip(side_effects_17439[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'combine_method': Must be of type 'string', not 'NULL'."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_15150[['error_class']]),
+    xpectr::strip(side_effects_17439[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -4096,84 +3861,84 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   # Changed from baseline: col_name = ".some_name."
   xpectr::set_test_seed(42)
   # Assigning output
-  output_17439 <- collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".some_name.", parallel = FALSE, verbose = FALSE)
+  output_16191 <- collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".some_name.", parallel = FALSE, verbose = FALSE)
   # Testing class
   expect_equal(
-    class(output_17439),
+    class(output_16191),
     c("tbl_df", "tbl", "data.frame"),
     fixed = TRUE)
   # Testing column values
   expect_equal(
-    xpectr::smpl(output_17439[["participant"]], n = 30),
+    xpectr::smpl(output_16191[["participant"]], n = 30),
     structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
       18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
       8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
       "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
       "19", "20"), class = "factor"))
   expect_equal(
-    xpectr::smpl(output_17439[["participant_2"]], n = 30),
+    xpectr::smpl(output_16191[["participant_2"]], n = 30),
     structure(c(10L, 11L, 12L, 13L, 13L, 15L, 16L, 16L, 17L, 17L, 18L,
       18L, 2L, 2L, 20L, 20L, 3L, 3L, 4L, 4L, 4L, 5L, 5L, 6L, 6L, 8L,
       8L, 9L, 9L, 9L), .Label = c("1", "2", "3", "4", "5", "6", "7",
       "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
       "19", "20"), class = "factor"))
   expect_equal(
-    xpectr::smpl(output_17439[["age"]], n = 30),
+    xpectr::smpl(output_16191[["age"]], n = 30),
     c(65, 42, 91, 83, 83, 40, 80, 80, 88, 88, 10, 10, 93, 93, 46, 46,
       29, 29, 81, 81, 81, 62, 62, 50, 50, 13, 13, 61, 61, 61),
     tolerance = 1e-4)
   expect_equal(
-    xpectr::smpl(output_17439[["answer"]], n = 30),
+    xpectr::smpl(output_16191[["answer"]], n = 30),
     structure(c(4L, 3L, 4L, 2L, 2L, 1L, 3L, 3L, 1L, 1L, 1L, 2L, 2L,
       4L, 3L, 3L, 1L, 4L, 4L, 3L, 4L, 1L, 4L, 3L, 4L, 4L, 3L, 3L,
       2L, 4L), .Label = c("a", "b", "c", "d"), class = "factor"))
   expect_equal(
-    xpectr::smpl(output_17439[["score"]], n = 30),
+    xpectr::smpl(output_16191[["score"]], n = 30),
     c(28, 61, 1, 52, 19, 40, 27, 35, 91, 90, 43, 5, 18, 25, 86, 51,
       17, 36, 63, 69, 30, 75, 41, 54, 73, 9, 95, 13, 8, 39),
     tolerance = 1e-4)
   expect_equal(
-    xpectr::smpl(output_17439[["session"]], n = 30),
+    xpectr::smpl(output_16191[["session"]], n = 30),
     c("1", "1", "1", "2", "1", "3", "3", "2", "1", "3", "1", "3", "2",
       "3", "2", "1", "2", "1", "1", "3", "2", "1", "3", "1", "2",
       "1", "2", "3", "1", "2"),
     fixed = TRUE)
   expect_equal(
-    xpectr::smpl(output_17439[[".folds"]], n = 30),
+    xpectr::smpl(output_16191[[".folds"]], n = 30),
     structure(c(6L, 6L, 7L, 7L, 7L, 4L, 4L, 4L, 6L, 6L, 2L, 2L, 1L,
       1L, 8L, 8L, 2L, 2L, 5L, 5L, 5L, 8L, 8L, 3L, 3L, 3L, 3L, 1L,
       1L, 1L), .Label = c("1", "2", "3", "4", "5", "6", "7", "8"),
       class = "factor"))
   expect_equal(
-    xpectr::smpl(output_17439[[".some_name."]], n = 30),
+    xpectr::smpl(output_16191[[".some_name."]], n = 30),
     structure(c(2L, 2L, 3L, 3L, 3L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 2L,
       2L, 1L, 1L, 3L, 3L, 3L, 3L, 3L, 1L, 1L, 1L, 1L, 1L, 1L, 2L,
       2L, 2L), .Label = c("1", "2", "3"), class = "factor"))
   # Testing column names
   expect_equal(
-    names(output_17439),
+    names(output_16191),
     c("participant", "participant_2", "age", "answer", "score", "session",
       ".folds", ".some_name."),
     fixed = TRUE)
   # Testing column classes
   expect_equal(
-    xpectr::element_classes(output_17439),
+    xpectr::element_classes(output_16191),
     c("factor", "factor", "integer", "factor", "integer", "character",
       "factor", "factor"),
     fixed = TRUE)
   # Testing column types
   expect_equal(
-    xpectr::element_types(output_17439),
+    xpectr::element_types(output_16191),
     c("integer", "integer", "integer", "integer", "integer", "character",
       "integer", "integer"),
     fixed = TRUE)
   # Testing dimensions
   expect_equal(
-    dim(output_17439),
+    dim(output_16191),
     c(53L, 8L))
   # Testing group keys
   expect_equal(
-    colnames(dplyr::group_keys(output_17439)),
+    colnames(dplyr::group_keys(output_16191)),
     character(0),
     fixed = TRUE)
 
@@ -4182,22 +3947,7 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_16191 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".folds", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
-  expect_equal(
-    xpectr::strip(side_effects_16191[['error']]),
-    xpectr::strip("1 assertions failed:\n * `col_name` is already a column in `data`."),
-    fixed = TRUE)
-  expect_equal(
-    xpectr::strip(side_effects_16191[['error_class']]),
-    xpectr::strip(c("simpleError", "error", "condition")),
-    fixed = TRUE)
-
-  # Testing collapse_groups(data = df, n = 3, group_cols...
-  # Changed from baseline: col_name = "answer"
-  xpectr::set_test_seed(42)
-  # Testing side effects
-  # Assigning side effects
-  side_effects_16262 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = "answer", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_16262 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".folds", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_16262[['error']]),
     xpectr::strip("1 assertions failed:\n * `col_name` is already a column in `data`."),
@@ -4208,17 +3958,32 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
     fixed = TRUE)
 
   # Testing collapse_groups(data = df, n = 3, group_cols...
+  # Changed from baseline: col_name = "answer"
+  xpectr::set_test_seed(42)
+  # Testing side effects
+  # Assigning side effects
+  side_effects_12171 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = "answer", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  expect_equal(
+    xpectr::strip(side_effects_12171[['error']]),
+    xpectr::strip("1 assertions failed:\n * `col_name` is already a column in `data`."),
+    fixed = TRUE)
+  expect_equal(
+    xpectr::strip(side_effects_12171[['error_class']]),
+    xpectr::strip(c("simpleError", "error", "condition")),
+    fixed = TRUE)
+
+  # Testing collapse_groups(data = df, n = 3, group_cols...
   # Changed from baseline: col_name = 1
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_12171 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = 1, parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_12165 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = 1, parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_12171[['error']]),
+    xpectr::strip(side_effects_12165[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'col_name': Must be of type 'string', not 'double'."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_12171[['error_class']]),
+    xpectr::strip(side_effects_12165[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -4227,13 +3992,13 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_12165 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = NA, parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_13889 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = NA, parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_12165[['error']]),
+    xpectr::strip(side_effects_13889[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'col_name': May not be NA."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_12165[['error_class']]),
+    xpectr::strip(side_effects_13889[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -4242,13 +4007,13 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_13889 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = NULL, parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_19424 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = NULL, parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_13889[['error']]),
+    xpectr::strip(side_effects_19424[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'col_name': Must be of type 'string', not 'NULL'."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_13889[['error_class']]),
+    xpectr::strip(side_effects_19424[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -4257,13 +4022,13 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_19424 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = 1, verbose = FALSE), reset_seed = TRUE)
+  side_effects_19626 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = 1, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_19424[['error']]),
+    xpectr::strip(side_effects_19626[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'parallel': Must be of type 'logical flag', not 'double'."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_19424[['error_class']]),
+    xpectr::strip(side_effects_19626[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -4272,13 +4037,13 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_19626 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = NA, verbose = FALSE), reset_seed = TRUE)
+  side_effects_17398 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = NA, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_19626[['error']]),
+    xpectr::strip(side_effects_17398[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'parallel': May not be NA."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_19626[['error_class']]),
+    xpectr::strip(side_effects_17398[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -4287,13 +4052,13 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_17398 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = NULL, verbose = FALSE), reset_seed = TRUE)
+  side_effects_17332 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = NULL, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_17398[['error']]),
+    xpectr::strip(side_effects_17332[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'parallel': Must be of type 'logical flag', not 'NULL'."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_17398[['error_class']]),
+    xpectr::strip(side_effects_17332[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -4302,13 +4067,13 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_17332 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = 1), reset_seed = TRUE)
+  side_effects_15357 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = 1), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_17332[['error']]),
+    xpectr::strip(side_effects_15357[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'verbose': Must be of type 'logical flag', not 'double'."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_17332[['error_class']]),
+    xpectr::strip(side_effects_15357[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -4317,13 +4082,13 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_15357 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = NA), reset_seed = TRUE)
+  side_effects_10022 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = NA), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_15357[['error']]),
+    xpectr::strip(side_effects_10022[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'verbose': May not be NA."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_15357[['error_class']]),
+    xpectr::strip(side_effects_10022[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
@@ -4332,13 +4097,13 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_10022 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = NULL), reset_seed = TRUE)
+  side_effects_16089 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = NULL), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_10022[['error']]),
+    xpectr::strip(side_effects_16089[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'verbose': Must be of type 'logical flag', not 'NULL'."),
     fixed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_10022[['error_class']]),
+    xpectr::strip(side_effects_16089[['error_class']]),
     xpectr::strip(c("simpleError", "error", "condition")),
     fixed = TRUE)
 
