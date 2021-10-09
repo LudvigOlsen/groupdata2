@@ -6,7 +6,7 @@ This version introduces `collapse_groups()` and friends, as well as `summarize_b
 
 * **Breaking**: The numerical balancing (`num_col`) in `fold()` gets multiple improvements. This breaks reproducibility in some contexts.
 
-  - Fixes bug with selection of groups to redistribute when `extreme_pairing_levels > 1`.
+  - Fixes bug with selection of groups to redistribute when `extreme_pairing_levels > 1`. The groupings were likely to be fine, but the fix should give better groupings on average.
  
   - When possible, it redistributes the smallest and/or largest group if they are 1 standard deviation from the second smallest/largest group to avoid imbalances due to very small/large scores.
  
@@ -18,7 +18,7 @@ This version introduces `collapse_groups()` and friends, as well as `summarize_b
 new groups by size and by numeric and categorical columns. The more of these you balance at a time, the less balanced each will tend to be. Compare settings by summarizing the balances with `summarize_balances()` afterwards.
 
 TODODODODODODODODODODODO!!!!
-* Adds `collapse_groups_by_size()`, `collapse_groups_by_numeric()`, `collapse_groups_by_levels()`, and `collapse_groups_by_ids()`. These are wrappers of `collapse_groups()` but also provide additional features for those specific cases. 
+* Adds `collapse_groups_by_size()`, `collapse_groups_by_numeric()`, `collapse_groups_by_levels()`, and `collapse_groups_by_ids()`. These are wrappers of `collapse_groups()` for a simplified interface.
 
 * Adds `summarize_balances()` for inspecting the balance of numeric, categorical, and ID columns in and between groups.
 
