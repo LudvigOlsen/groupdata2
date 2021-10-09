@@ -1107,10 +1107,14 @@ replace_forbidden_names_ <- function(
   new_name_patterns <- paste0(".____", forbidden_name_patterns)
   new_names <- paste0(".____", forbidden_names)
 
-  replace_forbidden_ <- function(nms){
+  replace_forbidden_ <- function(nms, allowed=NULL){
 
     if (is.null(nms)){
       return(NULL)
+    }
+
+    if (!is.null(allowed)){
+      forbidden_names <- setdiff(forbidden_names, allowed)
     }
 
     for (i in seq_along(forbidden_name_patterns)){
@@ -1147,7 +1151,7 @@ replace_forbidden_names_ <- function(
   cat_cols <- replace_forbidden_(cat_cols)
   num_cols <- replace_forbidden_(num_cols)
   id_cols <- replace_forbidden_(id_cols)
-  names(weights) <- replace_forbidden_(names(weights))
+  names(weights) <- replace_forbidden_(names(weights), allowed = "size")
 
   list(
     data = data,
@@ -1458,6 +1462,17 @@ check_collapse_groups_ <- function(
     type = "unique",
     add = assert_collection
   )
+  if (!checkmate::test_names(
+    x = c(group_cols, cat_cols, num_cols, id_cols),
+    type = "unique"
+  )){
+    cols_table <- table(c(group_cols, cat_cols, num_cols, id_cols))
+    dups <- names(cols_table)[cols_table>1]
+    assert_collection$push(
+      paste0("All columns in 'c(group_cols, cat_cols, num_cols,",
+             " id_cols)' must be unique. Found duplicates: '",
+             paste0(dups, collapse="', '"), "'"))
+  }
   checkmate::assert_names(
     x = method,
     subset.of = c("balance", "ascending", "descending"),
@@ -1537,8 +1552,9 @@ check_cat_levels_ <- function(data, cat_cols, cat_levels) {
 
   if (is.list(cat_levels)) {
     if (!setequal(names(cat_levels), cat_cols)) {
-      assert_collection$push("when `cat_levels` is a list, its names must be equal to `cat_cols`.")
+      assert_collection$push("when `cat_levels` is a list, its names must be equal to those in `cat_cols`.")
     }
+    checkmate::reportAssertions(assert_collection)
     for (cat_col in cat_cols) {
       check_single_cat_levels_(data = data,
                                cat_col = cat_col,
