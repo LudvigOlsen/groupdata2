@@ -141,11 +141,14 @@
 #' ))
 #'
 #' # Collapse to 3 groups with *numerical* balancing
+#' # Also balance size to get similar sums
+#' # as well as means
 #' df_coll <- collapse_groups_by_numeric(
 #'   data = df,
 #'   n = 3,
 #'   group_cols = ".folds",
-#'   num_cols = "score"
+#'   num_cols = "score",
+#'   balance_size = TRUE
 #' )
 #'
 #' # Check balances
@@ -167,9 +170,44 @@
 #' # Check balances
 #' (coll_summary <- summarize_balances(
 #'   data = df_coll,
-#'   group_cols =".coll_groups",
+#'   group_cols = ".coll_groups",
 #'   id_cols = 'participant'
 #' ))
+#'
+#' # Collapse to 3 groups with balancing of ALL attributes
+#' # We create 5 new grouping factors and compare them
+#' # The latter is in-general a good strategy even if you
+#' # only need a single collapsed grouping factor
+#' # as you can choose your preferred balances
+#' # based on the summary
+#' # NOTE: This is slow (up to a few minutes)
+#' # consider enabling parallelization
+#' df_coll <- collapse_groups(
+#'   data = df,
+#'   n = 3,
+#'   num_new_group_cols = 5,
+#'   group_cols = ".folds",
+#'   cat_cols = "answer",
+#'   num_cols = 'score',
+#'   id_cols = "participant",
+#'   auto_tune = TRUE   # Disabled by default in `collapse_groups()`
+#'   # parallel = TRUE  # Add comma above and uncomment
+#' )
+#'
+#' # Check balances
+#' (coll_summary <- summarize_balances(
+#'   data = df_coll,
+#'   group_cols = paste0(".coll_groups_", 1:5),
+#'   cat_cols = "answer",
+#'   num_cols = 'score',
+#'   id_cols = 'participant'
+#' ))
+#'
+#' # Compare the new grouping columns
+#' # The lowest across-group standard deviation
+#' # is the most balanced
+#' ranked_balances(coll_summary)
+#'
 #' }
 #'
 NULL

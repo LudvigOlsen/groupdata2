@@ -233,7 +233,8 @@ df_folded <- fold(
 )
 
 # Extract the across-group standard deviations
-# The lowest standard deviation is the most balanced
+# The group column with the lowest standard deviation(s)
+# is the most balanced group column
 summ \%>\% ranked_balances()
 
 }
