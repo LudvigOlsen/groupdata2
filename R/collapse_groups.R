@@ -1507,7 +1507,7 @@ check_collapse_groups_ <- function(
         x = data[[cat_col]],
         any.missing = FALSE,
         min.levels = 2,
-        .var.name = paste0("data[['", cat_col, "']]"),
+        .var.name = paste0("`cat_cols` column data[['", cat_col, "']]"),
         add = assert_collection
       )
     }
@@ -1526,7 +1526,7 @@ check_collapse_groups_ <- function(
         x = data[[num_col]],
         any.missing = FALSE,
         finite = TRUE,
-        .var.name = paste0("data[['", num_col, "']]"),
+        .var.name = paste0("`num_cols` column data[['", num_col, "']]"),
         add = assert_collection
       )
     }
@@ -1536,7 +1536,7 @@ check_collapse_groups_ <- function(
       checkmate::assert_factor(
         x = data[[id_col]],
         any.missing = FALSE,
-        .var.name = paste0("data[['", id_col, "']]"),
+        .var.name = paste0("ID column data[['", id_col, "']]"),
         add = assert_collection
       )
     }

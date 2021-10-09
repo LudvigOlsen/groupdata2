@@ -462,7 +462,7 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   #     "auto_tune" = list(FALSE, 1, NA), # TRUE is tested elsewhere
   #     "weights" = list(NULL, c("size" = 2, "answer" = 7, "score" = 1, "participant" = 2),
   #                      c("size" = 3, "nope" = 5), c("participant" = 2,"participant_2" = 2),
-  #                      list("size" = 2, "answer" = 7), list("size" = NA, "answer" = 7),
+  #                      list("size" = 2, "answer" = 7), c("size" = NA, "answer" = 7),
   #                      1, NA),
   #     "method" = list("balance", "ascending", "descending", "none", list("balance"), 1, NA),
   #     "group_aggregation_fn" = list(mean, sum, sd, 2, NA),
@@ -1035,7 +1035,7 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   side_effects_11174 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = c("answer", "session"), cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_11174[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'data[['session']]': Must be of type 'factor', not 'character'."),
+    xpectr::strip("1 assertions failed:\n * Variable '`cat_cols` column data[['session']]': Must be of type 'factor', not 'character'."),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_11174[['error_class']]),
@@ -2808,14 +2808,14 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
     fixed = TRUE)
 
   # Testing collapse_groups(data = df, n = 3, group_cols...
-  # Changed from baseline: weights = list(size =...
+  # Changed from baseline: weights = c(size = NA...
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_19828 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = list(size = NA, answer = 7), method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
+  side_effects_19828 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = c(size = NA, answer = 7), method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_19828[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'weights': Must be of type 'numeric' (or 'NULL'), not 'list'."),
+    xpectr::strip("1 assertions failed:\n * Variable 'weights': Contains missing values (element 1)."),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_19828[['error_class']]),
