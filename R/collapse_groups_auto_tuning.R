@@ -226,7 +226,7 @@ auto_tune_collapsings <- function(
   }
 
   if (isTRUE(verbose)){
-    cat(paste_hyphens(60, end_line=TRUE))
+    cat(paste_hyphens_(60, end_line=TRUE))
   }
 
   # Add new group columns to data
@@ -422,7 +422,7 @@ inform_user_about_autotune_ <- function(
 
   # Inform the user
   string <- paste0(
-    paste_hyphens(width), "\n",
+    paste_hyphens_(width), "\n",
     "  `collapse_groups()` auto-tuning\n",
     paste0(c(rep("-", width)), collapse = ""), "\n",
     "  Finding ", num_new_group_cols, ifelse(isTRUE(unique_only), " unique", ""),
@@ -440,7 +440,7 @@ inform_user_about_autotune_ <- function(
              "\n  Consider enabling parallelization. See ?collapse_groups"
            ),
            ""),
-    "\n", paste_hyphens(width), "\n"
+    "\n", paste_hyphens_(width), "\n"
   )
 
   # Inform user
@@ -448,7 +448,7 @@ inform_user_about_autotune_ <- function(
 
 }
 
-paste_hyphens <- function(num, end_line=FALSE){
+paste_hyphens_ <- function(num, end_line=FALSE){
   string <- paste0(rep("-", num), collapse = "")
   if (isTRUE(end_line)){
     string <- paste0(string, "\n")
