@@ -388,6 +388,10 @@
 #'
 #'  Requires a registered parallel backend.
 #'  Like \code{doParallel::registerDoParallel}.
+#' @param verbose Whether to print information about the process.
+#'  May make the function slightly slower.
+#'
+#'  N.B. Currently only used during auto-tuning.
 #' @family grouping functions
 #' @return \code{data.frame} with one or more new grouping factors.
 #' @seealso
@@ -602,7 +606,8 @@ collapse_groups <- function(
   extreme_pairing_levels = 1,
   combine_method = "avg_standardized",
   col_name = ".coll_groups",
-  parallel = FALSE) {
+  parallel = FALSE,
+  verbose = TRUE) {
 
   # Check arguments
   # Some arguments go directly to fold()
@@ -622,7 +627,8 @@ collapse_groups <- function(
     num_new_group_cols = num_new_group_cols,
     combine_method = combine_method,
     weights = weights,
-    col_name = col_name
+    col_name = col_name,
+    verbose = verbose
   )
 
   #### Prepare data and names ####
@@ -670,7 +676,8 @@ collapse_groups <- function(
     combine_method = combine_method,
     weights = weights,
     col_name = col_name,
-    parallel = parallel
+    parallel = parallel,
+    verbose = verbose
   )
 
   # Prepare data for return
@@ -812,7 +819,8 @@ run_collapse_groups_ <- function(
   combine_method,
   weights,
   col_name,
-  parallel
+  parallel,
+  verbose
 ) {
 
   # Create unique old groups factor
@@ -909,7 +917,8 @@ run_collapse_groups_ <- function(
       unique_new_group_cols_only = unique_new_group_cols_only,
       max_iters = max_iters,
       col_name = col_name,
-      parallel = parallel
+      parallel = parallel,
+      verbose = verbose
     )
 
   } else {
@@ -1316,7 +1325,8 @@ check_collapse_groups_ <- function(
   num_new_group_cols, # Also checked in fold()
   combine_method,
   weights,
-  col_name
+  col_name,
+  verbose
 ){
 
   # Check arguments ####
@@ -1350,6 +1360,8 @@ check_collapse_groups_ <- function(
     add = assert_collection
   )
   checkmate::assert_flag(x = balance_size,
+                         add = assert_collection)
+  checkmate::assert_flag(x = verbose,
                          add = assert_collection)
   checkmate::assert_character(
     x = group_cols,

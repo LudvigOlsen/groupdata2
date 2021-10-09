@@ -225,7 +225,8 @@ collapse_groups_by_size <- function(data,
                                     auto_tune = TRUE,
                                     method = "balance",
                                     col_name = ".coll_groups",
-                                    parallel = FALSE) {
+                                    parallel = FALSE,
+                                    verbose = FALSE) {
   collapse_groups(
     data = data,
     n = n,
@@ -235,7 +236,8 @@ collapse_groups_by_size <- function(data,
     num_new_group_cols = 1,
     col_name = col_name,
     balance_size = TRUE,
-    parallel = parallel
+    parallel = parallel,
+    verbose = verbose
   )
 }
 
@@ -255,7 +257,8 @@ collapse_groups_by_numeric <- function(data,
                                        method = "balance",
                                        group_aggregation_fn = mean,
                                        col_name = ".coll_groups",
-                                       parallel = FALSE) {
+                                       parallel = FALSE,
+                                       verbose = FALSE) {
   collapse_groups(
     data = data,
     n = n,
@@ -267,7 +270,8 @@ collapse_groups_by_numeric <- function(data,
     num_new_group_cols = 1,
     group_aggregation_fn = group_aggregation_fn,
     col_name = col_name,
-    parallel = parallel
+    parallel = parallel,
+    verbose = verbose
   )
 }
 
@@ -287,7 +291,8 @@ collapse_groups_by_levels <- function(data,
                                       auto_tune = TRUE,
                                       method = "balance",
                                       col_name = ".coll_groups",
-                                      parallel = FALSE) {
+                                      parallel = FALSE,
+                                      verbose = FALSE) {
   collapse_groups(
     data = data,
     n = n,
@@ -299,7 +304,8 @@ collapse_groups_by_levels <- function(data,
     method = method,
     num_new_group_cols = 1,
     col_name = col_name,
-    parallel = parallel
+    parallel = parallel,
+    verbose = verbose
   )
 }
 
@@ -318,7 +324,8 @@ collapse_groups_by_ids <- function(data,
                                    auto_tune = TRUE,
                                    method = "balance",
                                    col_name = ".coll_groups",
-                                   parallel = FALSE) {
+                                   parallel = FALSE,
+                                   verbose = FALSE) {
   collapse_groups(
     data = data,
     n = n,
@@ -328,6 +335,7 @@ collapse_groups_by_ids <- function(data,
     auto_tune = auto_tune,
     method = method,
     col_name = col_name,
-    parallel = parallel
+    parallel = parallel,
+    verbose = verbose
   )
 }

@@ -15,7 +15,8 @@ collapse_groups_by_size(
   auto_tune = TRUE,
   method = "balance",
   col_name = ".coll_groups",
-  parallel = FALSE
+  parallel = FALSE,
+  verbose = FALSE
 )
 
 collapse_groups_by_numeric(
@@ -28,7 +29,8 @@ collapse_groups_by_numeric(
   method = "balance",
   group_aggregation_fn = mean,
   col_name = ".coll_groups",
-  parallel = FALSE
+  parallel = FALSE,
+  verbose = FALSE
 )
 
 collapse_groups_by_levels(
@@ -41,7 +43,8 @@ collapse_groups_by_levels(
   auto_tune = TRUE,
   method = "balance",
   col_name = ".coll_groups",
-  parallel = FALSE
+  parallel = FALSE,
+  verbose = FALSE
 )
 
 collapse_groups_by_ids(
@@ -53,7 +56,8 @@ collapse_groups_by_ids(
   auto_tune = TRUE,
   method = "balance",
   col_name = ".coll_groups",
-  parallel = FALSE
+  parallel = FALSE,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -100,6 +104,11 @@ when \code{`auto_tune`} is enabled.
 
 Requires a registered parallel backend.
 Like \code{doParallel::registerDoParallel}.}
+
+\item{verbose}{Whether to print information about the process.
+May make the function slightly slower.
+
+N.B. Currently only used during auto-tuning.}
 
 \item{num_cols}{Names of numerical columns to balance between groups.}
 

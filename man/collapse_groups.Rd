@@ -23,7 +23,8 @@ collapse_groups(
   extreme_pairing_levels = 1,
   combine_method = "avg_standardized",
   col_name = ".coll_groups",
-  parallel = FALSE
+  parallel = FALSE,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -202,6 +203,11 @@ Especially highly recommended when \code{`auto_tune`} is enabled.
 
 Requires a registered parallel backend.
 Like \code{doParallel::registerDoParallel}.}
+
+\item{verbose}{Whether to print information about the process.
+May make the function slightly slower.
+
+N.B. Currently only used during auto-tuning.}
 }
 \value{
 \code{data.frame} with one or more new grouping factors.

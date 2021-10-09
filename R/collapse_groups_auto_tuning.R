@@ -132,6 +132,7 @@ auto_tune_collapsings <- function(
       total_checks_triplets = num_total_checks_triplets,
       num_random_group_cols = num_random_group_cols_to_check,
       parallel = parallel,
+      unique_only = unique_new_group_cols_only,
       width = 60
     )
 
@@ -189,6 +190,10 @@ auto_tune_collapsings <- function(
   # Names of the new group columns
   group_cols_names <- colnames(new_group_cols)[colnames(new_group_cols) != tmp_old_group_var]
 
+  if (isTRUE(verbose)){
+    cat(paste0("Succeeded in creating ", length(group_cols_names), " group columns\n"))
+  }
+
   if (isTRUE(unique_new_group_cols_only)){
 
     # Confirmed unique combinations
@@ -214,6 +219,14 @@ auto_tune_collapsings <- function(
 
     # Names of deduplicated new group columns
     group_cols_names <- colnames(new_group_cols)[colnames(new_group_cols) != tmp_old_group_var]
+
+    if (isTRUE(verbose)){
+      cat(paste0("Of which ", length(group_cols_names), " were unique member-wise\n"))
+    }
+  }
+
+  if (isTRUE(verbose)){
+    cat(paste_hyphens(60, end_line=TRUE))
   }
 
   # Add new group columns to data
@@ -401,6 +414,7 @@ inform_user_about_autotune_ <- function(
   total_checks_triplets,
   num_random_group_cols,
   parallel,
+  unique_only,
   width = 60) {
 
   plural_s <- ifelse(num_new_group_cols > 1, "s", "")
@@ -408,13 +422,14 @@ inform_user_about_autotune_ <- function(
 
   # Inform the user
   string <- paste0(
-    paste0(c(rep("-", width)), collapse = ""), "\n",
+    paste_hyphens(width), "\n",
     "  `collapse_groups()` auto-tuning\n",
     paste0(c(rep("-", width)), collapse = ""), "\n",
-    "  Finding ", num_new_group_cols, " group collapsing", plural_s, " that ",
+    "  Finding ", num_new_group_cols, ifelse(isTRUE(unique_only), " unique", ""),
+    " group collapsing", plural_s, " that ",
     "best balance", plural_no_s, ":\n    ",
     paste0(strwrap(paste0(balance_cols, collapse=", "), width=width-6, exdent = 4), collapse = "\n"),
-    "\n  Will compare:",
+    "\n  Will attempt to create:",
     "\n    Extreme pairing balancing: ", total_checks_paired,
     "\n    Extreme triplets balancing: ", total_checks_triplets,
     "\n    Random splits: ", num_random_group_cols,
@@ -425,10 +440,18 @@ inform_user_about_autotune_ <- function(
              "\n  Consider enabling parallelization. See ?collapse_groups"
            ),
            ""),
-    "\n", paste0(rep("-", width), collapse = ""), "\n"
+    "\n", paste_hyphens(width), "\n"
   )
 
   # Inform user
   cat(string)
 
+}
+
+paste_hyphens <- function(num, end_line=FALSE){
+  string <- paste0(rep("-", num), collapse = "")
+  if (isTRUE(end_line)){
+    string <- paste0(string, "\n")
+  }
+  string
 }
