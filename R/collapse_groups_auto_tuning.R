@@ -20,7 +20,8 @@ auto_tune_collapsings <- function(
   unique_new_group_cols_only,
   max_iters,
   col_name,
-  parallel) {
+  parallel,
+  verbose=TRUE) {
 
 
   ### . . . . . . . . .. #< dbf756c960b3ef36d283c12e6a57cdbf ># . . . . . . . . ..
@@ -53,11 +54,14 @@ auto_tune_collapsings <- function(
   # Add names
   names(combinations) <- paste0(".atcg_", seq_len(length(combinations)))
 
-  random_comb <- setNames(".__random__.", paste0(".atcg_", length(combinations) + 1))
-  combinations <- c(combinations, random_comb)
-
   # The main combination has all the balance cols
   main_combination_name <- tail(names(combinations), n = 1)
+
+  # Add a combination for random splitting
+  random_combination_name <- paste0(".atcg_", length(combinations) + 1)
+  random_combination <- setNames(".__random__.", random_combination_name)
+  combinations <- c(combinations, random_combination)
+
 
   ### . . . . . . . . .. #< 40bb882cfc30cd1a93c9e99f28a9556e ># . . . . . . . . ..
   ### Combine and fold                                                        ####
@@ -65,26 +69,73 @@ auto_tune_collapsings <- function(
   # Find number of group columns to generate
   # Must vary with number of combinations or this
   # could explode!
+  # NOTE: Remember that we also do extreme triplet grouping
+  # so this number is ~doubled
   non_main_num_group_cols_to_check <- dplyr::case_when(
-    length(combinations) > 30 ~ 1,
-    length(combinations) > 20 ~ 2,
-    length(combinations) > 10 ~ 4,
-    length(combinations) > 5 ~ 5,
-    TRUE ~ 8
+    length(combinations) > 25 ~ 1,
+    length(combinations) > 10 ~ 2,
+    length(combinations) > 5 ~ 3,
+    TRUE ~ 4
   )
 
+  # Number of group columns to create for the
+  # main combination of balancing columns
   main_num_group_cols_to_check <- dplyr::case_when(
-    num_new_group_cols < 5 ~ 10,
-    num_new_group_cols < 20 ~ num_new_group_cols * 2,
-    num_new_group_cols < 50 ~ ceiling(num_new_group_cols * 1.5),
+    num_new_group_cols < 6 ~ 9,
+    num_new_group_cols < 20 ~ ceiling(num_new_group_cols * 1.8),
+    num_new_group_cols < 50 ~ ceiling(num_new_group_cols * 1.4),
     TRUE ~ num_new_group_cols + 15
   )
 
+  # Number of group columns to create
+  # without any numeric balancing
   num_random_group_cols_to_check <- dplyr::case_when(
-    num_new_group_cols < 20 ~ 10,
-    num_new_group_cols < 50 ~ 20,
-    TRUE ~ 25
+    num_new_group_cols < 20 ~ 15,
+    num_new_group_cols < 50 ~ 30,
+    num_new_group_cols < 75 ~ 40,
+    TRUE ~ ceiling(num_new_group_cols / 2)
   )
+
+  # Inform the user about the process
+
+  if (isTRUE(verbose)){
+
+    # Calculate number of total columns to create
+
+    # Extreme pairing balancing
+    num_total_checks_paired <- sum(c(
+      non_main_num_group_cols_to_check * (length(combinations) - 2),  # Without main and random
+      main_num_group_cols_to_check
+    ))
+
+    # Extreme triplet grouping balancing
+    num_total_checks_triplets <- sum(c(
+      min(num_new_group_cols, non_main_num_group_cols_to_check) * (length(combinations) - 2), # Without main and random
+      min(num_new_group_cols, main_num_group_cols_to_check)
+    ))
+
+    # In total
+    num_total_checks <- sum(
+      c(
+        num_total_checks_paired,
+        num_total_checks_triplets,
+        num_random_group_cols_to_check
+      )
+    )
+
+    # Inform the user
+    inform_user_about_autotune_(
+      num_new_group_cols = num_new_group_cols,
+      balance_cols = all_balance_cols,
+      total_checks = num_total_checks,
+      total_checks_paired = num_total_checks_paired,
+      total_checks_triplets = num_total_checks_triplets,
+      num_random_group_cols = num_random_group_cols_to_check,
+      parallel = parallel,
+      width = 60
+    )
+
+  }
 
   # Ensure summaries are ordered by group column
   summaries <- summaries %>%
@@ -93,16 +144,24 @@ auto_tune_collapsings <- function(
   # Combine the balancing dimensions for each include combination
   # And create new group columns
   new_group_cols <- purrr::map2_dfc(.x = combinations, .y = names(combinations), .f = ~{
-    num_new_group_cols <- dplyr::case_when(
+    current_num_new_group_cols <- dplyr::case_when(
       .y == main_combination_name ~ main_num_group_cols_to_check,
-      .y == '.__random__.' ~ num_random_group_cols_to_check,
+      .y == random_combination_name ~ num_random_group_cols_to_check,
       TRUE ~ non_main_num_group_cols_to_check)
+
+    num_triplet_groupings_as_well <- 0
+    if (.x[[1]] != '.__random__.'){
+      num_triplet_groupings_as_well <- min(
+        current_num_new_group_cols,
+        num_new_group_cols
+      )
+    }
 
     # Get balance columns
     balance_cols <- .x
 
     # When performing random folding
-    # we just don't provide any balance colums
+    # we just don't provide any balance columns
     if (length(balance_cols) == 1 &&
         balance_cols == ".__random__."){
       balance_cols <- character(0)
@@ -118,10 +177,12 @@ auto_tune_collapsings <- function(
       weights = weights[names(weights) %in% .x],
       scale_fn = scale_fn,
       extreme_pairing_levels = extreme_pairing_levels,
-      num_new_group_cols = num_new_group_cols,
+      num_new_group_cols = current_num_new_group_cols,
+      num_triplet_groupings_as_well = num_triplet_groupings_as_well,
       unique_new_group_cols_only = unique_new_group_cols_only,
       max_iters = max_iters,
       parallel = parallel)
+
   }) %>%
     dplyr::mutate(!!tmp_old_group_var := summaries[[tmp_old_group_var]])
 
@@ -232,6 +293,7 @@ combine_and_fold_combination_ <- function(
   scale_fn,
   extreme_pairing_levels,
   num_new_group_cols,
+  num_triplet_groupings_as_well,
   unique_new_group_cols_only,
   max_iters,
   parallel) {
@@ -253,9 +315,29 @@ combine_and_fold_combination_ <- function(
       num_fold_cols = num_new_group_cols,
       unique_fold_cols_only = unique_new_group_cols_only,
       max_iters = max_iters,
+      use_of_triplets = "fill",
       parallel = parallel
     ) %>%
-    dplyr::ungroup() %>%
+    dplyr::ungroup()
+
+  # Perform folding with extreme triplet grouping
+  if (num_triplet_groupings_as_well>0) {
+    new_groups <- new_groups %>%
+      fold(
+        k = n,
+        num_col = "combined",
+        extreme_pairing_levels = max(1, extreme_pairing_levels - 1),
+        num_fold_cols = num_triplet_groupings_as_well,
+        unique_fold_cols_only = unique_new_group_cols_only,
+        max_iters = max_iters,
+        use_of_triplets = "instead",
+        handle_existing_fold_cols = "keep",
+        parallel = parallel
+      ) %>%
+      dplyr::ungroup()
+  }
+
+  new_groups <- new_groups %>%
     # Safety check - should already be arrange by this
     dplyr::arrange(!!as.name(tmp_old_group_var))
 
@@ -308,4 +390,45 @@ find_best_group_cols_ <- function(data, num_new_group_cols, group_cols_names, ca
   group_cols_to_remove <- setdiff(group_cols_names, group_cols_to_keep)
 
   group_cols_to_keep
+}
+
+
+inform_user_about_autotune_ <- function(
+  num_new_group_cols,
+  balance_cols,
+  total_checks,
+  total_checks_paired,
+  total_checks_triplets,
+  num_random_group_cols,
+  parallel,
+  width = 60) {
+
+  plural_s <- ifelse(num_new_group_cols > 1, "s", "")
+  plural_no_s <- ifelse(num_new_group_cols > 1, "", "s")
+
+  # Inform the user
+  string <- paste0(
+    paste0(c(rep("-", width)), collapse = ""), "\n",
+    "  `collapse_groups()` auto-tuning\n",
+    paste0(c(rep("-", width)), collapse = ""), "\n",
+    "  Finding ", num_new_group_cols, " group collapsing", plural_s, " that ",
+    "best balance", plural_no_s, ":\n    ",
+    paste0(strwrap(paste0(balance_cols, collapse=", "), width=width-6, exdent = 4), collapse = "\n"),
+    "\n  Will compare:",
+    "\n    Extreme pairing balancing: ", total_checks_paired,
+    "\n    Extreme triplets balancing: ", total_checks_triplets,
+    "\n    Random splits: ", num_random_group_cols,
+    "\n    Total number of grouping columns: ", total_checks,
+    ifelse(!isTRUE(parallel) && total_checks > 20,  # Arbitrary threshold
+           paste0(
+             "\n", paste0(c(rep("-", width)), collapse = ""),
+             "\n  Consider enabling parallelization. See ?collapse_groups"
+           ),
+           ""),
+    "\n", paste0(rep("-", width), collapse = ""), "\n"
+  )
+
+  # Inform user
+  cat(string)
+
 }
