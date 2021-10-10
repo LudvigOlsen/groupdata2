@@ -1184,7 +1184,8 @@ create_combined_cat_summary_ <- function(data, group_cols, cat_col, cat_levels){
         # TODO time whether summarize with the existing counts is faster
         dplyr::count(!!as.name(cat_col)) %>%
         dplyr::slice(slice_fn(n)) %>%
-        dplyr::pull(!!as.name(cat_col))
+        dplyr::pull(!!as.name(cat_col)) %>%
+        as.character()
     }
 
     # Convert to always be a named numeric vector (weights)
@@ -1193,11 +1194,12 @@ create_combined_cat_summary_ <- function(data, group_cols, cat_col, cat_levels){
         setNames(nm = cat_levels)
     }
 
+    # Get counts for the select cat_levels
     cat_summary <- cat_summary %>%
-      dplyr::filter(!!as.name(cat_col) %in% names(cat_levels)) %>%
       tidyr::spread(key = !!as.name(cat_col),
                     value = .data$n,
-                    fill = 0)
+                    fill = 0) %>%
+      dplyr::select(!!!rlang::syms(c(group_cols, names(cat_levels))))
 
     # Scale, weight and combine the `cat_levels` columns
     cat_summary <- scale_combine_cols_(
