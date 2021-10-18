@@ -124,10 +124,10 @@ isEmpty_ <- function(x) {
 }
 
 # Center and scale x
-standardize_ <- function(x){
-  std <- sd(x)
+standardize_ <- function(x, na.rm=FALSE){
+  std <- sd(x, na.rm = na.rm)
   if (std == 0) std <- 1
-  (x - mean(x)) / std
+  (x - mean(x, na.rm = na.rm)) / std
 }
 
 convert_n <- function(data, n, method, allow_zero) {
