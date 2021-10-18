@@ -879,7 +879,7 @@ run_collapse_groups_ <- function(
 
   #### Calculate summary info ####
 
-  summaries <- calculate_summary(
+  summaries <- calculate_summary_(
     data = data,
     tmp_old_group_var = tmp_old_group_var,
     cat_cols = cat_cols,
@@ -924,11 +924,13 @@ run_collapse_groups_ <- function(
   } else {
 
     # Scale, weight and combine
-    summaries <- combine_scaled_cols_(
-      summaries = summaries,
+    summaries <- scale_and_combine_(
+      data = summaries,
       weights = weights,
-      group_cols = tmp_old_group_var,
-      scale_fn = scale_fn
+      exclude_cols = tmp_old_group_var,
+      scale_fn = scale_fn,
+      col_name = "combined",
+      handle_no_cols = "1"
     ) %>%
       dplyr::select(dplyr::one_of(tmp_old_group_var, "combined"))
 
@@ -978,7 +980,7 @@ run_collapse_groups_ <- function(
 }
 
 
-calculate_summary <- function(
+calculate_summary_ <- function(
   data,
   tmp_old_group_var,
   cat_cols,
@@ -1175,6 +1177,7 @@ create_combined_cat_summary_ <- function(data, group_cols, cat_col, cat_levels){
       dplyr::count(!!!rlang::syms(c(group_cols, cat_col)))
 
     if (is.null(cat_levels)){
+      checkmate::assert_factor(data[[cat_col]])
       cat_levels <- levels(data[[cat_col]])
     }
 
@@ -1202,12 +1205,14 @@ create_combined_cat_summary_ <- function(data, group_cols, cat_col, cat_levels){
       dplyr::select(!!!rlang::syms(c(group_cols, names(cat_levels))))
 
     # Scale, weight and combine the `cat_levels` columns
-    cat_summary <- scale_combine_cols_(
-      summary = cat_summary,
+    cat_summary <- scale_and_combine_(
+      data = cat_summary,
       weights = cat_levels,
+      include_cols = names(cat_levels),
       scale_fn = standardize_,
-      col_name = cat_col
-    ) %>%
+      col_name = cat_col,
+      handle_no_cols = "stop"
+    )  %>%
       dplyr::select(dplyr::one_of(group_cols, cat_col))
 
     if (sd(cat_summary[[cat_col]]) == 0){
@@ -1226,62 +1231,6 @@ create_combined_cat_summary_ <- function(data, group_cols, cat_col, cat_levels){
   }
 
   cat_summary
-}
-
-scale_combine_cols_ <- function(summary, weights, scale_fn, col_name){
-
-  # Order weights by their names
-  weights <- weights[order(names(weights))]
-  # Scale weights to sum to 1
-  weights <- weights / sum(weights)
-  cat_level_cols <- summary %>%
-    # Select the cat_levels columns in the same order as weights
-    base_select(cols = names(weights)) %>%
-    # Scale all selected columns
-    dplyr::mutate(dplyr::across(dplyr::everything(), scale_fn))
-
-  # Multiply by weight
-  cat_level_cols <- sweep(
-    x = cat_level_cols,
-    MARGIN = 2,
-    STATS = weights,
-    FUN = "*"
-  ) %>%
-    dplyr::as_tibble()
-
-  # Combine with row sums
-  summary[[col_name]] <- rowSums(cat_level_cols, na.rm = TRUE)
-
-  summary
-}
-
-# Standardize/normalize, weight and combine summary columns
-combine_scaled_cols_ <- function(summaries, weights, group_cols, scale_fn = standardize_){
-
-  # When there are no balancing columns
-  # we can't combine them :)
-  if (ncol(summaries) - length(group_cols) == 0){
-    summaries[["combined"]] <- 1
-    return(summaries)
-  }
-
-  # The column names of interest
-  cols <- colnames(summaries)[colnames(summaries) %ni% group_cols]
-
-  # Create weights if not specified
-  if (is.null(weights)){
-    weights <- rep(1, times = length(cols)) %>%
-      setNames(nm = cols)
-  }
-
-  # Calculate combined column
-  summaries[["combined"]] <- summaries %>%
-    dplyr::ungroup() %>%
-    dplyr::select(dplyr::one_of(cols)) %>%
-    dplyr::mutate(dplyr::across(dplyr::everything(), scale_fn)) %>%
-    purrr::pmap_dbl(.f = weighted_mean_, weights = weights)
-
-  summaries
 }
 
 
