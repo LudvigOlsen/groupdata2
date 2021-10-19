@@ -75,11 +75,7 @@ auto_tune_collapsings <- function(
   # Also informs user about
   num_cols_to_create_settings <- get_num_cols_to_create_(
     num_combinations = length(combinations),
-    num_new_group_cols = num_new_group_cols,
-    all_balance_cols = all_balance_cols,
-    parallel = parallel,
-    unique_new_group_cols_only = unique_new_group_cols_only,
-    verbose = verbose
+    num_new_group_cols = num_new_group_cols
   )
 
   # Inform user about the number of columns to create
