@@ -95,6 +95,8 @@ auto_tune_collapsings <- function(
   }
 
   # Ensure summaries are ordered by group column
+  # NOTE: This is a crucial step, otherwise
+  # the returned folds won't match the order
   summaries <- summaries %>%
     dplyr::arrange(!!as.name(tmp_old_group_var))
 
@@ -124,6 +126,10 @@ auto_tune_collapsings <- function(
       balance_cols <- character(0)
     }
 
+    # Combine the balancing columns
+    # and fold with numerical balancing
+    # of the combination
+    # NOTE: summaries must be ordered by `tmp_old_group_var`
     combine_and_fold_combination_(
       data = data,
       summaries = summaries,
@@ -252,6 +258,7 @@ auto_tune_collapsings <- function(
 }
 
 
+# NOTE: summaries must be grouped by tmp_old_group_var
 combine_and_fold_combination_ <- function(
   data,
   summaries,
@@ -267,6 +274,12 @@ combine_and_fold_combination_ <- function(
   unique_new_group_cols_only,
   max_iters,
   parallel) {
+
+  if (is.unsorted(as.character(summaries[[tmp_old_group_var]]))){
+    stop(paste0("`summaries` must be ordered by `tmp_old_group_var`. Otherwi",
+                "se the order of the returned group columns won't match the s",
+                "ummary order."))
+  }
 
   # Scale, weight and combine
   summaries <- scale_and_combine_(
