@@ -2,28 +2,6 @@ library(groupdata2)
 context("collapse_groups()")
 
 
-test_that("unit testing collapse_groups()", {
-
-  # prepare_collapse_groups_run_
-  # prepare_collapse_groups_output_
-  # run_collapse_groups_
-
-  #### List arguments ####
-  # TODO Test .minority/.majority on its own and within list
-
-  #### Summarization ####
-
-  #### Combination ####
-
-  #### Auto-tune ####
-  # combine_and_fold_combination_
-  # find_best_group_cols_
-  # auto_tune_collapsings
-
-
-
-})
-
 test_that("testing summaries of method ascending-descending", {
 
   # Set seed
@@ -1567,7 +1545,7 @@ test_that("testing calculate_summary_()", {
     "participant" = factor(rep(1, 10)),
     "age" = c(-5, 5, -5, 5, -5, 5, -5, 5, -5, 5),
     "diagnosis" = factor(c(1,1,2,2,1,1,2,2,1,1)),
-    ".__.folds" = c(1, 1, 2, 2, 3, 3, 4, 4, 5, 5)
+    ".__.folds" = factor(c(1, 1, 2, 2, 3, 3, 4, 4, 5, 5))
   )
 
 
@@ -1613,7 +1591,7 @@ test_that("testing calculate_summary_()", {
   # Testing column values
   expect_equal(
     output_19148[[".__.folds"]],
-    c(1, 2, 3, 4, 5),
+    factor(c(1, 2, 3, 4, 5)),
     tolerance = 1e-4)
   expect_equal(
     output_19148[["diagnosis"]],
@@ -1635,12 +1613,12 @@ test_that("testing calculate_summary_()", {
   # Testing column classes
   expect_equal(
     xpectr::element_classes(output_19148),
-    c("numeric", "numeric", "numeric", "integer"),
+    c("factor", "numeric", "numeric", "integer"),
     fixed = TRUE)
   # Testing column types
   expect_equal(
     xpectr::element_types(output_19148),
-    c("double", "double", "double", "integer"),
+    c("integer", "double", "double", "integer"),
     fixed = TRUE)
   # Testing dimensions
   expect_equal(

@@ -827,14 +827,17 @@ run_collapse_groups_ <- function(
   tmp_old_group_var <- create_tmp_var(data = data, tmp_var = ".old_group")
   data <- data %>%
     dplyr::group_by(!!!rlang::syms(group_cols)) %>%
-    dplyr::mutate(!!tmp_old_group_var := dplyr::cur_group_id()) %>%
+    dplyr::mutate(!!tmp_old_group_var := factor(dplyr::cur_group_id())) %>%
     dplyr::ungroup()
 
-  if (any(max(data[[tmp_old_group_var]]) < n)){
+  # Get largest old ID
+  num_tmp_old_group <- nlevels(data[[tmp_old_group_var]])
+
+  if (num_tmp_old_group < n){
     stop(
       paste0(
         "`data` subset had fewer `group_cols` groups (",
-        max(data[[tmp_old_group_var]]),
+        num_tmp_old_group,
         ") than `n` (",
         min(n),
         "). ",
@@ -842,7 +845,7 @@ run_collapse_groups_ <- function(
         "contain `>= n` groups to collapse."
       )
     )
-  } else if (all(max(data[[tmp_old_group_var]]) == n) &&
+  } else if (num_tmp_old_group == n &&
              method == "balance"){
     # If `n` is such that each group becomes its own group
     # we simply fold it randomly without anything else
@@ -989,6 +992,8 @@ calculate_summary_ <- function(
   group_aggregation_fn,
   balance_size,
   id_cols) {
+
+  checkmate::assert_factor(data[[tmp_old_group_var]], any.missing = FALSE)
 
   # Calculate summary of `cat_cols`
   cat_summary <- NULL
@@ -1468,6 +1473,15 @@ check_collapse_groups_ <- function(
     checkmate::assert_names(
       x = names(weights),
       subset.of = c("size", cat_cols, num_cols, id_cols),
+      add = assert_collection
+    )
+  }
+
+  for (grp_col in group_cols) {
+    checkmate::assert_factor(
+      x = data[[grp_col]],
+      any.missing = FALSE,
+      .var.name = paste0("`group_cols` column data[['", grp_col, "']]"),
       add = assert_collection
     )
   }
