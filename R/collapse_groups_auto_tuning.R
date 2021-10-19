@@ -73,7 +73,7 @@ auto_tune_collapsings <- function(
   # NOTE: Remember that we also do extreme triplet grouping
   # so this number is ~doubled
   # Also informs user about
-  num_cols_to_create_settings <- get_num_cols_to_create(
+  num_cols_to_create_settings <- get_num_cols_to_create_(
     num_combinations = length(combinations),
     num_new_group_cols = num_new_group_cols,
     all_balance_cols = all_balance_cols,
@@ -366,8 +366,12 @@ find_best_group_cols_ <- function(data, num_new_group_cols, group_cols_names, ca
 
 
 # Set how many group columns of different types to create
-get_num_cols_to_create <- function(num_combinations,
-                                   num_new_group_cols) {
+get_num_cols_to_create_ <- function(num_combinations,
+                                    num_new_group_cols) {
+
+  # Check arguments
+  checkmate::assert_count(num_combinations, positive = TRUE)
+  checkmate::assert_count(num_new_group_cols, positive = TRUE)
 
   # Find number of group columns to generate
   # Must vary with number of combinations or this
@@ -406,6 +410,7 @@ get_num_cols_to_create <- function(num_combinations,
   )
 
 }
+
 
 inform_user_about_autotune_ <- function(
   num_cols_to_create_settings,
