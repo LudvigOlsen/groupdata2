@@ -269,11 +269,13 @@ combine_and_fold_combination_ <- function(
   parallel) {
 
   # Scale, weight and combine
-  summaries <- combine_scaled_cols_(
-    summaries = base_select(summaries, cols = c(tmp_old_group_var, balance_cols)),
+  summaries <- scale_and_combine_(
+    data = base_select(summaries, cols = c(tmp_old_group_var, balance_cols)),
     weights = weights,
-    group_cols = tmp_old_group_var,
-    scale_fn = scale_fn
+    exclude_cols = tmp_old_group_var,
+    scale_fn = scale_fn,
+    col_name = "combined",
+    handle_no_cols = "1"
   )
 
   # Fold the summary
