@@ -418,7 +418,28 @@ inform_user_about_autotune_ <- function(
   num_new_group_cols,
   all_balance_cols,
   parallel,
-  unique_new_group_cols_only) {
+  unique_new_group_cols_only,
+  return_string = FALSE) {
+
+  # Check arguments
+  checkmate::assert_list(
+    num_cols_to_create_settings,
+    names = "unique",
+    any.missing = FALSE
+  )
+  checkmate::check_names(names(num_cols_to_create_settings),
+                         permutation.of = c("main", "non_main", "random"))
+  for (nm in c("main", "non_main", "random")){
+    checkmate::assert_count(
+      num_cols_to_create_settings[[nm]],
+      positive = TRUE,
+      .var.name = paste0("num_cols_to_create_settings[['", nm, "']]")
+    )
+  }
+  checkmate::assert_character(all_balance_cols, any.missing = FALSE)
+  checkmate::assert_count(num_combinations, positive = TRUE)
+  checkmate::assert_count(num_new_group_cols, positive = TRUE)
+  checkmate::assert_flag(return_string)
 
   # Inform the user about the process
 
@@ -446,7 +467,7 @@ inform_user_about_autotune_ <- function(
   )
 
   # Inform the user
-  inform_user_about_autotune_message_(
+  string <- inform_user_about_autotune_message_(
     num_new_group_cols = num_new_group_cols,
     balance_cols = all_balance_cols,
     total_checks = num_total_checks,
@@ -457,6 +478,14 @@ inform_user_about_autotune_ <- function(
     unique_only = unique_new_group_cols_only,
     width = 60
   )
+
+  # Either return string (for testing) or `cat` to user
+  if (isTRUE(return_string)){
+    return(string)
+  }
+
+  # Inform user
+  cat(string)
 
 }
 
@@ -485,8 +514,8 @@ inform_user_about_autotune_message_ <- function(
     "best balance", plural_no_s, ":\n    ",
     paste0(strwrap(paste0(balance_cols, collapse=", "), width=width-6, exdent = 4), collapse = "\n"),
     "\n  Will attempt to create:",
-    "\n    Extreme pairing balancing: ", total_checks_paired,
-    "\n    Extreme triplets balancing: ", total_checks_triplets,
+    "\n    Extreme pairing balanced splits: ", total_checks_paired,
+    "\n    Extreme triplets balanced splits: ", total_checks_triplets,
     "\n    Random splits: ", num_random_group_cols,
     "\n    Total number of grouping columns: ", total_checks,
     ifelse(!isTRUE(parallel) && total_checks > 20,  # Arbitrary threshold
@@ -498,7 +527,6 @@ inform_user_about_autotune_message_ <- function(
     "\n", paste_hyphens_(width), "\n"
   )
 
-  # Inform user
-  cat(string)
+  string
 
 }
