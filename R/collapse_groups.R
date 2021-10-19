@@ -1070,14 +1070,34 @@ calculate_summary_ <- function(
 
 
 add_new_groups_ <- function(data, new_groups, tmp_old_group_var, col_name){
+
+  # Check 'by' column is factor in both datasets
+  checkmate::assert_factor(data[[tmp_old_group_var]], any.missing = FALSE)
+  checkmate::assert_factor(new_groups[[tmp_old_group_var]], any.missing = FALSE)
+
+  if (tmp_old_group_var == col_name){
+    stop("`tmp_old_group_var` and `col_name` were identical.")
+  }
+
   # Select the relevant columns
   new_groups <- new_groups %>%
+    dplyr::ungroup() %>%
     dplyr::select(
       dplyr::one_of(tmp_old_group_var),
       dplyr::starts_with(col_name),
-      # May be called "num" or something and return a wrong column with `starts_with`
+      # Note: May be called "num" or something and return a wrong column with `starts_with`
       -dplyr::any_of(c("combined", "size"))
     )
+
+  # Remove col_name columns that are in `data`
+  to_remove <- new_groups %>%
+    dplyr::select(
+      dplyr::starts_with(col_name)
+    ) %>%
+    colnames() %>%
+    intersect(colnames(data))
+  new_groups <- new_groups %>%
+    base_deselect(to_remove)
 
   # Add new groups
   data <- data %>%
