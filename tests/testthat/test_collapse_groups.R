@@ -7,8 +7,6 @@ test_that("unit testing collapse_groups()", {
   # prepare_collapse_groups_run_
   # prepare_collapse_groups_output_
   # run_collapse_groups_
-  # replace_forbidden_names_
-  # add_ordered_summary_groups_
 
   #### List arguments ####
   # TODO Test .minority/.majority on its own and within list
@@ -2521,6 +2519,158 @@ test_that("testing add_ordered_summary_groups_()", {
     character(0),
     fixed = TRUE)
   ## Finished testing 'observed_grouping'                                   ####
+
+})
+
+test_that("testing replace_forbidden_names_()", {
+
+  # Set seed
+  xpectr::set_test_seed(42)
+
+  # Create data frame
+  df <- data.frame(
+    "participant" = factor(rep(1:20, 3)),
+    "age" = rep(sample(c(1:100), 20), 3),
+    "diagnosis" = factor(rep(sample(c(1:3), 20, replace = TRUE), 3)),
+    "score" = sample(c(1:100), 20 * 3),
+    "combined" = runif(60),
+    "n" = rep(sample(c(1:100), 20), 3),
+    ".folder" = rep(sample(c(1:100), 20), 3)
+  )
+  df <- df %>% dplyr::arrange(participant)
+
+  # Sample rows to get unequal sizes per participant
+  df <- dplyr::sample_n(df, size = 23)
+
+  # Create the initial groups (to be collapsed)
+  df <- fold(
+    data = df,
+    k = 8,
+    method = "n_dist",
+    id_col = "participant"
+  )
+
+  # Ungroup the data frame
+  # Otherwise `collapse_groups()` would be
+  # applied to each fold separately!
+  df <- dplyr::ungroup(df)
+
+  replaced <- replace_forbidden_names_(
+    data = df,
+    data_group_cols = ".foldings",
+    group_cols = ".folds",
+    cat_cols = c("diagnosis", ".folds"),
+    num_cols = c("n", "score"),
+    id_cols = c("participant", "combined"),
+    weights = c("score" = 3, "combined" = 8, ".folds" = 2),
+    invert = FALSE)
+
+  expect_equal(
+    colnames(replaced$data),
+    c("participant", "age", "diagnosis", "score", ".____combined",
+      ".____n", ".____.folder", ".____.folds")
+  )
+  expect_equal(
+    dplyr::group_vars(replaced$data),
+    character(0)
+  )
+  expect_equal(
+    replaced$data_group_cols,
+    ".____.foldings"
+  )
+  expect_equal(
+    replaced$group_cols,
+    ".____.folds"
+  )
+  expect_equal(
+    replaced$cat_cols,
+    c("diagnosis", ".____.folds")
+  )
+  expect_equal(
+    replaced$num_cols,
+    c(".____n", "score")
+  )
+  expect_equal(
+    replaced$id_cols,
+    c("participant", ".____combined")
+  )
+  expect_equal(
+    replaced$weights,
+    c("score" = 3, ".____combined" = 8, ".____.folds" = 2)
+  )
+
+
+  # Grouped data
+  replaced <- replace_forbidden_names_(
+    data = dplyr::group_by(df, .folds),
+    data_group_cols = ".foldings",
+    group_cols = ".folds",
+    cat_cols = c("diagnosis", ".folds"),
+    num_cols = c("n", "score"),
+    id_cols = c("participant", "combined"),
+    weights = c("score" = 3, "combined" = 8, ".folds" = 2),
+    invert = FALSE)
+
+  expect_equal(
+    colnames(replaced$data),
+    c("participant", "age", "diagnosis", "score", ".____combined",
+      ".____n", ".____.folder", ".____.folds")
+  )
+  expect_equal(
+    dplyr::group_vars(replaced$data),
+    ".____.folds"
+  )
+
+  ## INVERSE!
+
+  inverse_replaced <- replace_forbidden_names_(
+    data = replaced$data, # Still grouped
+    data_group_cols = replaced$data_group_cols,
+    group_cols = replaced$group_cols,
+    cat_cols = replaced$cat_cols,
+    num_cols = replaced$num_cols,
+    id_cols = replaced$id_cols,
+    weights = replaced$weights,
+    invert = TRUE)
+
+  expect_identical(
+    as.data.frame(inverse_replaced$data),
+    as.data.frame(df)
+  )
+
+  expect_equal(
+    colnames(inverse_replaced$data),
+    c("participant", "age", "diagnosis", "score", "combined",
+      "n", ".folder", ".folds")
+  )
+  expect_equal(
+    dplyr::group_vars(inverse_replaced$data),
+    ".folds"
+  )
+  expect_equal(
+    inverse_replaced$data_group_cols,
+    ".foldings"
+  )
+  expect_equal(
+    inverse_replaced$group_cols,
+    ".folds"
+  )
+  expect_equal(
+    inverse_replaced$cat_cols,
+    c("diagnosis", ".folds")
+  )
+  expect_equal(
+    inverse_replaced$num_cols,
+    c("n", "score")
+  )
+  expect_equal(
+    inverse_replaced$id_cols,
+    c("participant", "combined")
+  )
+  expect_equal(
+    inverse_replaced$weights,
+    c("score" = 3, "combined" = 8, ".folds" = 2)
+  )
 
 })
 
