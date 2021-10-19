@@ -66,76 +66,32 @@ auto_tune_collapsings <- function(
   ### . . . . . . . . .. #< 40bb882cfc30cd1a93c9e99f28a9556e ># . . . . . . . . ..
   ### Combine and fold                                                        ####
 
+
   # Find number of group columns to generate
   # Must vary with number of combinations or this
   # could explode!
   # NOTE: Remember that we also do extreme triplet grouping
   # so this number is ~doubled
-  non_main_num_group_cols_to_check <- dplyr::case_when(
-    length(combinations) > 25 ~ 1,
-    length(combinations) > 10 ~ 2,
-    length(combinations) > 5 ~ 3,
-    TRUE ~ 4
+  # Also informs user about
+  num_cols_to_create_settings <- get_num_cols_to_create(
+    num_combinations = length(combinations),
+    num_new_group_cols = num_new_group_cols,
+    all_balance_cols = all_balance_cols,
+    parallel = parallel,
+    unique_new_group_cols_only = unique_new_group_cols_only,
+    verbose = verbose
   )
 
-  # Number of group columns to create for the
-  # main combination of balancing columns
-  main_num_group_cols_to_check <- dplyr::case_when(
-    num_new_group_cols < 6 ~ 9,
-    num_new_group_cols < 20 ~ ceiling(num_new_group_cols * 1.8),
-    num_new_group_cols < 50 ~ ceiling(num_new_group_cols * 1.4),
-    TRUE ~ num_new_group_cols + 15
-  )
-
-  # Number of group columns to create
-  # without any numeric balancing
-  num_random_group_cols_to_check <- dplyr::case_when(
-    num_new_group_cols < 20 ~ 15,
-    num_new_group_cols < 50 ~ 30,
-    num_new_group_cols < 75 ~ 40,
-    TRUE ~ ceiling(num_new_group_cols / 2)
-  )
-
-  # Inform the user about the process
-
-  if (isTRUE(verbose)){
-
-    # Calculate number of total columns to create
-
-    # Extreme pairing balancing
-    num_total_checks_paired <- sum(c(
-      non_main_num_group_cols_to_check * (length(combinations) - 2),  # Without main and random
-      main_num_group_cols_to_check
-    ))
-
-    # Extreme triplet grouping balancing
-    num_total_checks_triplets <- sum(c(
-      min(num_new_group_cols, non_main_num_group_cols_to_check) * (length(combinations) - 2), # Without main and random
-      min(num_new_group_cols, main_num_group_cols_to_check)
-    ))
-
-    # In total
-    num_total_checks <- sum(
-      c(
-        num_total_checks_paired,
-        num_total_checks_triplets,
-        num_random_group_cols_to_check
-      )
-    )
-
-    # Inform the user
+  # Inform user about the number of columns to create
+  if (isTRUE(verbose)) {
     inform_user_about_autotune_(
+      num_cols_to_create_settings = num_cols_to_create_settings,
+      num_combinations = length(combinations),
       num_new_group_cols = num_new_group_cols,
-      balance_cols = all_balance_cols,
-      total_checks = num_total_checks,
-      total_checks_paired = num_total_checks_paired,
-      total_checks_triplets = num_total_checks_triplets,
-      num_random_group_cols = num_random_group_cols_to_check,
+      all_balance_cols = all_balance_cols,
       parallel = parallel,
-      unique_only = unique_new_group_cols_only,
-      width = 60
+      unique_new_group_cols_only = unique_new_group_cols_only
     )
-
   }
 
   # Ensure summaries are ordered by group column
@@ -146,9 +102,9 @@ auto_tune_collapsings <- function(
   # And create new group columns
   new_group_cols <- purrr::map2_dfc(.x = combinations, .y = names(combinations), .f = ~{
     current_num_new_group_cols <- dplyr::case_when(
-      .y == main_combination_name ~ main_num_group_cols_to_check,
-      .y == random_combination_name ~ num_random_group_cols_to_check,
-      TRUE ~ non_main_num_group_cols_to_check)
+      .y == main_combination_name ~ num_cols_to_create_settings[["main"]],
+      .y == random_combination_name ~ num_cols_to_create_settings[["random"]],
+      TRUE ~ num_cols_to_create_settings[["non_main"]])
 
     num_triplet_groupings_as_well <- 0
     if (.x[[1]] != '.__random__.'){
@@ -198,7 +154,7 @@ auto_tune_collapsings <- function(
 
     # Confirmed unique combinations
     completed_comparisons <- as.data.frame(t(combn(group_cols_names, 2)),
-                                         stringsAsFactors = FALSE) %>%
+                                           stringsAsFactors = FALSE) %>%
       dplyr::as_tibble() %>%
       dplyr::mutate(
         V1_base = gsub("\\d*$", "", .data$V1),
@@ -295,6 +251,7 @@ auto_tune_collapsings <- function(
   data
 }
 
+
 combine_and_fold_combination_ <- function(
   data,
   summaries,
@@ -367,6 +324,7 @@ combine_and_fold_combination_ <- function(
     base_select(cols = new_col_names)
 }
 
+
 find_best_group_cols_ <- function(data, num_new_group_cols, group_cols_names, cat_cols, num_cols, id_cols, weights, balance_size){
 
   # Summarize the balances
@@ -406,7 +364,98 @@ find_best_group_cols_ <- function(data, num_new_group_cols, group_cols_names, ca
 }
 
 
+# Set how many group columns of different types to create
+get_num_cols_to_create <- function(num_combinations,
+                                   num_new_group_cols) {
+
+  # Find number of group columns to generate
+  # Must vary with number of combinations or this
+  # could explode!
+  # NOTE: Remember that we also do extreme triplet grouping
+  # so this number is ~doubled
+  non_main_num_group_cols_to_check <- dplyr::case_when(
+    num_combinations > 25 ~ 1,
+    num_combinations > 10 ~ 2,
+    num_combinations > 5 ~ 3,
+    TRUE ~ 4
+  )
+
+  # Number of group columns to create for the
+  # main combination of balancing columns
+  main_num_group_cols_to_check <- dplyr::case_when(
+    num_new_group_cols < 6 ~ 9,
+    num_new_group_cols < 20 ~ ceiling(num_new_group_cols * 1.8),
+    num_new_group_cols < 50 ~ ceiling(num_new_group_cols * 1.4),
+    TRUE ~ num_new_group_cols + 15
+  )
+
+  # Number of group columns to create
+  # without any numeric balancing
+  num_random_group_cols_to_check <- dplyr::case_when(
+    num_new_group_cols < 20 ~ 15,
+    num_new_group_cols < 50 ~ 30,
+    num_new_group_cols < 75 ~ 40,
+    TRUE ~ ceiling(num_new_group_cols / 2)
+  )
+
+  list(
+    "main" = main_num_group_cols_to_check,
+    "non_main" = non_main_num_group_cols_to_check,
+    "random" = num_random_group_cols_to_check
+  )
+
+}
+
 inform_user_about_autotune_ <- function(
+  num_cols_to_create_settings,
+  num_combinations,
+  num_new_group_cols,
+  all_balance_cols,
+  parallel,
+  unique_new_group_cols_only) {
+
+  # Inform the user about the process
+
+  # Calculate number of total columns to create
+
+  # Extreme pairing balancing
+  num_total_checks_paired <- sum(c(
+    num_cols_to_create_settings[["non_main"]] * (num_combinations - 2),  # Without main and random
+    num_cols_to_create_settings[["main"]]
+  ))
+
+  # Extreme triplet grouping balancing
+  num_total_checks_triplets <- sum(c(
+    min(num_new_group_cols, num_cols_to_create_settings[["non_main"]]) * (num_combinations - 2), # Without main and random
+    min(num_new_group_cols, num_cols_to_create_settings[["main"]])
+  ))
+
+  # In total
+  num_total_checks <- sum(
+    c(
+      num_total_checks_paired,
+      num_total_checks_triplets,
+      num_cols_to_create_settings[["random"]]
+    )
+  )
+
+  # Inform the user
+  inform_user_about_autotune_message_(
+    num_new_group_cols = num_new_group_cols,
+    balance_cols = all_balance_cols,
+    total_checks = num_total_checks,
+    total_checks_paired = num_total_checks_paired,
+    total_checks_triplets = num_total_checks_triplets,
+    num_random_group_cols = num_cols_to_create_settings[["random"]],
+    parallel = parallel,
+    unique_only = unique_new_group_cols_only,
+    width = 60
+  )
+
+}
+
+
+inform_user_about_autotune_message_ <- function(
   num_new_group_cols,
   balance_cols,
   total_checks,
@@ -446,12 +495,4 @@ inform_user_about_autotune_ <- function(
   # Inform user
   cat(string)
 
-}
-
-paste_hyphens_ <- function(num, end_line=FALSE){
-  string <- paste0(rep("-", num), collapse = "")
-  if (isTRUE(end_line)){
-    string <- paste0(string, "\n")
-  }
-  string
 }

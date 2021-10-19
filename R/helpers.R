@@ -752,7 +752,6 @@ create_rank_summary <- function(data, levels_col, num_col, fn=sum) {
     dplyr::arrange(.data$aggr_)
 }
 
-
 # Extracts the major and minor version numbers.
 check_R_version <- function() {
   major <- as.integer(R.Version()$major)
@@ -893,6 +892,15 @@ message_once_about_group_by <- function(fn_name, sys.parent.n = 1L) {
     ),
     sys.parent.n = sys.parent.n
   )
+}
+
+# Create string with hyphens
+paste_hyphens_ <- function(num, end_line=FALSE){
+  string <- paste0(rep("-", num), collapse = "")
+  if (isTRUE(end_line)){
+    string <- paste0(string, "\n")
+  }
+  string
 }
 
 get_pkg_version <- function(pkg_name){
