@@ -357,10 +357,9 @@ find_best_group_cols_ <- function(data, num_new_group_cols, group_cols_names, ca
     head(num_new_group_cols)
 
   # Find group columns to remove
-  group_cols_to_keep <- as.character(summary_ranks[[".group_col"]])
-  group_cols_to_remove <- setdiff(group_cols_names, group_cols_to_keep)
+  # Return names of best group columns
+  as.character(summary_ranks[[".group_col"]])
 
-  group_cols_to_keep
 }
 
 
