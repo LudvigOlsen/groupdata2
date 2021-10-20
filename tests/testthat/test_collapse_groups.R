@@ -1679,9 +1679,9 @@ test_that("testing scale_and_combine_()", {
       include_cols = c("a", "b", "c"),
       scale_fn=standardize_,
       col_name="new"), reset_seed = TRUE)
-  expect_equal(
-    xpectr::strip(side_effects_19148[['error']]),
-    xpectr::strip("Assertion on 'names(weights)' failed: Names must be a permutation of set {'a','b','c'}, but has extra elements {'d'}."),
+  expect_match(
+    xpectr::strip(side_effects_19148[['error']], lowercase = TRUE),
+    xpectr::strip("must be a permutation of set {'a','b','c'}", lowercase = TRUE),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_19148[['error_class']]),
@@ -1702,9 +1702,9 @@ test_that("testing scale_and_combine_()", {
       include_cols = c("a", "b", "d"),
       scale_fn=standardize_,
       col_name="new"), reset_seed = TRUE)
-  expect_equal(
-    xpectr::strip(side_effects_19148[['error']]),
-    xpectr::strip("Assertion on 'names(data)' failed: Names must include the elements {'a','b','d'}, but is missing elements {'d'}."),
+  expect_match(
+    xpectr::strip(side_effects_19148[['error']], lowercase = TRUE),
+    xpectr::strip("must include the elements {'a','b','d'}.", lowercase = TRUE),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_19148[['error_class']]),
@@ -3616,9 +3616,14 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   # Testing side effects
   # Assigning side effects
   side_effects_17375 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = "nope", num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
-  expect_equal(
-    xpectr::strip(side_effects_17375[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable '`cat_levels` for answer': Names must be a subset of {'.minority','.majority','a','b','c','d'}, but\n * has additional elements {'nope'}."),
+  expect_match(
+    xpectr::strip(side_effects_17375[['error']], lowercase = TRUE),
+    xpectr::strip(
+      ifelse(
+        is_checkmate_v2_1(),
+        "must be a subset of {'.minority','.majority','a','b','c','d'}",
+        "must be a subset of set {'.minority','.majority','a','b','c','d'}"
+      ), lowercase = TRUE),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_17375[['error_class']]),
@@ -3716,9 +3721,14 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   # Testing side effects
   # Assigning side effects
   side_effects_13881 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = c(nope = 2, b = 3), num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
-  expect_equal(
-    xpectr::strip(side_effects_13881[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable '`cat_levels` for answer': Names must be a subset of {'.minority','.majority','a','b','c','d'}, but\n * has additional elements {'nope'}."),
+  expect_match(
+    xpectr::strip(side_effects_13881[['error']], lowercase = TRUE),
+    xpectr::strip(
+      ifelse(
+        is_checkmate_v2_1(),
+        "must be a subset of {'.minority','.majority','a','b','c','d'}",
+        "must be a subset of set {'.minority','.majority','a','b','c','d'}"
+      ), lowercase = TRUE),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_13881[['error_class']]),
@@ -3847,8 +3857,12 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   # Assigning side effects
   side_effects_10073 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NA, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
   expect_equal(
-    xpectr::strip(side_effects_10073[['error']]),
-    xpectr::strip("Assertion on 'cat_levels' failed: One of the following must apply:\n * checkmate::check_character(cat_levels): Contains missing values (element 1)\n * checkmate::check_numeric(cat_levels): Must have names\n * checkmate::check_list(cat_levels): Must be of type 'list' (or 'NULL'), not 'logical'."),
+    xpectr::strip(side_effects_10073[['error']], lowercase = TRUE),
+    xpectr::strip(
+      ifelse(is_checkmate_v2_1(),
+             "Assertion on 'cat_levels' failed: One of the following must apply:\n * checkmate::check_character(cat_levels): Contains missing values (element 1)\n * checkmate::check_numeric(cat_levels): Must have names\n * checkmate::check_list(cat_levels): Must be of type 'list' (or 'NULL'), not 'logical'.",
+             "Assertion failed: One of the following must apply:\n * checkmate::check_character(cat_levels): Contains missing values (element 1)\n * checkmate::check_numeric(cat_levels): Must have names\n * checkmate::check_list(cat_levels): Must be of type 'list' (or 'NULL'), not 'logical'."),
+      lowercase = TRUE),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_10073[['error_class']]),
@@ -4596,9 +4610,14 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   # Testing side effects
   # Assigning side effects
   side_effects_12610 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = c(size = 3, nope = 5), method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
-  expect_equal(
-    xpectr::strip(side_effects_12610[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'names(weights)': Names must be a subset of {'size','answer','score','participant'}, but has\n * additional elements {'nope'}."),
+  expect_match(
+    xpectr::strip(side_effects_12610[['error']], lowercase = TRUE),
+    xpectr::strip(
+      ifelse(
+        is_checkmate_v2_1(),
+        "must be a subset of {'size','answer','score','participant'}",
+        "must be a subset of set {'size','answer','score','participant'}"
+      ), lowercase = TRUE),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_12610[['error_class']]),
@@ -4611,9 +4630,14 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   # Testing side effects
   # Assigning side effects
   side_effects_15144 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = c(participant = 2, participant_2 = 2), method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
-  expect_equal(
-    xpectr::strip(side_effects_15144[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'names(weights)': Names must be a subset of {'size','answer','score','participant'}, but has\n * additional elements {'participant_2'}."),
+  expect_match(
+    xpectr::strip(side_effects_15144[['error']], lowercase = TRUE),
+    xpectr::strip(
+      ifelse(
+        is_checkmate_v2_1(),
+        "must be a subset of {'size','answer','score','participant'}",
+        "must be a subset of set {'size','answer','score','participant'}"
+      ), lowercase = TRUE),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_15144[['error_class']]),
@@ -4856,9 +4880,14 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   # Testing side effects
   # Assigning side effects
   side_effects_12712 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "none", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "avg_standardized", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
-  expect_equal(
-    xpectr::strip(side_effects_12712[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'method': Names must be a subset of {'balance','ascending','descending'}, but has additional elements\n * {'none'}."),
+  expect_match(
+    xpectr::strip(side_effects_12712[['error']], lowercase = TRUE),
+    xpectr::strip(
+      ifelse(
+        is_checkmate_v2_1(),
+        "must be a subset of {'balance','ascending','descending'}",
+        "must be a subset of set {'balance','ascending','descending'}"
+      ), lowercase = TRUE),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_12712[['error_class']]),
@@ -5631,9 +5660,14 @@ test_that("fuzz testing collapse_groups() without auto-tune", {
   # Testing side effects
   # Assigning side effects
   side_effects_17340 <- xpectr::capture_side_effects(collapse_groups(data = df, n = 3, group_cols = ".folds", cat_cols = "answer", cat_levels = NULL, num_cols = "score", id_cols = "participant", balance_size = TRUE, auto_tune = FALSE, weights = NULL, method = "balance", group_aggregation_fn = mean, num_new_group_cols = 1, unique_new_group_cols_only = TRUE, max_iters = 2, extreme_pairing_levels = 1, combine_method = "nope", col_name = ".collg", parallel = FALSE, verbose = FALSE), reset_seed = TRUE)
-  expect_equal(
-    xpectr::strip(side_effects_17340[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'combine_method': Names must be a subset of {'avg_standardized','avg_min_max_scaled'}, but has\n * additional elements {'nope'}."),
+  expect_match(
+    xpectr::strip(side_effects_17340[['error']], lowercase = TRUE),
+    xpectr::strip(
+      ifelse(
+        is_checkmate_v2_1(),
+        "must be a subset of {'avg_standardized','avg_min_max_scaled'}",
+        "must be a subset of set {'avg_standardized','avg_min_max_scaled'}"
+      ), lowercase = TRUE),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_17340[['error_class']]),

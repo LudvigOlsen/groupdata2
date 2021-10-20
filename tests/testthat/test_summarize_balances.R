@@ -167,14 +167,14 @@ test_that("fuzz testing check_summarize_balances_()", {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
-  expect_equal(
-    xpectr::strip(side_effects_17365[['error']]),
+  expect_match(
+    xpectr::strip(side_effects_17365[['error']], lowercase = TRUE),
     xpectr::strip(
       ifelse(
         is_checkmate_v2_1(),
-        "1 assertions failed:\n * Variable 'colnames(data)': Names must include the elements {'sdf','some_factor','some_var','some_id'}, but is missing elements {'sdf'}.",
-        "Names must include the elements {'sdf','some_factor','some_var','some_id'}"
-      )
+        "must include the elements {'sdf','some_factor','some_var','some_id'}, but is missing elements {'sdf'}.",
+        "must include the elements {'sdf','some_factor','some_var','some_id'}"
+      ), lowercase = TRUE
     ),
     fixed = TRUE)
   expect_equal(
@@ -255,14 +255,14 @@ test_that("fuzz testing check_summarize_balances_()", {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
-  expect_equal(
-    xpectr::strip(side_effects_17191[['error']]),
+  expect_match(
+    xpectr::strip(side_effects_17191[['error']], lowercase = TRUE),
     xpectr::strip(
       ifelse(
         is_checkmate_v2_1(),
         "1 assertions failed:\n * Variable 'colnames(data)': Names must include the elements {'grp_1','grp_2','sdf','some_var','some_id'}, but is missing elements {'sdf'}.",
-        "Names must include the elements {'grp_1','grp_2','sdf','some_var','some_id'}"
-      )
+        "must include the elements {'grp_1','grp_2','sdf','some_var','some_id'}"
+      ), lowercase = TRUE
     ),
     fixed = TRUE)
   expect_equal(
@@ -325,13 +325,13 @@ test_that("fuzz testing check_summarize_balances_()", {
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
   expect_match(
-    xpectr::strip(side_effects_19400[['error']]),
+    xpectr::strip(side_effects_19400[['error']], lowercase = TRUE),
     xpectr::strip(
       ifelse(
         is_checkmate_v2_1(),
         "assertions failed:\n * Variable 'colnames(data)': Names must include the elements {'grp_1','grp_2','some_factor','sdf','some_id'}, but is missing elements {'sdf'}.",
-        "Names must include the elements Names must include the elements {'grp_1','grp_2','some_factor','sdf','some_id'}"
-      )
+        "must include the elements {'grp_1','grp_2','some_factor','sdf','some_id'}"
+      ), lowercase = TRUE
     ),
     fixed = TRUE)
   expect_equal(
@@ -404,14 +404,14 @@ test_that("fuzz testing check_summarize_balances_()", {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
-  expect_equal(
-    xpectr::strip(side_effects_19040[['error']]),
+  expect_match(
+    xpectr::strip(side_effects_19040[['error']], lowercase = TRUE),
     xpectr::strip(
       ifelse(
         is_checkmate_v2_1(),
         "1 assertions failed:\n * Variable 'colnames(data)': Names must include the elements {'grp_1','grp_2','some_factor','some_var','sdf'}, but is missing elements {'sdf'}.",
-        "Names must include the elements Names must include the elements {'grp_1','grp_2','some_factor','some_var','sdf'}"
-      )
+        "must include the elements {'grp_1','grp_2','some_factor','some_var','sdf'}"
+      ), lowercase = TRUE
     ),
     fixed = TRUE)
   expect_equal(
