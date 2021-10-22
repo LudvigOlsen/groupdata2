@@ -242,7 +242,6 @@ test_that("fold() works with group_by()", {
     v = v,
     v2 = c(1, 1, 1, 2, 2, 2, 3),
     v3 = factor(c(1, 1, 1, 2, 2, 2, 3)),
-    v4 = paste0("g_",c(1, 1, 1, 2, 2, 2, 3)),
     stringsAsFactors = FALSE
   )
 
@@ -253,7 +252,7 @@ test_that("fold() works with group_by()", {
   # Assigning output
   output_19148 <- xpectr::suppress_mw(
       df %>%
-        dplyr::group_by(v4) %>%
+        dplyr::group_by(v3) %>%
         find_missing_starts(
           n = "e",
           starts_col = "v",

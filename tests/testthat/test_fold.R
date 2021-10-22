@@ -46,33 +46,19 @@ test_that("errors and warnings are correct with fold()", {
   # methods
 
   expect_error(
-    xpectr::strip_msg(fold(df, 5, method = "l_sizes"), lowercase = TRUE),
-    xpectr::strip(
-      ifelse(
-        is_checkmate_v2_1(),
-        "must be a subset of {n_dist,n_fill,n_last,n_rand,greedy,staircase}.",
-        "must be a subset of set {n_dist,n_fill,n_last,n_rand,greedy,staircase}."
-      ), lowercase = TRUE),
+    xpectr::strip_msg(fold(df, 5, method = "l_sizes")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'method': Must be a subset",
+                         " of set {n_dist,n_fill,n_last,n_rand,greedy,staircase}.")),
     fixed = TRUE)
   expect_error(
-    xpectr::strip_msg(fold(df, 5, method = "l_starts"), lowercase = TRUE),
-    xpectr::strip(
-      ifelse(
-        is_checkmate_v2_1(),
-        "must be a subset of {n_dist,n_fill,n_last,n_rand,greedy,staircase}.",
-        "must be a subset of set {n_dist,n_fill,n_last,n_rand,greedy,staircase}."
-      ), lowercase = TRUE),
+    xpectr::strip_msg(fold(df, 5, method = "l_starts")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'method': Must be a subset",
+                         " of set {n_dist,n_fill,n_last,n_rand,greedy,staircase}.")),
     fixed = TRUE)
   expect_error(
-    xpectr::strip_msg(fold(df, 5, method = "primes"), lowercase = TRUE),
-    xpectr::strip(
-      ifelse(
-        is_checkmate_v2_1(),
-        "must be a subset of {n_dist,n_fill,n_last,n_rand,greedy,staircase}.",
-        "must be a subset of set {n_dist,n_fill,n_last,n_rand,greedy,staircase}."
-      ),
-      lowercase = TRUE
-    ),
+    xpectr::strip_msg(fold(df, 5, method = "primes")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'method': Must be a subset",
+                         " of set {n_dist,n_fill,n_last,n_rand,greedy,staircase}.")),
     fixed = TRUE)
 
   # k
@@ -93,12 +79,9 @@ test_that("errors and warnings are correct with fold()", {
   # handle_existing_fold_cols
 
   expect_error(
-    xpectr::strip_msg(fold(df, k = 5, handle_existing_fold_cols = "naa"), lowercase = TRUE),
-    xpectr::strip(
-      ifelse(
-        is_checkmate_v2_1(),
-        "must be a subset of {keep_warn,keep,remove}.",
-        "must be a subset of set {keep_warn,keep,remove}."), lowercase = TRUE),
+    xpectr::strip_msg(fold(df, k = 5, handle_existing_fold_cols = "naa")),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'handle_existing_fold_cols",
+                         "': Must be a subset of set {keep_warn,keep,remove}.")),
     fixed = TRUE)
   expect_error(
     xpectr::strip_msg(fold(df, k = 5, handle_existing_fold_cols = NULL)),
@@ -475,7 +458,7 @@ test_that("repeated folding works in fold()", {
     tidyr::gather(key = "folds_col", value = ".folds", folds_colnames)
   aggregated_scores <- df_folded_long %>%
     dplyr::group_by(folds_col, .folds) %>%
-    dplyr::summarize(group_sums = sum(score), .groups = 'drop')
+    dplyr::summarize(group_sums = sum(score))
 
   expected_folds_col <- rep(c(".folds_1", ".folds_2", ".folds_3", ".folds_4", ".folds_5"), 18)
   expected_folds_col <- expected_folds_col[order(expected_folds_col)]
@@ -488,37 +471,11 @@ test_that("repeated folding works in fold()", {
   xpectr::set_test_seed(1)
   # We set num_fold_cols to a larger number than is possible to create unique .folds columns
   # Hence it will only create a smaller number of columns!
-  # Here extreme triplets are used to create additional group cols
-  df_folded_6reps <- fold(head(df, 7), 2,
+  df_folded_5reps <- fold(head(df, 7), 2,
     num_col = "score", num_fold_cols = 10,
     handle_existing_fold_cols = "remove"
   )
-  expect_equal(length(extract_fold_colnames(df_folded_6reps)), 6)
-
-  # Compare to without use of extreme triplets
-  xpectr::set_test_seed(1)
-  df_folded_4reps_to_triplets <- fold(
-    head(df, 7),
-    2,
-    num_col = "score",
-    num_fold_cols = 10,
-    handle_existing_fold_cols = "remove",
-    use_of_triplets = 'never'
-  )
-  expect_equal(length(extract_fold_colnames(df_folded_4reps_to_triplets)), 4)
-
-  # Compare to only using extreme triplets
-  xpectr::set_test_seed(1)
-  df_folded_4reps_to_triplets <- fold(
-    head(df, 7),
-    2,
-    num_col = "score",
-    num_fold_cols = 10,
-    handle_existing_fold_cols = "remove",
-    use_of_triplets = 'instead'
-  )
-  expect_equal(length(extract_fold_colnames(df_folded_4reps_to_triplets)), 4)
-
+  expect_equal(length(extract_fold_colnames(df_folded_5reps)), 5)
 
   # Test 10 cols
   # Also test whether all fold cols are unique
@@ -605,11 +562,11 @@ test_that("bootstrap test of num_col works", {
   # Testing column values
   expect_equal(
     mean_ages[["V1"]],
-    c(50.58, 50.34, 50.44, 50.7, 50.62, 50.68, 50.64, 50.56, 50.3, 50.54),
+    c(50.6, 50.42, 50.52, 50.62, 50.6, 50.54, 50.56, 50.68, 50.2, 50.48),
     tolerance = 1e-4)
   expect_equal(
     mean_ages[["V2"]],
-    c(50.42, 50.66, 50.56, 50.3, 50.38, 50.32, 50.36, 50.44, 50.7, 50.46),
+    c(50.4, 50.58, 50.48, 50.38, 50.4, 50.46, 50.44, 50.32, 50.8, 50.52),
     tolerance = 1e-4)
   # Testing column names
   expect_equal(
@@ -667,23 +624,23 @@ test_that("bootstrap test of num_col works", {
   # Testing column values
   expect_equal(
     mean_ages[["V1"]],
-    c(49.3, 50.55, 51.4, 51.55, 50.05, 49.4, 50.1, 50.15, 49.8, 51.4),
+    c(49.4, 51.2, 50.9, 51.5, 50, 49.2, 50.15, 50.2, 49.5, 51.8),
     tolerance = 1e-4)
   expect_equal(
     mean_ages[["V2"]],
-    c(49.7, 50.25, 49.55, 51.45, 50.7, 51.45, 50.35, 49.85, 49.15, 49.2),
+    c(49.7, 49.5, 50.45, 51.4, 49.75, 51.15, 51.05, 49.9, 49, 49.15),
     tolerance = 1e-4)
   expect_equal(
     mean_ages[["V3"]],
-    c(51.7, 50.5, 50.4, 49.95, 50.55, 49.75, 50.45, 51.7, 51.65, 50.7),
+    c(52.6, 50.4, 49.7, 50, 51, 50.05, 50.35, 52.65, 51.45, 50.05),
     tolerance = 1e-4)
   expect_equal(
     mean_ages[["V4"]],
-    c(50.9, 50.5, 51.25, 49.7, 50.9, 51.35, 51.45, 51.25, 50.25, 49.95),
+    c(50.55, 50.35, 50.9, 50.05, 50.55, 50.8, 50.75, 50.45, 50, 50.85),
     tolerance = 1e-4)
   expect_equal(
     mean_ages[["V5"]],
-    c(50.9, 50.7, 49.9, 49.85, 50.3, 50.55, 50.15, 49.55, 51.65, 51.25),
+    c(50.25, 51.05, 50.55, 49.55, 51.2, 51.3, 50.2, 49.3, 52.55, 50.65),
     tolerance = 1e-4)
   # Testing column names
   expect_equal(
@@ -789,6 +746,7 @@ test_that("bootstrap test of num_col works", {
     fixed = TRUE)
   ## Finished testing 'mean_ages'                                           ####
 
+
   # With three levels of extreme pairing
 
   mean_ages <- plyr::ldply(1:10, function(i){
@@ -814,7 +772,6 @@ test_that("bootstrap test of num_col works", {
 
     age_distribution$mean_age
   })
-
 
 
   ## Testing 'mean_ages'                                                    ####
@@ -925,6 +882,7 @@ test_that("bootstrap test of num_col works", {
   })
 
 
+
   ## Testing 'age_distributions'                                            ####
   ## Initially generated by xpectr
   xpectr::set_test_seed(42)
@@ -942,15 +900,15 @@ test_that("bootstrap test of num_col works", {
   expect_equal(
     age_distributions[["mean_age"]],
     c(50.5, 50.5, 50.5, 50.488, 50.512, 50.5016, 50.4984, 50.5078, 50.4922,
-      50.40912, 50.52024, 50.5707, 50.49295, 50.4997, 50.50736, 50.55702,
-      50.46477, 50.47825, 50.5368, 50.5944, 50.3496, 50.5192, 50.4924,
+      50.40912, 50.52024, 50.5707, 50.49295, 50.4997, 50.50736, 50.52116,
+      50.5093, 50.46957, 50.5368, 50.5944, 50.3496, 50.5192, 50.4924,
       50.5444, 50.472, 50.4912, 50.504, 50.5056, 50.5152, 50.4752),
     tolerance = 1e-4)
   expect_equal(
     age_distributions[["sd_age"]],
     c(28.86751, 28.86751, 28.86751, 28.78545, 28.95221, 28.8557, 28.88221,
       28.89085, 28.84704, 28.95847, 29.08568, 28.56392, 28.9281, 28.63966,
-      29.04209, 28.68192, 28.91399, 29.01411, 28.89381, 28.46876,
+      29.04209, 28.76932, 28.75625, 29.08426, 28.89381, 28.46876,
       28.95188, 29.16791, 28.59038, 29.28341, 28.66115, 28.94721,
       28.93272, 28.86576, 28.63692, 29.05039),
     tolerance = 1e-4)
@@ -979,6 +937,7 @@ test_that("bootstrap test of num_col works", {
     character(0),
     fixed = TRUE)
   ## Finished testing 'age_distributions'                                   ####
+
 
 
   # xpectr::set_test_seed(47)
@@ -1340,13 +1299,9 @@ test_that("arg check fuzz tests for fold()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   expect_error(
-    xpectr::strip_msg(fold_2(data = df, k = 3, cat_col = "diagnosis", num_col = NULL, id_col = "participant", method = "n_dist", id_aggregation_fn = sum, extreme_pairing_levels = 1, num_fold_cols = 1, unique_fold_cols_only = TRUE, max_iters = 5, handle_existing_fold_cols = "hej", parallel = FALSE), lowercase = TRUE),
-    xpectr::strip(
-      ifelse(
-        is_checkmate_v2_1(),
-        "must be a subset of {keep_warn,keep,remove}.",
-        "must be a subset of set {keep_warn,keep,remove}."
-      ), lowercase = TRUE),
+    xpectr::strip_msg(fold_2(data = df, k = 3, cat_col = "diagnosis", num_col = NULL, id_col = "participant", method = "n_dist", id_aggregation_fn = sum, extreme_pairing_levels = 1, num_fold_cols = 1, unique_fold_cols_only = TRUE, max_iters = 5, handle_existing_fold_cols = "hej", parallel = FALSE)),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'handle_existing_fold_col",
+                         "s': Must be a subset of set {keep_warn,keep,remove}.")),
     fixed = TRUE)
 
   # Testing fold_2(data = df, k = 3, cat_col = "diagnosis"...
@@ -1796,13 +1751,9 @@ test_that("arg check fuzz tests for fold()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   expect_error(
-    xpectr::strip_msg(fold_2(data = df, k = 3, cat_col = "diagnosis", num_col = NULL, id_col = "participant", method = "hej", id_aggregation_fn = sum, extreme_pairing_levels = 1, num_fold_cols = 1, unique_fold_cols_only = TRUE, max_iters = 5, handle_existing_fold_cols = "keep_warn", parallel = FALSE), lowercase = TRUE),
-    xpectr::strip(
-      ifelse(
-        is_checkmate_v2_1(),
-        "must be a subset of {n_dist,n_fill,n_last,n_rand,greedy,staircase}.",
-        "must be a subset of set {n_dist,n_fill,n_last,n_rand,greedy,staircase}."
-      ), lowercase = TRUE),
+    xpectr::strip_msg(fold_2(data = df, k = 3, cat_col = "diagnosis", num_col = NULL, id_col = "participant", method = "hej", id_aggregation_fn = sum, extreme_pairing_levels = 1, num_fold_cols = 1, unique_fold_cols_only = TRUE, max_iters = 5, handle_existing_fold_cols = "keep_warn", parallel = FALSE)),
+    xpectr::strip(paste0("1 assertions failed:\n * Variable 'method': Must be a subse",
+                         "t of set {n_dist,n_fill,n_last,n_rand,greedy,staircase}.")),
     fixed = TRUE)
 
   # Testing fold_2(data = df, k = 3, cat_col = "diagnosis"...
@@ -2468,211 +2419,5 @@ test_that("multiple k values in repeated folding()", {
     fixed = TRUE)
   ## Finished testing 'fold( data = df, k = c(3, 2, 3), num_col = "...'     ####
 
-
-})
-
-test_that("repeated folding with extreme triplets works in fold()", {
-  xpectr::set_test_seed(1)
-  df <- data.frame(
-    "participant" = factor(rep(c("1", "2", "3", "4", "5", "6"), 3)),
-    "age" = rep(c(25, 65, 34), 3),
-    "diagnosis" = factor(rep(c("a", "b", "a", "a", "b", "b"), 3)),
-    "score" = c(34, 23, 54, 23, 56, 76, 43, 56, 76, 42, 54, 1, 5, 76, 34, 76, 23, 65)
-  )
-
-  df <- df %>% dplyr::arrange(participant, score)
-
-  xpectr::set_test_seed(1)
-  # Using only pairing with 1 possible fold column
-  df_folded_1reps_pairing <- fold(
-    head(df, 5), 2,
-    num_col = "score",
-    num_fold_cols = 10,
-    handle_existing_fold_cols = "remove",
-    use_of_triplets = 'never')
-  expect_equal(length(extract_fold_colnames(df_folded_1reps_pairing)), 1)
-  expect_equal(
-    as.character(df_folded_1reps_pairing$.folds_1),
-    c("1", "1", "1", "2", "2"),
-    fixed = TRUE)
-
-  xpectr::set_test_seed(1)
-  # Using only triplet grouping
-  # As we have fewer than k x 3 rows, it does not
-  # group by triplet IDs but by grouping the ordered
-  # rows, so it can create more groupings
-  # Scores 5 and 23 (smallest two) are put in the same
-  # group always, and the remaining triplet is split into
-  # the three possible 1:2 splits
-  df_folded_3reps_triplets <- fold(
-    head(df, 5), 2,
-    num_col = "score",
-    num_fold_cols = 10,
-    handle_existing_fold_cols = "remove",
-    use_of_triplets = 'instead')
-  expect_equal(length(extract_fold_colnames(df_folded_3reps_triplets)), 3)
-  # Assigning output
-  output_19148 <- df_folded_3reps_triplets[, paste0('.folds_', 1:3)]
-  # Testing column values
-  expect_equal(
-    output_19148[[".folds_1"]],
-    structure(c(1L, 2L, 1L, 1L, 2L), .Label = c("1", "2"), class = "factor"))
-  expect_equal(
-    output_19148[[".folds_2"]],
-    structure(c(1L, 2L, 2L, 1L, 1L), .Label = c("1", "2"), class = "factor"))
-  expect_equal(
-    output_19148[[".folds_3"]],
-    structure(c(1L, 1L, 2L, 1L, 2L), .Label = c("1", "2"), class = "factor"))
-
-  xpectr::set_test_seed(1)
-  # Using pairing and filling with triplet grouping
-  df_folded_4reps_mixed <- fold(
-    head(df, 5), 2,
-    num_col = "score",
-    num_fold_cols = 10,
-    handle_existing_fold_cols = "remove",
-    use_of_triplets = 'fill')
-  expect_equal(length(extract_fold_colnames(df_folded_4reps_mixed)), 4)
-  # Assigning output
-  output_19871 <- df_folded_4reps_mixed[, paste0('.folds_', 1:4)]
-  # Testing column values
-  expect_equal(
-    output_19871[[".folds_1"]],
-    structure(c(1L, 1L, 1L, 2L, 2L), .Label = c("1", "2"), class = "factor"))
-  expect_equal(
-    output_19871[[".folds_2"]],
-    structure(c(1L, 2L, 2L, 1L, 1L), .Label = c("1", "2"), class = "factor"))
-  expect_equal(
-    output_19871[[".folds_3"]],
-    structure(c(1L, 1L, 2L, 1L, 2L), .Label = c("1", "2"), class = "factor"))
-  expect_equal(
-    output_19871[[".folds_4"]],
-    structure(c(1L, 2L, 1L, 1L, 2L), .Label = c("1", "2"), class = "factor"))
-
-
-  # Compare balancings
-  pairing_balance <- df_folded_1reps_pairing %>%
-    summarize_balances(group_cols = paste0('.folds_', 1), num_cols = "score") %>%
-    ranked_balances() %>%
-    dplyr::summarise(mean_mean = mean(`mean(score)`))
-  triplet_balance <- df_folded_3reps_triplets %>%
-    summarize_balances(group_cols = paste0('.folds_', 1:3), num_cols = "score") %>%
-    ranked_balances() %>%
-    dplyr::summarise(mean_mean = mean(`mean(score)`),
-                     min_mean = min(`mean(score)`))
-  mixed_balance <- df_folded_4reps_mixed %>%
-    summarize_balances(group_cols = paste0('.folds_', 1:4), num_cols = "score") %>%
-    ranked_balances() %>%
-    dplyr::summarise(mean_mean = mean(`mean(score)`),
-                     min_mean = min(`mean(score)`))
-
-  expect_equal(pairing_balance[[1]], 8.60313, tolerance = 1e-4)
-  expect_equal(triplet_balance$mean_mean[[1]], 14.29927, tolerance = 1e-4)
-  expect_equal(triplet_balance$min_mean[[1]], 7.42462, tolerance = 1e-4)
-  expect_equal(mixed_balance[[1]], 12.87523, tolerance = 1e-4)
-  expect_equal(mixed_balance$min_mean[[1]], 7.42462, tolerance = 1e-4)
-
-
-  xpectr::set_test_seed(2)
-  # Using only triplet grouping
-  # Dataset has #rows divisibly by 3
-  df_folded_15reps_triplets <- fold(
-    head(df, 9), 2,
-    num_col = "score",
-    num_fold_cols = 15,
-    handle_existing_fold_cols = "remove",
-    use_of_triplets = 'instead')
-  expect_equal(length(extract_fold_colnames(df_folded_15reps_triplets)), 15)
-
-  # Pairings can only find 8 groupings, while triplets
-  # had no problem finding 15 (possibly more)
-  xpectr::set_test_seed(2)
-  df_folded_8reps_pairs <- fold(
-    head(df, 9), 2,
-    num_col = "score",
-    num_fold_cols = 15,
-    handle_existing_fold_cols = "remove",
-    use_of_triplets = 'never')
-  expect_equal(length(extract_fold_colnames(df_folded_8reps_pairs)), 8)
-
-  # Fill up with triplets
-  xpectr::set_test_seed(2)
-  df_folded_15reps_mixed <- fold(
-    head(df, 9), 2,
-    num_col = "score",
-    num_fold_cols = 15,
-    handle_existing_fold_cols = "remove",
-    use_of_triplets = 'fill')
-  expect_equal(length(extract_fold_colnames(df_folded_15reps_mixed)), 15)
-
-  # Compare balancings
-  pairing_balance <- df_folded_8reps_pairs %>%
-    summarize_balances(group_cols = paste0('.folds_', 1:8), num_cols = "score") %>%
-    ranked_balances() %>%
-    dplyr::summarise(mean_mean = mean(`mean(score)`),
-                     min_mean = min(`mean(score)`))
-  triplet_balance <- df_folded_15reps_triplets %>%
-    summarize_balances(group_cols = paste0('.folds_', 1:15), num_cols = "score") %>%
-    ranked_balances() %>%
-    dplyr::summarise(mean_mean = mean(`mean(score)`),
-                     min_mean = min(`mean(score)`))
-  mixed_balance <- df_folded_15reps_mixed %>%
-    summarize_balances(group_cols = paste0('.folds_', 1:15), num_cols = "score") %>%
-    ranked_balances() %>%
-    dplyr::summarise(mean_mean = mean(`mean(score)`),
-                     min_mean = min(`mean(score)`))
-
-  expect_equal(pairing_balance$mean_mean[[1]], 8.759285, tolerance = 1e-4)
-  expect_equal(pairing_balance$min_mean[[1]], 6.929646, tolerance = 1e-4)
-  expect_equal(triplet_balance$mean_mean[[1]], 4.494842, tolerance = 1e-4)
-  expect_equal(triplet_balance$min_mean[[1]], 0.07071068, tolerance = 1e-4)
-  # Note that we first created the 8 pairing cols, so we can't expect
-  # the best triplet factor to be in the mixed version
-  expect_equal(mixed_balance$mean_mean[[1]], 6.439386, tolerance = 1e-4)
-  expect_equal(mixed_balance$min_mean[[1]], 2.793072, tolerance = 1e-4)
-
-  # Test group-wise uniqueness
-  column_combinations <- as.data.frame(t(combn(paste0(".folds_", 1:15), 2)),
-                                       stringsAsFactors = FALSE
-  )
-  column_combinations[["identical"]] <- plyr::llply(
-    seq_len(nrow(column_combinations)),
-    function(r) {
-      col_1 <- df_folded_15reps_triplets[[column_combinations[r, 1]]]
-      col_2 <- df_folded_15reps_triplets[[column_combinations[r, 2]]]
-      return(all_groups_identical(col_1, col_2))
-    }
-  ) %>% unlist()
-  expect_true(all(!column_combinations$identical))
-
-  testthat::skip('Next part is too slow')
-
-  # Comparing pure triplet groupings to pure pairings
-  # Takes a good amount of time, so only run manually once in a while
-
-  xpectr::set_test_seed(1)
-  # With num_col
-  df_folded <- fold(df, 3, num_col = "score", num_fold_cols = 100, use_of_triplets = 'instead')
-  df_folded_paired <- fold(df, 3, num_col = "score", num_fold_cols = 100, use_of_triplets = 'never')
-  df_folded_random <- fold(df, 3, num_fold_cols = 100)
-
-  triplet_balance <- df_folded %>%
-    summarize_balances(group_cols = paste0('.folds_', 1:100), num_cols = "score") %>%
-    ranked_balances() %>%
-    dplyr::summarise(sum_mean = sum(`mean(score)`))
-  pairs_balance <- df_folded_paired %>%
-    summarize_balances(group_cols = paste0('.folds_', 1:100), num_cols = "score") %>%
-    ranked_balances() %>%
-    dplyr::summarise(sum_mean = sum(`mean(score)`))
-  random_balance <- df_folded_random %>%
-    summarize_balances(group_cols = paste0('.folds_', 1:100), num_cols = "score") %>%
-    ranked_balances() %>%
-    dplyr::summarise(sum_mean = sum(`mean(score)`))
-
-  # As expected, pairing is quite a lot better in general
-  # but triplets are muuuuch better than random splitting
-  expect_equal(triplet_balance[[1]], 290.04251, tolerance = 1e-4)
-  expect_equal(pairs_balance[[1]], 203.25910, tolerance = 1e-4)
-  expect_equal(random_balance[[1]], 924.40869, tolerance = 1e-4)
 
 })

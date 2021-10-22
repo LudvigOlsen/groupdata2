@@ -23,8 +23,7 @@ When a \emph{grouped} \code{data.frame}, the function is applied group-wise.}
 \item{n}{\emph{Depends on \code{`method`}.}
 
 Number of groups (default), group size, list of group sizes,
-list of group starts, number of data points between group members,
-step size or prime number to start at. See \code{`method`}.
+list of group starts, step size or prime number to start at. See \code{`method`}.
 
 Passed as whole number(s) and/or percentage(s) (\code{0} < \code{n} < \code{1})
 and/or character.
@@ -32,7 +31,7 @@ and/or character.
 Method \code{"l_starts"} allows \code{'auto'}.}
 
 \item{method}{\code{"greedy"}, \code{"n_dist"}, \code{"n_fill"}, \code{"n_last"},
-\code{"n_rand"}, \code{"l_sizes"}, \code{"l_starts"}, \code{"every"}, \code{"staircase"}, or
+\code{"n_rand"}, \code{"l_sizes"}, \code{"l_starts"}, \code{"staircase"}, or
 \code{"primes"}.
 
 \strong{Note}: examples are sizes of the generated groups
@@ -41,39 +40,39 @@ based on a vector with \code{57} elements.
 \subsection{greedy}{Divides up the data greedily given a specified group size
 \eqn{(e.g. 10, 10, 10, 10, 10, 7)}.
 
-\code{`n`} is group size.}
+\code{`n`} is group size}
 
 \subsection{n_dist (default)}{Divides the data into a specified number of groups and
 distributes excess data points across groups
 \eqn{(e.g. 11, 11, 12, 11, 12)}.
 
-\code{`n`} is number of groups.}
+\code{`n`} is number of groups}
 
 \subsection{n_fill}{Divides the data into a specified number of groups and
 fills up groups with excess data points from the beginning
 \eqn{(e.g. 12, 12, 11, 11, 11)}.
 
-\code{`n`} is number of groups.}
+\code{`n`} is number of groups}
 
 \subsection{n_last}{Divides the data into a specified number of groups.
 It finds the most equal group sizes possible,
 using all data points. Only the last group is able to differ in size
 \eqn{(e.g. 11, 11, 11, 11, 13)}.
 
-\code{`n`} is number of groups.}
+\code{`n`} is number of groups}
 
 \subsection{n_rand}{Divides the data into a specified number of groups.
 Excess data points are placed randomly in groups (max. 1 per group)
 \eqn{(e.g. 12, 11, 11, 11, 12)}.
 
-\code{`n`} is number of groups.}
+\code{`n`} is number of groups}
 
 \subsection{l_sizes}{Divides up the data by a \code{list} of group sizes.
 Excess data points are placed in an extra group at the end.
 
 \eqn{E.g. n = list(0.2, 0.3) outputs groups with sizes (11, 17, 29)}.
 
-\code{`n`} is a \code{list} of group sizes.}
+\code{`n`} is a \code{list} of group sizes}
 
 \subsection{l_starts}{Starts new groups at specified values in the \code{`starts_col`} vector.
 
@@ -98,24 +97,19 @@ to set a threshold for what is considered "different".
 \eqn{E.g. n = "auto" for c(10, 10, 7, 8, 8, 9) would start groups at
  the first 10, 7, 8 and 9, and give c(1, 1, 2, 3, 3, 4).}
 
-\subsection{every}{Combines every \code{`n`}th data point into a group.
-\eqn{(e.g. 12, 12, 11, 11, 11 with n = 5)}.
-
-\code{`n`} is the number of data points between group members ("every n").}
-
 \subsection{staircase}{Uses step size to divide up the data.
 Group size increases with 1 step for every group,
 until there is no more data
 \eqn{(e.g. 5, 10, 15, 20, 7)}.
 
-\code{`n`} is step size.}
+\code{`n`} is step size}
 
 \subsection{primes}{Uses prime numbers as group sizes.
 Group size increases to the next prime number
 until there is no more data.
 \eqn{(e.g. 5, 7, 11, 13, 17, 4)}.
 
-\code{`n`} is the prime number to start at.}}
+\code{`n`} is the prime number to start at}}
 
 \item{starts_col}{Name of column with values to match in method \code{"l_starts"}
 when \code{`data`} is a \code{data.frame}. Pass \code{'index'} to use row names. (Character)}
@@ -169,8 +163,6 @@ df_list <- splt(df, 5, method = "n_dist")
 \seealso{
 Other grouping functions: 
 \code{\link{all_groups_identical}()},
-\code{\link{collapse_groups_by}},
-\code{\link{collapse_groups}()},
 \code{\link{fold}()},
 \code{\link{group_factor}()},
 \code{\link{group}()},
