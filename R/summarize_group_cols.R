@@ -47,7 +47,7 @@
 #' @export
 #' @return
 #'  Data frame (\code{tibble}) with summary statistics for each column in \code{`group_cols`}.
-#' @importFrom stats IQR median sd quantile
+#' @importFrom stats IQR median sd
 summarize_group_cols <- function(data, group_cols, long = TRUE) {
 
   # Check arguments ####

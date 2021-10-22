@@ -8,10 +8,10 @@
 #'  Creates and returns a grouping factor
 #'  with \code{1}s for \emph{group 1}, \code{2}s for \emph{group 2}, etc.
 #'
-#'  By default*, the data points in a group are connected sequentially (e.g. \code{c(1, 1, 2, 2, 3, 3)})
-#'  and splitting is done from top to bottom. *Except in the \code{"every"} method.
+#'  By default, the data points in a group are connected sequentially (e.g. \code{c(1, 1, 2, 2, 3, 3)})
+#'  and splitting is done from top to bottom.
 #'
-#'  There are \strong{five} types of grouping methods:
+#'  There are \strong{four} types of grouping methods:
 #'
 #'  The \code{"n_*"} methods split the data into a given \emph{number of groups}.
 #'  They differ in how they handle excess data points.
@@ -23,9 +23,6 @@
 #'  The \code{"l_*"} methods use a \emph{list} of either starting points (\code{"l_starts"})
 #'  or group sizes (\code{"l_sizes"}). The \code{"l_starts"} method can also auto-detect group starts
 #'  (when a value differs from the previous value).
-#'
-#'  The \code{"every"} method puts every \code{`n`}th data point into the same group
-#'  (e.g. \code{c(1, 2, 3, 1, 2, 3)}).
 #'
 #'  The step methods \code{"staircase"} and \code{"primes"} increase the group size by a step for each group.
 #'
@@ -39,15 +36,14 @@
 #' @param n \emph{Depends on \code{`method`}.}
 #'
 #'  Number of groups (default), group size, list of group sizes,
-#'  list of group starts, number of data points between group members,
-#'  step size or prime number to start at. See \code{`method`}.
+#'  list of group starts, step size or prime number to start at. See \code{`method`}.
 #'
 #'  Passed as whole number(s) and/or percentage(s) (\code{0} < \code{n} < \code{1})
 #'  and/or character.
 #'
 #'  Method \code{"l_starts"} allows \code{'auto'}.
 #' @param method \code{"greedy"}, \code{"n_dist"}, \code{"n_fill"}, \code{"n_last"},
-#'  \code{"n_rand"}, \code{"l_sizes"}, \code{"l_starts"}, \code{"every"}, \code{"staircase"}, or
+#'  \code{"n_rand"}, \code{"l_sizes"}, \code{"l_starts"}, \code{"staircase"}, or
 #'  \code{"primes"}.
 #'
 #'  \strong{Note}: examples are sizes of the generated groups
@@ -56,39 +52,39 @@
 #'  \subsection{greedy}{Divides up the data greedily given a specified group size
 #'  \eqn{(e.g. 10, 10, 10, 10, 10, 7)}.
 #'
-#'  \code{`n`} is group size.}
+#'  \code{`n`} is group size}
 #'
 #'  \subsection{n_dist (default)}{Divides the data into a specified number of groups and
 #'  distributes excess data points across groups
 #'  \eqn{(e.g. 11, 11, 12, 11, 12)}.
 #'
-#'  \code{`n`} is number of groups.}
+#'  \code{`n`} is number of groups}
 #'
 #'  \subsection{n_fill}{Divides the data into a specified number of groups and
 #'  fills up groups with excess data points from the beginning
 #'  \eqn{(e.g. 12, 12, 11, 11, 11)}.
 #'
-#'  \code{`n`} is number of groups.}
+#'  \code{`n`} is number of groups}
 #'
 #'  \subsection{n_last}{Divides the data into a specified number of groups.
 #'  It finds the most equal group sizes possible,
 #'  using all data points. Only the last group is able to differ in size
 #'  \eqn{(e.g. 11, 11, 11, 11, 13)}.
 #'
-#'  \code{`n`} is number of groups.}
+#'  \code{`n`} is number of groups}
 #'
 #'  \subsection{n_rand}{Divides the data into a specified number of groups.
 #'  Excess data points are placed randomly in groups (max. 1 per group)
 #'  \eqn{(e.g. 12, 11, 11, 11, 12)}.
 #'
-#'  \code{`n`} is number of groups.}
+#'  \code{`n`} is number of groups}
 #'
 #'  \subsection{l_sizes}{Divides up the data by a \code{list} of group sizes.
 #'  Excess data points are placed in an extra group at the end.
 #'
 #'  \eqn{E.g. n = list(0.2, 0.3) outputs groups with sizes (11, 17, 29)}.
 #'
-#'  \code{`n`} is a \code{list} of group sizes.}
+#'  \code{`n`} is a \code{list} of group sizes}
 #'
 #'  \subsection{l_starts}{Starts new groups at specified values in the \code{`starts_col`} vector.
 #'
@@ -113,24 +109,19 @@
 #'  \eqn{E.g. n = "auto" for c(10, 10, 7, 8, 8, 9) would start groups at
 #'  the first 10, 7, 8 and 9, and give c(1, 1, 2, 3, 3, 4).}
 #'
-#'  \subsection{every}{Combines every \code{`n`}th data point into a group.
-#'  \eqn{(e.g. 12, 12, 11, 11, 11 with n = 5)}.
-#'
-#'  \code{`n`} is the number of data points between group members ("every n").}
-#'
 #'  \subsection{staircase}{Uses step size to divide up the data.
 #'  Group size increases with 1 step for every group,
 #'  until there is no more data
 #'  \eqn{(e.g. 5, 10, 15, 20, 7)}.
 #'
-#'  \code{`n`} is step size.}
+#'  \code{`n`} is step size}
 #'
 #'  \subsection{primes}{Uses prime numbers as group sizes.
 #'  Group size increases to the next prime number
 #'  until there is no more data.
 #'  \eqn{(e.g. 5, 7, 11, 13, 17, 4)}.
 #'
-#'  \code{`n`} is the prime number to start at.}
+#'  \code{`n`} is the prime number to start at}
 #' @param starts_col Name of column with values to match in method \code{"l_starts"}
 #' when \code{`data`} is a \code{data.frame}. Pass \code{'index'} to use row names. (Character)
 #' @param force_equal Create equal groups by discarding excess data points.
@@ -336,13 +327,6 @@ run_group_factor_ <- function(data, n, method, starts_col, force_equal,
       force_equal = force_equal,
       descending = descending
     )
-  } else if (method == "every") {
-    groups <- every_n_group_factor_(
-      v = data,
-      every_n = n,
-      force_equal = force_equal,
-      descending = descending
-    )
   }
 
   # Shuffle groups
@@ -359,7 +343,7 @@ check_group_factor_once <- function(data, n, method, starts_col, force_equal,
                                     randomize, remove_missing_starts,
                                     available_methods = c(
                                       "greedy", "n_dist", "n_fill", "n_last", "n_rand",
-                                      "l_sizes", "l_starts", "every", "staircase", "primes")){
+                                      "l_sizes", "l_starts", "staircase", "primes")){
   # Check arguments ####
   assert_collection <- checkmate::makeAssertCollection()
 
