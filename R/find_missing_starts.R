@@ -74,13 +74,26 @@ find_missing_starts <- function(data,
     message_once_about_group_by("find_missing_starts")
   }
 
-  run_by_group_list(
+  out <- run_by_group_list(
     data = data,
     .fn = run_find_missing_starts_,
     n = n,
     starts_col = starts_col,
     return_skip_numbers = return_skip_numbers
   )
+
+  # Ensure naming is consistent across platforms
+  # as Debian GCC seems to have some quirks
+  if (is.list(out)){
+    out <- purrr::map(out, .f = unname)
+    if (!dplyr::is_grouped_df(data)){
+      out <- unname(out)
+    }
+  } else {
+    output <- unname(out)
+  }
+
+  out
 }
 
 

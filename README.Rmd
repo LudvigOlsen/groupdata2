@@ -14,6 +14,9 @@ knitr::opts_chunk$set(
   fig.retina = 2
 )
 
+# Digits to print
+options("digits"=3)
+
 set.seed(1)
 
 # Get minimum R requirement 
@@ -37,7 +40,6 @@ rvers <- substring(dep, 7, nchar(dep)-1)
 [![metacran downloads](https://cranlogs.r-pkg.org/badges/groupdata2)](https://cran.r-project.org/package=groupdata2)
 [![minimal R version](https://img.shields.io/badge/R%3E%3D-`r rvers`-6666ff.svg)](https://cran.r-project.org/)
 [![Codecov test coverage](https://codecov.io/gh/ludvigolsen/groupdata2/branch/master/graph/badge.svg)](https://codecov.io/gh/ludvigolsen/groupdata2?branch=master)
-[![Travis build status](https://travis-ci.com/LudvigOlsen/groupdata2.svg?branch=master)](https://travis-ci.com/LudvigOlsen/groupdata2)
 [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/LudvigOlsen/groupdata2?branch=master&svg=true)](https://ci.appveyor.com/project/LudvigOlsen/groupdata2)
 [![DOI](https://zenodo.org/badge/72371128.svg)](https://zenodo.org/badge/latestdoi/72371128)
 
@@ -56,11 +58,12 @@ R package for dividing data into groups.
 
 |Function              |Description                                                        |
 |:---------------------|:------------------------------------------------------------------|
-|`group_factor()`      |Divides data into groups by a wide range of methods.                    |
+|`group_factor()`      |Divides data into groups by a wide range of methods.               |
 |`group()`             |Creates grouping factor and adds to the given data frame.          |
 |`splt()`              |Creates grouping factor and splits the data by these groups.       |
 |`partition()`         |Splits data into partitions. Balances a given categorical variable and/or numerical variable between partitions and keeps all data points with a shared ID in the same partition.  |
 |`fold()`              |Creates folds for (repeated) cross-validation. Balances a given categorical variable and/or numerical variable between folds and keeps all data points with a shared ID in the same fold. |
+|`collapse_groups()`   |Collapses existing groups nto a smaller set of groups with categorical, numerical, ID, and size balancing. |
 |`balance()`           |Uses up- and/or downsampling to equalize group sizes. Can balance on ID level. See wrappers: `downsample()`, `upsample()`.|
 
 ### Other tools
@@ -72,6 +75,8 @@ R package for dividing data into groups.
 |`find_starts()`           |Finds values or indices of values that are not the same as the previous value.|
 |`find_missing_starts()`   |Finds missing starts for the `l_starts` method.|
 |`summarize_group_cols()`  |Calculates summary statistics about group columns (i.e. `factor`s).|
+|`summarize_balances()`    |Summarizes the balances of numeric, categorical, and ID columns in and between groups in one or more group columns. |
+|`ranked_balances()`       |Extracts the standard deviations from the `Summary` data frame from the output of `summarize_balances()` |
 |`%primes%`                |Finds remainder for the `primes` method.   |
 |`%staircase%`             |Finds remainder for the `staircase` method.|
 
@@ -125,6 +130,7 @@ df_medium <- data.frame(
   "participant" = factor(rep(c('1', '2', '3', '4', '5', '6'), 3)),
   "age" = rep(c(20, 33, 27, 21, 32, 25), 3),
   "diagnosis" = factor(rep(c('a', 'b', 'a', 'b', 'b', 'a'), 3)),
+  "diagnosis2" = factor(sample(c('x','z','y'), 18, replace = TRUE)),
   "score" = c(10, 24, 15, 35, 24, 14, 24, 40, 30, 
               50, 54, 25, 45, 67, 40, 78, 62, 30))
 df_medium <- df_medium %>% arrange(participant)
@@ -271,6 +277,51 @@ df_folded %>%
 
 We also have a balance in the representation of each diagnosis, which could give us better, more consistent results.  
 
+### collapse_groups()
+
+Collapses a set of groups into a smaller set of groups while attempting to balance the new groups by specified numerical columns, categorical columns, level counts in ID columns, and/or the number of rows.
+
+```{r}
+# We consider each participant a group
+# and collapse them into 3 new groups
+# We balance the diagnosis2 column, which 
+# is not constant within the participants
+df_collapsed <- collapse_groups(
+  data = df_medium,
+  n = 3,
+  group_cols = 'participant',
+  cat_cols = 'diagnosis2',
+  num_cols = "score"
+) 
+
+# Show df_collapsed ordered by new collapsed groups
+df_collapsed %>% 
+  arrange(.coll_groups) %>%
+  kable()
+
+# Summarize the balances of the new groups
+coll_summ <- df_collapsed %>% 
+  summarize_balances(group_cols = '.coll_groups',
+                     cat_cols = "diagnosis2",
+                     num_cols = "score")
+
+coll_summ$Groups %>% 
+  kable()
+
+coll_summ$Summary %>% 
+  kable()
+
+# Check the across-groups standard deviations 
+# This is a measure of how balanced the groups are (lower == more balanced)
+# and is especially useful when comparing multiple group columns
+coll_summ %>% 
+  ranked_balances() %>%
+  kable()
+
+```
+
+**Recommended**: By enabling the `auto_tune` setting, we often get a much better balance.
+
 ### balance()
 
 Uses up- and/or downsampling to fix the group sizes to the min, max, mean, or median group size or to a specific number of rows.
@@ -318,7 +369,7 @@ balance(
 ```
  
 ## Grouping Methods
-There are currently 9 methods available. They can be divided into 5 categories.  
+There are currently 10 methods available. They can be divided into 6 categories.  
 
 *Examples of group sizes are based on a vector with 57 elements.*  
 
@@ -373,6 +424,12 @@ want the first appearance of 27 after the previous value 15.
 
 If passing `n = "auto"` starting positions are automatically found with `find_starts()`.  
 
+### Specify distance between members
+##### Method: every
+Every `n`th data point is combined to a group.
+
+E.g. group sizes: 12, 12, 11, 11, 11  
+
 ### Specify step size
 ##### Method: staircase
 Uses step_size to divide up the data. 
@@ -388,7 +445,7 @@ Starts at `n` (prime number). Increases to the the next prime number until there
 E.g. group sizes: 5, 7, 11, 13, 17, 4  
 
 ## Balancing ID Methods
-There are currently 4 methods for balancing on ID level in `balance()`.
+There are currently 4 methods for balancing (up-/downsampling) on ID level in `balance()`.
 
 ##### ID method: n_ids
 Balances on ID level only. It makes sure there are the same number of IDs in each category. This might lead to a different number of rows between categories.
@@ -397,7 +454,7 @@ Balances on ID level only. It makes sure there are the same number of IDs in eac
 Attempts to level the number of rows per category, while only removing/adding entire IDs. This is done with repetition and by iteratively picking the ID with the number of rows closest to the lacking/excessive number of rows in the category.  
 
 ##### ID method: distributed
-Distributes the lacking/excess rows equally between the IDs. If the number to distribute can not be equally divided, some IDs will have 1 row more/less than the others.  
+Distributes the lacking/excess rows equally between the IDs. If the number to distribute cannot be equally divided, some IDs will have 1 row more/less than the others.  
 
 ##### ID method: nested
 Balances the IDs within their categories, meaning that all IDs in a category will have the same number of rows.  
