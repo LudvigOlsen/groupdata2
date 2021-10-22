@@ -10,9 +10,6 @@
 # of, e.g. to balance both mean and sum - e.g. with a weight as well?
 # Also - a list with different functions per column in num_cols?
 
-# TODO auto-tune does not use cat_levels when ranking
-# TODO cat_levels: provide .majority/.minority in the list?
-# TODO cat_levels: What happens if a column is not in the list? (should use all for that column)
 
 #### ####
 
@@ -92,10 +89,11 @@
 #'  \code{\link[groupdata2:summarize_balances]{summarize_balances()}}
 #'  and \code{\link[groupdata2:ranked_balances]{ranked_balances()}} to
 #'  check how balanced the created groups are on the various dimensions.
-#'  By applying \code{\link[groupdata2:ranked_balances]{ranked_balances()}}
+#'  When applying \code{\link[groupdata2:ranked_balances]{ranked_balances()}}
 #'  to the output of \code{\link[groupdata2:summarize_balances]{summarize_balances()}},
 #'  we get a \code{data.frame} with the standard deviations
-#'  for each balancing dimension, ordered by the average rank (see \code{Examples}).
+#'  for each balancing dimension (lower means more balanced),
+#'  ordered by the average rank (see \code{Examples}).
 #'
 #'  }\subsection{Balancing columns}{
 #'
@@ -109,7 +107,7 @@
 #'   one count column per level, with one row per group.
 #'   * \strong{Standardize} the count columns.
 #'   * \strong{Average} the standardized counts rowwise to create one combined column representing
-#'   the balance of the levels for each group. When `cat_cols` contains weights for each of the levels,
+#'   the balance of the levels for each group. When `cat_levels` contains weights for each of the levels,
 #'   we apply weighted averaging.
 #'
 #'   \strong{Example}: Consider a factor column with the levels \code{c("A", "B", "C")}.
@@ -171,7 +169,7 @@
 #'  }\subsection{Creating the groups}{
 #'
 #'   Finally, we get to the group creation. There are three methods for creating groups based on the
-#'   combined balancing column: "balance" (default), "ascending", and "descending".
+#'   combined balancing column: \code{"balance"} (default), \code{"ascending"}, and \code{"descending"}.
 #'
 #'   \subsection{`method` is "balance"}{
 #'   To create groups that are balanced by the combined balancing column, we use the numerical balancing
@@ -196,6 +194,10 @@
 #'   \strong{N.B.} When doing extreme pairing of an unequal number of rows,
 #'   the row with the smallest value is placed in a group by itself, and the order is instead:
 #'   (smallest), \emph{(second smallest, largest), (third smallest, second largest)}, etc.
+#'
+#'   A similar approach with \emph{extreme triplets} (i.e. smallest, closest to median, largest,
+#'   second smallest, second closest to median, second largest, etc.) may also be utilized in some scenarios.
+#'   (See \code{\link[rearrr:triplet_extremes]{rearrr::triplet_extremes()}})
 #'
 #'   \strong{Example}: We order the \code{data.frame} by smallest \emph{"Num"} value,
 #'   largest \emph{"Num"} value, second smallest, and so on.
@@ -599,7 +601,7 @@ collapse_groups <- function(
   auto_tune = FALSE,
   weights = NULL,
   method = "balance",
-  group_aggregation_fn = mean, # TODO How should this affect autotuning?
+  group_aggregation_fn = mean, # TODO How should this affect auto-tuning?
   num_new_group_cols = 1,
   unique_new_group_cols_only = TRUE,
   max_iters = 5,
@@ -882,7 +884,7 @@ run_collapse_groups_ <- function(
 
   #### Calculate summary info ####
 
-  summaries <- calculate_summary_(
+  summaries <- calculate_summary_collapse_groups_(
     data = data,
     tmp_old_group_var = tmp_old_group_var,
     cat_cols = cat_cols,
@@ -911,6 +913,7 @@ run_collapse_groups_ <- function(
       tmp_old_group_var = tmp_old_group_var,
       num_cols = num_cols,
       cat_cols = cat_cols,
+      cat_levels = cat_levels,
       id_cols = id_cols,
       balance_size = balance_size,
       weights = weights,
@@ -983,7 +986,7 @@ run_collapse_groups_ <- function(
 }
 
 
-calculate_summary_ <- function(
+calculate_summary_collapse_groups_ <- function(
   data,
   tmp_old_group_var,
   cat_cols,
@@ -998,49 +1001,46 @@ calculate_summary_ <- function(
   # Calculate summary of `cat_cols`
   cat_summary <- NULL
   if (!is.null(cat_cols)){
-    cat_summary <- purrr::map(.x = cat_cols, .f = ~ {
-      create_combined_cat_summary_(
-        data = data,
-        group_cols = tmp_old_group_var,
-        cat_col = .x,
-        cat_levels = cat_levels
-      )
-    }) %>%
-      purrr::reduce(dplyr::full_join, by = tmp_old_group_var)
+    cat_summary <- create_combined_cat_summaries_(
+      data = data,
+      group_cols = tmp_old_group_var,
+      cat_cols = cat_cols,
+      cat_levels = cat_levels,
+      warn_zero_variance = TRUE
+    )
   }
 
   # Calculate summary of `num_cols`
   num_summary <- NULL
   if (!is.null(num_cols)){
-
-    num_summary <- data %>%
-      dplyr::group_by(!!as.name(tmp_old_group_var)) %>%
-      dplyr::summarise(
-        dplyr::across(dplyr::one_of(num_cols), group_aggregation_fn),
-        .groups = "drop"
-      )
-
-    num_summ_cols <- colnames(num_summary)[colnames(num_summary) != tmp_old_group_var]
+    num_summary <- create_num_summaries_(
+      data = data,
+      group_col = tmp_old_group_var,
+      num_cols = num_cols,
+      fns = list(group_aggregation_fn),
+      rename = FALSE
+    )
   }
 
   # Calculate summary of `size`
   size_summary <- NULL
   if (isTRUE(balance_size)){
-    size_summary <- data %>%
-      dplyr::group_by(!!as.name(tmp_old_group_var)) %>%
-      dplyr::summarise(size = dplyr::n(), .groups = "drop")
+    size_summary <- create_size_summary_(
+      data = data,
+      group_col = tmp_old_group_var,
+      name = "size"
+    )
   }
 
   # Calculate summary of `id_cols`
   id_summary <- NULL
   if (!is.null(id_cols)){
-    id_summary <- data %>%
-      dplyr::group_by(!!as.name(tmp_old_group_var)) %>%
-      dplyr::summarize(
-        dplyr::across(dplyr::one_of(id_cols),
-                      function(x) {
-                        length(unique(x))
-                      }), .groups = "drop")
+    id_summary <- create_id_summaries_(
+      data = data,
+      group_col = tmp_old_group_var,
+      id_cols = id_cols,
+      name_prefix = NULL
+    )
   }
 
   # Prepare collected summaries tibble
@@ -1189,73 +1189,6 @@ replace_forbidden_names_ <- function(
     id_cols = id_cols,
     weights = weights
   )
-}
-
-create_combined_cat_summary_ <- function(data, group_cols, cat_col, cat_levels){
-  if (is.list(cat_levels)){
-    cat_levels <- cat_levels[[cat_col]]
-  }
-
-  cat_summary <- NULL
-  if (!is.null(cat_col)){
-    cat_summary <- data %>%
-      dplyr::count(!!!rlang::syms(c(group_cols, cat_col)))
-
-    if (is.null(cat_levels)){
-      checkmate::assert_factor(data[[cat_col]])
-      cat_levels <- levels(data[[cat_col]])
-    }
-
-    if (length(cat_levels) == 1 && cat_levels %in% c(".majority", ".minority")){
-      slice_fn <- ifelse(cat_levels == ".majority", which.max, which.min)
-      cat_levels <- data %>%
-        # TODO time whether summarize with the existing counts is faster
-        dplyr::count(!!as.name(cat_col)) %>%
-        dplyr::slice(slice_fn(n)) %>%
-        dplyr::pull(!!as.name(cat_col)) %>%
-        as.character()
-    }
-
-    # Convert to always be a named numeric vector (weights)
-    if (!is.numeric(cat_levels)) {
-      cat_levels <- rep(1, times = length(cat_levels)) %>%
-        setNames(nm = cat_levels)
-    }
-
-    # Get counts for the select cat_levels
-    cat_summary <- cat_summary %>%
-      tidyr::spread(key = !!as.name(cat_col),
-                    value = .data$n,
-                    fill = 0) %>%
-      dplyr::select(!!!rlang::syms(c(group_cols, names(cat_levels))))
-
-    # Scale, weight and combine the `cat_levels` columns
-    cat_summary <- scale_and_combine_(
-      data = cat_summary,
-      weights = cat_levels,
-      include_cols = names(cat_levels),
-      scale_fn = standardize_,
-      col_name = cat_col,
-      handle_no_cols = "stop"
-    )  %>%
-      dplyr::select(dplyr::one_of(group_cols, cat_col))
-
-    if (sd(cat_summary[[cat_col]]) == 0){
-      warning(simpleWarning(
-        paste0(
-          "Combining the standardized level counts",
-          " for the `cat_cols` column '",
-          cat_col,
-          "' led to a zero-variance vector. ",
-          "Consider not balancing this column or change the included `cat_levels`."
-        ),
-        call = if (p <- sys.parent(4 + 1))
-          sys.call(p)
-      ))
-    }
-  }
-
-  cat_summary
 }
 
 

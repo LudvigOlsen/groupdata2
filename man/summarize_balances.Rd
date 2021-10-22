@@ -12,7 +12,8 @@ summarize_balances(
   id_cols = NULL,
   summarize_size = TRUE,
   include_normalized = FALSE,
-  ranking_weights = NULL,
+  rank_weights = NULL,
+  cat_levels_rank_weights = NULL,
   num_normalize_fn = function(x) {     rearrr::min_max_scale(x, old_min = quantile(x,
     0.025), old_max = quantile(x, 0.975), new_min = 0, new_max = 1) }
 )
@@ -48,7 +49,7 @@ Normalization when \code{`include_normalized`} is enabled:
 Each column is normalized with \code{`num_normalize_fn`} before
 calculating the \code{mean} and \code{sum} per group.}
 
-\item{id_cols}{Names of factor columns with IDs to summarize.
+\item{id_cols}{Names of \code{factor} columns with IDs to summarize.
 
 The number of unique IDs are counted per group.
 
@@ -60,13 +61,20 @@ The count of unique IDs is normalized with \code{log(1 + count)}.}
 \item{include_normalized}{Whether to calculate and include the
 normalized summary in the output.}
 
-\item{ranking_weights}{A named vector with weights for averaging the rank columns when calculating the \code{SD_rank} column.
+\item{rank_weights}{A named \code{vector} with weights for averaging the rank columns when calculating the \code{`SD_rank`} column.
 The name is one of the balancing columns and the number is its weight. Non-specified columns are given the weight \code{1}.
 The weights are automatically scaled to sum to 1.
 
 When summarizing size (see \code{`summarize_size`}), name its weight \code{"size"}.
 
 E.g. \code{c("size" = 1, "a_cat_col" = 2, "a_num_col" = 4, "an_id_col" = 2)}.}
+
+\item{cat_levels_rank_weights}{Weights for averaging ranks of the categorical levels in \code{`cat_cols`}.
+Given as a named \code{list} with a named \code{vector} for each column in \code{`cat_cols`}.
+Non-specified levels are given the weight \code{1}.
+The weights are automatically scaled to sum to 1.
+
+E.g. \code{list("a_cat_col" = c("a" = 3, "b" = 5), "b_cat_col" = c("1" = 3, "2" = 9))}}
 
 \item{num_normalize_fn}{Function for normalizing the \code{`num_cols`} columns before
 calculating normalized group summaries.
@@ -187,7 +195,7 @@ df_folded \%>\%
     group_cols = ".folds",
     num_cols = c("score", "age"),
     cat_cols = "diagnosis",
-    id_cols="participant"
+    id_cols = "participant"
   )
 
 ## With balancing
@@ -210,7 +218,7 @@ df_folded \%>\%
     group_cols = ".folds",
     num_cols = c("score", "age"),
     cat_cols = "diagnosis",
-    id_cols="participant"
+    id_cols = "participant"
   )
 
 # Comparing multiple grouping columns

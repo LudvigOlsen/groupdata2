@@ -43,12 +43,57 @@ test_that("testing find_best_group_cols_()", {
       "age" = 5,
       "participant" = 2
     ),
+    cat_levels = NULL,
     balance_size = TRUE
   )
 
   expect_equal(
     best_cols,
     c(".folds_4", ".folds_5", ".folds_1"),
+    fixed = TRUE
+  )
+
+  # With weights for cat_levels
+  # With focus on level `1`
+  best_cols_lev_1 <- find_best_group_cols_(
+    data = df,
+    num_new_group_cols = 3,
+    group_cols_names = paste0(".folds_", 1:5),
+    cat_cols = "diagnosis",
+    num_cols = NULL,
+    id_cols = NULL,
+    weights = c(
+      "diagnosis" = 3
+    ),
+    cat_levels = list("diagnosis" = c("1" = 100, "2" = 1)),
+    balance_size = TRUE
+  )
+
+  # With focus on level `3`
+  best_cols_lev_3 <- find_best_group_cols_(
+    data = df,
+    num_new_group_cols = 3,
+    group_cols_names = paste0(".folds_", 1:5),
+    cat_cols = "diagnosis",
+    num_cols = NULL,
+    id_cols = NULL,
+    weights = c(
+      "diagnosis" = 3
+    ),
+    cat_levels = list("diagnosis" = c("3" = 100, "2" = 1)),
+    balance_size = TRUE
+  )
+
+  # See how they are different, so cat_levels
+  # has an effect
+  expect_equal(
+    best_cols_lev_1,
+    c(".folds_4", ".folds_1", ".folds_5"),
+    fixed = TRUE
+  )
+  expect_equal(
+    best_cols_lev_3,
+    c(".folds_4", ".folds_2", ".folds_1"),
     fixed = TRUE
   )
 
@@ -67,6 +112,7 @@ test_that("testing find_best_group_cols_()", {
       "age" = 5,
       "participant" = 2
     ),
+    cat_levels = NULL,
     balance_size = TRUE
   )
 
@@ -580,7 +626,7 @@ test_that("testing combine_and_fold_combination_()", {
   # applied to each fold separately!
   df <- dplyr::ungroup(df)
 
-  summaries <- calculate_summary_(
+  summaries <- calculate_summary_collapse_groups_(
     data = df,
     tmp_old_group_var = ".old_groups",
     cat_cols = c("answer"),
@@ -894,9 +940,6 @@ test_that("testing collapse_groups() with auto_tune enabled", {
   # applied to each fold separately!
   df <- dplyr::ungroup(df)
 
-  # Method ascending
-  # With size balancing
-
   xpectr::set_test_seed(42)
   df_coll <- collapse_groups(
     data = df,
@@ -910,6 +953,7 @@ test_that("testing collapse_groups() with auto_tune enabled", {
     balance_size = TRUE,
     verbose = FALSE
   )
+
 
 
   ## Testing 'df_coll'                                                      ####
@@ -960,8 +1004,8 @@ test_that("testing collapse_groups() with auto_tune enabled", {
       "3", "4", "5", "6", "7", "8"), class = "factor"))
   expect_equal(
     df_coll[[".coll_groups"]],
-    structure(c(2L, 2L, 2L, 1L, 1L, 2L, 3L, 1L, 2L, 2L, 3L, 3L, 3L,
-      1L, 3L, 3L, 3L, 2L, 3L, 3L, 1L, 1L, 1L), .Label = c("1", "2",
+    structure(c(1L, 1L, 1L, 3L, 3L, 1L, 2L, 3L, 1L, 2L, 1L, 1L, 1L,
+      3L, 2L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 3L), .Label = c("1", "2",
       "3"), class = "factor"))
   # Testing column names
   expect_equal(
@@ -1018,35 +1062,35 @@ test_that("testing collapse_groups() with auto_tune enabled", {
     structure(1:3, .Label = c("1", "2", "3"), class = "factor"))
   expect_equal(
     summ$Groups[["# rows"]],
-    c(7, 7, 9),
+    c(8, 8, 7),
     tolerance = 1e-4)
   expect_equal(
     summ$Groups[["# participant"]],
-    c(5, 6, 6),
+    c(6, 6, 5),
     tolerance = 1e-4)
   expect_equal(
     summ$Groups[["mean(score)"]],
-    c(58.71429, 60.85714, 46.22222),
+    c(47.125, 58.125, 58.71429),
     tolerance = 1e-4)
   expect_equal(
     summ$Groups[["sum(score)"]],
-    c(411, 426, 416),
+    c(377, 465, 411),
     tolerance = 1e-4)
   expect_equal(
     summ$Groups[["# answ_a"]],
-    c(3, 3, 2),
+    c(2, 3, 3),
     tolerance = 1e-4)
   expect_equal(
     summ$Groups[["# answ_b"]],
-    c(1, 2, 3),
+    c(3, 2, 1),
     tolerance = 1e-4)
   expect_equal(
     summ$Groups[["# answ_c"]],
-    c(1, 2, 2),
+    c(3, 1, 1),
     tolerance = 1e-4)
   expect_equal(
     summ$Groups[["# answ_d"]],
-    c(2, 0, 2),
+    c(0, 2, 2),
     tolerance = 1e-4)
   # Testing column names
   expect_equal(
@@ -1076,8 +1120,6 @@ test_that("testing collapse_groups() with auto_tune enabled", {
     character(0),
     fixed = TRUE)
   ## Finished testing 'summ$Groups'                                         ####
-
-  summ$Summary
 
 })
 

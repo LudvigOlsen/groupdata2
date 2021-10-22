@@ -54,7 +54,8 @@ test_that("fuzz testing check_summarize_balances_()", {
   #     "id_cols" = list("some_id", "some_var", "sdf", 1, NA),
   #     "summarize_size" = list(TRUE, FALSE, 2, NA),
   #     "include_normalized" = list(FALSE, TRUE, 2, NA),
-  #     "ranking_weights" = list(NULL, c("size" = 2), c("size" = NA), 2, NA),
+  #     "rank_weights" = list(NULL, c("size" = 2), c("size" = NA), 2, NA),
+  #     "cat_levels_rank_weights" = list(NULL), # TODO
   #     "num_normalize_fn" = list(function(x) {
   #       rearrr::min_max_scale(
   #         x,
@@ -79,7 +80,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing is NULL
   expect_true(
-    is.null(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+    is.null(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   })))
@@ -89,7 +90,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing is NULL
   expect_true(
-    is.null(check_summarize_balances_(data = head(df, 1), group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+    is.null(check_summarize_balances_(data = head(df, 1), group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   })))
@@ -99,7 +100,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_12861 <- xpectr::capture_side_effects(check_summarize_balances_(data = c(1, 2, 3), group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+  side_effects_12861 <- xpectr::capture_side_effects(check_summarize_balances_(data = c(1, 2, 3), group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
@@ -117,7 +118,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_18304 <- xpectr::capture_side_effects(check_summarize_balances_(data = NA, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+  side_effects_18304 <- xpectr::capture_side_effects(check_summarize_balances_(data = NA, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
@@ -135,7 +136,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_16417 <- xpectr::capture_side_effects(check_summarize_balances_(data = NULL, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+  side_effects_16417 <- xpectr::capture_side_effects(check_summarize_balances_(data = NULL, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
@@ -153,7 +154,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing is NULL
   expect_true(
-    is.null(check_summarize_balances_(data = df, group_cols = "some_var", cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+    is.null(check_summarize_balances_(data = df, group_cols = "some_var", cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   })))
@@ -163,7 +164,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_17365 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = "sdf", cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+  side_effects_17365 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = "sdf", cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
@@ -187,7 +188,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_11346 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = NA, cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+  side_effects_11346 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = NA, cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
@@ -205,7 +206,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_16569 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = NULL, cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+  side_effects_16569 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = NULL, cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
@@ -223,7 +224,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_17050 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = NA, num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+  side_effects_17050 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = NA, num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
@@ -241,7 +242,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing is NULL
   expect_true(
-    is.null(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_var", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+    is.null(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_var", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   })))
@@ -251,7 +252,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_17191 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "sdf", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+  side_effects_17191 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "sdf", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
@@ -275,7 +276,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_19346 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = 1, num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+  side_effects_19346 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = 1, num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
@@ -293,7 +294,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing is NULL
   expect_true(
-    is.null(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = NULL, num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+    is.null(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = NULL, num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   })))
@@ -303,7 +304,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_11346 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_factor", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+  side_effects_11346 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_factor", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,0.975), new_min = 0, new_max = 1)}), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_11346[['error']]),
@@ -320,7 +321,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_19400 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "sdf", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+  side_effects_19400 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "sdf", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
@@ -344,7 +345,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_19782 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = 1, id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+  side_effects_19782 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = 1, id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
@@ -362,7 +363,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_11174 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = NA, id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+  side_effects_11174 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = NA, id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
@@ -380,7 +381,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing is NULL
   expect_true(
-    is.null(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = NULL, id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+    is.null(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = NULL, id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   })))
@@ -390,7 +391,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing is NULL
   expect_true(
-    is.null(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_var", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+    is.null(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_var", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   })))
@@ -400,7 +401,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_19040 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "sdf", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+  side_effects_19040 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "sdf", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
@@ -424,7 +425,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_11387 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = 1, summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+  side_effects_11387 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = 1, summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
@@ -442,7 +443,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_19888 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = NA, summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+  side_effects_19888 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = NA, summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
@@ -460,7 +461,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing is NULL
   expect_true(
-    is.null(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = NULL, summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+    is.null(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = NULL, summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   })))
@@ -470,7 +471,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing is NULL
   expect_true(
-    is.null(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = FALSE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+    is.null(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = FALSE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   })))
@@ -480,7 +481,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_15142 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = 2, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+  side_effects_15142 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = 2, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
@@ -498,7 +499,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_13902 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = NA, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+  side_effects_13902 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = NA, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
@@ -516,7 +517,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_19057 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = NULL, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = function(x) {
+  side_effects_19057 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = NULL, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
@@ -534,7 +535,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing is NULL
   expect_true(
-    is.null(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = TRUE, ranking_weights = NULL, num_normalize_fn = function(x) {
+    is.null(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = TRUE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   })))
@@ -544,7 +545,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_18360 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = 2, ranking_weights = NULL, num_normalize_fn = function(x) {
+  side_effects_18360 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = 2, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
@@ -562,7 +563,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_17375 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = NA, ranking_weights = NULL, num_normalize_fn = function(x) {
+  side_effects_17375 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = NA, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
@@ -580,7 +581,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_18110 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = NULL, ranking_weights = NULL, num_normalize_fn = function(x) {
+  side_effects_18110 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = NULL, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
@@ -594,27 +595,27 @@ test_that("fuzz testing check_summarize_balances_()", {
     fixed = TRUE)
 
   # Testing check_summarize_balances_(data = df, group_c...
-  # Changed from baseline: ranking_weights = c(s...
+  # Changed from baseline: rank_weights = c(s...
   xpectr::set_test_seed(42)
   # Testing is NULL
   expect_true(
-    is.null(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = c(size = 2), num_normalize_fn = function(x) {
+    is.null(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = c(size = 2), cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   })))
 
   # Testing check_summarize_balances_(data = df, group_c...
-  # Changed from baseline: ranking_weights = c(s...
+  # Changed from baseline: rank_weights = c(s...
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_16851 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = c(size = NA), num_normalize_fn = function(x) {
+  side_effects_16851 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = c(size = NA), cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_16851[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'ranking_weights': Contains missing values (element 1)."),
+    xpectr::strip("1 assertions failed:\n * Variable 'rank_weights': Contains missing values (element 1)."),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_16851[['error_class']]),
@@ -622,17 +623,17 @@ test_that("fuzz testing check_summarize_balances_()", {
     fixed = TRUE)
 
   # Testing check_summarize_balances_(data = df, group_c...
-  # Changed from baseline: ranking_weights = 2
+  # Changed from baseline: rank_weights = 2
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_10039 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = 2, num_normalize_fn = function(x) {
+  side_effects_10039 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = 2, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_10039[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'ranking_weights': Must have names."),
+    xpectr::strip("1 assertions failed:\n * Variable 'rank_weights': Must have names."),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_10039[['error_class']]),
@@ -640,17 +641,17 @@ test_that("fuzz testing check_summarize_balances_()", {
     fixed = TRUE)
 
   # Testing check_summarize_balances_(data = df, group_c...
-  # Changed from baseline: ranking_weights = NA
+  # Changed from baseline: rank_weights = NA
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_18329 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NA, num_normalize_fn = function(x) {
+  side_effects_18329 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NA, cat_levels_rank_weights = NULL, num_normalize_fn = function(x) {
       rearrr::min_max_scale(x, old_min = quantile(x, 0.025), old_max = quantile(x,
           0.975), new_min = 0, new_max = 1)
   }), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_18329[['error']]),
-    xpectr::strip("1 assertions failed:\n * Variable 'ranking_weights': Must have names."),
+    xpectr::strip("1 assertions failed:\n * Variable 'rank_weights': Must have names."),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_18329[['error_class']]),
@@ -662,14 +663,14 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing is NULL
   expect_true(
-    is.null(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = standardize_)))
+    is.null(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = standardize_)))
 
   # Testing check_summarize_balances_(data = df, group_c...
   # Changed from baseline: num_normalize_fn = 2
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_12076 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = 2), reset_seed = TRUE)
+  side_effects_12076 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = 2), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_12076[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'num_normalize_fn': Must be a function, not 'double'."),
@@ -684,7 +685,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_19066 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = NA), reset_seed = TRUE)
+  side_effects_19066 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = NA), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_19066[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'num_normalize_fn': Must be a function, not 'logical'."),
@@ -699,7 +700,7 @@ test_that("fuzz testing check_summarize_balances_()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_16117 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, ranking_weights = NULL, num_normalize_fn = NULL), reset_seed = TRUE)
+  side_effects_16117 <- xpectr::capture_side_effects(check_summarize_balances_(data = df, group_cols = c("grp_1", "grp_2"), cat_cols = "some_factor", num_cols = "some_var", id_cols = "some_id", summarize_size = TRUE, include_normalized = FALSE, rank_weights = NULL, cat_levels_rank_weights = NULL, num_normalize_fn = NULL), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_16117[['error']]),
     xpectr::strip("1 assertions failed:\n * Variable 'num_normalize_fn': Must be a function, not 'NULL'."),
@@ -898,8 +899,11 @@ test_that("testing summarize_balances()", {
     tolerance = 1e-4)
   expect_equal(
     summ$Summary[["some_SD_rank"]],
-    c(2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 4, 4, 4, 4, 4, 4, 2.5, 2.5, 2.5,
-      2.5, 2.5, 2.5, 1, 1, 1, 1, 1, 1),
+    c(2.33333, 2.33333, 2.33333, 2.33333,
+    2.33333, 2.33333, 3.33333, 3.33333,
+    3.33333, 3.33333, 3.33333, 3.33333,
+    2.33333, 2.33333, 2.33333, 2.33333,
+    2.33333, 2.33333, 2, 2, 2, 2, 2, 2),
     tolerance = 1e-4)
   expect_equal(
     summ$Summary[["some_v_SD_rank"]],
@@ -908,9 +912,12 @@ test_that("testing summarize_balances()", {
     tolerance = 1e-4)
   expect_equal(
     summ$Summary[["SD_rank"]],
-    c(3.125, 3.125, 3.125, 3.125, 3.125, 3.125, 2.25, 2.25, 2.25, 2.25,
-      2.25, 2.25, 3.25, 3.25, 3.25, 3.25, 3.25, 3.25, 1.375, 1.375,
-      1.375, 1.375, 1.375, 1.375),
+    c(3.08333, 3.08333, 3.08333, 3.08333,
+    3.08333, 3.08333, 2.08333, 2.08333,
+    2.08333, 2.08333, 2.08333, 2.08333,
+    3.20833, 3.20833, 3.20833, 3.20833,
+    3.20833, 3.20833, 1.625, 1.625, 1.625, 1.625,
+    1.625, 1.625),
     tolerance = 1e-4)
   # Testing column names
   expect_equal(
@@ -1013,8 +1020,11 @@ test_that("testing summarize_balances()", {
     tolerance = 1e-4)
   expect_equal(
     summ$`Normalized Summary`[["some_SD_rank"]],
-    c(2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 1,
-      1, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5),
+    c(2.33333, 2.33333, 2.33333, 2.33333,
+    2.33333, 2.33333, 3.33333, 3.33333,
+    3.33333, 3.33333, 3.33333, 3.33333,
+    2, 2, 2, 2, 2, 2, 2.33333, 2.33333, 2.33333,
+    2.33333, 2.33333, 2.33333),
     tolerance = 1e-4)
   expect_equal(
     summ$`Normalized Summary`[["some_v_SD_rank"]],
@@ -1023,9 +1033,12 @@ test_that("testing summarize_balances()", {
     tolerance = 1e-4)
   expect_equal(
     summ$`Normalized Summary`[["SD_rank"]],
-    c(3.625, 3.625, 3.625, 3.625, 3.625, 3.625, 2.75, 2.75, 2.75, 2.75,
-      2.75, 2.75, 1.625, 1.625, 1.625, 1.625, 1.625, 1.625, 2, 2,
-      2, 2, 2, 2),
+    c(3.58333, 3.58333, 3.58333, 3.58333,
+    3.58333, 3.58333, 2.58333, 2.58333,
+    2.58333, 2.58333, 2.58333, 2.58333,
+    1.875, 1.875, 1.875, 1.875, 1.875, 1.875, 1.95833, 1.95833,
+    1.95833, 1.95833, 1.95833, 1.95833
+    ),
     tolerance = 1e-4)
   # Testing column names
   expect_equal(
@@ -1107,7 +1120,7 @@ test_that("testing summarize_balances()", {
     tolerance = 1e-4)
   expect_equal(
     output_19148[["some_SD_rank"]],
-    c(1, 4, 2.5, 2.5),
+    c(2, 3.33333, 2.33333, 2.33333),
     tolerance = 1e-4)
   expect_equal(
     output_19148[["some_v_SD_rank"]],
@@ -1115,7 +1128,7 @@ test_that("testing summarize_balances()", {
     tolerance = 1e-4)
   expect_equal(
     output_19148[["SD_rank"]],
-    c(1.375, 2.25, 3.125, 3.25),
+    c(1.625, 2.08333, 3.08333, 3.20833),
     tolerance = 1e-4)
   # Testing column names
   expect_equal(

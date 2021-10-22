@@ -69,7 +69,7 @@
 #'  Normalization when \code{`include_normalized`} is enabled:
 #'  Each column is normalized with \code{`num_normalize_fn`} before
 #'  calculating the \code{mean} and \code{sum} per group.
-#' @param id_cols Names of factor columns with IDs to summarize.
+#' @param id_cols Names of \code{factor} columns with IDs to summarize.
 #'
 #'  The number of unique IDs are counted per group.
 #'
@@ -83,13 +83,19 @@
 #'
 #'  Only used when \code{`include_normalized`} is enabled.
 #'
-#' @param ranking_weights A named vector with weights for averaging the rank columns when calculating the `SD_rank` column.
+#' @param rank_weights A named \code{vector} with weights for averaging the rank columns when calculating the \code{`SD_rank`} column.
 #'  The name is one of the balancing columns and the number is its weight. Non-specified columns are given the weight \code{1}.
 #'  The weights are automatically scaled to sum to 1.
 #'
 #'  When summarizing size (see \code{`summarize_size`}), name its weight \code{"size"}.
 #'
 #'  E.g. \code{c("size" = 1, "a_cat_col" = 2, "a_num_col" = 4, "an_id_col" = 2)}.
+#' @param cat_levels_rank_weights Weights for averaging ranks of the categorical levels in \code{`cat_cols`}.
+#'  Given as a named \code{list} with a named \code{vector} for each column in \code{`cat_cols`}.
+#'  Non-specified levels are given the weight \code{1}.
+#'  The weights are automatically scaled to sum to 1.
+#'
+#'  E.g. \code{list("a_cat_col" = c("a" = 3, "b" = 5), "b_cat_col" = c("1" = 3, "2" = 9))}
 #' @family summarization functions
 #' @return \code{list} with two/three \code{data.frames}:
 #'
@@ -175,7 +181,7 @@
 #'     group_cols = ".folds",
 #'     num_cols = c("score", "age"),
 #'     cat_cols = "diagnosis",
-#'     id_cols="participant"
+#'     id_cols = "participant"
 #'   )
 #'
 #' ## With balancing
@@ -198,7 +204,7 @@
 #'     group_cols = ".folds",
 #'     num_cols = c("score", "age"),
 #'     cat_cols = "diagnosis",
-#'     id_cols="participant"
+#'     id_cols = "participant"
 #'   )
 #'
 #' # Comparing multiple grouping columns
@@ -233,7 +239,8 @@ summarize_balances <- function(
   id_cols = NULL,
   summarize_size = TRUE,
   include_normalized = FALSE,
-  ranking_weights = NULL,
+  rank_weights = NULL,
+  cat_levels_rank_weights = NULL,
   num_normalize_fn = function(x) {
     rearrr::min_max_scale(
       x,
@@ -252,7 +259,8 @@ summarize_balances <- function(
     id_cols = id_cols,
     summarize_size = summarize_size,
     include_normalized = include_normalized,
-    ranking_weights = ranking_weights,
+    rank_weights = rank_weights,
+    cat_levels_rank_weights = cat_levels_rank_weights,
     num_normalize_fn = num_normalize_fn
   )
   # End of argument checks ####
@@ -272,7 +280,8 @@ summarize_balances <- function(
     num_cols = num_cols,
     id_cols = id_cols,
     summarize_size = summarize_size,
-    ranking_weights = ranking_weights,
+    rank_weights = rank_weights,
+    cat_levels_rank_weights = cat_levels_rank_weights,
     include_normalized = include_normalized,
     num_normalize_fn = num_normalize_fn,
     max_cat_prefix_chars = max_cat_prefix_chars,
@@ -336,7 +345,8 @@ run_summarize_balances <- function(
   num_cols,
   id_cols,
   summarize_size,
-  ranking_weights,
+  rank_weights,
+  cat_levels_rank_weights,
   include_normalized,
   num_normalize_fn,
   max_cat_prefix_chars,
@@ -346,6 +356,18 @@ run_summarize_balances <- function(
   data <- data %>%
     dplyr::ungroup() %>%
     dplyr::mutate(dplyr::across(dplyr::one_of(group_cols), factor))
+
+  # Replace weight names with the names
+  # of the summarized columns for the summarized
+  # cat levels
+  # Somewhat in the form: '# <col>_<level>'
+  cat_levels_rank_weights <- prepare_cat_levels_rank_weights_(
+    data = data,
+    cat_cols = cat_cols,
+    max_cat_prefix_chars = max_cat_prefix_chars,
+    name_prefix = "# ",
+    cat_levels_rank_weights = cat_levels_rank_weights
+  )
 
   #### Create summaries ####
 
@@ -415,7 +437,8 @@ run_summarize_balances <- function(
     cat_level_cols = cat_summary_columns_list,
     id_cols = id_cols,
     summarize_size = summarize_size,
-    ranking_weights = ranking_weights,
+    rank_weights = rank_weights,
+    cat_levels_rank_weights = cat_levels_rank_weights,
     logged_counts = FALSE,
     max_cat_prefix_chars = max_cat_prefix_chars,
     max_num_prefix_chars = max_num_prefix_chars
@@ -485,13 +508,20 @@ run_summarize_balances <- function(
     normalized_descriptors <- measure_summary_numerics_(
       normalized_group_summary,
       num_cols = num_cols,
-      cat_level_cols = purrr::map(.x = cat_summary_columns_list,
-                                  .f = ~ {
-                                    paste0("log(", .x, ")")
-                                  }),
+      cat_level_cols = purrr::map(
+        .x = cat_summary_columns_list,
+        .f = ~ {
+          paste0("log(", .x, ")")
+        }),
       id_cols = id_cols,
       summarize_size = summarize_size,
-      ranking_weights = ranking_weights,
+      rank_weights = rank_weights,
+      cat_levels_rank_weights = purrr::map(
+        .x = cat_levels_rank_weights,
+        .f = ~ {
+          names(.x) <- paste0("log(", names(.x), ")")
+          .x
+        }),
       logged_counts = TRUE,
       max_cat_prefix_chars = max_cat_prefix_chars,
       max_num_prefix_chars = max_num_prefix_chars
@@ -584,19 +614,23 @@ create_group_balance_summaries_ <- function(
       dplyr::arrange(.data$.group_col, .data$.group)
   }
 
+  set_group_col_ <- function(data, name){
+    data %>%
+      dplyr::rename(.group = !!as.name(name)) %>%
+      dplyr::mutate(.group_col = name)
+  }
+
   out <- list("empty" = NULL, "size" = NULL, "id" = NULL, "num" = NULL, "cat" = NULL)
 
   out[["empty"]] <- purrr::map_df(.x = group_cols, .f = ~ {
     create_empty_summary_(data = data, group_col = .x) %>%
-      dplyr::rename(.group = !!as.name(.x)) %>%
-      dplyr::mutate(.group_col = .x)
+      set_group_col_(.x)
   }) %>% format_summary_()
 
   if (isTRUE(summarize_size)) {
     out[["size"]] <- purrr::map_df(.x = group_cols, .f = ~ {
-      create_size_summary_(data = data, group_col = .x) %>%
-        dplyr::rename(.group = !!as.name(.x)) %>%
-        dplyr::mutate(.group_col = .x)
+      create_size_summary_(data = data, group_col = .x, name ="# rows") %>%
+        set_group_col_(.x)
     }) %>% format_summary_()
   }
 
@@ -605,8 +639,7 @@ create_group_balance_summaries_ <- function(
       create_id_summaries_(data = data,
                            group_col = .x,
                            id_cols = id_cols) %>%
-        dplyr::rename(.group = !!as.name(.x)) %>%
-        dplyr::mutate(.group_col = .x)
+        set_group_col_(.x)
     }) %>% format_summary_()
   }
 
@@ -614,9 +647,9 @@ create_group_balance_summaries_ <- function(
     out[["num"]] <- purrr::map_df(.x = group_cols, .f = ~ {
       create_num_summaries_(data = data,
                             group_col = .x,
-                            num_cols = num_cols) %>%
-        dplyr::rename(.group = !!as.name(.x)) %>%
-        dplyr::mutate(.group_col = .x)
+                            num_cols = num_cols,
+                            rename = TRUE) %>%
+        set_group_col_(.x)
     }) %>% format_summary_()
   }
 
@@ -628,88 +661,11 @@ create_group_balance_summaries_ <- function(
         cat_cols = cat_cols,
         max_cat_prefix_chars = max_cat_prefix_chars
       ) %>%
-        dplyr::rename(.group = !!as.name(.x)) %>%
-        dplyr::mutate(.group_col = .x)
+        set_group_col_(.x)
     }) %>% format_summary_()
   }
 
   out
-}
-
-create_empty_summary_ <- function(data, group_col){
-  data %>%
-    dplyr::ungroup() %>%
-    dplyr::select(!!as.name(group_col)) %>%
-    dplyr::group_by(!!as.name(group_col)) %>%
-    dplyr::group_keys()
-}
-
-create_size_summary_ <- function(data, group_col){
-  data %>%
-    dplyr::ungroup() %>%
-    dplyr::select(!!as.name(group_col)) %>%
-    dplyr::group_by(!!as.name(group_col)) %>%
-    dplyr::summarise(`# rows` = dplyr::n())
-}
-
-create_id_summaries_ <- function(data, group_col, id_cols){
-  summary <- data %>%
-    dplyr::ungroup() %>%
-    dplyr::select(!!!rlang::syms(c(group_col, id_cols))) %>%
-    dplyr::group_by(!!as.name(group_col)) %>%
-    dplyr::summarise(dplyr::across(dplyr::one_of(id_cols), function(x){length(unique(x))})) %>%
-    dplyr::rename_with(
-      ~ paste0("# ", .),
-      -dplyr::one_of(group_col)
-    )
-  summary
-}
-
-create_num_summaries_ <- function(data, group_col, num_cols){
-  data %>%
-    dplyr::ungroup() %>%
-    dplyr::select(!!!rlang::syms(c(group_col, num_cols))) %>%
-    dplyr::group_by(!!as.name(group_col)) %>%
-    dplyr::summarise(dplyr::across(dplyr::one_of(num_cols),
-                                   list("mean" = mean, "sum" = sum)),
-                     .groups = "drop") %>%
-    # Rename so `xxx_mean <- mean(xxx)` and `xxx_sum <- sum(xxx)`
-    dplyr::rename_with(
-      ~ gsub(
-        pattern = "(^.*)_([[:alnum:]]*)$",
-        replacement = "\\2(\\1)",
-        x = .
-      ),
-      where(is.numeric)
-    )
-}
-
-create_cat_summaries_ <- function(data, group_col, cat_cols, max_cat_prefix_chars = 5){
-
-  tmp_n_var <- create_tmp_var(data, tmp_var = ".n")
-
-  data %>%
-    dplyr::ungroup() %>%
-    dplyr::select(!!!rlang::syms(c(group_col, cat_cols))) %>%
-    dplyr::mutate(dplyr::across(dplyr::one_of(cat_cols), as.character)) %>%
-    tidyr::gather(key = "cat_col", value = "cat_val", cat_cols) %>%
-    dplyr::count(!!as.name(group_col), .data$cat_col, .data$cat_val,
-                 name = tmp_n_var) %>%
-    dplyr::mutate(
-      cat_col = tolower(.data$cat_col),
-      cat_val = tolower(.data$cat_val),
-      cat_col = substr(.data$cat_col, start = 1, stop = max_cat_prefix_chars),
-      cat_name = paste0(.data$cat_col, "_", .data$cat_val),
-      cat_name = gsub("^_", "", .data$cat_name)
-    ) %>%
-    dplyr::select(dplyr::one_of(group_col, "cat_name", tmp_n_var)) %>%
-    tidyr::spread(key = .data$cat_name,
-                  value = !!as.name(tmp_n_var),
-                  fill = 0) %>%
-    dplyr::rename_with(
-      ~ paste0("# ", .),
-      -dplyr::one_of(group_col)
-    )
 }
 
 
@@ -719,7 +675,8 @@ measure_summary_numerics_ <- function(
   cat_level_cols,
   id_cols,
   summarize_size,
-  ranking_weights,
+  rank_weights,
+  cat_levels_rank_weights,
   logged_counts,
   max_cat_prefix_chars,
   max_num_prefix_chars) {
@@ -755,7 +712,8 @@ measure_summary_numerics_ <- function(
     num_cols = num_cols,
     id_cols = id_cols,
     summarize_size = summarize_size,
-    ranking_weights = ranking_weights,
+    rank_weights = rank_weights,
+    cat_levels_rank_weights = cat_levels_rank_weights,
     logged_counts = logged_counts,
     max_cat_prefix_chars = max_cat_prefix_chars,
     max_num_prefix_chars = max_num_prefix_chars
@@ -778,7 +736,8 @@ add_sd_ranks <- function(
   num_cols,
   id_cols,
   summarize_size,
-  ranking_weights,
+  rank_weights,
+  cat_levels_rank_weights,
   logged_counts,
   max_cat_prefix_chars,
   max_num_prefix_chars) {
@@ -814,16 +773,50 @@ add_sd_ranks <- function(
     }
   }
 
+  cat_sd_rank_cols = character(0)
   for (cat_col in names(cat_level_cols)){
+    cat_col_prefix <- substr(cat_col, start = 1, stop = max_cat_prefix_chars)
     rank_names[[cat_col]] <- paste0(
-      substr(cat_col, start = 1, stop = max_cat_prefix_chars),
+      cat_col_prefix,
       "_SD_rank"
     )
+    cat_sd_rank_cols <- c(
+      cat_sd_rank_cols,
+      paste0(cat_col_prefix, "_SD_rank")
+    )
+
+    current_cat_level_weights <- NULL
+    if (!is.null(cat_levels_rank_weights) &&
+        cat_col %in% names(cat_levels_rank_weights)){
+      current_cat_level_weights <- cat_levels_rank_weights[[cat_col]]
+      missing_cat_level_weights <- setdiff(
+        cat_level_cols[[cat_col]],
+        names(current_cat_level_weights)
+      )
+      unknown_cat_level_weights <- setdiff(
+        names(current_cat_level_weights),
+        cat_level_cols[[cat_col]]
+      )
+      if (length(unknown_cat_level_weights) > 0){
+        stop(paste0("Found ranking weights for unknown categorical levels: ",
+                    paste0(unknown_cat_level_weights, collapse = ", ")))
+      }
+      if (length(missing_cat_level_weights) > 0){
+        current_cat_level_weights <- c(
+          current_cat_level_weights,
+          setNames(
+            rep(1, length(missing_cat_level_weights)),
+            missing_cat_level_weights
+          )
+        )
+      }
+    }
 
     sd_rows <- sd_rows %>%
       mean_rank_numeric_cols(
         cols = cat_level_cols[[cat_col]],
-        col_name = rank_names[[cat_col]]
+        col_name = rank_names[[cat_col]],
+        rank_weights = current_cat_level_weights
       )
   }
 
@@ -847,29 +840,29 @@ add_sd_ranks <- function(
     }
   }
 
-  if (!is.null(ranking_weights)) {
+  if (!is.null(rank_weights)) {
     # Convert names in ranking weights to their names in the output
-    names(ranking_weights) <-
-      purrr::map(.x = names(ranking_weights), .f = ~ {
+    names(rank_weights) <-
+      purrr::map(.x = names(rank_weights), .f = ~ {
         rank_names[[.x]]
       })
 
     # If any of the elements are not in the weights
     # We add them with a value of 1
-    names_to_add <- setdiff(rank_names, names(ranking_weights))
+    names_to_add <- setdiff(rank_names, names(rank_weights))
     for (name in names_to_add) {
-      ranking_weights[[name]] <- 1
+      rank_weights[[name]] <- 1
     }
   } else {
-    ranking_weights <- rep(1, times = length(rank_names)) %>%
+    rank_weights <- rep(1, times = length(rank_names)) %>%
       setNames(rank_names)
   }
 
-  if (is.list(ranking_weights)){
+  if (is.list(rank_weights)){
     # Convert to numeric
-    ranking_weights <- unlist(ranking_weights,
-                              recursive = FALSE,
-                              use.names = TRUE)
+    rank_weights <- unlist(rank_weights,
+                           recursive = FALSE,
+                           use.names = TRUE)
   }
 
   cols_to_rank <- sd_rows %>%
@@ -884,7 +877,8 @@ add_sd_ranks <- function(
     mean_rank_numeric_cols(
       cols = cols_to_rank,
       col_name = "SD_rank",
-      ranking_weights = ranking_weights) %>%
+      rank_weights = rank_weights,
+      already_rank_cols = cat_sd_rank_cols) %>%
     dplyr::select(.data$.group_col,
                   dplyr::ends_with("SD_rank"))
 
@@ -907,7 +901,9 @@ rank_numeric_cols <- function(data, cols = NULL){
 }
 
 # Create column with weighted-average rank of numeric columns
-mean_rank_numeric_cols <- function(data, cols = NULL, col_name = "mean_rank", ranking_weights = NULL){
+mean_rank_numeric_cols <- function(data, cols = NULL, col_name = "mean_rank",
+                                   rank_weights = NULL,
+                                   already_rank_cols = character(0)){
 
   if (is.null(cols)){
     cols <- data %>%
@@ -915,18 +911,18 @@ mean_rank_numeric_cols <- function(data, cols = NULL, col_name = "mean_rank", ra
       colnames()
   }
 
-  if (is.null(ranking_weights)){
-    ranking_weights <- rep(1, times = length(cols)) %>%
+  if (is.null(rank_weights)){
+    rank_weights <- rep(1, times = length(cols)) %>%
       setNames(nm = cols)
   }
 
   # Calculate average SD rank
   sd_ranks <- data %>%
-    rank_numeric_cols(cols = cols)
+    rank_numeric_cols(cols = setdiff(cols, already_rank_cols))
   sd_ranks[[col_name]] <- sd_ranks %>%
     dplyr::ungroup() %>%
     dplyr::select(dplyr::one_of(cols)) %>%
-    purrr::pmap_dbl(.f = weighted_mean_, weights = ranking_weights)
+    purrr::pmap_dbl(.f = weighted_mean_, weights = rank_weights)
 
   sd_ranks
 }
@@ -955,6 +951,42 @@ weighted_mean_ <- function(..., weights){
 }
 
 
+prepare_cat_levels_rank_weights_ <- function(
+  data,
+  cat_cols,
+  max_cat_prefix_chars,
+  name_prefix = "# ",
+  cat_levels_rank_weights
+){
+  if (is.null(cat_cols) || is.null(cat_levels_rank_weights)){
+    return(NULL)
+  }
+
+  # Create mappings of cat level to name
+  # of summarized cat level column
+  cat_levels_name_maps <- create_cat_name_map_(
+    data = data,
+    cat_cols = cat_cols,
+    max_cat_prefix_chars = max_cat_prefix_chars,
+    name_prefix = name_prefix
+  )
+
+  # Replace weight names with the summarized
+  # cat level column names
+  for (cat_col in names(cat_levels_rank_weights)){
+    names(cat_levels_rank_weights[[cat_col]]) <- purrr::map(
+      names(cat_levels_rank_weights[[cat_col]]),
+      .f = ~{
+        cat_levels_name_maps[[cat_col]][[.x]]
+      }
+    )
+  }
+
+  cat_levels_rank_weights
+
+}
+
+
 ### . . . . . . . . .. #< 2f811300a39e4a220023e6117136c4aa ># . . . . . . . . ..
 ### Argument checks                                                         ####
 
@@ -968,7 +1000,8 @@ check_summarize_balances_ <- function(
   id_cols,
   summarize_size,
   include_normalized,
-  ranking_weights,
+  rank_weights,
+  cat_levels_rank_weights,
   num_normalize_fn
 ){
   assert_collection <- checkmate::makeAssertCollection()
@@ -1013,11 +1046,19 @@ check_summarize_balances_ <- function(
     add = assert_collection
   )
   checkmate::assert_numeric(
-    x = ranking_weights,
+    x = rank_weights,
     lower = 0,
     finite = TRUE,
     any.missing = FALSE,
     min.len = 1,
+    names = "unique",
+    null.ok = TRUE,
+    add = assert_collection
+  )
+  checkmate::assert_list(
+    x = cat_levels_rank_weights,
+    types = "numeric",
+    any.missing = FALSE,
     names = "unique",
     null.ok = TRUE,
     add = assert_collection
@@ -1031,12 +1072,35 @@ check_summarize_balances_ <- function(
     must.include = c(group_cols, cat_cols, num_cols, id_cols),
     add = assert_collection
   )
-  if (!is.null(ranking_weights)){
+  if (!is.null(rank_weights)){
     checkmate::assert_names(
-      x = names(ranking_weights),
+      x = names(rank_weights),
       subset.of = c(cat_cols, num_cols, id_cols, "size"),
       add = assert_collection
     )
+  }
+  if (!is.null(cat_levels_rank_weights)){
+    checkmate::assert_names(
+      x = names(cat_levels_rank_weights),
+      subset.of = cat_cols,
+      add = assert_collection
+    )
+    checkmate::reportAssertions(assert_collection)
+    for (cat_col in names(cat_levels_rank_weights)){
+      checkmate::assert_numeric(
+        cat_levels_rank_weights[[cat_col]],
+        lower = 0,
+        finite = TRUE,
+        any.missing = FALSE,
+        names = "unique",
+        .var.name = paste0("cat_levels_rank_weights[['", cat_col, "']]")
+      )
+      checkmate::assert_names(
+        x = names(cat_levels_rank_weights[[cat_col]]),
+        subset.of = levels(data[[cat_col]]),
+        .var.name = paste0("names(cat_levels_rank_weights[['", cat_col, "']])")
+      )
+    }
   }
   if (length(intersect(cat_cols, id_cols)) > 0) {
     assert_collection$push("found identical names in `cat_cols` and `id_cols`.")

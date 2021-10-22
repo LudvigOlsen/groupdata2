@@ -11,6 +11,7 @@ auto_tune_collapsings <- function(
   tmp_old_group_var,
   num_cols,
   cat_cols,
+  cat_levels,
   id_cols,
   balance_size,
   weights,
@@ -216,6 +217,7 @@ auto_tune_collapsings <- function(
       num_new_group_cols = num_new_group_cols * 2 + 3,
       group_cols_names = group_cols_names,
       cat_cols = cat_cols,
+      cat_levels = cat_levels,
       num_cols = num_cols,
       id_cols = id_cols,
       balance_size = balance_size,
@@ -229,6 +231,7 @@ auto_tune_collapsings <- function(
     num_new_group_cols = num_new_group_cols,
     group_cols_names = group_cols_to_keep,
     cat_cols = cat_cols,
+    cat_levels = cat_levels,
     num_cols = num_cols,
     id_cols = id_cols,
     balance_size = balance_size,
@@ -254,7 +257,6 @@ auto_tune_collapsings <- function(
 }
 
 
-# NOTE: summaries must be grouped by tmp_old_group_var
 combine_and_fold_combination_ <- function(
   data,
   summaries,
@@ -272,9 +274,9 @@ combine_and_fold_combination_ <- function(
   parallel) {
 
   if (is.unsorted(as.character(summaries[[tmp_old_group_var]]))){
-    stop(paste0("`summaries` must be ordered by `tmp_old_group_var`. Otherwi",
-                "se the order of the returned group columns won't match the s",
-                "ummary order."))
+    stop(paste0("`summaries` must be ordered by `tmp_old_group_var`. Otherwise",
+                " the order of the returned group columns won't match the ",
+                "summary order."))
   }
 
   # Scale, weight and combine
@@ -336,7 +338,53 @@ combine_and_fold_combination_ <- function(
 }
 
 
-find_best_group_cols_ <- function(data, num_new_group_cols, group_cols_names, cat_cols, num_cols, id_cols, weights, balance_size){
+find_best_group_cols_ <- function(data, num_new_group_cols, group_cols_names,
+                                  cat_cols, cat_levels, num_cols, id_cols,
+                                  weights, balance_size){
+
+  # Ensure cat_levels is a named list with named vectors
+  # with zero-weights for non-specified levels
+  if (!is.null(cat_cols) &&
+      !is.null(cat_levels)){
+
+    # Function to apply to levels from each cat_col
+    add_missing_levels <- function(data, cat_col, cat_levels){
+      if (is.character(cat_levels)){
+        cat_levels <- setNames(rep(1, length(cat_levels)), cat_levels)
+      }
+      if (is.numeric(cat_levels)){
+        no_weight_levels <- setdiff(
+          levels(factor(as.character(data[[cat_cols]]))),
+          names(cat_levels)
+        )
+        # Add the missing levels with weight 0
+        cat_levels <- c(
+          cat_levels,
+          setNames(rep(0, length(no_weight_levels)), no_weight_levels)
+        )
+      }
+      cat_levels
+    }
+
+    # Prepare cat_levels for each cat_col
+    if (is.list(cat_levels)){
+      cat_levels <- purrr::map(names(cat_levels), ~ {
+        add_missing_levels(data = data,
+                           cat_col = .x,
+                           cat_levels = cat_levels[[.x]])
+      }) %>% setNames(names(cat_levels))
+    } else {
+      if (length(cat_cols)>1){
+        stop(paste0("When `cat_cols` has more than one element, `cat_cols` must ",
+                    "be a named list with named vectors."))
+      }
+      cat_levels <- list(add_missing_levels(
+        data = data,
+        cat_col = cat_cols,
+        cat_levels = cat_levels
+      )) %>% setNames(cat_cols)
+    }
+  }
 
   # Summarize the balances
   balance_summary <- summarize_balances(
@@ -346,7 +394,8 @@ find_best_group_cols_ <- function(data, num_new_group_cols, group_cols_names, ca
     num_cols = num_cols,
     id_cols = id_cols,
     summarize_size = balance_size,
-    ranking_weights = weights,
+    rank_weights = weights,
+    cat_levels_rank_weights = cat_levels,
     include_normalized = TRUE
   )
 

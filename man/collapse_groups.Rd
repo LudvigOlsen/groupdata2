@@ -288,10 +288,11 @@ We highly recommend using
 \code{\link[groupdata2:summarize_balances]{summarize_balances()}}
 and \code{\link[groupdata2:ranked_balances]{ranked_balances()}} to
 check how balanced the created groups are on the various dimensions.
-By applying \code{\link[groupdata2:ranked_balances]{ranked_balances()}}
+When applying \code{\link[groupdata2:ranked_balances]{ranked_balances()}}
 to the output of \code{\link[groupdata2:summarize_balances]{summarize_balances()}},
 we get a \code{data.frame} with the standard deviations
-for each balancing dimension, ordered by the average rank (see \code{Examples}).
+for each balancing dimension (lower means more balanced),
+ordered by the average rank (see \code{Examples}).
 
 }\subsection{Balancing columns}{
 
@@ -305,7 +306,7 @@ For each column in \code{`cat_cols`}:
 one count column per level, with one row per group.
 \item \strong{Standardize} the count columns.
 \item \strong{Average} the standardized counts rowwise to create one combined column representing
-the balance of the levels for each group. When \code{cat_cols} contains weights for each of the levels,
+the balance of the levels for each group. When \code{cat_levels} contains weights for each of the levels,
 we apply weighted averaging.
 }
 
@@ -374,7 +375,7 @@ For each column in \code{`num_cols`}:
 }\subsection{Creating the groups}{
 
 Finally, we get to the group creation. There are three methods for creating groups based on the
-combined balancing column: "balance" (default), "ascending", and "descending".
+combined balancing column: \code{"balance"} (default), \code{"ascending"}, and \code{"descending"}.
 
 \subsection{\code{method} is "balance"}{
 To create groups that are balanced by the combined balancing column, we use the numerical balancing
@@ -399,6 +400,10 @@ and these final identifiers are transferred to the original rows.
 \strong{N.B.} When doing extreme pairing of an unequal number of rows,
 the row with the smallest value is placed in a group by itself, and the order is instead:
 (smallest), \emph{(second smallest, largest), (third smallest, second largest)}, etc.
+
+A similar approach with \emph{extreme triplets} (i.e. smallest, closest to median, largest,
+second smallest, second closest to median, second largest, etc.) may also be utilized in some scenarios.
+(See \code{\link[rearrr:triplet_extremes]{rearrr::triplet_extremes()}})
 
 \strong{Example}: We order the \code{data.frame} by smallest \emph{"Num"} value,
 largest \emph{"Num"} value, second smallest, and so on.
