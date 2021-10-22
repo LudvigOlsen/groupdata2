@@ -188,7 +188,7 @@ rename_cat_levels_for_summary_ <- function(cat_levels_map,
   if (!is.null(name_prefix) &&
       nchar(name_prefix) > 0){
     cat_levels_map <- cat_levels_map %>%
-      dplyr::mutate(cat_name = paste0(name_prefix, cat_name))
+      dplyr::mutate(cat_name = paste0(name_prefix, .data$cat_name))
   }
 }
 
