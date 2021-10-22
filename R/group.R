@@ -10,10 +10,10 @@
 #'  Returns a \code{data.frame} grouped by the grouping factor for easy use in
 #'  \code{magrittr `\%>\%`} pipelines.
 #'
-#'  By default, the data points in a group are connected sequentially (e.g. \code{c(1, 1, 2, 2, 3, 3)})
-#'  and splitting is done from top to bottom.
+#'  By default*, the data points in a group are connected sequentially (e.g. \code{c(1, 1, 2, 2, 3, 3)})
+#'  and splitting is done from top to bottom. *Except in the \code{"every"} method.
 #'
-#'  There are \strong{four} types of grouping methods:
+#'  There are \strong{five} types of grouping methods:
 #'
 #'  The \code{"n_*"} methods split the data into a given \emph{number of groups}.
 #'  They differ in how they handle excess data points.
@@ -25,6 +25,9 @@
 #'  The \code{"l_*"} methods use a \emph{list} of either starting points (\code{"l_starts"})
 #'  or group sizes (\code{"l_sizes"}). The \code{"l_starts"} method can also auto-detect group starts
 #'  (when a value differs from the previous value).
+#'
+#'  The \code{"every"} method puts every \code{`n`}th data point into the same group
+#'  (e.g. \code{c(1, 2, 3, 1, 2, 3)}).
 #'
 #'  The step methods \code{"staircase"} and \code{"primes"} increase the group size by a step for each group.
 #'

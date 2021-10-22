@@ -51,5 +51,5 @@ greedy_group_factor_ <- function(v, size, force_equal = FALSE, descending = FALS
     window_grouping_factor <- window_grouping_factor[1:(length(window_grouping_factor) - n_to_remove)]
   }
 
-  return(as.factor(window_grouping_factor))
+  factor(window_grouping_factor)
 }
