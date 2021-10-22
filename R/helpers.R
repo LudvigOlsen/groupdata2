@@ -97,6 +97,10 @@ int_to_perc_ <- function(data, int) {
   }
 }
 
+nth_root <- function(x, root) {
+  (abs(x) ^ (1 / root)) * sign(x)
+}
+
 is_between_ <- function(x, a, b) {
 
   # Checks if x is between a and b
@@ -107,8 +111,23 @@ is_between_ <- function(x, a, b) {
   !(x %in% table)
 }
 
+# Get all lists in a list with a certain name
+# Use: list_of_lists %c% 'list_name'
+# From http://stackoverflow.com/questions/5935673/accessing-same-named-list-elements-of-the-list-of-lists-in-r/5936077#5936077
+`%c%` <- function(x, n) {
+  lapply(x, `[[`, n)
+}
+
+
 isEmpty_ <- function(x) {
   length(x) == 0
+}
+
+# Center and scale x
+standardize_ <- function(x, na.rm=FALSE){
+  std <- sd(x, na.rm = na.rm)
+  if (std == 0) std <- 1
+  (x - mean(x, na.rm = na.rm)) / std
 }
 
 convert_n <- function(data, n, method, allow_zero) {
@@ -284,7 +303,7 @@ relist_starts_ <- function(l) {
 }
 
 extract_start_values_ <- function(nested_list) {
-  unlisted <- nested_list %>% unlist()
+  unlisted <- nested_list %>% unlist(use.names = FALSE)
   unlisted[seq(1, length(unlisted), 2)]
 }
 
@@ -692,7 +711,7 @@ create_tmp_val <- function(v, tmp_val = ".tmp_val_", disallowed = NULL) {
 
 # Rename groups to the names in the given rank summary
 # The largest group becomes part of the smallest group in the given rank summary
-# Used in create_num_col_groups and numerically_balanced_group_factor_
+# Used in create_num_col_groups and numerically_balanced_group_factor_*
 rename_levels_by_reverse_rank_summary <- function(data, rank_summary, levels_col, num_col) {
   # Calculate current rank summary
   current_rank_summary <- create_rank_summary(data, levels_col, num_col)
@@ -701,7 +720,7 @@ rename_levels_by_reverse_rank_summary <- function(data, rank_summary, levels_col
   # Reverse the given rank summary
   # and combine with rank summary for the given data
   reverse_rank_bind <- rank_summary %>%
-    dplyr::arrange(dplyr::desc(.data$sum_)) %>%
+    dplyr::arrange(dplyr::desc(.data$aggr_)) %>%
     dplyr::bind_cols(current_rank_summary)
 
   # Find mapping for groups in the two rank summaries
@@ -716,8 +735,8 @@ rename_levels_by_reverse_rank_summary <- function(data, rank_summary, levels_col
 
   # Update the given rank summary with the sums in the rank summary for the given data
   updated_rank_summary <- reverse_rank_bind %>%
-    dplyr::mutate(sum_ = .data$sum_ + .data$sum__current) %>%
-    base_select(cols = c(levels_col, "sum_"))
+    dplyr::mutate(aggr_ = .data$aggr_ + .data$aggr__current) %>%
+    base_select(cols = c(levels_col, "aggr_"))
 
   # Return updated rank summary and the regrouped data
   list(
@@ -726,13 +745,12 @@ rename_levels_by_reverse_rank_summary <- function(data, rank_summary, levels_col
   )
 }
 
-create_rank_summary <- function(data, levels_col, num_col) {
+create_rank_summary <- function(data, levels_col, num_col, fn=sum) {
   data %>%
     dplyr::group_by(!!as.name(levels_col)) %>%
-    dplyr::summarize(sum_ = sum(!!as.name(num_col))) %>%
-    dplyr::arrange(.data$sum_)
+    dplyr::summarize(aggr_ = fn(!!as.name(num_col))) %>%
+    dplyr::arrange(.data$aggr_)
 }
-
 
 # Extracts the major and minor version numbers.
 check_R_version <- function() {
@@ -874,4 +892,26 @@ message_once_about_group_by <- function(fn_name, sys.parent.n = 1L) {
     ),
     sys.parent.n = sys.parent.n
   )
+}
+
+# Create string with hyphens
+paste_hyphens_ <- function(num, end_line=FALSE){
+  string <- paste0(rep("-", num), collapse = "")
+  if (isTRUE(end_line)){
+    string <- paste0(string, "\n")
+  }
+  string
+}
+
+get_pkg_version <- function(pkg_name){
+  vs <- unlist(utils::packageVersion(pkg_name))
+  list("major" = vs[[1]],
+       "minor" = vs[[2]],
+       "patch" = vs[[3]],
+       "dev" = ifelse(length(vs) > 3, vs[[4]], integer(0)))
+}
+
+is_checkmate_v2_1 <- function(){
+  v <- get_pkg_version("checkmate")
+  v$major == 2 && v$minor >= 1
 }

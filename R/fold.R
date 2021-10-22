@@ -1,6 +1,6 @@
 # R CMD check NOTE handling
 if (getRversion() >= "2.15.1")
-  utils::globalVariables(c("."))
+  utils::globalVariables(c(".", "where"))
 
 ## fold
 #' @title Create balanced folds for cross-validation
@@ -30,18 +30,24 @@ if (getRversion() >= "2.15.1")
 #'      \item Rows are shuffled.
 #'      \strong{Note} that this will only affect rows with the same value in \code{`num_col`}.
 #'      \item Extreme pairing 1: Rows are ordered as \emph{smallest, largest, second smallest, second largest}, etc.
-#'      Each pair get a group identifier.
-#'      \item If \code{`extreme_pairing_levels` > 1}: The group identifiers are reordered as \emph{smallest,
+#'      Each pair get a group identifier. (See \code{\link[rearrr:pair_extremes]{rearrr::pair_extremes()}})
+#'      \item If \code{`extreme_pairing_levels` > 1}: These group identifiers are reordered as \emph{smallest,
 #'      largest, second smallest, second largest}, etc., by the sum of \code{`num_col`} in the represented rows.
 #'      These pairs (of pairs) get a new set of group identifiers, and the process is repeated
 #'       \code{`extreme_pairing_levels`-2} times. Note that the group identifiers at the last level will represent
 #'       \code{2^`extreme_pairing_levels`} rows, why you should be careful when choosing that setting.
-#'      \item The final group identifiers are folded, and the fold identifiers are transferred to the rows.
+#'      \item The group identifiers from the last pairing are folded (randomly divided into groups),
+#'      and the fold identifiers are transferred to the original rows.
 #'    }
 #'
 #'  N.B. When doing extreme pairing of an unequal number of rows,
 #'  the row with the smallest value is placed in a group by itself, and the order is instead:
 #'  smallest, \emph{second smallest, largest, third smallest, second largest}, etc.
+#'
+#'  N.B. When \code{`num_fold_cols` > 1} and fewer than \code{`num_fold_cols`} fold columns have
+#'  been created after \code{`max_iters`} attempts, we try with \emph{extreme triplets} instead
+#'  (see \code{\link[rearrr:triplet_extremes]{rearrr::triplet_extremes()}}). It groups the elements
+#'  as \emph{smallest, closest to the median, largest, second smallest, second closest to the median, second largest}, etc.
 #'  }
 #'
 #'  \subsection{cat_col AND id_col}{
@@ -91,7 +97,7 @@ if (getRversion() >= "2.15.1")
 #'  Number of folds (default), fold size, with more (see \code{`method`}).
 #'
 #'  When \code{`num_fold_cols` > 1}, \code{`k`} can also be a vector
-#'  with one k per fold column. This allows trying multiple \code{`k`} settings at a time. Note
+#'  with one \code{`k`} per fold column. This allows trying multiple \code{`k`} settings at a time. Note
 #'  that the generated fold columns are not guaranteed to be in the order of \code{`k`}.
 #'
 #'  Given as whole number or percentage (\code{0 < `k` < 1}).
@@ -160,13 +166,50 @@ if (getRversion() >= "2.15.1")
 #'  Hence, we repeatedly create the missing columns and remove those that are not unique.
 #'  This is done until we have \code{`num_fold_cols`} unique fold columns
 #'  or we have attempted \code{`max_iters`} times.
+#'
 #'  In some cases, it is not possible to create \code{`num_fold_cols`}
 #'  unique combinations of the dataset, e.g.
 #'  when specifying \code{`cat_col`}, \code{`id_col`} and \code{`num_col`}.
 #'  \code{`max_iters`} specifies when to stop trying.
 #'  Note that we can end up with fewer columns than specified in \code{`num_fold_cols`}.
 #'
-#'  N.B. Only used \code{`num_fold_cols` > 1}.
+#'  N.B. Only used when \code{`num_fold_cols` > 1}.
+#' @param use_of_triplets \code{"fill"}, \code{"instead"} or \code{"never"}.
+#'
+#'  When to use extreme triplet grouping in numerical balancing (when \code{`num_col`} is specified).
+#'
+#'  \subsection{fill (default)}{
+#'  When extreme pairing cannot create enough unique fold columns, use extreme triplet grouping
+#'  to create additional unique fold columns.
+#'  }
+#'  \subsection{instead}{
+#'  Use extreme triplet grouping instead of extreme pairing. For some datasets, grouping in triplets
+#'  give better balancing than grouping in pairs. This can be worth exploring when
+#'  numerical balancing is important.
+#'
+#'  Tip: Compare the balances with \code{\link[groupdata2:summarize_balances]{summarize_balances()}} and
+#'  \code{\link[groupdata2:ranked_balances]{ranked_balances()}}.
+#'  }
+#'  \subsection{never}{
+#'  Never use extreme triplet grouping.
+#'  }
+#'
+#'  \subsection{Extreme triplet grouping}{
+#'  Similar to extreme pairing (see \code{Details >> num_col}), extreme triplet grouping
+#'  orders the rows as \emph{smallest, closest to the median, largest, second smallest, second
+#'  closest to the median, second largest,} etc. Each triplet gets a group identifier
+#'  and we either perform recursive extreme triplet grouping on the identifiers or fold
+#'  the identifiers and transfer the fold IDs to the original rows.
+#'
+#'  For some datasets, this can be give more balanced groups than extreme pairing, but
+#'  on average, extreme pairing works better. Due to the grouping into triplets instead of pairs
+#'  they tend to create different groupings though, so when creating many fold columns
+#'  and extreme pairing cannot create enough unique fold columns, we can create the remaining
+#'  (or at least some additional number) with extreme triplet grouping.
+#'
+#'  Extreme triplet grouping is implemented in
+#'  \code{\link[rearrr:triplet_extremes]{rearrr::triplet_extremes()}}.
+#'  }
 #' @param handle_existing_fold_cols How to handle existing fold columns.
 #'  Either \code{"keep_warn"}, \code{"keep"}, or \code{"remove"}.
 #'
@@ -326,11 +369,8 @@ if (getRversion() >= "2.15.1")
 #'   extreme_pairing_levels = 1
 #' )
 #' df_folded_1 %>%
-#'   dplyr::group_by(.folds) %>%
-#'   dplyr::summarise(
-#'     sum_score = sum(score),
-#'     mean_score = mean(score)
-#'   )
+#'   dplyr::ungroup() %>%
+#'   summarize_balances(group_cols = '.folds', num_cols = 'score')
 #'
 #' set.seed(2)  # Try with seed 1 as well
 #' df_folded_2 <- fold(
@@ -340,15 +380,25 @@ if (getRversion() >= "2.15.1")
 #'   extreme_pairing_levels = 2
 #' )
 #' df_folded_2 %>%
-#'   dplyr::group_by(.folds) %>%
-#'   dplyr::summarise(
-#'     sum_score = sum(score),
-#'     mean_score = mean(score)
-#'   )
+#'   dplyr::ungroup() %>%
+#'   summarize_balances(group_cols = '.folds', num_cols = 'score')
+#'
+#' # We can directly compare how balanced the 'score' is
+#' # in the two fold columns using a combination of
+#' # `summarize_balances()` and `ranked_balances()`
+#' # We see that the second fold column (made with `extreme_pairing_levels = 2`)
+#' # has a lower standard deviation of its mean scores - meaning that they
+#' # are more similar and thus more balanced
+#' df_folded_1$.folds_2 <- df_folded_2$.folds
+#' df_folded_1 %>%
+#'   dplyr::ungroup() %>%
+#'   summarize_balances(group_cols = c('.folds', '.folds_2'), num_cols = 'score') %>%
+#'   ranked_balances()
+#'
 #' @importFrom dplyr %>%
 #' @importFrom utils combn
 #' @importFrom rlang .data
-#' @importFrom stats runif
+#' @importFrom stats runif setNames
 fold <- function(data,
                  k = 5,
                  cat_col = NULL,
@@ -360,6 +410,7 @@ fold <- function(data,
                  num_fold_cols = 1,
                  unique_fold_cols_only = TRUE,
                  max_iters = 5,
+                 use_of_triplets = 'fill',
                  handle_existing_fold_cols = "keep_warn",
                  parallel = FALSE) {
 
@@ -376,6 +427,7 @@ fold <- function(data,
     num_fold_cols = num_fold_cols,
     unique_fold_cols_only = unique_fold_cols_only,
     max_iters = max_iters,
+    use_of_triplets = use_of_triplets,
     handle_existing_fold_cols = handle_existing_fold_cols,
     parallel = parallel
   )
@@ -383,6 +435,41 @@ fold <- function(data,
   if (dplyr::is_grouped_df(data)) {
     message_once_about_group_by("fold")
   }
+
+  internal_fold_(
+    data = data,
+    k = k,
+    cat_col = cat_col,
+    num_col = num_col,
+    id_col = id_col,
+    method = method,
+    id_aggregation_fn = id_aggregation_fn,
+    extreme_pairing_levels = extreme_pairing_levels,
+    num_fold_cols = num_fold_cols,
+    unique_fold_cols_only = unique_fold_cols_only,
+    max_iters = max_iters,
+    use_of_triplets = use_of_triplets,
+    handle_existing_fold_cols = handle_existing_fold_cols,
+    parallel = parallel
+  )
+
+}
+
+# Avoid argument checks
+internal_fold_ <- function(data,
+                           k = 5,
+                           cat_col = NULL,
+                           num_col = NULL,
+                           id_col = NULL,
+                           method = "n_dist",
+                           id_aggregation_fn = sum,
+                           extreme_pairing_levels = 1,
+                           num_fold_cols = 1,
+                           unique_fold_cols_only = TRUE,
+                           max_iters = 5,
+                           use_of_triplets = 'fill', # instead, none
+                           handle_existing_fold_cols = "keep_warn",
+                           parallel = FALSE) {
 
   # Apply by group (recursion)
   run_by_group_df(
@@ -395,6 +482,7 @@ fold <- function(data,
     method = method,
     id_aggregation_fn = id_aggregation_fn,
     extreme_pairing_levels = extreme_pairing_levels,
+    use_of_triplets = use_of_triplets,
     num_fold_cols = num_fold_cols,
     unique_fold_cols_only = unique_fold_cols_only,
     max_iters = max_iters,
@@ -404,6 +492,7 @@ fold <- function(data,
 
 }
 
+
 run_fold_ <- function(data,
                       k,
                       cat_col,
@@ -412,9 +501,11 @@ run_fold_ <- function(data,
                       method,
                       id_aggregation_fn,
                       extreme_pairing_levels,
+                      use_of_triplets,
                       num_fold_cols,
                       unique_fold_cols_only,
                       max_iters,
+                      allow_using_triplets,
                       handle_existing_fold_cols,
                       parallel) {
   k <- fold_check_convert_k(
@@ -424,6 +515,12 @@ run_fold_ <- function(data,
     cat_col = cat_col,
     id_col = id_col
   )
+
+  if (use_of_triplets == 'fill'){
+    # Use two extra iterations using triplets instead
+    # *when needed*
+    max_iters <- max_iters + 2
+  }
 
   # Check for existing fold columns
   existing_fold_colnames <- extract_fold_colnames(data)
@@ -529,6 +626,8 @@ run_fold_ <- function(data,
           col_name = current_fold_info[["col_name"]],
           id_aggregation_fn = id_aggregation_fn,
           extreme_pairing_levels = extreme_pairing_levels,
+          use_triplets = use_of_triplets == 'instead' ||
+            (use_of_triplets == 'fill' && max_iters - times_repeated <= 2),
           method = "n_fill",
           pre_randomize = TRUE
         ) %>%
@@ -771,6 +870,7 @@ check_fold_once <- function(data,
                             num_fold_cols,
                             unique_fold_cols_only,
                             max_iters,
+                            use_of_triplets,
                             handle_existing_fold_cols,
                             parallel) {
   # Check arguments ####
@@ -778,6 +878,7 @@ check_fold_once <- function(data,
   checkmate::assert_data_frame(x = data,
                                min.rows = 1,
                                add = assert_collection)
+  checkmate::assert_string(use_of_triplets, add = assert_collection)
   checkmate::reportAssertions(assert_collection)
   checkmate::assert_numeric(
     x = k,
@@ -827,6 +928,9 @@ check_fold_once <- function(data,
   checkmate::assert_function(x = id_aggregation_fn, add = assert_collection)
   checkmate::assert_string(x = handle_existing_fold_cols,
                            add = assert_collection)
+  checkmate::assert_names(use_of_triplets, subset.of = c('fill', 'instead', 'never', 'none'),
+                          add = assert_collection)
+  # End of argument checks ####
   checkmate::reportAssertions(assert_collection)
 
   if (length(k) > 1 && length(k) != num_fold_cols){

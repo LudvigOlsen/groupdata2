@@ -484,9 +484,12 @@ test_that("fuzz testing balance()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   expect_error(
-    xpectr::strip_msg(balance(data = df, size = "max", id_col = "participant", cat_col = "diagnosis", id_method = "nope", mark_new_rows = FALSE, new_rows_col_name = ".new_row")),
-    xpectr::strip(paste0("1 assertions failed:\n * Variable 'id_method': Must be a sub",
-                         "set of set {n_ids,n_rows_c,distributed,nested}.")),
+    xpectr::strip_msg(balance(data = df, size = "max", id_col = "participant", cat_col = "diagnosis", id_method = "nope", mark_new_rows = FALSE, new_rows_col_name = ".new_row"), lowercase = TRUE),
+    xpectr::strip(
+      ifelse(is_checkmate_v2_1(),
+             "must be a subset of {n_ids,n_rows_c,distributed,nested}",
+             "must be a subset of set {n_ids,n_rows_c,distributed,nested}.")
+      , lowercase = TRUE),
     fixed = TRUE)
 
   # Testing balance(data = df, size = "max", id_col = "par...
