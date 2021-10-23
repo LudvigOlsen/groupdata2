@@ -343,3 +343,92 @@ create_combined_cat_summary_ <- function(data, group_cols, cat_col, cat_levels, 
 
   cat_summary
 }
+
+
+##  .................. #< 60cfc78f594e5611a6eaaf34a2b212ae ># ..................
+##  Ranking utils                                                           ####
+
+
+# Apply rank() to columns
+rank_numeric_cols_ <- function(data, cols = NULL){
+
+  checkmate::assert_character(
+    cols,
+    any.missing = FALSE,
+    null.ok = TRUE,
+    min.chars = 1,
+    add = assert_collection
+  )
+
+  if (is.null(cols)){
+    cols <- data %>%
+      dplyr::select(where(is.numeric)) %>%
+      colnames()
+  } else {
+    unknown_cols <- setdiff(cols, colnames(data))
+    if (length(unknown_cols) > 0){
+      stop(paste0("`cols` had unknown names: ", paste0(unknown_cols, collapse = ", ")))
+    }
+  }
+
+  data %>%
+    dplyr::mutate(dplyr::across(dplyr::one_of(cols), rank))
+}
+
+
+# Create column with weighted-average rank of numeric columns
+mean_rank_numeric_cols_ <- function(
+  data,
+  cols = NULL,
+  col_name = "mean_rank",
+  rank_weights = NULL,
+  already_rank_cols = character(0)) {
+
+
+  if (is.null(cols)){
+    cols <- data %>%
+      dplyr::select(where(is.numeric)) %>%
+      colnames()
+  }
+
+  if (is.null(rank_weights)){
+    rank_weights <- rep(1, times = length(cols)) %>%
+      setNames(nm = cols)
+  }
+
+  # Calculate average SD rank
+  sd_ranks <- data %>%
+    rank_numeric_cols_(cols = setdiff(cols, already_rank_cols))
+  sd_ranks[[col_name]] <- sd_ranks %>%
+    dplyr::ungroup() %>%
+    dplyr::select(dplyr::one_of(cols)) %>%
+    purrr::pmap_dbl(.f = weighted_mean_, weights = rank_weights)
+
+  sd_ranks
+}
+
+
+# Calculates a weighted mean of named numbers
+# ... and weights must have same names and length
+weighted_mean_ <- function(..., weights){
+  # Check arguments ####
+  assert_collection <- checkmate::makeAssertCollection()
+  checkmate::assert_numeric(x = weights, lower = 0, add = assert_collection)
+  checkmate::reportAssertions(assert_collection)
+  # End of argument checks ####
+
+  # Order the row values and the weights
+  r <- c(...)
+  r <- r[order(names(r))]
+  weights <- weights[order(names(weights))]
+  if (!all(names(r) == names(weights))){
+    stop("`...` and `weights` must have the exact same names.")
+  }
+
+  # Sum to one
+  weights <- weights / sum(weights)
+
+  sum(r * weights)
+}
+
+

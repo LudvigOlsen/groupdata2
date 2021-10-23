@@ -11,9 +11,6 @@ test_that("testing utils()", {
   # create_group_balance_summaries_
   # measure_summary_numerics_
   # add_sd_ranks
-  #rank_numeric_cols
-  #mean_rank_numeric_cols
-  #weighted_mean_()
   # ...
 
 })

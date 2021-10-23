@@ -813,7 +813,7 @@ add_sd_ranks <- function(
     }
 
     sd_rows <- sd_rows %>%
-      mean_rank_numeric_cols(
+      mean_rank_numeric_cols_(
         cols = cat_level_cols[[cat_col]],
         col_name = rank_names[[cat_col]],
         rank_weights = current_cat_level_weights
@@ -833,7 +833,7 @@ add_sd_ranks <- function(
 
       # Combined rank for this num_col
       sd_rows <- sd_rows %>%
-        mean_rank_numeric_cols(
+        mean_rank_numeric_cols_(
           cols = num_col_cols,
           col_name = rank_names[[num_col]]
         )
@@ -874,7 +874,7 @@ add_sd_ranks <- function(
     colnames()
 
   sd_ranks <- sd_rows %>%
-    mean_rank_numeric_cols(
+    mean_rank_numeric_cols_(
       cols = cols_to_rank,
       col_name = "SD_rank",
       rank_weights = rank_weights,
@@ -886,68 +886,6 @@ add_sd_ranks <- function(
     dplyr::left_join(sd_ranks, by = ".group_col")
 
   measures
-}
-
-# Apply rank() to columns
-rank_numeric_cols <- function(data, cols = NULL){
-  if (is.null(cols)){
-    cols <- data %>%
-      dplyr::select(where(is.numeric)) %>%
-      colnames()
-  }
-
-  data %>%
-    dplyr::mutate(dplyr::across(dplyr::one_of(cols), rank))
-}
-
-# Create column with weighted-average rank of numeric columns
-mean_rank_numeric_cols <- function(data, cols = NULL, col_name = "mean_rank",
-                                   rank_weights = NULL,
-                                   already_rank_cols = character(0)){
-
-  if (is.null(cols)){
-    cols <- data %>%
-      dplyr::select(where(is.numeric)) %>%
-      colnames()
-  }
-
-  if (is.null(rank_weights)){
-    rank_weights <- rep(1, times = length(cols)) %>%
-      setNames(nm = cols)
-  }
-
-  # Calculate average SD rank
-  sd_ranks <- data %>%
-    rank_numeric_cols(cols = setdiff(cols, already_rank_cols))
-  sd_ranks[[col_name]] <- sd_ranks %>%
-    dplyr::ungroup() %>%
-    dplyr::select(dplyr::one_of(cols)) %>%
-    purrr::pmap_dbl(.f = weighted_mean_, weights = rank_weights)
-
-  sd_ranks
-}
-
-# Calculates a weighted mean of named numbers
-# ... and weights must have same names and length
-weighted_mean_ <- function(..., weights){
-  # Check arguments ####
-  assert_collection <- checkmate::makeAssertCollection()
-  checkmate::assert_numeric(x = weights, lower = 0, add = assert_collection)
-  checkmate::reportAssertions(assert_collection)
-  # End of argument checks ####
-
-  # Order the row values and the weights
-  r <- c(...)
-  r <- r[order(names(r))]
-  weights <- weights[order(names(weights))]
-  if (!all(names(r) == names(weights))){
-    stop("`...` and `weights` must have the exact same names.")
-  }
-
-  # Sum to one
-  weights <- weights / sum(weights)
-
-  sum(r * weights)
 }
 
 
