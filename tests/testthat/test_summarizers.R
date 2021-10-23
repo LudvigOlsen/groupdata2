@@ -524,9 +524,16 @@ test_that("testing create_cat_summaries_()", {
     tidyr::pivot_wider(id_cols = c("grp_1"), names_from = "cat_name", values_from = "n", values_fill = 0) %>%
     dplyr::arrange(.data$grp_1)
 
+  strip_df <- function(x){
+    x <- as.matrix(as.data.frame(x))
+    rownames(x) <- NULL
+    colnames(x) <- NULL
+    x
+  }
+
   expect_equal(
-    as.matrix(as.data.frame(unname(cat_summ))),
-    as.matrix(as.data.frame(unname(man_summ)))
+    strip_df(cat_summ),
+    strip_df(man_summ)
   )
 
 
