@@ -4,7 +4,7 @@
 \alias{ranked_balances}
 \title{Extract ranked standard deviations from summary}
 \usage{
-ranked_balances(summary)
+ranked_balances(summary, measure = "SD")
 }
 \arguments{
 \item{summary}{\code{"Summary" data.frame} from output of
@@ -13,6 +13,14 @@ ranked_balances(summary)
 Can also be the direct output list of
 \code{\link[groupdata2:summarize_balances]{summarize_balances()}}, in which case
 the \code{"Summary"} element is used.}
+
+\item{measure}{The measure to extract rows for. One of:
+\code{"mean", "median", "SD", "IQR", "min", "max"}.
+
+The most meaningful measures to consider as metrics of balance are \code{`SD`} and \code{`IQR`},
+as a smaller spread of variables across group summaries means they are more similar.
+
+\strong{NOTE}: Ranks are of standard deviations and not affected by this argument.}
 }
 \value{
 The rows in \code{`summary`} where \code{`measure` == "SD"},
@@ -21,7 +29,7 @@ ordered by the \code{`SD_rank`} column.
 \description{
 \Sexpr[results=rd, stage=render]{lifecycle::badge("experimental")}
 
-Extract the standard deviations from the \code{"Summary" data.frame}
+Extract the standard deviations (default) from the \code{"Summary" data.frame}
 from the output of \code{\link[groupdata2:summarize_balances]{summarize_balances()}},
 ordered by the \code{`SD_rank`} column.
 
