@@ -259,6 +259,7 @@ N.B. When \code{`num_fold_cols` > 1} and fewer than \code{`num_fold_cols`} fold 
 been created after \code{`max_iters`} attempts, we try with \emph{extreme triplets} instead
 (see \code{\link[rearrr:triplet_extremes]{rearrr::triplet_extremes()}}). It groups the elements
 as \emph{smallest, closest to the median, largest, second smallest, second closest to the median, second largest}, etc.
+We can also choose to never/only use extreme triplets via \code{`use_of_triplets`}.
 }
 
 \subsection{cat_col AND id_col}{
