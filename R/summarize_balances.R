@@ -274,7 +274,7 @@ summarize_balances <- function(
   # Run per grouping in `data`
   result <- run_by_group_list(
     data = data,
-    .fn = run_summarize_balances,
+    .fn = run_summarize_balances_,
     group_cols = group_cols,
     cat_cols = cat_cols,
     num_cols = num_cols,
@@ -338,7 +338,7 @@ summarize_balances <- function(
 
 }
 
-run_summarize_balances <- function(
+run_summarize_balances_ <- function(
   data,
   group_cols,
   cat_cols,
@@ -411,24 +411,13 @@ run_summarize_balances <- function(
   }
 
   # Join summaries
-  group_summary <- group_summaries[["empty"]] %>%
-    # When the arg is not NULL, add it's summary with a join
-    purrr::when(isTRUE(summarize_size) ~
-                  dplyr::left_join(., group_summaries[["size"]],
-                                   by = c(".group_col", ".group")),
-                ~ .) %>% # Else return the input
-    purrr::when(!is.null(id_cols) ~
-                  dplyr::left_join(., group_summaries[["id"]],
-                                   by = c(".group_col", ".group")),
-                ~ .) %>%
-    purrr::when(!is.null(num_cols) ~
-                  dplyr::left_join(., group_summaries[["num"]],
-                                   by = c(".group_col", ".group")),
-                ~ .) %>%
-    purrr::when(!is.null(cat_cols) ~
-                  dplyr::left_join(., group_summaries[["cat"]],
-                                   by = c(".group_col", ".group")),
-                ~ .)
+  group_summary <- join_group_summaries_(
+    group_summaries = group_summaries,
+    cat_cols = cat_cols,
+    num_cols = num_cols,
+    id_cols = id_cols,
+    summarize_size = summarize_size
+  )
 
   # Calculate measures for all numeric columns
   descriptors <- measure_summary_numerics_(
@@ -668,6 +657,36 @@ create_group_balance_summaries_ <- function(
   out
 }
 
+join_group_summaries_ <- function(
+  group_summaries,
+  cat_cols,
+  num_cols,
+  id_cols,
+  summarize_size
+) {
+
+  # Join summaries
+  group_summary <- group_summaries[["empty"]] %>%
+    # When the arg is not NULL, add it's summary with a join
+    purrr::when(isTRUE(summarize_size) ~
+                  dplyr::left_join(., group_summaries[["size"]],
+                                   by = c(".group_col", ".group")),
+                ~ .) %>% # Else return the input
+    purrr::when(!is.null(id_cols) ~
+                  dplyr::left_join(., group_summaries[["id"]],
+                                   by = c(".group_col", ".group")),
+                ~ .) %>%
+    purrr::when(!is.null(num_cols) ~
+                  dplyr::left_join(., group_summaries[["num"]],
+                                   by = c(".group_col", ".group")),
+                ~ .) %>%
+    purrr::when(!is.null(cat_cols) ~
+                  dplyr::left_join(., group_summaries[["cat"]],
+                                   by = c(".group_col", ".group")),
+                ~ .)
+  group_summary
+}
+
 
 measure_summary_numerics_ <- function(
   data,
@@ -706,7 +725,7 @@ measure_summary_numerics_ <- function(
     dplyr::arrange(.data$.group_col)
 
   # Add SD rank columns
-  measures <- add_sd_ranks(
+  measures <- add_sd_ranks_(
     measures = measures,
     cat_level_cols = cat_level_cols,
     num_cols = num_cols,
@@ -730,7 +749,7 @@ measure_summary_numerics_ <- function(
 
 # Calculate rank columns for the standard deviations
 # And add to `measures`
-add_sd_ranks <- function(
+add_sd_ranks_ <- function(
   measures,
   cat_level_cols,
   num_cols,
