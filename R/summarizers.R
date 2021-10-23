@@ -10,6 +10,9 @@
 
 # Empty summary
 create_empty_summary_ <- function(data, group_col){
+
+  checkmate::assert_string(group_col, min.chars = 1)
+
   data %>%
     dplyr::ungroup() %>%
     dplyr::select(!!as.name(group_col)) %>%
@@ -24,6 +27,10 @@ create_empty_summary_ <- function(data, group_col){
 
 # Size summary
 create_size_summary_ <- function(data, group_col, name="size"){
+
+  checkmate::assert_string(group_col, min.chars = 1)
+  checkmate::assert_string(name, min.chars = 1)
+
   data %>%
     dplyr::ungroup() %>%
     dplyr::select(!!as.name(group_col)) %>%
@@ -39,6 +46,16 @@ create_size_summary_ <- function(data, group_col, name="size"){
 
 # Number of IDs/levels summary
 create_id_summaries_ <- function(data, group_col, id_cols, name_prefix="# "){
+
+  checkmate::assert_string(group_col, min.chars = 1)
+  checkmate::assert_string(name_prefix, null.ok = TRUE)
+  checkmate::assert_character(
+    id_cols,
+    min.chars = 1,
+    any.missing = FALSE,
+    min.len = 1
+  )
+
   summary <- data %>%
     dplyr::ungroup() %>%
     dplyr::select(!!!rlang::syms(c(group_col, id_cols))) %>%
@@ -73,6 +90,14 @@ create_num_summaries_ <- function(data,
                                   fns = list("mean" = mean, "sum" = sum),
                                   rename = FALSE) {
 
+  checkmate::assert_string(group_col, min.chars = 1)
+  checkmate::assert_character(
+    num_cols,
+    min.chars = 1,
+    any.missing = FALSE,
+    min.len = 1
+  )
+  checkmate::assert_flag(rename)
   checkmate::assert_list(fns, types = "function")
   if (length(fns) > 1 && is.null(names(fns))){
     stop("When `fns` has length > 1, it must be named.")
@@ -119,6 +144,14 @@ create_cat_summaries_ <- function(data,
                                   max_cat_prefix_chars = 5,
                                   name_prefix = "# ") {
 
+  checkmate::assert_string(group_col, min.chars = 1)
+  checkmate::assert_character(
+    cat_cols,
+    min.chars = 1,
+    any.missing = FALSE,
+    min.len = 1
+  )
+
   tmp_n_var <- create_tmp_var(data, tmp_var = ".n")
 
   summary <- data %>%
@@ -148,6 +181,14 @@ create_cat_name_map_ <- function(data,
                                  cat_cols,
                                  max_cat_prefix_chars = 5,
                                  name_prefix = "# "){
+
+  checkmate::assert_character(
+    cat_cols,
+    min.chars = 1,
+    any.missing = FALSE,
+    min.len = 1
+  )
+
   data %>%
     dplyr::ungroup() %>%
     dplyr::select(!!!rlang::syms(c(cat_cols))) %>%
@@ -176,6 +217,10 @@ create_cat_name_map_ <- function(data,
 rename_cat_levels_for_summary_ <- function(cat_levels_map,
                                            max_cat_prefix_chars = 5,
                                            name_prefix = "# "){
+  checkmate::assert_data_frame(cat_levels_map)
+  checkmate::assert_count(max_cat_prefix_chars)
+  checkmate::assert_string(name_prefix, null.ok = TRUE)
+
   cat_levels_map <- cat_levels_map %>%
     dplyr::mutate(
       cat_col = tolower(.data$cat_col),
@@ -201,6 +246,21 @@ create_combined_cat_summaries_ <- function(
   cat_levels,
   warn_zero_variance = TRUE
 ) {
+
+  checkmate::assert_character(
+    group_cols,
+    min.chars = 1,
+    any.missing = FALSE,
+    min.len = 1
+  )
+  checkmate::assert_character(
+    cat_cols,
+    min.chars = 1,
+    any.missing = FALSE,
+    min.len = 1
+  )
+  checkmate::assert_flag(warn_zero_variance)
+
   purrr::map(.x = cat_cols, .f = ~ {
     create_combined_cat_summary_(
       data = data,
@@ -247,7 +307,7 @@ create_combined_cat_summary_ <- function(data, group_cols, cat_col, cat_levels, 
         setNames(nm = cat_levels)
     }
 
-    # Get counts for the select cat_levels
+    # Get counts for the selected cat_levels
     cat_summary <- cat_summary %>%
       tidyr::spread(key = !!as.name(cat_col),
                     value = .data$n,
