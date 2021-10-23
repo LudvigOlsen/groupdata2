@@ -35,6 +35,7 @@ R package for dividing data into groups.
 
 ### Main functions
 
+
 | Function            | Description                                                                                                                                                                               |
 |:--------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `group_factor()`    | Divides data into groups by a wide range of methods.                                                                                                                                      |
@@ -58,6 +59,7 @@ R package for dividing data into groups.
 | `ranked_balances()`       | Extracts the standard deviations from the `Summary` data frame from the output of `summarize_balances()`            |
 | `%primes%`                | Finds remainder for the `primes` method.                                                                            |
 | `%staircase%`             | Finds remainder for the `staircase` method.                                                                         |
+
 
 ## Table of Contents
 
@@ -205,6 +207,7 @@ df_small %>%
 | 4       |     70.5 |
 | 5       |     52.3 |
 
+
 ``` r
 # Using group() with 'l_starts' method
 # Starts group at the first 'cat', 
@@ -315,6 +318,7 @@ df_partitioned %>%
 | 6           |  25 | a         | z          |    25 | 2       |
 | 6           |  25 | a         | x          |    30 | 3       |
 
+
 ### fold()
 
 Creates (optionally) balanced folds for use in cross-validation. Balance
@@ -363,6 +367,7 @@ df_folded %>%
 | 3           |  27 | a         | x          |    30 | 2       | 3      |
 | 3           |  27 | a         | z          |    40 | 3       | 3      |
 
+
 ``` r
 # Show distribution of diagnoses and participants
 df_folded %>% 
@@ -396,6 +401,7 @@ df_folded %>%
 | 1      |       26 |   6.57 |
 | 2      |       23 |   2.19 |
 | 3      |       30 |   3.29 |
+
 
 **Notice**, that the we now have the opportunity to include the
 *session* variable and/or use *participant* as a random effect in our
