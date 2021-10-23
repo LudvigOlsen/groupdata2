@@ -8,13 +8,15 @@
 [MIT](https://opensource.org/licenses/MIT) <br/> **Started:** October
 2016
 
-[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/groupdata2)](https://cran.r-project.org/package=groupdata2)
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/groupdata2)](https://cran.r-project.org/package=groupdata2)
 [![metacran
 downloads](https://cranlogs.r-pkg.org/badges/groupdata2)](https://cran.r-project.org/package=groupdata2)
 [![minimal R
 version](https://img.shields.io/badge/R%3E%3D-3.5-6666ff.svg)](https://cran.r-project.org/)
 [![Codecov test
 coverage](https://codecov.io/gh/ludvigolsen/groupdata2/branch/master/graph/badge.svg)](https://codecov.io/gh/ludvigolsen/groupdata2?branch=master)
+![GitHub Actions CI
+status](https://github.com/ludvigolsen/groupdata2/actions/workflows/R-check.yaml/badge.svg?branch=master)
 [![AppVeyor build
 status](https://ci.appveyor.com/api/projects/status/github/LudvigOlsen/groupdata2?branch=master&svg=true)](https://ci.appveyor.com/project/LudvigOlsen/groupdata2)
 [![DOI](https://zenodo.org/badge/72371128.svg)](https://zenodo.org/badge/latestdoi/72371128)
@@ -23,19 +25,18 @@ status](https://ci.appveyor.com/api/projects/status/github/LudvigOlsen/groupdata
 
 R package for dividing data into groups.
 
-  - Create **balanced partitions** and cross-validation **folds**.
-  - Perform time series **windowing** and general **grouping** and
+-   Create **balanced partitions** and cross-validation **folds**.
+-   Perform time series **windowing** and general **grouping** and
     **splitting** of data.
-  - **Balance** existing groups with **up- and downsampling**.
-  - Finds values, or indices of values, that **differ** from the
+-   **Balance** existing groups with **up- and downsampling**.
+-   Finds values, or indices of values, that **differ** from the
     previous value by some threshold(s).
-  - Check if two grouping factors have the same groups,
-**memberwise**.
+-   Check if two grouping factors have the same groups, **memberwise**.
 
 ### Main functions
 
 | Function            | Description                                                                                                                                                                               |
-| :------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `group_factor()`    | Divides data into groups by a wide range of methods.                                                                                                                                      |
 | `group()`           | Creates grouping factor and adds to the given data frame.                                                                                                                                 |
 | `splt()`            | Creates grouping factor and splits the data by these groups.                                                                                                                              |
@@ -47,12 +48,12 @@ R package for dividing data into groups.
 ### Other tools
 
 | Function                  | Description                                                                                                         |
-| :------------------------ | :------------------------------------------------------------------------------------------------------------------ |
+|:--------------------------|:--------------------------------------------------------------------------------------------------------------------|
 | `all_groups_identical()`  | Checks whether two grouping factors contain the same groups, *memberwise*.                                          |
 | `differs_from_previous()` | Finds values, or indices of values, that differ from the previous value by some threshold(s).                       |
 | `find_starts()`           | Finds values or indices of values that are not the same as the previous value.                                      |
 | `find_missing_starts()`   | Finds missing starts for the `l_starts` method.                                                                     |
-| `summarize_group_cols()`  | Calculates summary statistics about group columns (i.e. `factor`s).                                                 |
+| `summarize_group_cols()`  | Calculates summary statistics about group columns (i.e. `factor`s).                                                 |
 | `summarize_balances()`    | Summarizes the balances of numeric, categorical, and ID columns in and between groups in one or more group columns. |
 | `ranked_balances()`       | Extracts the standard deviations from the `Summary` data frame from the output of `summarize_balances()`            |
 | `%primes%`                | Finds remainder for the `primes` method.                                                                            |
@@ -60,30 +61,30 @@ R package for dividing data into groups.
 
 ## Table of Contents
 
-  - [groupdata2](#groupdata2)
-      - [Overview](#overview)
-          - [Main functions](#main-functions)
-          - [Other tools](#other-tools)
-      - [Installation](#installation)
-      - [Vignettes](#vignettes)
-      - [Data for examples](#data-for-examples)
-      - [Functions](#functions)
-          - [group\_factor()](#group_factor\(\))
-          - [group()](#group\(\))
-          - [splt()](#splt\(\))
-          - [partition()](#partition\(\))
-          - [fold()](#fold\(\))
-          - [collapse\_groups()](#collapse_groups\(\))
-          - [balance()](#balance\(\))
-      - [Grouping Methods](#grouping-methods)
-          - [Specify group size](#specify-group-size)
-          - [Specify number of groups](#specify-number-of-groups)
-          - [Specify list](#specify-list)
-          - [Specify distance between
+-   [groupdata2](#groupdata2)
+    -   [Overview](#overview)
+        -   [Main functions](#main-functions)
+        -   [Other tools](#other-tools)
+    -   [Installation](#installation)
+    -   [Vignettes](#vignettes)
+    -   [Data for examples](#data-for-examples)
+    -   [Functions](#functions)
+        -   [group_factor()](#group_factor())
+        -   [group()](#group())
+        -   [splt()](#splt())
+        -   [partition()](#partition())
+        -   [fold()](#fold())
+        -   [collapse_groups()](#collapse_groups())
+        -   [balance()](#balance())
+    -   [Grouping Methods](#grouping-methods)
+        -   [Specify group size](#specify-group-size)
+        -   [Specify number of groups](#specify-number-of-groups)
+        -   [Specify list](#specify-list)
+        -   [Specify distance between
             members](#specify-distance-between-members)
-          - [Specify step size](#specify-step-size)
-          - [Specify start at](#specify-start-at)
-      - [Balancing ID Methods](#balancing-id-methods)
+        -   [Specify step size](#specify-step-size)
+        -   [Specify start at](#specify-start-at)
+    -   [Balancing ID Methods](#balancing-id-methods)
 
 ## Installation
 
@@ -101,8 +102,8 @@ Development version:
 `groupdata2` contains a number of vignettes with relevant use cases and
 descriptions:
 
-> `vignette(package = "groupdata2")` \# for an overview  
-> `vignette("introduction_to_groupdata2")` \# begin here
+> `vignette(package = "groupdata2")` # for an overview  
+> `vignette("introduction_to_groupdata2")` # begin here
 
 ## Data for examples
 
@@ -138,12 +139,12 @@ df_medium$session <- rep(c('1','2', '3'), 6)
 
 ## Functions
 
-### group\_factor()
+### group_factor()
 
-Returns a factor with group numbers, e.g.
-`factor(c(1,1,1,2,2,2,3,3,3))`.
+Returns a factor with group numbers,
+e.g. `factor(c(1,1,1,2,2,2,3,3,3))`.
 
-This can be used to subset, aggregate, group\_by, etc.
+This can be used to subset, aggregate, group_by, etc.
 
 Create equally sized groups by setting `force_equal = TRUE`
 
@@ -172,20 +173,20 @@ group(data = df_small, n = 5, method = 'n_dist') %>%
   kable()
 ```
 
-|  x | species | age | .groups |
-| -: | :------ | --: | :------ |
-|  1 | cat     |  68 | 1       |
-|  2 | pig     |  39 | 1       |
-|  3 | human   |   1 | 2       |
-|  4 | cat     |  34 | 2       |
-|  5 | pig     |  87 | 3       |
-|  6 | human   |  43 | 3       |
-|  7 | cat     |  14 | 3       |
-|  8 | pig     |  82 | 4       |
-|  9 | human   |  59 | 4       |
-| 10 | cat     |  51 | 5       |
-| 11 | pig     |  85 | 5       |
-| 12 | human   |  21 | 5       |
+|   x | species | age | .groups |
+|----:|:--------|----:|:--------|
+|   1 | cat     |  68 | 1       |
+|   2 | pig     |  39 | 1       |
+|   3 | human   |   1 | 2       |
+|   4 | cat     |  34 | 2       |
+|   5 | pig     |  87 | 3       |
+|   6 | human   |  43 | 3       |
+|   7 | cat     |  14 | 3       |
+|   8 | pig     |  82 | 4       |
+|   9 | human   |  59 | 4       |
+|  10 | cat     |  51 | 5       |
+|  11 | pig     |  85 | 5       |
+|  12 | human   |  21 | 5       |
 
 ``` r
 # Use group() in a pipeline 
@@ -196,13 +197,13 @@ df_small %>%
   kable()
 ```
 
-| .groups | mean\_age |
-| :------ | --------: |
-| 1       |      53.5 |
-| 2       |      17.5 |
-| 3       |      48.0 |
-| 4       |      70.5 |
-| 5       |      52.3 |
+| .groups | mean_age |
+|:--------|---------:|
+| 1       |     53.5 |
+| 2       |     17.5 |
+| 3       |     48.0 |
+| 4       |     70.5 |
+| 5       |     52.3 |
 
 ``` r
 # Using group() with 'l_starts' method
@@ -216,20 +217,20 @@ df_small %>%
   kable()
 ```
 
-|  x | species | age | .groups |
-| -: | :------ | --: | :------ |
-|  1 | cat     |  68 | 1       |
-|  2 | pig     |  39 | 1       |
-|  3 | human   |   1 | 1       |
-|  4 | cat     |  34 | 1       |
-|  5 | pig     |  87 | 2       |
-|  6 | human   |  43 | 2       |
-|  7 | cat     |  14 | 3       |
-|  8 | pig     |  82 | 3       |
-|  9 | human   |  59 | 3       |
-| 10 | cat     |  51 | 3       |
-| 11 | pig     |  85 | 3       |
-| 12 | human   |  21 | 3       |
+|   x | species | age | .groups |
+|----:|:--------|----:|:--------|
+|   1 | cat     |  68 | 1       |
+|   2 | pig     |  39 | 1       |
+|   3 | human   |   1 | 1       |
+|   4 | cat     |  34 | 1       |
+|   5 | pig     |  87 | 2       |
+|   6 | human   |  43 | 2       |
+|   7 | cat     |  14 | 3       |
+|   8 | pig     |  82 | 3       |
+|   9 | human   |  59 | 3       |
+|  10 | cat     |  51 | 3       |
+|  11 | pig     |  85 | 3       |
+|  12 | human   |  21 | 3       |
 
 ### splt()
 
@@ -244,50 +245,26 @@ splt(data = df_small,
   kable()
 ```
 
-<table class="kable_wrapper">
+|   x | species | age |
+|----:|:--------|----:|
+|   1 | cat     |  68 |
+|   2 | pig     |  39 |
+|   3 | human   |   1 |
+|   4 | cat     |  34 |
 
-<tbody>
+|     |   x | species | age |
+|:----|----:|:--------|----:|
+| 5   |   5 | pig     |  87 |
+| 6   |   6 | human   |  43 |
+| 7   |   7 | cat     |  14 |
+| 8   |   8 | pig     |  82 |
 
-<tr>
-
-<td>
-
-| x | species | age |
-| -: | :------ | --: |
-| 1 | cat     |  68 |
-| 2 | pig     |  39 |
-| 3 | human   |   1 |
-| 4 | cat     |  34 |
-
-</td>
-
-<td>
-
-|   | x | species | age |
-| :- | -: | :------ | --: |
-| 5 | 5 | pig     |  87 |
-| 6 | 6 | human   |  43 |
-| 7 | 7 | cat     |  14 |
-| 8 | 8 | pig     |  82 |
-
-</td>
-
-<td>
-
-|    |  x | species | age |
-| :- | -: | :------ | --: |
-| 9  |  9 | human   |  59 |
-| 10 | 10 | cat     |  51 |
-| 11 | 11 | pig     |  85 |
-| 12 | 12 | human   |  21 |
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
+|     |   x | species | age |
+|:----|----:|:--------|----:|
+| 9   |   9 | human   |  59 |
+| 10  |  10 | cat     |  51 |
+| 11  |  11 | pig     |  85 |
+| 12  |  12 | human   |  21 |
 
 ### partition()
 
@@ -314,16 +291,8 @@ df_partitioned %>%
   kable()
 ```
 
-<table class="kable_wrapper">
-
-<tbody>
-
-<tr>
-
-<td>
-
 | participant | age | diagnosis | diagnosis2 | score | session |
-| :---------- | --: | :-------- | :--------- | ----: | :------ |
+|:------------|----:|:----------|:-----------|------:|:--------|
 | 1           |  20 | a         | z          |    10 | 1       |
 | 1           |  20 | a         | y          |    24 | 2       |
 | 1           |  20 | a         | x          |    45 | 3       |
@@ -337,26 +306,14 @@ df_partitioned %>%
 | 4           |  21 | b         | x          |    50 | 2       |
 | 4           |  21 | b         | z          |    78 | 3       |
 
-</td>
-
-<td>
-
 | participant | age | diagnosis | diagnosis2 | score | session |
-| :---------- | --: | :-------- | :--------- | ----: | :------ |
+|:------------|----:|:----------|:-----------|------:|:--------|
 | 5           |  32 | b         | y          |    24 | 1       |
 | 5           |  32 | b         | x          |    54 | 2       |
 | 5           |  32 | b         | z          |    62 | 3       |
 | 6           |  25 | a         | x          |    14 | 1       |
 | 6           |  25 | a         | z          |    25 | 2       |
 | 6           |  25 | a         | x          |    30 | 3       |
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
 
 ### fold()
 
@@ -386,7 +343,7 @@ df_folded %>%
 ```
 
 | participant | age | diagnosis | diagnosis2 | score | session | .folds |
-| :---------- | --: | :-------- | :--------- | ----: | :------ | :----- |
+|:------------|----:|:----------|:-----------|------:|:--------|:-------|
 | 1           |  20 | a         | z          |    10 | 1       | 1      |
 | 1           |  20 | a         | y          |    24 | 2       | 1      |
 | 1           |  20 | a         | x          |    45 | 3       | 1      |
@@ -414,14 +371,14 @@ df_folded %>%
   kable()
 ```
 
-| .folds | diagnosis | participant | n |
-| :----- | :-------- | :---------- | -: |
-| 1      | a         | 1           | 3 |
-| 1      | b         | 5           | 3 |
-| 2      | a         | 6           | 3 |
-| 2      | b         | 4           | 3 |
-| 3      | a         | 3           | 3 |
-| 3      | b         | 2           | 3 |
+| .folds | diagnosis | participant |   n |
+|:-------|:----------|:------------|----:|
+| 1      | a         | 1           |   3 |
+| 1      | b         | 5           |   3 |
+| 2      | a         | 6           |   3 |
+| 2      | b         | 4           |   3 |
+| 3      | a         | 3           |   3 |
+| 3      | b         | 2           |   3 |
 
 ``` r
 # Show age representation in folds
@@ -434,11 +391,11 @@ df_folded %>%
   kable()
 ```
 
-| .folds | mean\_age | sd\_age |
-| :----- | --------: | ------: |
-| 1      |        26 |    6.57 |
-| 2      |        23 |    2.19 |
-| 3      |        30 |    3.29 |
+| .folds | mean_age | sd_age |
+|:-------|---------:|-------:|
+| 1      |       26 |   6.57 |
+| 2      |       23 |   2.19 |
+| 3      |       30 |   3.29 |
 
 **Notice**, that the we now have the opportunity to include the
 *session* variable and/or use *participant* as a random effect in our
@@ -448,7 +405,7 @@ in one fold.
 We also have a balance in the representation of each diagnosis, which
 could give us better, more consistent results.
 
-### collapse\_groups()
+### collapse_groups()
 
 Collapses a set of groups into a smaller set of groups while attempting
 to balance the new groups by specified numerical columns, categorical
@@ -473,29 +430,28 @@ df_collapsed %>%
   kable()
 ```
 
-| participant | age | diagnosis | diagnosis2 | score | session | .coll\_groups |
-| :---------- | --: | :-------- | :--------- | ----: | :------ | :------------ |
-| 5           |  32 | b         | y          |    24 | 1       | 1             |
-| 5           |  32 | b         | x          |    54 | 2       | 1             |
-| 5           |  32 | b         | z          |    62 | 3       | 1             |
-| 6           |  25 | a         | x          |    14 | 1       | 1             |
-| 6           |  25 | a         | z          |    25 | 2       | 1             |
-| 6           |  25 | a         | x          |    30 | 3       | 1             |
-| 3           |  27 | a         | z          |    15 | 1       | 2             |
-| 3           |  27 | a         | x          |    30 | 2       | 2             |
-| 3           |  27 | a         | z          |    40 | 3       | 2             |
-| 4           |  21 | b         | z          |    35 | 1       | 2             |
-| 4           |  21 | b         | x          |    50 | 2       | 2             |
-| 4           |  21 | b         | z          |    78 | 3       | 2             |
-| 1           |  20 | a         | z          |    10 | 1       | 3             |
-| 1           |  20 | a         | y          |    24 | 2       | 3             |
-| 1           |  20 | a         | x          |    45 | 3       | 3             |
-| 2           |  33 | b         | z          |    24 | 1       | 3             |
-| 2           |  33 | b         | x          |    40 | 2       | 3             |
-| 2           |  33 | b         | x          |    67 | 3       | 3             |
+| participant | age | diagnosis | diagnosis2 | score | session | .coll_groups |
+|:------------|----:|:----------|:-----------|------:|:--------|:-------------|
+| 5           |  32 | b         | y          |    24 | 1       | 1            |
+| 5           |  32 | b         | x          |    54 | 2       | 1            |
+| 5           |  32 | b         | z          |    62 | 3       | 1            |
+| 6           |  25 | a         | x          |    14 | 1       | 1            |
+| 6           |  25 | a         | z          |    25 | 2       | 1            |
+| 6           |  25 | a         | x          |    30 | 3       | 1            |
+| 3           |  27 | a         | z          |    15 | 1       | 2            |
+| 3           |  27 | a         | x          |    30 | 2       | 2            |
+| 3           |  27 | a         | z          |    40 | 3       | 2            |
+| 4           |  21 | b         | z          |    35 | 1       | 2            |
+| 4           |  21 | b         | x          |    50 | 2       | 2            |
+| 4           |  21 | b         | z          |    78 | 3       | 2            |
+| 1           |  20 | a         | z          |    10 | 1       | 3            |
+| 1           |  20 | a         | y          |    24 | 2       | 3            |
+| 1           |  20 | a         | x          |    45 | 3       | 3            |
+| 2           |  33 | b         | z          |    24 | 1       | 3            |
+| 2           |  33 | b         | x          |    40 | 2       | 3            |
+| 2           |  33 | b         | x          |    67 | 3       | 3            |
 
 ``` r
-
 # Summarize the balances of the new groups
 coll_summ <- df_collapsed %>% 
   summarize_balances(group_cols = '.coll_groups',
@@ -506,29 +462,27 @@ coll_summ$Groups %>%
   kable()
 ```
 
-| .group\_col   | .group | \# rows | mean(score) | sum(score) | \# diag\_x | \# diag\_y | \# diag\_z |
-| :------------ | :----- | ------: | ----------: | ---------: | ---------: | ---------: | ---------: |
-| .coll\_groups | 1      |       6 |        34.8 |        209 |          3 |          1 |          2 |
-| .coll\_groups | 2      |       6 |        41.3 |        248 |          2 |          0 |          4 |
-| .coll\_groups | 3      |       6 |        35.0 |        210 |          3 |          1 |          2 |
+| .group_col   | .group | # rows | mean(score) | sum(score) | # diag_x | # diag_y | # diag_z |
+|:-------------|:-------|-------:|------------:|-----------:|---------:|---------:|---------:|
+| .coll_groups | 1      |      6 |        34.8 |        209 |        3 |        1 |        2 |
+| .coll_groups | 2      |      6 |        41.3 |        248 |        2 |        0 |        4 |
+| .coll_groups | 3      |      6 |        35.0 |        210 |        3 |        1 |        2 |
 
 ``` r
-
 coll_summ$Summary %>% 
   kable()
 ```
 
-| .group\_col   | measure | \# rows | mean(score) | sum(score) | \# diag\_x | \# diag\_y | \# diag\_z |
-| :------------ | :------ | ------: | ----------: | ---------: | ---------: | ---------: | ---------: |
-| .coll\_groups | mean    |       6 |       37.06 |      222.3 |      2.667 |      0.667 |       2.67 |
-| .coll\_groups | median  |       6 |       35.00 |      210.0 |      3.000 |      1.000 |       2.00 |
-| .coll\_groups | SD      |       0 |        3.71 |       22.2 |      0.577 |      0.577 |       1.16 |
-| .coll\_groups | IQR     |       0 |        3.25 |       19.5 |      0.500 |      0.500 |       1.00 |
-| .coll\_groups | min     |       6 |       34.83 |      209.0 |      2.000 |      0.000 |       2.00 |
-| .coll\_groups | max     |       6 |       41.33 |      248.0 |      3.000 |      1.000 |       4.00 |
+| .group_col   | measure | # rows | mean(score) | sum(score) | # diag_x | # diag_y | # diag_z |
+|:-------------|:--------|-------:|------------:|-----------:|---------:|---------:|---------:|
+| .coll_groups | mean    |      6 |       37.06 |      222.3 |    2.667 |    0.667 |     2.67 |
+| .coll_groups | median  |      6 |       35.00 |      210.0 |    3.000 |    1.000 |     2.00 |
+| .coll_groups | SD      |      0 |        3.71 |       22.2 |    0.577 |    0.577 |     1.16 |
+| .coll_groups | IQR     |      0 |        3.25 |       19.5 |    0.500 |    0.500 |     1.00 |
+| .coll_groups | min     |      6 |       34.83 |      209.0 |    2.000 |    0.000 |     2.00 |
+| .coll_groups | max     |      6 |       41.33 |      248.0 |    3.000 |    1.000 |     4.00 |
 
 ``` r
-
 # Check the across-groups standard deviations 
 # This is a measure of how balanced the groups are (lower == more balanced)
 # and is especially useful when comparing multiple group columns
@@ -537,9 +491,9 @@ coll_summ %>%
   kable()
 ```
 
-| .group\_col   | measure | \# rows | mean(score) | sum(score) | \# diag\_x | \# diag\_y | \# diag\_z |
-| :------------ | :------ | ------: | ----------: | ---------: | ---------: | ---------: | ---------: |
-| .coll\_groups | SD      |       0 |        3.71 |       22.2 |      0.577 |      0.577 |       1.16 |
+| .group_col   | measure | # rows | mean(score) | sum(score) | # diag_x | # diag_y | # diag_z |
+|:-------------|:--------|-------:|------------:|-----------:|---------:|---------:|---------:|
+| .coll_groups | SD      |      0 |        3.71 |       22.2 |    0.577 |    0.577 |     1.16 |
 
 **Recommended**: By enabling the `auto_tune` setting, we often get a
 much better balance.
@@ -563,13 +517,13 @@ df_b %>%
   kable()
 ```
 
-| diagnosis | participant | n |
-| :-------- | :---------- | -: |
-| a         | 1           | 3 |
-| a         | 3           | 2 |
-| a         | 6           | 1 |
-| b         | 2           | 3 |
-| b         | 4           | 1 |
+| diagnosis | participant |   n |
+|:----------|:------------|----:|
+| a         | 1           |   3 |
+| a         | 3           |   2 |
+| a         | 6           |   1 |
+| b         | 2           |   3 |
+| b         | 4           |   1 |
 
 ``` r
 # First set seed to ensure reproducibility
@@ -585,13 +539,13 @@ balance(
   kable()
 ```
 
-| diagnosis | participant | n |
-| :-------- | :---------- | -: |
-| a         | 1           | 2 |
-| a         | 3           | 1 |
-| a         | 6           | 1 |
-| b         | 2           | 3 |
-| b         | 4           | 1 |
+| diagnosis | participant |   n |
+|:----------|:------------|----:|
+| a         | 1           |   2 |
+| a         | 3           |   1 |
+| a         | 6           |   1 |
+| b         | 2           |   3 |
+| b         | 4           |   1 |
 
 ``` r
 # Downsampling the IDs
@@ -606,12 +560,12 @@ balance(
   kable()
 ```
 
-| diagnosis | participant | n |
-| :-------- | :---------- | -: |
-| a         | 1           | 3 |
-| a         | 3           | 2 |
-| b         | 2           | 3 |
-| b         | 4           | 1 |
+| diagnosis | participant |   n |
+|:----------|:------------|----:|
+| a         | 1           |   3 |
+| a         | 3           |   2 |
+| b         | 2           |   3 |
+| b         | 4           |   1 |
 
 ## Grouping Methods
 
@@ -630,21 +584,21 @@ E.g. group sizes: 10, 10, 10, 10, 10, 7
 
 ### Specify number of groups
 
-##### Method: n\_dist (Default)
+##### Method: n_dist (Default)
 
 Divides the data into a specified number of groups and distributes
 excess data points across groups.
 
 E.g. group sizes: 11, 11, 12, 11, 12
 
-##### Method: n\_fill
+##### Method: n_fill
 
 Divides the data into a specified number of groups and fills up groups
 with excess data points from the beginning.
 
 E.g. group sizes: 12, 12, 11, 11, 11
 
-##### Method: n\_last
+##### Method: n_last
 
 Divides the data into a specified number of groups. The algorithm finds
 the most equal group sizes possible, using all data points. Only the
@@ -652,7 +606,7 @@ last group is able to differ in size.
 
 E.g. group sizes: 11, 11, 11, 11, 13
 
-##### Method: n\_rand
+##### Method: n_rand
 
 Divides the data into a specified number of groups. Excess data points
 are placed randomly in groups (only 1 per group).
@@ -661,19 +615,19 @@ E.g. group sizes: 12, 11, 11, 11, 12
 
 ### Specify list
 
-##### Method: l\_sizes
+##### Method: l_sizes
 
 Uses a list / vector of group sizes to divide up the data.  
 Excess data points are placed in an extra group.
 
 E.g. `n = c(11, 11)` returns group sizes: 11, 11, 35
 
-##### Method: l\_starts
+##### Method: l_starts
 
 Uses a list of starting positions to divide up the data.  
 Starting positions are values in a vector (e.g. column in data frame).
-Skip to a specific nth appearance of a value by using `c(value,
-skip_to)`.
+Skip to a specific nth appearance of a value by using
+`c(value, skip_to)`.
 
 E.g. `n = c(11, 15, 27, 43)` returns group sizes: 10, 4, 12, 16, 15
 
@@ -695,7 +649,7 @@ E.g. group sizes: 12, 12, 11, 11, 11
 
 ##### Method: staircase
 
-Uses step\_size to divide up the data. Group size increases with 1 step
+Uses step_size to divide up the data. Group size increases with 1 step
 for every group, until there is no more data.
 
 E.g. group sizes: 5, 10, 15, 20, 7
@@ -715,13 +669,13 @@ E.g. group sizes: 5, 7, 11, 13, 17, 4
 There are currently 4 methods for balancing (up-/downsampling) on ID
 level in `balance()`.
 
-##### ID method: n\_ids
+##### ID method: n_ids
 
 Balances on ID level only. It makes sure there are the same number of
 IDs in each category. This might lead to a different number of rows
 between categories.
 
-##### ID method: n\_rows\_c
+##### ID method: n_rows_c
 
 Attempts to level the number of rows per category, while only
 removing/adding entire IDs. This is done with repetition and by
