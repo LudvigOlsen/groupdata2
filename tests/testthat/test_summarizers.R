@@ -252,9 +252,9 @@ test_that("testing create_size_summary_()", {
   # Testing side effects
   # Assigning side effects
   side_effects_19148 <- xpectr::capture_side_effects(create_size_summary_(data=df, group_col="grp_1", name=""), reset_seed = TRUE)
-  expect_equal(
-    xpectr::strip(side_effects_19148[['error']]),
-    xpectr::strip("Assertion on 'name' failed: All elements must have at least 1 characters, but element 1 has 0 characters."),
+  expect_match(
+    xpectr::strip(side_effects_19148[['error']], lowercase = TRUE),
+    xpectr::strip("must have at least 1 characters", lowercase = TRUE),
     fixed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_19148[['error_class']]),
@@ -525,8 +525,8 @@ test_that("testing create_cat_summaries_()", {
     dplyr::arrange(.data$grp_1)
 
   expect_equal(
-    as.data.frame(unname(cat_summ)),
-    as.data.frame(unname(man_summ))
+    as.matrix(as.data.frame(unname(cat_summ))),
+    as.matrix(as.data.frame(unname(man_summ)))
   )
 
 
