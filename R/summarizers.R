@@ -356,8 +356,7 @@ rank_numeric_cols_ <- function(data, cols = NULL){
     cols,
     any.missing = FALSE,
     null.ok = TRUE,
-    min.chars = 1,
-    add = assert_collection
+    min.chars = 1
   )
 
   if (is.null(cols)){
