@@ -795,13 +795,11 @@ add_sd_ranks_ <- function(
   cat_sd_rank_cols = character(0)
   for (cat_col in names(cat_level_cols)){
     cat_col_prefix <- substr(cat_col, start = 1, stop = max_cat_prefix_chars)
-    rank_names[[cat_col]] <- paste0(
-      cat_col_prefix,
-      "_SD_rank"
-    )
+    cat_sd_rank_col <- paste0(cat_col_prefix, "_SD_rank")
+    rank_names[[cat_col]] <- cat_sd_rank_col
     cat_sd_rank_cols <- c(
       cat_sd_rank_cols,
-      paste0(cat_col_prefix, "_SD_rank")
+      cat_sd_rank_col
     )
 
     current_cat_level_weights <- NULL
@@ -839,15 +837,18 @@ add_sd_ranks_ <- function(
       )
   }
 
+  num_sd_rank_cols = character(0)
   if (!is.null(num_cols)){
     for (num_col in num_cols){
       # Names of num_cols columns (e.g. mean(score) and sum(score))
       num_col_cols <- colnames(sd_rows)[
         grepl(paste0("\\(", num_col, "\\)"), colnames(sd_rows))]
-
-      rank_names[[num_col]] <- paste0(
-        substr(num_col, start = 1, stop = max_num_prefix_chars),
-        "_SD_rank"
+      num_col_prefix <- substr(num_col, start = 1, stop = max_num_prefix_chars)
+      num_sd_rank_col <- paste0(num_col_prefix, "_SD_rank")
+      rank_names[[num_col]] <- num_sd_rank_col
+      num_sd_rank_cols <- c(
+        num_sd_rank_cols,
+        num_sd_rank_col
       )
 
       # Combined rank for this num_col
@@ -897,7 +898,7 @@ add_sd_ranks_ <- function(
       cols = cols_to_rank,
       col_name = "SD_rank",
       rank_weights = rank_weights,
-      already_rank_cols = cat_sd_rank_cols) %>%
+      already_rank_cols = c(cat_sd_rank_cols, num_sd_rank_cols)) %>%
     dplyr::select(.data$.group_col,
                   dplyr::ends_with("SD_rank"))
 
