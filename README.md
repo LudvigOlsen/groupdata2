@@ -29,12 +29,12 @@ R package for dividing data into groups.
 -   Perform time series **windowing** and general **grouping** and
     **splitting** of data.
 -   **Balance** existing groups with **up- and downsampling**.
+-   **Collapse** existing groups to fewer, balanced groups.
 -   Finds values, or indices of values, that **differ** from the
     previous value by some threshold(s).
 -   Check if two grouping factors have the same groups, **memberwise**.
 
 ### Main functions
-
 
 | Function            | Description                                                                                                                                                                               |
 |:--------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -43,7 +43,7 @@ R package for dividing data into groups.
 | `splt()`            | Creates grouping factor and splits the data by these groups.                                                                                                                              |
 | `partition()`       | Splits data into partitions. Balances a given categorical variable and/or numerical variable between partitions and keeps all data points with a shared ID in the same partition.         |
 | `fold()`            | Creates folds for (repeated) cross-validation. Balances a given categorical variable and/or numerical variable between folds and keeps all data points with a shared ID in the same fold. |
-| `collapse_groups()` | Collapses existing groups nto a smaller set of groups with categorical, numerical, ID, and size balancing.                                                                                |
+| `collapse_groups()` | Collapses existing groups into a smaller set of groups with categorical, numerical, ID, and size balancing.                                                                               |
 | `balance()`         | Uses up- and/or downsampling to equalize group sizes. Can balance on ID level. See wrappers: `downsample()`, `upsample()`.                                                                |
 
 ### Other tools
@@ -59,7 +59,6 @@ R package for dividing data into groups.
 | `ranked_balances()`       | Extracts the standard deviations from the `Summary` data frame from the output of `summarize_balances()`            |
 | `%primes%`                | Finds remainder for the `primes` method.                                                                            |
 | `%staircase%`             | Finds remainder for the `staircase` method.                                                                         |
-
 
 ## Table of Contents
 
@@ -207,7 +206,6 @@ df_small %>%
 | 4       |     70.5 |
 | 5       |     52.3 |
 
-
 ``` r
 # Using group() with 'l_starts' method
 # Starts group at the first 'cat', 
@@ -318,7 +316,6 @@ df_partitioned %>%
 | 6           |  25 | a         | z          |    25 | 2       |
 | 6           |  25 | a         | x          |    30 | 3       |
 
-
 ### fold()
 
 Creates (optionally) balanced folds for use in cross-validation. Balance
@@ -367,7 +364,6 @@ df_folded %>%
 | 3           |  27 | a         | x          |    30 | 2       | 3      |
 | 3           |  27 | a         | z          |    40 | 3       | 3      |
 
-
 ``` r
 # Show distribution of diagnoses and participants
 df_folded %>% 
@@ -402,7 +398,6 @@ df_folded %>%
 | 2      |       23 |   2.19 |
 | 3      |       30 |   3.29 |
 
-
 **Notice**, that the we now have the opportunity to include the
 *session* variable and/or use *participant* as a random effect in our
 model when doing cross-validation, as any participant will only appear
@@ -420,8 +415,8 @@ columns, level counts in ID columns, and/or the number of rows.
 ``` r
 # We consider each participant a group
 # and collapse them into 3 new groups
-# We balance the diagnosis2 column, which 
-# is not constant within the participants
+# We balance the number of levels in diagnosis2 column, 
+# as this diagnosis is not constant within the participants
 df_collapsed <- collapse_groups(
   data = df_medium,
   n = 3,
