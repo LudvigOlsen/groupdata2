@@ -201,7 +201,7 @@ test_that("testing collapse_groups_by_size()", {
     structure(1:3, .Label = c("1", "2", "3"), class = "factor"))
   expect_equal(
     summ$Groups[["# rows"]],
-    c(11, 18, 18),
+    c(3, 6, 6),
     tolerance = 1e-4)
   # Testing column names
   expect_equal(
@@ -228,8 +228,6 @@ test_that("testing collapse_groups_by_size()", {
     character(0),
     fixed = TRUE)
   ## Finished testing 'summ$Groups'                                         ####
-
-
 
 })
 
