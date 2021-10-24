@@ -1,8 +1,11 @@
 
-# groupdata2 2.0.0.9000
+# groupdata2 2.0.0
 
 **Summary** 
+
 This version introduces `collapse_groups()` and friends, as well as `summarize_balances()` and `ranked_balances()`. It also improves numerical balancing in `fold()` which breaks reproducibility.
+
+**Changes**
 
 * **Breaking**: The numerical balancing (`num_col`) in `fold()` gets multiple improvements. This breaks reproducibility in some contexts.
 
@@ -15,12 +18,11 @@ This version introduces `collapse_groups()` and friends, as well as `summarize_b
   - Adds argument `use_of_triplets` in `fold()` to allow using extreme triplet grouping instead of extreme pairing or disabling it completely.
 
 * Adds `collapse_groups()` for collapsing a set of existing groups into a smaller set of groups. Can balance the
-new groups by size and by numeric and categorical columns. The more of these you balance at a time, the less balanced each will tend to be. Compare settings by summarizing the balances with `summarize_balances()` afterwards.
+new groups by size and by numeric, categorical and ID columns. The more of these you balance at a time, the less balanced each will tend to be. Compare settings by summarizing the balances with `summarize_balances()` afterwards. For creating the most balanced groups, enable `auto_tune`.
 
-TODODODODODODODODODODODO!!!!
 * Adds `collapse_groups_by_size()`, `collapse_groups_by_numeric()`, `collapse_groups_by_levels()`, and `collapse_groups_by_ids()`. These are wrappers of `collapse_groups()` for a simplified interface.
 
-* Adds `summarize_balances()` for inspecting the balance of numeric, categorical, and ID columns in and between groups.
+* Adds `summarize_balances()` for inspecting the balance of numeric, categorical, and ID columns in-and-between groups.
 
 * Adds `ranked_balances()` for extracting the across-group standard deviations of balances from the output of `summarize_balances()`. The standard deviations are a measure of how balanced a split is.
 
