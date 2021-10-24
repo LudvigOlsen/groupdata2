@@ -15,8 +15,8 @@ downloads](https://cranlogs.r-pkg.org/badges/groupdata2)](https://cran.r-project
 version](https://img.shields.io/badge/R%3E%3D-3.5-6666ff.svg)](https://cran.r-project.org/)
 [![Codecov test
 coverage](https://codecov.io/gh/ludvigolsen/groupdata2/branch/master/graph/badge.svg)](https://app.codecov.io/gh/ludvigolsen/groupdata2?branch=master)
-![GitHub Actions CI
-status](https://github.com/ludvigolsen/groupdata2/actions/workflows/R-check.yaml/badge.svg?branch=master)
+[![GitHub Actions CI
+status](https://github.com/ludvigolsen/groupdata2/actions/workflows/R-check.yaml/badge.svg?branch=master)](https://github.com/ludvigolsen/groupdata2/actions/workflows/R-check.yaml?branch=master)
 [![AppVeyor build
 status](https://ci.appveyor.com/api/projects/status/github/LudvigOlsen/groupdata2?branch=master&svg=true)](https://ci.appveyor.com/project/LudvigOlsen/groupdata2)
 [![DOI](https://zenodo.org/badge/72371128.svg)](https://zenodo.org/badge/latestdoi/72371128)
