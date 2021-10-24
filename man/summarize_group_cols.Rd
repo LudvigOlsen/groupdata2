@@ -54,6 +54,11 @@ summarize_group_cols(
   long = FALSE
  )
 }
+\seealso{
+Other summarization functions: 
+\code{\link{ranked_balances}()},
+\code{\link{summarize_balances}()}
+}
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}
 }
