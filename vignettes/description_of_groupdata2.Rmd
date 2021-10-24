@@ -6,7 +6,7 @@ date: "`r Sys.Date()`"
 abstract: |
   `groupdata2` is a set of methods for easy grouping, windowing, folding, partitioning, splitting and balancing of data.
   Create balanced folds for cross-validation or divide a time series into windows.
-  Balance group sizes with up- and downsampling.
+  Balance group sizes with up- and downsampling or collapse existing groups to fewer, balanced groups.
   
   This vignette contains descriptions of functions and methods, along with simple examples of usage. 
   For a gentler introduction to groupdata2, please see [Introduction to groupdata2](introduction_to_groupdata2.html)
@@ -90,7 +90,7 @@ library(knitr)
 # General information
 `groupdata2` is a set of functions and methods for easy grouping, windowing, folding, partitioning, splitting and balancing of data.  
 
-There are 6 main functions:  
+There are 7 main functions:  
 
 ### group_factor()  
 Returns a factor with group numbers, e.g. `c(1, 1, 1, 2, 2, 2, 3, 3, 3)`.
@@ -107,6 +107,9 @@ Creates (optionally) balanced folds for use in cross-validation. Balance folds o
 
 ### partition()
 Creates (optionally) balanced partitions (e.g. training/test sets). Balance partitions on one categorical variable and/or one numerical variable. Make sure that all datapoints sharing an ID is in the same partition.
+
+### collapse_groups()
+Collapses existing groups into a smaller set of groups with (optional) categorical, numerical, ID, and/or size balancing.
 
 ### balance()
 Uses up- or downsampling to fix the size of all groups to the min, max, mean, or median group size or to a specific number of rows. Balancing can also happen on the ID level, e.g. to ensure the same number of IDs in each category.  
@@ -135,9 +138,10 @@ In this vignette, we will use the `l_starts` method with `group()` to allow tran
 In the examples, we will be using `knitr::kable()` to visualize some of the data such as data frames. You do not need to use `kable()` when using the functions in `groupdata2`.  
 
 # Grouping Methods
-There are currently 9 methods for grouping the data.  
+There are currently 10 methods for grouping the data.  
 
-It is possible to create groups based on *number of groups* (default), *group size*, *list of group sizes*, *list of group start positions*, *step size* or *prime number to start at*. These can be passed as whole number(s) or percentage(s), while method `l_starts` can also use `'auto'`.  
+It is possible to create groups based on *number of groups* (default), *group size*, *list of group sizes*, *list of group start positions*,
+*distance between members*, *step size* or *prime number to start at*. These can be passed as whole number(s) or percentage(s), while method `l_starts` also accepts `'auto'`.  
 
 Here, we will take a look at the different methods. 
 
@@ -461,6 +465,36 @@ Set `return_skip_numbers = FALSE` to get only the missing values without the ski
 > 
 > list(c("d",1), c("p",1))
 > 
+
+&nbsp;  
+
+## Method: 'every'
+`every` greedily combines every `n`th data point. 
+ 
+&nbsp;  
+
+**Example**    
+
+> We have a vector with 57 values. We want to get back 5 groups.  
+>   
+> 'every' with default settings would return groups with this many values in them:  
+>   
+> 12, 12, 11, 11, 11   
+ 
+&nbsp;  
+
+By setting `force_equal = TRUE`, `every` discards the last `length % n` data points 
+such that all groups have the same size.
+
+&nbsp;  
+
+**Example**    
+
+> 'every' with **force_equal** set to TRUE would return groups with this many values in them:  
+>   
+> 11, 11, 11, 11, 11  
+>  
+> meaning that 2 values have been discarded.  
 
 &nbsp;  
 
@@ -1452,7 +1486,7 @@ df_partitioned %>%
 
 ## balance()  
 
-1. We create a `data frame`  
+1. We create a `dataframe`  
 
 ```{r echo=FALSE}
 set.seed(2)
@@ -1529,7 +1563,6 @@ df_balanced %>%
   kable(align='c')
 
 ```
-
 
 4. Using `balance()` for upsampling without `id_col`  
 
