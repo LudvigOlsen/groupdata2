@@ -1,5 +1,6 @@
 ## Test environments
 * local OS X install, R 3.6.1
+* GitHub Actions on MacOS, Windows and Ubuntu-18.04, R latest, devel and oldrel
 * win-builder
 
 ## R CMD check results  
