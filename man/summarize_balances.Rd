@@ -14,8 +14,10 @@ summarize_balances(
   include_normalized = FALSE,
   rank_weights = NULL,
   cat_levels_rank_weights = NULL,
-  num_normalize_fn = function(x) {     rearrr::min_max_scale(x, old_min = quantile(x,
-    0.025), old_max = quantile(x, 0.975), new_min = 0, new_max = 1) }
+  num_normalize_fn = function(x) {
+     rearrr::min_max_scale(x, old_min = quantile(x,
+    0.025), old_max = quantile(x, 0.975), new_min = 0, new_max = 1)
+ }
 )
 }
 \arguments{
