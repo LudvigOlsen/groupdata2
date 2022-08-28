@@ -1,5 +1,7 @@
 
-# groupdata2 2.0.0.9000
+# groupdata2 2.0.1
+
+* Regenerates documentation.
 
 # groupdata2 2.0.0
 

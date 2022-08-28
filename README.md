@@ -103,8 +103,8 @@ Development version:
 `groupdata2` contains a number of vignettes with relevant use cases and
 descriptions:
 
-> `vignette(package = "groupdata2")` # for an overview  
-> `vignette("introduction_to_groupdata2")` # begin here
+> `vignette(package = "groupdata2")` \# for an overview  
+> `vignette("introduction_to_groupdata2")` \# begin here
 
 ## Data for examples
 
@@ -433,26 +433,27 @@ df_collapsed %>%
 
 | participant | age | diagnosis | diagnosis2 | score | session | .coll_groups |
 |:------------|----:|:----------|:-----------|------:|:--------|:-------------|
-| 5           |  32 | b         | y          |    24 | 1       | 1            |
-| 5           |  32 | b         | x          |    54 | 2       | 1            |
-| 5           |  32 | b         | z          |    62 | 3       | 1            |
-| 6           |  25 | a         | x          |    14 | 1       | 1            |
-| 6           |  25 | a         | z          |    25 | 2       | 1            |
-| 6           |  25 | a         | x          |    30 | 3       | 1            |
+| 1           |  20 | a         | z          |    10 | 1       | 1            |
+| 1           |  20 | a         | y          |    24 | 2       | 1            |
+| 1           |  20 | a         | x          |    45 | 3       | 1            |
+| 2           |  33 | b         | z          |    24 | 1       | 1            |
+| 2           |  33 | b         | x          |    40 | 2       | 1            |
+| 2           |  33 | b         | x          |    67 | 3       | 1            |
 | 3           |  27 | a         | z          |    15 | 1       | 2            |
 | 3           |  27 | a         | x          |    30 | 2       | 2            |
 | 3           |  27 | a         | z          |    40 | 3       | 2            |
 | 4           |  21 | b         | z          |    35 | 1       | 2            |
 | 4           |  21 | b         | x          |    50 | 2       | 2            |
 | 4           |  21 | b         | z          |    78 | 3       | 2            |
-| 1           |  20 | a         | z          |    10 | 1       | 3            |
-| 1           |  20 | a         | y          |    24 | 2       | 3            |
-| 1           |  20 | a         | x          |    45 | 3       | 3            |
-| 2           |  33 | b         | z          |    24 | 1       | 3            |
-| 2           |  33 | b         | x          |    40 | 2       | 3            |
-| 2           |  33 | b         | x          |    67 | 3       | 3            |
+| 5           |  32 | b         | y          |    24 | 1       | 3            |
+| 5           |  32 | b         | x          |    54 | 2       | 3            |
+| 5           |  32 | b         | z          |    62 | 3       | 3            |
+| 6           |  25 | a         | x          |    14 | 1       | 3            |
+| 6           |  25 | a         | z          |    25 | 2       | 3            |
+| 6           |  25 | a         | x          |    30 | 3       | 3            |
 
 ``` r
+
 # Summarize the balances of the new groups
 coll_summ <- df_collapsed %>% 
   summarize_balances(group_cols = '.coll_groups',
@@ -463,27 +464,29 @@ coll_summ$Groups %>%
   kable()
 ```
 
-| .group_col   | .group | # rows | mean(score) | sum(score) | # diag_x | # diag_y | # diag_z |
-|:-------------|:-------|-------:|------------:|-----------:|---------:|---------:|---------:|
-| .coll_groups | 1      |      6 |        34.8 |        209 |        3 |        1 |        2 |
-| .coll_groups | 2      |      6 |        41.3 |        248 |        2 |        0 |        4 |
-| .coll_groups | 3      |      6 |        35.0 |        210 |        3 |        1 |        2 |
+| .group_col   | .group | \# rows | mean(score) | sum(score) | \# diag_x | \# diag_y | \# diag_z |
+|:-------------|:-------|--------:|------------:|-----------:|----------:|----------:|----------:|
+| .coll_groups | 1      |       6 |        35.0 |        210 |         3 |         1 |         2 |
+| .coll_groups | 2      |       6 |        41.3 |        248 |         2 |         0 |         4 |
+| .coll_groups | 3      |       6 |        34.8 |        209 |         3 |         1 |         2 |
 
 ``` r
+
 coll_summ$Summary %>% 
   kable()
 ```
 
-| .group_col   | measure | # rows | mean(score) | sum(score) | # diag_x | # diag_y | # diag_z |
-|:-------------|:--------|-------:|------------:|-----------:|---------:|---------:|---------:|
-| .coll_groups | mean    |      6 |       37.06 |      222.3 |    2.667 |    0.667 |     2.67 |
-| .coll_groups | median  |      6 |       35.00 |      210.0 |    3.000 |    1.000 |     2.00 |
-| .coll_groups | SD      |      0 |        3.71 |       22.2 |    0.577 |    0.577 |     1.16 |
-| .coll_groups | IQR     |      0 |        3.25 |       19.5 |    0.500 |    0.500 |     1.00 |
-| .coll_groups | min     |      6 |       34.83 |      209.0 |    2.000 |    0.000 |     2.00 |
-| .coll_groups | max     |      6 |       41.33 |      248.0 |    3.000 |    1.000 |     4.00 |
+| .group_col   | measure | \# rows | mean(score) | sum(score) | \# diag_x | \# diag_y | \# diag_z |
+|:-------------|:--------|--------:|------------:|-----------:|----------:|----------:|----------:|
+| .coll_groups | mean    |       6 |       37.06 |      222.3 |     2.667 |     0.667 |      2.67 |
+| .coll_groups | median  |       6 |       35.00 |      210.0 |     3.000 |     1.000 |      2.00 |
+| .coll_groups | SD      |       0 |        3.71 |       22.2 |     0.577 |     0.577 |      1.16 |
+| .coll_groups | IQR     |       0 |        3.25 |       19.5 |     0.500 |     0.500 |      1.00 |
+| .coll_groups | min     |       6 |       34.83 |      209.0 |     2.000 |     0.000 |      2.00 |
+| .coll_groups | max     |       6 |       41.33 |      248.0 |     3.000 |     1.000 |      4.00 |
 
 ``` r
+
 # Check the across-groups standard deviations 
 # This is a measure of how balanced the groups are (lower == more balanced)
 # and is especially useful when comparing multiple group columns
@@ -492,9 +495,9 @@ coll_summ %>%
   kable()
 ```
 
-| .group_col   | measure | # rows | mean(score) | sum(score) | # diag_x | # diag_y | # diag_z |
-|:-------------|:--------|-------:|------------:|-----------:|---------:|---------:|---------:|
-| .coll_groups | SD      |      0 |        3.71 |       22.2 |    0.577 |    0.577 |     1.16 |
+| .group_col   | measure | \# rows | mean(score) | sum(score) | \# diag_x | \# diag_y | \# diag_z |
+|:-------------|:--------|--------:|------------:|-----------:|----------:|----------:|----------:|
+| .coll_groups | SD      |       0 |        3.71 |       22.2 |     0.577 |     0.577 |      1.16 |
 
 **Recommended**: By enabling the `auto_tune` setting, we often get a
 much better balance.
