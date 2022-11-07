@@ -516,7 +516,7 @@ test_that("testing create_cat_summaries_()", {
   )
 
   man_summ <- df %>%
-    dplyr::select(.data$grp_1, 2:3) %>%
+    dplyr::select("grp_1", 2:3) %>%
     tidyr::gather(key="cat_col", value="cat_val", 2:3) %>%
     dplyr::count(.data$grp_1, .data$cat_col, .data$cat_val) %>%
     dplyr::mutate(cat_name = paste0("# ", substr(cat_col, 1,2), "_", cat_val)) %>%

@@ -1957,7 +1957,7 @@ test_that("testing add_ordered_summary_groups_()", {
 
   observed_grouping <- df_added %>%
     dplyr::count(.folds, .coll_g) %>%
-    dplyr::select(-.data$n) %>%
+    dplyr::select(-"n") %>%
     dplyr::arrange(.folds)
 
   # Check we get the expected results
@@ -2030,7 +2030,7 @@ test_that("testing add_ordered_summary_groups_()", {
 
   observed_grouping <- df_added %>%
     dplyr::count(.folds, .coll_g) %>%
-    dplyr::select(-.data$n) %>%
+    dplyr::select(-"n") %>%
     dplyr::arrange(.folds)
 
   # Check we get the expected results

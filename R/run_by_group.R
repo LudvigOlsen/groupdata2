@@ -80,7 +80,7 @@ run_by_group_col <- function(data, .fn, .col_name, ...){
                     f = dplyr::group_indices(data)),
                     .f = fn_df, ...) %>%
     dplyr::arrange(.data$index) %>%
-    dplyr::select(-.data$index)
+    dplyr::select(-"index")
 
   colnames(out) <- .col_name
 

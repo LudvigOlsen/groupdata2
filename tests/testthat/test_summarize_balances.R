@@ -3300,7 +3300,7 @@ test_that("testing ranked_balances()", {
   xpectr::set_test_seed(42)
   # Testing side effects
   # Assigning side effects
-  side_effects_11364 <- xpectr::capture_side_effects(ranked_balances(summ$Summary %>% dplyr::select(-.data$SD_rank)), reset_seed = TRUE)
+  side_effects_11364 <- xpectr::capture_side_effects(ranked_balances(summ$Summary %>% dplyr::select(-"SD_rank")), reset_seed = TRUE)
   expect_equal(
     xpectr::strip(side_effects_11364[['error']]),
     xpectr::strip("1 assertions failed:\n * `summary` must include the `SD_rank` column when containing more than one group column."),

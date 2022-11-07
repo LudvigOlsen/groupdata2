@@ -308,7 +308,7 @@ summarize_balances <- function(
     l %c% name %>%
       dplyr::bind_rows(.id = "._group_index") %>%
       dplyr::left_join(group_keys, by = "._group_index") %>%
-      dplyr::select(dplyr::one_of(group_col_names), dplyr::everything(), -.data$._group_index) %>%
+      dplyr::select(dplyr::one_of(group_col_names), dplyr::everything(), -"._group_index") %>%
       dplyr::group_by(!!!rlang::syms(group_col_names))
   }
 
@@ -899,7 +899,7 @@ add_sd_ranks_ <- function(
       col_name = "SD_rank",
       rank_weights = rank_weights,
       already_rank_cols = c(cat_sd_rank_cols, num_sd_rank_cols)) %>%
-    dplyr::select(.data$.group_col,
+    dplyr::select(".group_col",
                   dplyr::ends_with("SD_rank"))
 
   measures <- measures %>%

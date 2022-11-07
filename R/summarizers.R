@@ -158,7 +158,7 @@ create_cat_summaries_ <- function(data,
     dplyr::ungroup() %>%
     dplyr::select(!!!rlang::syms(c(group_col, cat_cols))) %>%
     dplyr::mutate(dplyr::across(dplyr::one_of(cat_cols), as.character)) %>%
-    tidyr::gather(key = "cat_col", value = "cat_val", cat_cols) %>%
+    tidyr::gather(key = "cat_col", value = "cat_val", dplyr::all_of(cat_cols)) %>%
     dplyr::count(!!as.name(group_col), .data$cat_col, .data$cat_val,
                  name = tmp_n_var) %>%
     rename_cat_levels_for_summary_(
@@ -194,7 +194,7 @@ create_cat_name_map_ <- function(data,
     dplyr::select(!!!rlang::syms(c(cat_cols))) %>%
     dplyr::mutate(dplyr::across(dplyr::one_of(cat_cols), as.character)) %>%
     dplyr::distinct() %>%
-    tidyr::gather(key = "cat_col", value = "cat_val", cat_cols) %>%
+    tidyr::gather(key = "cat_col", value = "cat_val", dplyr::all_of(cat_cols)) %>%
     dplyr::distinct() %>%
     dplyr::mutate(orig_cat_col = .data$cat_col) %>%
     position_first(col = "orig_cat_col") %>%
@@ -203,7 +203,7 @@ create_cat_name_map_ <- function(data,
       name_prefix = name_prefix
     ) %>%
     dplyr::arrange(.data$cat_col, .data$cat_val) %>%
-    dplyr::select(-.data$cat_col) %>%
+    dplyr::select(-"cat_col") %>%
     split(f = .$orig_cat_col, drop = TRUE) %>%
     purrr::map(.f = ~{
       vals <- .x[["cat_name"]]

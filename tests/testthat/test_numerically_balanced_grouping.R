@@ -219,7 +219,7 @@ test_that("numerically_balanced_group_factor_pairs_() unequal method on small da
     dplyr::group_by(case, condition) %>%
     dplyr::summarise(min_sd = min(sd_sum_)) %>%
     dplyr::left_join(aggregated_scores, by = c("case", "condition", "min_sd" = "sd_sum_")) %>%
-    dplyr::select(c(case, condition, min_sd, unequal_method, n_rows, n_folds)) %>%
+    dplyr::select(dplyr::all_of(c(case, condition, min_sd, unequal_method, n_rows, n_folds))) %>%
     dplyr::arrange(n_rows, case, condition, min_sd, unequal_method) %>%
     dplyr::group_by(case, condition) %>%
     dplyr::filter(dplyr::row_number() == 1)
