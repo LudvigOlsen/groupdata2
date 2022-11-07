@@ -1,5 +1,9 @@
 
-# groupdata2 2.0.1.9000
+# groupdata2 2.0.2
+
+* Makes testing conditional on the availability of `xpectr`.
+
+* Fixes `tidyselect`-related warnings.
 
 # groupdata2 2.0.1
 
