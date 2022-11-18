@@ -472,7 +472,7 @@ test_that("repeated folding works in fold()", {
   df_folded <- fold(df, 3, num_col = "score", num_fold_cols = 5)
   folds_colnames <- extract_fold_colnames(df_folded)
   df_folded_long <- df_folded %>%
-    tidyr::gather(key = "folds_col", value = ".folds", folds_colnames)
+    tidyr::gather(key = "folds_col", value = ".folds", dplyr::all_of(folds_colnames))
   aggregated_scores <- df_folded_long %>%
     dplyr::group_by(folds_col, .folds) %>%
     dplyr::summarize(group_sums = sum(score), .groups = 'drop')

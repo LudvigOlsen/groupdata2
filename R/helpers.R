@@ -647,7 +647,7 @@ remove_identical_cols <- function(data, cols = NULL, exclude_comparisons = NULL,
   if (is.character(to_remove)) {
     data <- base_deselect(data, cols = to_remove)
   } else if (is.integer(to_remove)) {
-    data <- dplyr::select(data, -to_remove)
+    data <- dplyr::select(data, -dplyr::all_of(to_remove))
   }
 
   if (isTRUE(return_all_comparisons)) {
@@ -662,7 +662,13 @@ remove_identical_cols <- function(data, cols = NULL, exclude_comparisons = NULL,
 }
 
 
-rename_with_consecutive_numbering <- function(data, cols, base_name, warn_at_rename=FALSE, warning_msg=NULL) {
+
+rename_with_consecutive_numbering <- function(
+    data,
+    cols,
+    base_name,
+    warn_at_rename = FALSE,
+    warning_msg = NULL) {
 
   if (isTRUE(warn_at_rename) && is.null(warning_msg))
     stop("please supply `warning_msg` when `warn_at_rename` is enabled.")
@@ -674,13 +680,13 @@ rename_with_consecutive_numbering <- function(data, cols, base_name, warn_at_ren
   num_names_to_create <- length(cols)
   new_names <- paste0(base_name, seq_len(num_names_to_create))
 
-  if (isTRUE(warn_at_rename) && !all(cols == new_names)){
+  if (isTRUE(warn_at_rename) && !all(cols == new_names)) {
     warning(warning_msg)
   }
 
   dplyr::rename_at(data,
-                   dplyr::vars(cols),
-                   ~new_names)
+                   dplyr::vars(dplyr::all_of(cols)),
+                   ~ new_names)
 }
 
 # Add underscore until var name is unique

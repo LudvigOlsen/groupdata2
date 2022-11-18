@@ -94,12 +94,12 @@ summarize_group_cols <- function(data, group_cols, long = TRUE) {
       dplyr::summarise_all(.funs = fn)
   }) %>%
     dplyr::as_tibble() %>%
-    dplyr::rename(Measure = .data$.id)
+    dplyr::rename(Measure = ".id")
 
   if (isTRUE(long)) {
     # Convert to long format
     summaries <- summaries %>%
-      tidyr::gather(key = "Group Column", value = "Value", -.data$Measure) %>%
+      tidyr::gather(key = "Group Column", value = "Value", -"Measure") %>%
       tidyr::spread(.data$Measure, .data$Value) %>%
       dplyr::select(dplyr::one_of("Group Column", names(fns)))
 
@@ -109,7 +109,7 @@ summarize_group_cols <- function(data, group_cols, long = TRUE) {
     summaries <- summaries %>%
       dplyr::left_join(order_df, by = "Group Column") %>%
       dplyr::arrange(.data$idx) %>%
-      dplyr::select(-.data$idx)
+      dplyr::select(-"idx")
   }
 
   summaries

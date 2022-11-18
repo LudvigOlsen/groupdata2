@@ -164,7 +164,7 @@ auto_tune_collapsings <- function(
         V2_base = gsub("\\d*$", "", .data$V2)
       ) %>%
       dplyr::filter(.data$V1_base == .data$V2_base) %>%
-      dplyr::select(-.data$V1_base, -.data$V2_base)
+      dplyr::select(-"V1_base", -"V2_base")
 
     # Remove duplicate group columns!
     new_group_cols <- new_group_cols %>%
@@ -404,11 +404,11 @@ find_best_group_cols_ <- function(data, num_new_group_cols, group_cols_names,
   # As they have been shown to sometimes differ
   summary_ranks <- balance_summary[["Summary"]] %>%
     ranked_balances() %>%
-    dplyr::select(.data$.group_col, .data$SD_rank)
+    dplyr::select(".group_col", "SD_rank")
   normalized_summary_ranks <- balance_summary[["Normalized Summary"]] %>%
     ranked_balances() %>%
-    dplyr::select(.data$.group_col, .data$SD_rank) %>%
-    dplyr::rename(norm_SD_rank = .data$SD_rank)
+    dplyr::select(".group_col", "SD_rank") %>%
+    dplyr::rename(norm_SD_rank = "SD_rank")
   summary_ranks <- summary_ranks %>%
     dplyr::left_join(normalized_summary_ranks, by = ".group_col") %>%
     dplyr::mutate(avg_rank = (.data$SD_rank + .data$norm_SD_rank) / 2) %>%
