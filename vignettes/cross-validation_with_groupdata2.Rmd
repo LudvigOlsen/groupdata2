@@ -7,6 +7,8 @@ abstract: |
   In this vignette, we go through creating balanced partitions for train/test sets and balanced folds for cross-validation
   with the R package `groupdata2`. We write a simple cross-validation function and use it on some linear regression models.
   
+  The purpose of the vignette is to give a basic understanding of cross-validation. We recommend using the `cvms` package in combination with `groupdata2` for actual cross-validation tasks.
+  
   `groupdata2` is a set of methods for easy grouping, windowing, folding, partitioning and splitting of data.  
   
   &nbsp;  
@@ -45,7 +47,8 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.align='center',
   dpi = 92,
-  fig.retina = 2
+  fig.retina = 2,
+  eval = requireNamespace("lmerTest")
 )
 options(tibble.print_min = 4L, tibble.print_max = 4L)
 
@@ -92,11 +95,8 @@ Let's say, we have scored 10 participants with either of two diagnoses `'a'` and
 # Attach some packages
 library(groupdata2)
 library(dplyr)
-library(ggplot2)
 library(knitr) # kable()
 library(lmerTest) #lmer()
-library(broom) #tidy()
-library(hydroGOF) # rmse()
 
 
 # Create data frame
@@ -220,6 +220,11 @@ What's left, you ask? Well, now we get to have fun, training and comparing model
 We have 4 folds in our training set, so we want to train our models on 3 of the folds and test on the last fold. All the folds should be used as test fold once. While there are often faster alternatives to a for loop, we will use it to illustrate the process. We will create a simple cross-validation function where we can specify the model to test, and whether it has random effects. The performance of the model will be measured with RMSE (Root Mean Square Error).
 
 ```{r}
+# RMSE metric
+rmse <- function(predictions, targets){
+  sqrt(mean((predictions - targets)^2))
+}
+
 crossvalidate <- function(data, k, model, dependent, random = FALSE){
   # 'data' is the training set with the ".folds" column
   # 'k' is the number of folds we have
@@ -284,9 +289,9 @@ crossvalidate <- function(data, k, model, dependent, random = FALSE){
 
 We could have a hypothesis that people with the diagnosis `'b'` tend to be better at the experiment. This could be tested by a simple linear model.
 
-```{r}
+```{r eval=requireNamespace("broom")}
 lm(score ~ diagnosis, df) %>% 
-  tidy()
+  broom::tidy()
 ```
 
 The linear model supports the hypothesis, as the average score of participants with diagnosis `'b'` is larger than that of participants with diagnosis `'a'`, and as this difference is statistically significant, we can reasonably reject the null-hypothesis that there is no difference between the two diagnoses.  

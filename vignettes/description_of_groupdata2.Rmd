@@ -77,7 +77,7 @@ library(groupdata2)
 # Attaching other packages used in this vignette
 library(dplyr)
 library(tidyr)
-library(ggplot2)
+require(ggplot2, quietly = TRUE)  # Attach if installed
 library(knitr)
 
 # We will also be using plyr a few times, but we don't attach this 
@@ -1717,7 +1717,7 @@ it would have been the last 3 groups instead.
 *n_rand*: The extra datapoints are placed randomly and so we would see the extra datapoints located at different groups if we ran the script again. *Unless we use* `set.seed()` *before running the function.*  
 
 
-```{r echo=FALSE}
+```{r echo=FALSE, eval=requireNamespace("ggplot2")}
 
 # 
 # Examples to show difference between methods
@@ -1802,7 +1802,7 @@ v57n6_plot +
 
 Here is another example.   
 
-```{r echo=FALSE}
+```{r echo=FALSE, eval=requireNamespace("ggplot2")}
 
 
 
@@ -1892,7 +1892,7 @@ With a size of 15, we get 7 groups. The last group (7) contains only 10 elements
 
 With a size of 20, we get 5 groups. As 20 is divisible with the 100 elements that the split vector contained, the last group also contains 20 elements, and so we have equal groups.
 
-```{r echo=FALSE}
+```{r echo=FALSE, eval=requireNamespace("ggplot2")}
 
 
 vec <- c(1:100)
@@ -1955,7 +1955,7 @@ At a step size of 11 elements it increases with 11 every time. It seems that the
 &nbsp; 
 
 
-```{r echo=FALSE}
+```{r echo=FALSE, eval=requireNamespace("ggplot2")}
 
 
 vec <- c(1:1000)
@@ -2008,7 +2008,7 @@ Below we will take a quick look at the cumulative sum of group elements to get a
 Remember that the split vector had 1000 elements? That is why they all stop at 1000 on the y-axis. There are simply no more elements left!  
 
 
-```{r echo=FALSE}
+```{r echo=FALSE, eval=requireNamespace("ggplot2")}
 
 staircase_data <- staircase_data %>%
   group_by(step_size) %>%
@@ -2038,7 +2038,7 @@ Below you'll see a plot with the group sizes at each group when starting from pr
 &nbsp; 
 
 
-```{r echo=FALSE}
+```{r echo=FALSE, eval=requireNamespace("ggplot2")}
 
 
 vec <- c(1:1000)
@@ -2090,7 +2090,7 @@ Below we will take a quick look at the cumulative sum of group elements to get a
 Because the split vector had 1000 elements, it stops at 1000 on the y-axis. There are simply no more elements left!  
 
 
-```{r echo=FALSE}
+```{r echo=FALSE, eval=requireNamespace("ggplot2")}
 
 primes_data <- primes_data %>%
   group_by(start_at) %>%

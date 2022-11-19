@@ -30,7 +30,6 @@ Suggests:
     broom,
     covr,
     ggplot2,
-    hydroGOF,
     knitr,
     lmerTest,
     rmarkdown,
