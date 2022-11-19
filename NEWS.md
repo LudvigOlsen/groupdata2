@@ -1,9 +1,13 @@
 
 # groupdata2 2.0.2
 
+* Makes use of suggested packages conditional.
+
 * Makes testing conditional on the availability of `xpectr`.
 
 * Fixes `tidyselect`-related warnings.
+
+* Removes hydroGOF from suggested packages.
 
 # groupdata2 2.0.1
 
