@@ -4,7 +4,7 @@
 * win-builder
 
 ## R CMD check results  
-There were no ERRORs, WARNINGs or NOTEs.  
+There were no ERRORs, WARNINGs or NOTEs.
 
 ## Downstream dependencies
 I used revdepcheck::revdep_check() to run R CMD check on all downstream dependencies 

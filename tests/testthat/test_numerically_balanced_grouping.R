@@ -443,6 +443,7 @@ test_that("experiment: numerically_balanced_group_factor_pairs_() optimizes for 
   # dev.off()
 
   # 'sampling' is the random dataset
+  testthat::skip_if_not_installed("lmerTest")
   summary(lmerTest::lmer(diff_sum ~ opt_for + (1 | sampling), data = sim_wise_summaries))
   summary(lmerTest::lmer(diff_sd ~ opt_for + (1 | sampling), data = sim_wise_summaries))
 })

@@ -58,7 +58,7 @@ When working with time series, `groupdata2` allows us to quickly divide them int
 ```{r warning=FALSE,message=FALSE}
 library(groupdata2)
 library(dplyr) # %>%
-library(ggplot2)
+require(ggplot2, quietly = TRUE)  # Attach if installed
 library(knitr) # kable
 ```
 
@@ -84,7 +84,7 @@ timeSeriesFrame %>% head(12) %>% kable()
 &nbsp;  
 A visualization of the data. We see that the number of residents increases quite linearly with time.  
 
-```{r echo=FALSE, message=FALSE}
+```{r echo=FALSE, message=FALSE, eval=requireNamespace("ggplot2")}
 # Plot of time series
 
 ggplot(timeSeriesFrame, aes(seq_along(residents), residents)) +
@@ -121,7 +121,7 @@ ts %>% kable()
 &nbsp;  
 A visualization of the data.
 
-```{r echo=FALSE, message=FALSE}
+```{r echo=FALSE, message=FALSE, eval=requireNamespace("ggplot2")}
 # Plot of time series
 
 ggplot(ts, aes(.groups, mean)) +
@@ -224,7 +224,7 @@ The differences in range follows the differences in number of measurements per s
 
 Here is a visualization of the means per subgroup:
 
-```{r echo=FALSE, message=FALSE}
+```{r echo=FALSE, message=FALSE, eval=requireNamespace("ggplot2")}
 # Plot of time series
 
 ggplot(ts_means, aes(seq_along(mean), mean)) +

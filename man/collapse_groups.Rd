@@ -443,7 +443,9 @@ library(groupdata2)
 library(dplyr)
 
 # Set seed
-xpectr::set_test_seed(42)
+if (requireNamespace("xpectr", quietly = TRUE)){
+  xpectr::set_test_seed(42)
+}
 
 # Create data frame
 df <- data.frame(
