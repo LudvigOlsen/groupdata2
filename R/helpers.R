@@ -486,9 +486,9 @@ add_rows_with_sampling <- function(data, to_size, new_rows_col_name) {
 select_rows_from_ids <- function(data, balanced_ids, cat_col, id_col,
                                  mark_new_rows, join_fn = dplyr::inner_join,
                                  new_rows_col_name, ids_new_rows_col_name) {
-  # select the chosen ids in data and return
+  # Select the chosen ids in data and return
   balanced_data <- join_fn(data, balanced_ids,
-    by = c(cat_col, id_col)
+    by = c(cat_col, id_col), relationship = "many-to-many"
   ) %>%
     update_TempNewRow_from_ids_method(
       new_rows_col_name = new_rows_col_name,

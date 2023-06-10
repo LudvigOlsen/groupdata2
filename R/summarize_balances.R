@@ -666,24 +666,33 @@ join_group_summaries_ <- function(
 ) {
 
   # Join summaries
-  group_summary <- group_summaries[["empty"]] %>%
-    # When the arg is not NULL, add it's summary with a join
-    purrr::when(isTRUE(summarize_size) ~
-                  dplyr::left_join(., group_summaries[["size"]],
-                                   by = c(".group_col", ".group")),
-                ~ .) %>% # Else return the input
-    purrr::when(!is.null(id_cols) ~
-                  dplyr::left_join(., group_summaries[["id"]],
-                                   by = c(".group_col", ".group")),
-                ~ .) %>%
-    purrr::when(!is.null(num_cols) ~
-                  dplyr::left_join(., group_summaries[["num"]],
-                                   by = c(".group_col", ".group")),
-                ~ .) %>%
-    purrr::when(!is.null(cat_cols) ~
-                  dplyr::left_join(., group_summaries[["cat"]],
-                                   by = c(".group_col", ".group")),
-                ~ .)
+  group_summary <- group_summaries[["empty"]]
+
+  if (isTRUE(summarize_size)) {
+    group_summary <-
+      dplyr::left_join(group_summary,
+                       group_summaries[["size"]],
+                       by = c(".group_col", ".group"))
+  }
+  if (!is.null(id_cols)) {
+    group_summary <-
+      dplyr::left_join(group_summary,
+                       group_summaries[["id"]],
+                       by = c(".group_col", ".group"))
+  }
+  if (!is.null(num_cols)) {
+    group_summary <-
+      dplyr::left_join(group_summary,
+                       group_summaries[["num"]],
+                       by = c(".group_col", ".group"))
+  }
+  if (!is.null(cat_cols)) {
+    group_summary <-
+      dplyr::left_join(group_summary,
+                       group_summaries[["cat"]],
+                       by = c(".group_col", ".group"))
+  }
+
   group_summary
 }
 
