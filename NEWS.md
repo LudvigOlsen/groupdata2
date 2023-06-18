@@ -1,6 +1,10 @@
 
 # groupdata2 2.0.2.9000
 
+* Fixes some warnings.
+
+* Fixes rounding error issue on PowerPC (https://github.com/LudvigOlsen/groupdata2/issues/10). Thanks @barracuda156.
+
 # groupdata2 2.0.2
 
 * Makes use of suggested packages conditional.
