@@ -5,7 +5,7 @@
 
 **Author:** [Ludvig R. Olsen](http://ludvigolsen.dk/) (
 <r-pkgs@ludvigolsen.dk> ) <br/> **License:**
-[MIT](https://opensource.org/licenses/MIT) <br/> **Started:** October
+[MIT](https://opensource.org/license/mit/) <br/> **Started:** October
 2016
 
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/groupdata2)](https://cran.r-project.org/package=groupdata2)
@@ -25,14 +25,14 @@ status](https://ci.appveyor.com/api/projects/status/github/LudvigOlsen/groupdata
 
 R package for dividing data into groups.
 
--   Create **balanced partitions** and cross-validation **folds**.
--   Perform time series **windowing** and general **grouping** and
-    **splitting** of data.
--   **Balance** existing groups with **up- and downsampling**.
--   **Collapse** existing groups to fewer, balanced groups.
--   Finds values, or indices of values, that **differ** from the
-    previous value by some threshold(s).
--   Check if two grouping factors have the same groups, **memberwise**.
+- Create **balanced partitions** and cross-validation **folds**.
+- Perform time series **windowing** and general **grouping** and
+  **splitting** of data.
+- **Balance** existing groups with **up- and downsampling**.
+- **Collapse** existing groups to fewer, balanced groups.
+- Finds values, or indices of values, that **differ** from the previous
+  value by some threshold(s).
+- Check if two grouping factors have the same groups, **memberwise**.
 
 ### Main functions
 
@@ -62,30 +62,30 @@ R package for dividing data into groups.
 
 ## Table of Contents
 
--   [groupdata2](#groupdata2)
-    -   [Overview](#overview)
-        -   [Main functions](#main-functions)
-        -   [Other tools](#other-tools)
-    -   [Installation](#installation)
-    -   [Vignettes](#vignettes)
-    -   [Data for examples](#data-for-examples)
-    -   [Functions](#functions)
-        -   [group_factor()](#group_factor())
-        -   [group()](#group())
-        -   [splt()](#splt())
-        -   [partition()](#partition())
-        -   [fold()](#fold())
-        -   [collapse_groups()](#collapse_groups())
-        -   [balance()](#balance())
-    -   [Grouping Methods](#grouping-methods)
-        -   [Specify group size](#specify-group-size)
-        -   [Specify number of groups](#specify-number-of-groups)
-        -   [Specify list](#specify-list)
-        -   [Specify distance between
-            members](#specify-distance-between-members)
-        -   [Specify step size](#specify-step-size)
-        -   [Specify start at](#specify-start-at)
-    -   [Balancing ID Methods](#balancing-id-methods)
+- [groupdata2](#groupdata2)
+  - [Overview](#overview)
+    - [Main functions](#main-functions)
+    - [Other tools](#other-tools)
+  - [Installation](#installation)
+  - [Vignettes](#vignettes)
+  - [Data for examples](#data-for-examples)
+  - [Functions](#functions)
+    - [group_factor()](#group_factor())
+    - [group()](#group())
+    - [splt()](#splt())
+    - [partition()](#partition())
+    - [fold()](#fold())
+    - [collapse_groups()](#collapse_groups())
+    - [balance()](#balance())
+  - [Grouping Methods](#grouping-methods)
+    - [Specify group size](#specify-group-size)
+    - [Specify number of groups](#specify-number-of-groups)
+    - [Specify list](#specify-list)
+    - [Specify distance between
+      members](#specify-distance-between-members)
+    - [Specify step size](#specify-step-size)
+    - [Specify start at](#specify-start-at)
+  - [Balancing ID Methods](#balancing-id-methods)
 
 ## Installation
 
@@ -246,12 +246,20 @@ splt(data = df_small,
   kable()
 ```
 
+<table class="kable_wrapper">
+<tbody>
+<tr>
+<td>
+
 |   x | species | age |
 |----:|:--------|----:|
 |   1 | cat     |  68 |
 |   2 | pig     |  39 |
 |   3 | human   |   1 |
 |   4 | cat     |  34 |
+
+</td>
+<td>
 
 |     |   x | species | age |
 |:----|----:|:--------|----:|
@@ -260,12 +268,20 @@ splt(data = df_small,
 | 7   |   7 | cat     |  14 |
 | 8   |   8 | pig     |  82 |
 
+</td>
+<td>
+
 |     |   x | species | age |
 |:----|----:|:--------|----:|
 | 9   |   9 | human   |  59 |
 | 10  |  10 | cat     |  51 |
 | 11  |  11 | pig     |  85 |
 | 12  |  12 | human   |  21 |
+
+</td>
+</tr>
+</tbody>
+</table>
 
 ### partition()
 
@@ -292,6 +308,11 @@ df_partitioned %>%
   kable()
 ```
 
+<table class="kable_wrapper">
+<tbody>
+<tr>
+<td>
+
 | participant | age | diagnosis | diagnosis2 | score | session |
 |:------------|----:|:----------|:-----------|------:|:--------|
 | 1           |  20 | a         | z          |    10 | 1       |
@@ -307,6 +328,9 @@ df_partitioned %>%
 | 4           |  21 | b         | x          |    50 | 2       |
 | 4           |  21 | b         | z          |    78 | 3       |
 
+</td>
+<td>
+
 | participant | age | diagnosis | diagnosis2 | score | session |
 |:------------|----:|:----------|:-----------|------:|:--------|
 | 5           |  32 | b         | y          |    24 | 1       |
@@ -315,6 +339,11 @@ df_partitioned %>%
 | 6           |  25 | a         | x          |    14 | 1       |
 | 6           |  25 | a         | z          |    25 | 2       |
 | 6           |  25 | a         | x          |    30 | 3       |
+
+</td>
+</tr>
+</tbody>
+</table>
 
 ### fold()
 

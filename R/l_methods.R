@@ -93,10 +93,12 @@ l_sizes_group_factor_ <- function(v, n, force_equal = FALSE, descending = FALSE)
       )
     }) %>%
       unlist() %>%
-      sum()
+      sum() %>%
+      as.integer()
 
     # How many elements are left in percentage?
     perc_left <- 1 - (sum_n_integers / length(v))
+    perc_left <- max(0.0, min(perc_left, 1.0))
 
     # How many elements are left?
     elements_for_perc <- length(v) - sum_n_integers

@@ -47,12 +47,16 @@ all_groups_identical <- function(x, y) {
 
   # Check arguments ####
   assert_collection <- checkmate::makeAssertCollection()
-  checkmate::assert(checkmate::check_vector(x = x, strict=TRUE),
-                    checkmate::check_factor(x = x),
-                    .var.name = "x")
-  checkmate::assert(checkmate::check_vector(x = y, strict=TRUE),
-                    checkmate::check_factor(x = y),
-                    .var.name = "y")
+  checkmate::assert(
+    checkmate::check_vector(x = x, strict = TRUE),
+    checkmate::check_factor(x = x),
+    .var.name = "x"
+  )
+  checkmate::assert(
+    checkmate::check_vector(x = y, strict = TRUE),
+    checkmate::check_factor(x = y),
+    .var.name = "y"
+  )
   if (length(x) != length(y))
     assert_collection$push("'x' and 'y' must have same length.")
   checkmate::reportAssertions(assert_collection)
@@ -64,7 +68,8 @@ all_groups_identical <- function(x, y) {
   ) %>%
     dplyr::arrange(.data$col_1) %>%
     group(
-      n = "auto", method = "l_starts",
+      n = "auto",
+      method = "l_starts",
       col_name = ".groups_1",
       starts_col = "col_2"
     ) %>%
