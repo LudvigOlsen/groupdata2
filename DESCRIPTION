@@ -1,6 +1,6 @@
 Package: groupdata2
 Title: Creating Groups from Data
-Version: 2.0.2.9000
+Version: 2.0.3
 Authors@R: person(
     given = "Ludvig Renbo",
     family = "Olsen",

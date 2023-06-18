@@ -1,5 +1,5 @@
 
-# groupdata2 2.0.2.9000
+# groupdata2 2.0.3
 
 * Fixes some warnings.
 
