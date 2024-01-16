@@ -65,9 +65,7 @@
 #'
 #' Go to \code{\link{balance}()}
 #' @author Ludvig Renbo Olsen, \email{r-pkgs@@ludvigolsen.dk}
-#' @docType package
-#' @name groupdata2
-NULL
+"_PACKAGE"
 
 
 
