@@ -152,8 +152,8 @@ differs_from_previous(df, col = "n", threshold = c(-4, 2), direction = "both")
 Other l_starts tools: 
 \code{\link{find_missing_starts}()},
 \code{\link{find_starts}()},
-\code{\link{group_factor}()},
-\code{\link{group}()}
+\code{\link{group}()},
+\code{\link{group_factor}()}
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}

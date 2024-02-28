@@ -119,8 +119,8 @@ group(df,
 Other l_starts tools: 
 \code{\link{differs_from_previous}()},
 \code{\link{find_missing_starts}()},
-\code{\link{group_factor}()},
-\code{\link{group}()}
+\code{\link{group}()},
+\code{\link{group_factor}()}
 }
 \author{
 Ludvig Renbo Olsen, \email{r-pkgs@ludvigolsen.dk}

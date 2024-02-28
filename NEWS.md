@@ -1,7 +1,7 @@
 
 # groupdata2 2.0.3.9000
 
-* Updates roxygen2 information.
+* Updates documentation.
 
 # groupdata2 2.0.3
 
