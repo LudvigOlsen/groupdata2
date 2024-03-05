@@ -1,5 +1,5 @@
 
-# groupdata2 2.0.3.9000
+# groupdata2 2.0.4
 
 * Updates documentation.
 
