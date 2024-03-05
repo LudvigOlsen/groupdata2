@@ -33,8 +33,8 @@ library(groupdata2)
 \seealso{
 Other staircase tools: 
 \code{\link{\%staircase\%}()},
-\code{\link{group_factor}()},
-\code{\link{group}()}
+\code{\link{group}()},
+\code{\link{group_factor}()}
 
 Other remainder tools: 
 \code{\link{\%staircase\%}()}

@@ -207,8 +207,8 @@ df$groups <- groups
 \seealso{
 Other grouping functions: 
 \code{\link{all_groups_identical}()},
-\code{\link{collapse_groups_by}},
 \code{\link{collapse_groups}()},
+\code{\link{collapse_groups_by}},
 \code{\link{fold}()},
 \code{\link{group}()},
 \code{\link{partition}()},

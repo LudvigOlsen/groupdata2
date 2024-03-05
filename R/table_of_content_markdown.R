@@ -14,13 +14,8 @@
 #' set to `NULL` for it to be included.
 #'
 #' @section Usage:
-#' Just drop in a chunk where you want the toc to appear (set `echo=FALSE`):
-#'
-#'     # Table of Contents
-#'
-#'     ```{r echo=FALSE}
-#'     render_toc("/path/to/the/file.Rmd")
-#'     ```
+#'  Just drop in a \strong{chunk} where you want the toc to appear (set `echo=FALSE`):
+#'  \code{render_toc("/path/to/the/file.Rmd")}
 #' @keywords internal
 #' @param filename Name of RMarkdown or Markdown document
 #' @param toc_header_name The table of contents header name. If specified, any

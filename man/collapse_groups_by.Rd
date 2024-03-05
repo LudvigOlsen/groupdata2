@@ -353,8 +353,8 @@ Other grouping functions:
 \code{\link{all_groups_identical}()},
 \code{\link{collapse_groups}()},
 \code{\link{fold}()},
-\code{\link{group_factor}()},
 \code{\link{group}()},
+\code{\link{group_factor}()},
 \code{\link{partition}()},
 \code{\link{splt}()}
 }
