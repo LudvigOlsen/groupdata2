@@ -1,12 +1,12 @@
 Package: groupdata2
 Title: Creating Groups from Data
-Version: 2.0.4
+Version: 2.0.5
 Authors@R: person(
     given = "Ludvig Renbo",
     family = "Olsen",
     role = c("aut", "cre"),
     email = "r-pkgs@ludvigolsen.dk",
-    comment = c(ORCID = "0009-0006-6798-7454", Twitter = "@ludvigolsen"))
+    comment = c(ORCID = "0009-0006-6798-7454"))
 Description: Methods for dividing data into groups. 
     Create balanced partitions and cross-validation folds. 
     Perform time series windowing and general grouping and splitting of data. 
@@ -30,7 +30,7 @@ Imports:
     tibble (>= 2.1.3),
     tidyr,
     utils
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Suggests:
     broom,
     covr,

@@ -9,3 +9,7 @@ revdep/library
 revdep/library\.noindex
 revdep/checks\.noindex
 
+
+.DS_Store
+
+revdep/
