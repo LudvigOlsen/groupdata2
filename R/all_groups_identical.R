@@ -44,7 +44,6 @@
 #' x2 <- c(1, 1, 1, 2, 2, 2)
 #' all_groups_identical(x1, x2) # FALSE
 all_groups_identical <- function(x, y) {
-
   # Check arguments ####
   assert_collection <- checkmate::makeAssertCollection()
   checkmate::assert(
@@ -62,30 +61,33 @@ all_groups_identical <- function(x, y) {
   checkmate::reportAssertions(assert_collection)
   # End of argument checks ####
 
-  d <- tibble::tibble(
-    "col_1" = as.character(x),
-    "col_2" = as.character(y)
-  ) %>%
+  d <- tibble::tibble("col_1" = as.character(x), "col_2" = as.character(y)) %>%
     dplyr::arrange(.data$col_1) %>%
     group(
       n = "auto",
       method = "l_starts",
-      col_name = ".groups_1",
+      col_name = ".groups_col_2",
       starts_col = "col_2"
     ) %>%
     dplyr::ungroup()
 
-  if (nlevels(d[[".groups_1"]]) != length(unique(d[["col_1"]]))) {
+  if (length(unique(d[["col_1"]])) != length(unique(d[["col_2"]]))) {
     return(FALSE)
-  } else {
-    d <- d %>%
-      group(
-        n = "auto",
-        method = "l_starts",
-        col_name = ".groups_2",
-        starts_col = "col_1"
-      ) %>%
-      dplyr::ungroup()
-    all(as.character(d[[".groups_1"]]) == as.character(d[[".groups_2"]]))
   }
+
+  if (nlevels(d[[".groups_col_2"]]) != length(unique(d[["col_1"]]))) {
+    return(FALSE)
+  }
+
+  d <- d %>%
+    group(
+      n = "auto",
+      method = "l_starts",
+      col_name = ".groups_col_1",
+      starts_col = "col_1"
+    ) %>%
+    dplyr::ungroup()
+
+  all(as.character(d[[".groups_col_2"]]) == as.character(d[[".groups_col_1"]]))
+
 }
